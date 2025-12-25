@@ -1,0 +1,130 @@
+---
+default_stages: [pre-commit]
+exclude: ^3rd_party/
+repos:
+    ###########################################################################
+    # general
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v6.0.0
+      hooks:
+          #- id: check-added-large-files
+          - id: check-ast
+          - id: check-builtin-literals
+          - id: check-case-conflict
+          - id: check-docstring-first
+          - id: check-executables-have-shebangs
+          - id: check-illegal-windows-names
+          - id: check-json
+          - id: check-merge-conflict
+          - id: check-shebang-scripts-are-executable
+          - id: check-symlinks
+          - id: check-toml
+          - id: check-vcs-permalinks
+          - id: check-xml
+          - id: check-yaml
+          - id: debug-statements
+          - id: destroyed-symlinks
+          - id: detect-private-key
+          - id: end-of-file-fixer
+          - id: file-contents-sorter
+          - id: fix-byte-order-marker
+          - id: forbid-submodules
+          - id: mixed-line-ending
+          - id: name-tests-test
+          - id: pretty-format-json
+          - id: requirements-txt-fixer
+          - id: sort-simple-yaml
+          - id: trailing-whitespace
+
+    - repo: https://github.com/jumanjihouse/pre-commit-hooks
+      rev: 3.0.0
+      hooks:
+          - id: markdownlint
+          - id: script-must-have-extension
+          - id: script-must-not-have-extension
+          - id: shellcheck
+
+    ###########################################################################
+    # c++
+    - repo: https://github.com/pre-commit/mirrors-clang-format
+      rev: v21.1.8
+      hooks:
+          - id: clang-format
+
+    ###########################################################################
+    #  python
+    - repo: https://github.com/psf/black
+      rev: 25.12.0
+      hooks:
+          - id: black
+            language_version: python3
+
+    - repo: https://github.com/pre-commit/mirrors-mypy
+      rev: v1.19.1
+      hooks:
+          - id: mypy
+            additional_dependencies: [types-termcolor, types-PyYAML]
+
+    - repo: https://github.com/asottile/pyupgrade
+      rev: v3.21.2
+      hooks:
+          - id: pyupgrade
+
+    - repo: https://github.com/pycqa/isort
+      rev: 7.0.0
+      hooks:
+          - id: isort
+
+    ###########################################################################
+    # yaml
+    - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+      rev: 0.2.3
+      hooks:
+          - id: yamlfmt
+            exclude: |
+                (?x)^(
+                  .clang-*|
+                  .github/
+                )
+
+    ###########################################################################
+    # shell
+    - repo: https://github.com/detailyang/pre-commit-shell
+      rev: 1.0.5
+      hooks:
+          - id: shell-lint
+    - repo: https://github.com/lovesegfault/beautysh
+      rev: v6.4.2
+      hooks:
+          - id: beautysh
+            args: [--tab, --force-function-style=paronly]
+            additional_dependencies: [setuptools]
+
+    - repo: https://github.com/shellcheck-py/shellcheck-py
+      rev: v0.11.0.1
+      hooks:
+          - id: shellcheck
+
+    ###########################################################################
+    # vim
+    - repo: https://github.com/Vimjas/vint
+      rev: v0.4a3
+      hooks:
+          - id: vint
+
+    ###########################################################################
+    # cmake
+    - repo: https://github.com/cheshirekow/cmake-format-precommit
+      rev: v0.6.13
+      hooks:
+          - id: cmake-format
+            additional_dependencies: [pyyaml==5.3.1]
+          - id: cmake-lint
+            additional_dependencies: [pyyaml==5.3.1]
+
+    ###########################################################################
+    # bazel
+    - repo: https://github.com/Slowki/bazel-hooks
+      rev: e7f35cf63c3d5ee41c100d2fc501ecd6e2694727
+      hooks:
+          - id: buildifier

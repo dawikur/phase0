@@ -1,0 +1,45 @@
+# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+project.manifest = manifest.xml
+project.optimization = 3p
+project.typecheck = strict
+
+base.resourcePath = $(base.resourcePath);resources/base
+
+# Set the base language-specific string resources
+base.lang.ara = $(base.lang.ara);resources/ara
+base.lang.bul = $(base.lang.bul);resources/bul
+base.lang.ces = $(base.lang.ces);resources/ces
+base.lang.dan = $(base.lang.dan);resources/dan
+base.lang.deu = $(base.lang.deu);resources/deu
+base.lang.dut = $(base.lang.dut);resources/dut
+base.lang.eng = $(base.lang.eng);resources/eng
+base.lang.est = $(base.lang.est);resources/est
+base.lang.fin = $(base.lang.fin);resources/fin
+base.lang.fre = $(base.lang.fre);resources/fre
+base.lang.gre = $(base.lang.gre);resources/gre
+base.lang.heb = $(base.lang.heb);resources/heb
+base.lang.hrv = $(base.lang.hrv);resources/hrv
+base.lang.hun = $(base.lang.hun);resources/hun
+base.lang.ind = $(base.lang.ind);resources/ind
+base.lang.ita = $(base.lang.ita);resources/ita
+base.lang.jpn = $(base.lang.jpn);resources/jpn
+base.lang.kor = $(base.lang.kor);resources/kor
+base.lang.lav = $(base.lang.lav);resources/lav
+base.lang.lit = $(base.lang.lit);resources/lit
+base.lang.nob = $(base.lang.nob);resources/nob
+base.lang.pol = $(base.lang.pol);resources/pol
+base.lang.por = $(base.lang.por);resources/por
+base.lang.ron = $(base.lang.ron);resources/ron
+base.lang.rus = $(base.lang.rus);resources/rus
+base.lang.slo = $(base.lang.slo);resources/slo
+base.lang.slv = $(base.lang.slv);resources/slv
+base.lang.spa = $(base.lang.spa);resources/spa
+base.lang.swe = $(base.lang.swe);resources/swe
+base.lang.tha = $(base.lang.tha);resources/tha
+base.lang.tur = $(base.lang.tur);resources/tur
+base.lang.ukr = $(base.lang.ukr);resources/ukr
+base.lang.vie = $(base.lang.vie);resources/vie
+base.lang.zhs = $(base.lang.zhs);resources/zhs
+base.lang.zht = $(base.lang.zht);resources/zht
+base.lang.zsm = $(base.lang.zsm);resources/zsm

@@ -1,0 +1,233 @@
+// Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+import Toybox.Graphics;
+import Toybox.Lang;
+import Toybox.Math;
+import Toybox.Test;
+import Toybox.Time;
+import Toybox.WatchUi;
+import Toybox.Weather;
+import Toybox.System;
+
+module Phase0 {
+
+/*
+ * initialize //- construction
+ * onLayout   //- store screen size, recalculate layout
+ * onShow     //- ready to be visible
+ * onUpdate   //- full redraw; every second in High Power Mode
+ *
+ * onEnterSleep    //- entering Low Power Mode
+ * onPartialUpdate //- partial redraw (only seconds); every second
+ * onUpdate        //- full redraw (w/o seconds); every minute in low power mode
+ * onExitSleep     //- exiting low power mode
+ *
+ * onHide     //- will be hidden
+ */
+
+class View extends WatchUi.WatchFace {
+
+	// ---- base ----
+	hidden var screen_size_x_ as Lang.Number = 0;
+	hidden var screen_size_y_ as Lang.Number = 0;
+
+	hidden var is_visible_ as Lang.Boolean = false;
+	hidden var is_high_power_ as Lang.Boolean = true;
+
+	hidden var data_ as Slot.Data = {} as Slot.Data;
+
+	// ---- line above 1 ----
+	hidden const condition_ = new Slot.Condition();
+	hidden const temperature_ = new Slot.Temperature();
+
+	// ---- line main ----
+	hidden const clock_ = new Slot.Clock();
+
+	// ---- line below 1 ----
+	hidden const date_ = new Slot.Date();
+	hidden const seconds_ = new Slot.Seconds();
+
+	function initialize() {
+		System.println("initialize");
+
+		WatchFace.initialize();
+
+		var deviceSettings = System.getDeviceSettings();
+		//self.data_[:alarmCount] = deviceSettings.alarmCount;
+		//self.data_[:doNotDisturb] = deviceSettings.doNotDisturb;
+		self.data_[:is24Hour] = deviceSettings.is24Hour;
+		//self.data_[:notificationCount] = deviceSettings.notificationCount;
+		//self.data_[:phoneConnected] = deviceSettings.phoneConnected;
+		self.data_[:temperatureUnits] = deviceSettings.temperatureUnits;
+		//self.data_[:weightUnits] = deviceSettings.weightUnits;
+
+		self.refreshData_();
+	}
+
+	function onShow() as Void {
+		System.println("onShow");
+		self.is_visible_ = true;
+	}
+
+	function onHide() as Void {
+		System.println("onHide");
+		self.is_visible_ = false;
+	}
+
+	function onEnterSleep() as Void {
+		self.is_high_power_ = false;
+
+		WatchUi.requestUpdate();
+	}
+
+	function onExitSleep() as Void {
+		self.is_high_power_ = true;
+
+		WatchUi.requestUpdate();
+	}
+
+	function onSettingsChanged() as Void {
+		WatchUi.requestUpdate();
+	}
+
+	function onLayout(dc as Graphics.Dc) as Void {
+		self.screen_size_x_ = dc.getWidth();
+		self.screen_size_y_ = dc.getHeight();
+
+		// ---- glyphs ----
+
+		var digit_colon = Font.DIGITS.getOrEmpty(':');
+		var digit_zero = Font.DIGITS.getOrEmpty('0');
+		var typeface_zero = Font.TYPEFACE.getOrEmpty('0');
+
+		Test.assertNotEqualMessage(digit_colon.width, 0, "Can't find glyph for DIGIT ':'");
+		Test.assertNotEqualMessage(digit_zero.width, 0, "Can't find glyph for DIGIT '0'");
+		Test.assertNotEqualMessage(typeface_zero.width, 0, "Can't find glyph for TYPEFACE '0'");
+
+		// ---- measurements ----
+
+		var regular_width = Font.STYLE_REGULAR.size * (typeface_zero.width + 1);
+		var regular_height = Font.STYLE_REGULAR.size * Font.TYPEFACE.height;
+		var regular_padding = Font.STYLE_REGULAR.size;
+
+		var small_width = Font.STYLE_SMALL.size * (typeface_zero.width + 1);
+		var small_height = Font.STYLE_SMALL.size * Font.TYPEFACE.height;
+		var small_padding = Font.STYLE_SMALL.size;
+
+		// ---- line main ----
+
+		var clock_size_y = Font.STYLE_REGULAR.size * Font.DIGITS.height;
+		var clock_pos_y = (self.screen_size_y_ - clock_size_y) / 2;
+		var clock_end_y = clock_pos_y + clock_size_y;
+
+		var clock_size_x = Font.STYLE_REGULAR.size * (4 * digit_zero.width + digit_colon.width + 4);
+		var clock_pos_x = (self.screen_size_x_ - clock_size_x) / 2;
+		var clock_end_x = clock_pos_x + clock_size_x;
+
+		self.clock_.pos_x = clock_pos_x;
+		self.clock_.pos_y = clock_pos_y;
+		self.clock_.size_x = clock_size_x;
+		self.clock_.size_y = clock_size_y;
+
+		// ---- line below 1 ----
+
+		var line_bottom_1_size_y = regular_height;
+		var line_bottom_1_pos_y = clock_end_y + 2 * regular_padding;
+		var line_bottom_1_end_y = line_bottom_1_pos_y + line_bottom_1_size_y;
+
+		var line_bottom_1_size_x = Math.floor(self.secondLeg_(line_bottom_1_end_y) * 2).toNumber();
+		var line_bottom_1_pos_x = (self.screen_size_x_ - line_bottom_1_size_x) / 2;
+		var line_bottom_1_end_x = line_bottom_1_pos_x + line_bottom_1_size_x;
+
+		self.date_.pos_x = line_bottom_1_pos_x;
+		self.date_.pos_y = line_bottom_1_pos_y;
+		self.date_.size_x = line_bottom_1_size_x;
+		self.date_.size_y = line_bottom_1_size_y;
+
+		self.seconds_.pos_x = line_bottom_1_end_x - (2 * regular_width);
+		self.seconds_.pos_y = line_bottom_1_pos_y;
+		self.seconds_.size_x = 2 * regular_width;
+		self.seconds_.size_y = line_bottom_1_size_y;
+
+		// ---- line above 1 ----
+
+		var line_top_1_size_y = small_height;
+		var line_top_1_pos_y = clock_pos_y - 2 * small_padding - small_height;
+		var line_top_1_end_y = line_top_1_pos_y + line_top_1_size_y;
+
+		//var line_top_1_size_x = Math.ceil(self.secondLeg_(line_top_1_pos_y) * 2).toNumber();
+		//var line_top_1_pos_x = (self.screen_size_.x - line_top_1_size_x) / 2;
+		var line_top_1_size_x = line_bottom_1_size_x;
+		var line_top_1_pos_x = line_bottom_1_pos_x;
+		var line_top_1_end_x = line_top_1_pos_x + line_top_1_size_x;
+
+		self.condition_.pos_x = line_top_1_pos_x;
+		self.condition_.pos_y = line_top_1_pos_y;
+		self.condition_.size_x = line_top_1_size_x;
+		self.condition_.size_y = line_top_1_size_y;
+
+		self.temperature_.pos_x = line_top_1_end_x - (5 * small_width);
+		self.temperature_.pos_y = line_top_1_pos_y;
+		self.temperature_.size_x = 5 * small_width;
+		self.temperature_.size_y = line_top_1_size_y;
+	}
+
+	function onUpdate(_dc as Graphics.Dc) as Void {
+		if (!self.is_visible_) { return; }
+
+		_dc.clearClip();
+
+		_dc.setColor(0x000000, 0x000000);
+		_dc.clear();
+
+		var clock = System.getClockTime();
+		if (clock.sec == 0) {
+			self.refreshData_();
+		}
+
+		self.clock_.renderData(_dc, clock, self.data_);
+		self.condition_.renderData(_dc, clock, self.data_);
+		self.date_.renderData(_dc, clock, self.data_);
+		self.temperature_.renderData(_dc, clock, self.data_);
+
+		if (self.is_high_power_) {
+			self.seconds_.renderData(_dc, clock, self.data_);
+		}
+	}
+
+	function onPartialUpdate(_dc as Graphics.Dc) as Void {
+		if (!self.is_visible_) { return; }
+
+		_dc.setClip(
+			self.seconds_.pos_x, self.seconds_.pos_y,
+			self.seconds_.size_x, self.seconds_.size_y
+		);
+
+		_dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+		_dc.clear();
+
+		var clock = System.getClockTime();
+		self.seconds_.renderData(_dc, clock, self.data_);
+	}
+
+	hidden function refreshData_() as Void {
+		var now = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
+		if (now != null) {
+			self.data_[:now] = now;
+		}
+
+		var weather = Weather.getCurrentConditions();
+		if (weather != null) {
+			self.data_[:weather] = weather;
+		}
+	}
+
+	hidden function secondLeg_(_leg as Lang.Number) as Lang.Numeric {
+		var hypotenuse = self.screen_size_x_ / 2;
+		var leg = hypotenuse - _leg; // center of triangle is in the center of screen
+
+		return Math.sqrt((hypotenuse * hypotenuse) - (leg * leg)).toNumber();
+	}
+}
+
+} // module Phase0

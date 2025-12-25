@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+import argparse
+import textwrap
+
+import fonts_data
+
+
+def argsparse() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Simulate Phase for Garmin device")
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--typeface", action="store_true", help="Generate typeface")
+    group.add_argument("--digits", action="store_true", help="Generate digits typeface")
+    group.add_argument(
+        "--digits_blured", action="store_true", help="Generate blured digits typeface"
+    )
+
+    return parser.parse_args()
+
+
+def to_number(row: str) -> int:
+    number = 0
+
+    for index, char in enumerate(row):
+        if char == "1":
+            number |= 1 << index
+
+    return number
+
+
+def generate_font(font: list[fonts_data.Glyph], name: str, verify_size: bool) -> None:
+    width, height = font[0].width, font[0].height
+
+    print(
+        textwrap.dedent(
+            f"""\
+        // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+        // This is a generated file
+
+        import Toybox.Lang;
+
+        module Font {{
+
+            const {name} as Typeface = new Typeface(
+        \t"{name}",
+        \t{{"""
+        )
+    )
+
+    for glyph in font:
+        assert glyph.height == height, textwrap.dedent(
+            f"""\
+            Height of each glyph has to match.
+                font == '{name}'
+                glyph['{font[0].name}'].height == {font[0].height}
+                glyph['{glyph.name}'].height == {glyph.height}
+        """
+        )
+
+        if verify_size:
+            assert glyph.width == width
+
+        print(
+            f"\t\t'{glyph.name}' => new Glyph([{", ".join(f"{to_number(row)}" for row in glyph.bitmap)}], {glyph.width}),"
+        )
+
+    print(
+        textwrap.dedent(
+            f"""\
+        \t}},
+        \t{height}
+        );
+
+        }} // module Font
+    """
+        )
+    )
+
+
+def main() -> None:
+    args = argsparse()
+
+    if args.typeface:
+        generate_font(fonts_data.TYPEFACE, "TYPEFACE", False)
+    elif args.digits:
+        generate_font(fonts_data.DIGITS, "DIGITS", False)
+    elif args.digits_blured:
+        generate_font(fonts_data.DIGITS_BLURED, "DIGITS_BLURED", False)
+    else:
+        assert False
+
+
+if __name__ == "__main__":
+    main()
