@@ -38,7 +38,7 @@ PRG_DEPS := $(JUNGLE) $(SRCS) $(RSCS) $(FONTS)
 # ---- targets ----
 
 $(PRG): $(PRG_DEPS)
-	$(MONKEYC) \
+	@$(MONKEYC) \
 		--jungles $< \
 		--device $(DEVICE) \
 		--output $@ \
@@ -46,7 +46,7 @@ $(PRG): $(PRG_DEPS)
 		--private-key $(HOME)/Documents/developer_key
 
 $(PRG_TEST): $(PRG_DEPS)
-	$(MONKEYC) \
+	@$(MONKEYC) \
 		--jungles $< \
 		--device $(DEVICE) \
 		--output $@ \
@@ -55,7 +55,7 @@ $(PRG_TEST): $(PRG_DEPS)
 		--unit-test
 
 $(BUILD_SOURCE_DIR)font_%.mc: scripts/generate_fonts scripts/fonts_data.py $(BUILD_SOURCE_DIR)
-	$< --$* > $@
+	@$< --$* > $@
 
 $(BUILD_SOURCE_DIR):
 	@mkdir -p $@
@@ -90,7 +90,7 @@ SIMULATE: BUILD
 	$(CONNECTIQ)&
 	SIM_PID=$$!
 	sleep 1
-	$(MONKEYDO) $(PRG) $(DEVICE) -t
+	$(MONKEYDO) $(PRG_TEST) $(DEVICE) -t
 	wait $$SIM_PID
 .PHONY: SIMULATE
 

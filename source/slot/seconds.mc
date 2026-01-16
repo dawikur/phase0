@@ -5,17 +5,19 @@ import Toybox.System;
 
 module Slot {
 
-class Seconds extends Base {
+class Seconds extends Label {
 	function initialize() {
-		Base.initialize();
+		Label.initialize();
 
 		self.styles = [
 			new Slot.Style(Font.TYPEFACE, Font.STYLE_REGULAR_THIN, 0xAAAAAA),
 		];
 	}
 
-	function renderData(_dc as Graphics.Dc, _clock as System.ClockTime, _data as Data) as Void {
-		Base.render(_dc, _clock.sec.format("%02d"));
+	function refresh() as Void {
+		var clock = System.getClockTime();
+
+		self.label = clock.sec.format("%02d");
 	}
 }
 

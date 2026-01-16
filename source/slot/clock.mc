@@ -6,9 +6,11 @@ import Toybox.System;
 
 module Slot {
 
-class Clock extends Base {
+class Clock extends Label {
+	hidden var is24Hour_ as Lang.Boolean;
+
 	function initialize() {
-		Base.initialize();
+		Label.initialize();
 
 		// TODO: black&white colors when in sleep mode?
 		self.styles = [
@@ -16,27 +18,33 @@ class Clock extends Base {
 			new Slot.Style(Font.DIGITS_BLURED, Font.STYLE_REGULAR_THIN, 0xAA5500),
 			new Slot.Style(Font.DIGITS, Font.STYLE_REGULAR_THIN, 0xFFAA00),
 		];
+
+		var deviceSettings = System.getDeviceSettings();
+
+		self.is24Hour_ = deviceSettings.is24Hour;
 	}
 
-	function renderData(_dc as Graphics.Dc, _clock as System.ClockTime, _data as Data) as Void {
-		if (_data[:is24Hour] as Lang.Boolean) {
-			Base.render(_dc, $.join(":", [
-				_clock.hour.format("%02d"),
-				_clock.min.format("%02d"),
-			]));
+	function refresh() as Void {
+		var clock = System.getClockTime();
+
+		if (self.is24Hour_) {
+			self.label = $.join(":", [
+				clock.hour.format("%02d"),
+				clock.min.format("%02d"),
+			]);
 		} else {
-			var hour = _clock.hour % 12;
+			var hour = clock.hour % 12;
 			if (hour == 0) {
 				hour = 12;
 			}
 
 			// TODO: use it
-			// var ampm = _clock.hour < 12 ? "am" : "pm";
+			// var ampm = clock.hour < 12 ? "am" : "pm";
 
-			Base.render(_dc, $.join(":", [
+			self.label = $.join(":", [
 				hour.format("%02d"),
-				_clock.min.format("%02d"),
-			]));
+				clock.min.format("%02d"),
+			]);
 		}
 	}
 }

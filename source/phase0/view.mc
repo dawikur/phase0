@@ -34,11 +34,12 @@ class View extends WatchUi.WatchFace {
 	hidden var is_visible_ as Lang.Boolean = false;
 	hidden var is_high_power_ as Lang.Boolean = true;
 
-	hidden var data_ as Slot.Data = {} as Slot.Data;
+	// ---- refresh ----
+	hidden var last_refresh_min_ as Lang.Number = -1;
+	hidden var last_refresh_hour_ as Lang.Number = -1;
 
 	// ---- line above 1 ----
-	hidden const condition_ = new Slot.Condition();
-	hidden const temperature_ = new Slot.Temperature();
+	hidden const weather_ = new Slot.Weather();
 
 	// ---- line main ----
 	hidden const clock_ = new Slot.Clock();
@@ -48,29 +49,14 @@ class View extends WatchUi.WatchFace {
 	hidden const seconds_ = new Slot.Seconds();
 
 	function initialize() {
-		System.println("initialize");
-
 		WatchFace.initialize();
-
-		var deviceSettings = System.getDeviceSettings();
-		//self.data_[:alarmCount] = deviceSettings.alarmCount;
-		//self.data_[:doNotDisturb] = deviceSettings.doNotDisturb;
-		self.data_[:is24Hour] = deviceSettings.is24Hour;
-		//self.data_[:notificationCount] = deviceSettings.notificationCount;
-		//self.data_[:phoneConnected] = deviceSettings.phoneConnected;
-		self.data_[:temperatureUnits] = deviceSettings.temperatureUnits;
-		//self.data_[:weightUnits] = deviceSettings.weightUnits;
-
-		self.refreshData_();
 	}
 
 	function onShow() as Void {
-		System.println("onShow");
 		self.is_visible_ = true;
 	}
 
 	function onHide() as Void {
-		System.println("onHide");
 		self.is_visible_ = false;
 	}
 
@@ -110,7 +96,7 @@ class View extends WatchUi.WatchFace {
 		var regular_height = Font.STYLE_REGULAR.size * Font.TYPEFACE.height;
 		var regular_padding = Font.STYLE_REGULAR.size;
 
-		var small_width = Font.STYLE_SMALL.size * (typeface_zero.width + 1);
+		//var small_width = Font.STYLE_SMALL.size * (typeface_zero.width + 1);
 		var small_height = Font.STYLE_SMALL.size * Font.TYPEFACE.height;
 		var small_padding = Font.STYLE_SMALL.size;
 
@@ -122,7 +108,7 @@ class View extends WatchUi.WatchFace {
 
 		var clock_size_x = Font.STYLE_REGULAR.size * (4 * digit_zero.width + digit_colon.width + 4);
 		var clock_pos_x = (self.screen_size_x_ - clock_size_x) / 2;
-		var clock_end_x = clock_pos_x + clock_size_x;
+		//var clock_end_x = clock_pos_x + clock_size_x;
 
 		self.clock_.pos_x = clock_pos_x;
 		self.clock_.pos_y = clock_pos_y;
@@ -153,23 +139,18 @@ class View extends WatchUi.WatchFace {
 
 		var line_top_1_size_y = small_height;
 		var line_top_1_pos_y = clock_pos_y - 2 * small_padding - small_height;
-		var line_top_1_end_y = line_top_1_pos_y + line_top_1_size_y;
+		//var line_top_1_end_y = line_top_1_pos_y + line_top_1_size_y;
 
 		//var line_top_1_size_x = Math.ceil(self.secondLeg_(line_top_1_pos_y) * 2).toNumber();
 		//var line_top_1_pos_x = (self.screen_size_.x - line_top_1_size_x) / 2;
 		var line_top_1_size_x = line_bottom_1_size_x;
 		var line_top_1_pos_x = line_bottom_1_pos_x;
-		var line_top_1_end_x = line_top_1_pos_x + line_top_1_size_x;
+		//var line_top_1_end_x = line_top_1_pos_x + line_top_1_size_x;
 
-		self.condition_.pos_x = line_top_1_pos_x;
-		self.condition_.pos_y = line_top_1_pos_y;
-		self.condition_.size_x = line_top_1_size_x;
-		self.condition_.size_y = line_top_1_size_y;
-
-		self.temperature_.pos_x = line_top_1_end_x - (5 * small_width);
-		self.temperature_.pos_y = line_top_1_pos_y;
-		self.temperature_.size_x = 5 * small_width;
-		self.temperature_.size_y = line_top_1_size_y;
+		self.weather_.pos_x = line_top_1_pos_x;
+		self.weather_.pos_y = line_top_1_pos_y;
+		self.weather_.size_x = line_top_1_size_x;
+		self.weather_.size_y = line_top_1_size_y;
 	}
 
 	function onUpdate(_dc as Graphics.Dc) as Void {
@@ -177,21 +158,28 @@ class View extends WatchUi.WatchFace {
 
 		_dc.clearClip();
 
-		_dc.setColor(0x000000, 0x000000);
+		_dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
 		_dc.clear();
 
 		var clock = System.getClockTime();
-		if (clock.sec == 0) {
-			self.refreshData_();
+
+		self.refreshSec_();
+
+		if (self.last_refresh_min_ != clock.min) {
+			self.last_refresh_min_ = clock.min;
+			self.refreshMin_();
+		}
+		if (self.last_refresh_hour_ != clock.hour) {
+			self.last_refresh_hour_ = clock.hour;
+			self.refreshHour_();
 		}
 
-		self.clock_.renderData(_dc, clock, self.data_);
-		self.condition_.renderData(_dc, clock, self.data_);
-		self.date_.renderData(_dc, clock, self.data_);
-		self.temperature_.renderData(_dc, clock, self.data_);
+		self.clock_.render(_dc);
+		self.date_.render(_dc);
+		self.weather_.render(_dc);
 
 		if (self.is_high_power_) {
-			self.seconds_.renderData(_dc, clock, self.data_);
+			self.seconds_.render(_dc);
 		}
 	}
 
@@ -206,20 +194,21 @@ class View extends WatchUi.WatchFace {
 		_dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
 		_dc.clear();
 
-		var clock = System.getClockTime();
-		self.seconds_.renderData(_dc, clock, self.data_);
+		self.seconds_.refresh();
+		self.seconds_.render(_dc);
 	}
 
-	hidden function refreshData_() as Void {
-		var now = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
-		if (now != null) {
-			self.data_[:now] = now;
-		}
+	hidden function refreshSec_() as Void {
+		self.seconds_.refresh();
+	}
 
-		var weather = Weather.getCurrentConditions();
-		if (weather != null) {
-			self.data_[:weather] = weather;
-		}
+	hidden function refreshMin_() as Void {
+		self.clock_.refresh();
+		self.weather_.refresh();
+	}
+
+	hidden function refreshHour_() as Void {
+		self.date_.refresh();
 	}
 
 	hidden function secondLeg_(_leg as Lang.Number) as Lang.Numeric {

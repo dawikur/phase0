@@ -7,9 +7,9 @@ import Toybox.Time;
 
 module Slot {
 
-class Date extends Base {
+class Date extends Label {
 	function initialize() {
-		Base.initialize();
+		Label.initialize();
 
 		self.styles = [
 			new Slot.Style(Font.TYPEFACE, Font.STYLE_REGULAR, 0x555555),
@@ -17,14 +17,14 @@ class Date extends Base {
 		];
 	}
 
-	function renderData(_dc as Graphics.Dc, _clock as System.ClockTime, _data as Data) as Void {
-		var now = _data[:now] as Time.Gregorian.Info;
+	function refresh() as Void {
+		var now = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
 
-		Base.render(_dc, $.join(" ", [
+		self.label = $.join(" ", [
 			Resources.DAYS_OF_WEEK[now.day_of_week as Lang.Number],
 			now.day.format("%02d"),
 			Resources.MONTHS[now.month as Lang.Number],
-		]));
+		]);
 	}
 }
 
