@@ -3,14 +3,14 @@
 import Toybox.Graphics;
 import Toybox.System;
 
-module Slot {
+module Element {
 
 class Seconds extends Label {
 	function initialize() {
 		Label.initialize();
 
 		self.styles = [
-			new Slot.Style(Font.TYPEFACE, Font.STYLE_REGULAR_THIN, 0xAAAAAA),
+			new Element.Style(Font.TYPEFACE, Font.STYLE_REGULAR_THIN, 0xAAAAAA),
 		];
 	}
 
@@ -21,4 +21,4 @@ class Seconds extends Label {
 	}
 }
 
-} // module Slot
+} // module Element

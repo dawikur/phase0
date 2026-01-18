@@ -25,13 +25,25 @@ class Typeface {
 		_dc as Graphics.Dc, _pos_x as Lang.Number, _pos_y as Lang.Number, _str as Lang.String, _style as Style
 	) as Void {
 		var chars = _str.toCharArray();
-
 		for (var i = 0; i < chars.size(); ++i) {
 			var glyph = self.getOrEmpty(chars[i]);
 
 			glyph.render(_dc, _pos_x, _pos_y, _style);
 			_pos_x += _style.size * (glyph.width + 1);
 		}
+	}
+
+	function measure(_str as Lang.String, _style as Style) as Lang.Number {
+		var width = 0;
+
+		var chars = _str.toCharArray();
+		for (var i = 0; i < chars.size(); ++i) {
+			var glyph = self.getOrEmpty(chars[i]);
+
+			width += _style.size * (glyph.width + 1);
+		}
+
+		return width;
 	}
 
 	function getOrEmpty(_char as Lang.Char) as Glyph {

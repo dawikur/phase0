@@ -5,15 +5,15 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Time;
 
-module Slot {
+module Element {
 
 class Date extends Label {
 	function initialize() {
 		Label.initialize();
 
 		self.styles = [
-			new Slot.Style(Font.TYPEFACE, Font.STYLE_REGULAR, 0x555555),
-			new Slot.Style(Font.TYPEFACE, Font.STYLE_REGULAR_THIN, 0xAAAAAA),
+			new Element.Style(Font.TYPEFACE, Font.STYLE_REGULAR, 0x555555),
+			new Element.Style(Font.TYPEFACE, Font.STYLE_REGULAR_THIN, 0xAAAAAA),
 		];
 	}
 
@@ -28,4 +28,4 @@ class Date extends Label {
 	}
 }
 
-} // module Slot
+} // module Element

@@ -5,7 +5,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Weather;
 
-module Slot {
+module Element {
 
 class Weather extends Label {
 	hidden var unitsSystem_ as System.UnitsSystem;
@@ -14,7 +14,7 @@ class Weather extends Label {
 		Label.initialize();
 
 		self.styles = [
-			new Slot.Style(Font.TYPEFACE, Font.STYLE_SMALL, 0xAAAAAA),
+			new Element.Style(Font.TYPEFACE, Font.STYLE_SMALL, 0xAAAAAA),
 		];
 
 		var deviceSettings = System.getDeviceSettings();
@@ -49,7 +49,22 @@ class Weather extends Label {
 				self.label += unit;
 			}
 		}
+
+		var width = 0;
+		for (var i = 0; i < self.styles.size(); ++i) {
+			var style = self.styles[i];
+
+			var width_i = style.typeface.measure(self.label, style.style);
+
+			if (width < width_i) {
+				width = width_i;
+			}
+		}
+
+		if (width < self.size_x) {
+			self.padding_x_ = (self.size_x - width) / 2;
+		}
 	}
 }
 
-} // module Slot
+} // module Element

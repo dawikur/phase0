@@ -23,6 +23,39 @@ module Phase0 {
  * onExitSleep     //- exiting low power mode
  *
  * onHide     //- will be hidden
+
+	0xFFAA00 Pure Orange
+	0x0055FF Pure Blue
+	0x55FF00 Pure Green
+	0xFF5500 Pure Red
+	0x00FFFF Pure Cyan
+	0xFF00FF Pure Magenta
+	0xFFFF00 Pure Yellow
+
+	0xAA5500 Dark Orange
+	0x0055AA Dark Blue
+	0x55AA00 Dark Green
+	0xAA0000 Dark Red
+	0x00AAAA Dark Cyan
+	0xAA00AA Dark Magenta
+	0xAAAA00 Dark Yellow
+
+	System.getSystemStats()
+		battery as Lang.Float
+		charging as Lang.Boolean
+		solarIntensity as Lang.Number or Null
+
+	System.getDeviceSettings()
+		alarmCount as Lang.Number
+		distanceUnits as System.UnitsSystem
+		doNotDisturb as Lang.Boolean
+		elevationUnits as System.UnitsSystem
+		heightUnits as System.UnitsSystem
+		is24Hour as Lang.Boolean
+		notificationCount as Lang.Number
+		phoneConnected as Lang.Boolean
+		requiredBurnInProtection as Lang.Boolean
+		weightUnits as System.UnitsSystem
  */
 
 class View extends WatchUi.WatchFace {
@@ -34,19 +67,25 @@ class View extends WatchUi.WatchFace {
 	hidden var is_visible_ as Lang.Boolean = false;
 	hidden var is_high_power_ as Lang.Boolean = true;
 
+	hidden var is_night_mode_ as Lang.Boolean or Null = null;
+
 	// ---- refresh ----
 	hidden var last_refresh_min_ as Lang.Number = -1;
 	hidden var last_refresh_hour_ as Lang.Number = -1;
 
+	// ---- general ----
+
+	hidden const bezel_ = new Element.Bezel();
+
 	// ---- line above 1 ----
-	hidden const weather_ = new Slot.Weather();
+	hidden const weather_ = new Element.Weather();
 
 	// ---- line main ----
-	hidden const clock_ = new Slot.Clock();
+	hidden const clock_ = new Element.Clock();
 
 	// ---- line below 1 ----
-	hidden const date_ = new Slot.Date();
-	hidden const seconds_ = new Slot.Seconds();
+	hidden const date_ = new Element.Date();
+	hidden const seconds_ = new Element.Seconds();
 
 	function initialize() {
 		WatchFace.initialize();
@@ -100,6 +139,11 @@ class View extends WatchUi.WatchFace {
 		var small_height = Font.STYLE_SMALL.size * Font.TYPEFACE.height;
 		var small_padding = Font.STYLE_SMALL.size;
 
+		// ---- general ----
+
+		self.bezel_.size_x = self.screen_size_x_;
+		self.bezel_.size_y = self.screen_size_y_;
+
 		// ---- line main ----
 
 		var clock_size_y = Font.STYLE_REGULAR.size * Font.DIGITS.height;
@@ -121,7 +165,7 @@ class View extends WatchUi.WatchFace {
 		var line_bottom_1_pos_y = clock_end_y + 2 * regular_padding;
 		var line_bottom_1_end_y = line_bottom_1_pos_y + line_bottom_1_size_y;
 
-		var line_bottom_1_size_x = Math.floor(self.secondLeg_(line_bottom_1_end_y) * 2).toNumber();
+		var line_bottom_1_size_x = Math.floor(self.secondLeg_(line_bottom_1_end_y) * 2).toNumber() - 2 * regular_padding;
 		var line_bottom_1_pos_x = (self.screen_size_x_ - line_bottom_1_size_x) / 2;
 		var line_bottom_1_end_x = line_bottom_1_pos_x + line_bottom_1_size_x;
 
@@ -160,6 +204,8 @@ class View extends WatchUi.WatchFace {
 
 		_dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
 		_dc.clear();
+
+		self.bezel_.render(_dc);
 
 		var clock = System.getClockTime();
 
@@ -203,6 +249,14 @@ class View extends WatchUi.WatchFace {
 	}
 
 	hidden function refreshMin_() as Void {
+		var is_night_mode = self.isNightMode_();
+		if (self.is_night_mode_ != is_night_mode) {
+			self.is_night_mode_ = is_night_mode;
+
+			self.bezel_.onNightMode(is_night_mode);
+			self.clock_.onNightMode(is_night_mode);
+		}
+
 		self.clock_.refresh();
 		self.weather_.refresh();
 	}
@@ -211,9 +265,32 @@ class View extends WatchUi.WatchFace {
 		self.date_.refresh();
 	}
 
+	hidden function isNightMode_() as Lang.Boolean {
+		var userProfile = UserProfile.getProfile();
+		if (userProfile.sleepTime == null) {
+			return false;
+		}
+		if (userProfile.wakeTime == null) {
+			return false;
+		}
+
+		var sleepTime = userProfile.sleepTime as Time.Duration;
+		var wakeTime = userProfile.wakeTime as Time.Duration;
+
+		var now = Time.now();
+        var midnight = Time.today();
+        var since_midnight = now.subtract(midnight) as Time.Duration;
+
+		if(sleepTime.greaterThan(wakeTime)) {
+			return since_midnight.greaterThan(sleepTime) || since_midnight.lessThan(wakeTime);
+		}
+		return since_midnight.greaterThan(sleepTime) and since_midnight.lessThan(wakeTime);
+	}
+
 	hidden function secondLeg_(_leg as Lang.Number) as Lang.Numeric {
-		var hypotenuse = self.screen_size_x_ / 2;
-		var leg = hypotenuse - _leg; // center of triangle is in the center of screen
+		var half_screen_ = self.screen_size_x_ / 2;
+		var hypotenuse = half_screen_ - 2;
+		var leg = half_screen_ - _leg; // center of triangle is in the center of screen
 
 		return Math.sqrt((hypotenuse * hypotenuse) - (leg * leg)).toNumber();
 	}

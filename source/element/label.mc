@@ -4,7 +4,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
 
-module Slot {
+module Element {
 
 typedef Data as Lang.Dictionary<Lang.Symbol, Lang.Object>;
 
@@ -34,10 +34,16 @@ class Label {
 
 	var styles as Lang.Array<Style> = [];
 
+	protected var padding_x_ as Lang.Number = 0;
+
 	function initialize() {
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
+		if (self.label == "") {
+			self.refresh();
+		}
+
 		if (self.label == "") {
 			return;
 		}
@@ -46,11 +52,13 @@ class Label {
 			var style = self.styles[i];
 
 			_dc.setColor(style.color, Graphics.COLOR_TRANSPARENT);
-			style.typeface.render(_dc, self.pos_x, self.pos_y, self.label, style.style);
+			style.typeface.render(_dc, self.pos_x + self.padding_x_, self.pos_y, self.label, style.style);
 		}
 	}
 
-	function refresh() as Void;
+	function refresh() as Void {}
+
+	function onNightMode(_is_night_mode as Lang.Boolean) as Void {}
 }
 
-} // module Slot
+} // module Element
