@@ -8,6 +8,8 @@ import Toybox.Weather;
 module Element {
 
 class Weather extends Label {
+	var size_x as Lang.Number = 0;
+
 	hidden var unitsSystem_ as System.UnitsSystem;
 
 	function initialize() {
@@ -51,10 +53,14 @@ class Weather extends Label {
 		}
 
 		var width = 0;
-		for (var i = 0; i < self.styles.size(); ++i) {
-			var style = self.styles[i];
+		var styles = self.styles;
+		var styles_size = styles.size();
+		var label = self.label;
 
-			var width_i = style.typeface.measure(self.label, style.style);
+		for (var i = 0; i < styles_size; ++i) {
+			var style = styles[i];
+
+			var width_i = style.typeface.measure(label, style.style);
 
 			if (width < width_i) {
 				width = width_i;
@@ -62,7 +68,7 @@ class Weather extends Label {
 		}
 
 		if (width < self.size_x) {
-			self.padding_x_ = (self.size_x - width) / 2;
+			self.padding_x = (self.size_x - width) / 2;
 		}
 	}
 }

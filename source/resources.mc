@@ -4,35 +4,6 @@ import Toybox.Application;
 import Toybox.Lang;
 import Toybox.Test;
 
-// TODO: extract that
-function join(
-	_separator as Lang.String, _tokens as Lang.Array<Lang.String>
-) as Lang.String {
-	var result = "";
-
-	var i = 0;
-	for (; i < _tokens.size(); ++i) {
-		var token = _tokens[i];
-
-		if (token.length() != 0) {
-			result += token;
-			++i;
-			break;
-		}
-	}
-
-	for (; i < _tokens.size(); ++i) {
-		var token = _tokens[i];
-
-		if (token.length() != 0) {
-			result += _separator;
-			result += token;
-		}
-	}
-
-	return result;
-}
-
 module Resources {
 
 const CONDITIONS as Lang.Array<Lang.String> = [

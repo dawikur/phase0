@@ -6,7 +6,6 @@ project.typecheck = strict
 
 base.resourcePath = $(base.resourcePath);resources/base
 
-# Set the base language-specific string resources
 base.lang.ara = $(base.lang.ara);resources/ara
 base.lang.bul = $(base.lang.bul);resources/bul
 base.lang.ces = $(base.lang.ces);resources/ces

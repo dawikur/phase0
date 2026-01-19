@@ -8,55 +8,10 @@ import Toybox.Time;
 import Toybox.WatchUi;
 import Toybox.Weather;
 import Toybox.System;
+import Toybox.ActivityMonitor;
+import Toybox.UserProfile;
 
 module Phase0 {
-
-/*
- * initialize //- construction
- * onLayout   //- store screen size, recalculate layout
- * onShow     //- ready to be visible
- * onUpdate   //- full redraw; every second in High Power Mode
- *
- * onEnterSleep    //- entering Low Power Mode
- * onPartialUpdate //- partial redraw (only seconds); every second
- * onUpdate        //- full redraw (w/o seconds); every minute in low power mode
- * onExitSleep     //- exiting low power mode
- *
- * onHide     //- will be hidden
-
-	0xFFAA00 Pure Orange
-	0x0055FF Pure Blue
-	0x55FF00 Pure Green
-	0xFF5500 Pure Red
-	0x00FFFF Pure Cyan
-	0xFF00FF Pure Magenta
-	0xFFFF00 Pure Yellow
-
-	0xAA5500 Dark Orange
-	0x0055AA Dark Blue
-	0x55AA00 Dark Green
-	0xAA0000 Dark Red
-	0x00AAAA Dark Cyan
-	0xAA00AA Dark Magenta
-	0xAAAA00 Dark Yellow
-
-	System.getSystemStats()
-		battery as Lang.Float
-		charging as Lang.Boolean
-		solarIntensity as Lang.Number or Null
-
-	System.getDeviceSettings()
-		alarmCount as Lang.Number
-		distanceUnits as System.UnitsSystem
-		doNotDisturb as Lang.Boolean
-		elevationUnits as System.UnitsSystem
-		heightUnits as System.UnitsSystem
-		is24Hour as Lang.Boolean
-		notificationCount as Lang.Number
-		phoneConnected as Lang.Boolean
-		requiredBurnInProtection as Lang.Boolean
-		weightUnits as System.UnitsSystem
- */
 
 class View extends WatchUi.WatchFace {
 
@@ -73,9 +28,7 @@ class View extends WatchUi.WatchFace {
 	hidden var last_refresh_min_ as Lang.Number = -1;
 	hidden var last_refresh_hour_ as Lang.Number = -1;
 
-	// ---- general ----
-
-	hidden const bezel_ = new Element.Bezel();
+	// ---- line above 2 ----
 
 	// ---- line above 1 ----
 	hidden const weather_ = new Element.Weather();
@@ -86,6 +39,30 @@ class View extends WatchUi.WatchFace {
 	// ---- line below 1 ----
 	hidden const date_ = new Element.Date();
 	hidden const seconds_ = new Element.Seconds();
+
+	// ---- line below 2 ----
+
+	hidden const hr_ = new Element.HR();
+	hidden const steps_ = new Element.Steps();
+
+	// ---- debugging ----
+
+	hidden var line_above_1_size_x_ as Lang.Number = 0;
+	hidden var line_above_1_size_y_ as Lang.Number = 0;
+	hidden var line_above_1_pos_x_ as Lang.Number = 0;
+	hidden var line_above_1_pos_y_ as Lang.Number = 0;
+
+	hidden var line_below_1_size_x_ as Lang.Number = 0;
+	hidden var line_below_1_size_y_ as Lang.Number = 0;
+	hidden var line_below_1_pos_x_ as Lang.Number = 0;
+	hidden var line_below_1_pos_y_ as Lang.Number = 0;
+
+	hidden var line_below_2_size_x_ as Lang.Number = 0;
+	hidden var line_below_2_size_y_ as Lang.Number = 0;
+	hidden var line_below_2_pos_x_ as Lang.Number = 0;
+	hidden var line_below_2_pos_y_ as Lang.Number = 0;
+
+	// ---- methods ----
 
 	function initialize() {
 		WatchFace.initialize();
@@ -133,16 +110,15 @@ class View extends WatchUi.WatchFace {
 
 		var regular_width = Font.STYLE_REGULAR.size * (typeface_zero.width + 1);
 		var regular_height = Font.STYLE_REGULAR.size * Font.TYPEFACE.height;
-		var regular_padding = Font.STYLE_REGULAR.size;
+		var regular_spacing = Font.STYLE_REGULAR.size;
 
-		//var small_width = Font.STYLE_SMALL.size * (typeface_zero.width + 1);
+		var small_width = Font.STYLE_SMALL.size * (typeface_zero.width + 1);
 		var small_height = Font.STYLE_SMALL.size * Font.TYPEFACE.height;
-		var small_padding = Font.STYLE_SMALL.size;
+		var small_spacing = Font.STYLE_SMALL.size;
 
-		// ---- general ----
-
-		self.bezel_.size_x = self.screen_size_x_;
-		self.bezel_.size_y = self.screen_size_y_;
+		//var micro_width = Font.STYLE_MICRO.size * (typeface_zero.width + 1);
+		var micro_height = Font.STYLE_MICRO.size * Font.TYPEFACE.height;
+		//var micro_spacing = Font.STYLE_MICRO.size;
 
 		// ---- line main ----
 
@@ -156,45 +132,84 @@ class View extends WatchUi.WatchFace {
 
 		self.clock_.pos_x = clock_pos_x;
 		self.clock_.pos_y = clock_pos_y;
-		self.clock_.size_x = clock_size_x;
-		self.clock_.size_y = clock_size_y;
 
 		// ---- line below 1 ----
 
-		var line_bottom_1_size_y = regular_height;
-		var line_bottom_1_pos_y = clock_end_y + 2 * regular_padding;
-		var line_bottom_1_end_y = line_bottom_1_pos_y + line_bottom_1_size_y;
+		var line_below_1_size_y = regular_height;
+		var line_below_1_pos_y = clock_end_y + 2 * regular_spacing;
+		var line_below_1_end_y = line_below_1_pos_y + line_below_1_size_y;
 
-		var line_bottom_1_size_x = Math.floor(self.secondLeg_(line_bottom_1_end_y) * 2).toNumber() - 2 * regular_padding;
-		var line_bottom_1_pos_x = (self.screen_size_x_ - line_bottom_1_size_x) / 2;
-		var line_bottom_1_end_x = line_bottom_1_pos_x + line_bottom_1_size_x;
+		var line_below_1_size_x = Math.floor(self.secondLeg_(line_below_1_end_y) * 2).toNumber() - 2 * regular_spacing;
+		var line_below_1_pos_x = (self.screen_size_x_ - line_below_1_size_x) / 2;
+		var line_below_1_end_x = line_below_1_pos_x + line_below_1_size_x;
 
-		self.date_.pos_x = line_bottom_1_pos_x;
-		self.date_.pos_y = line_bottom_1_pos_y;
-		self.date_.size_x = line_bottom_1_size_x;
-		self.date_.size_y = line_bottom_1_size_y;
+		self.date_.pos_x = line_below_1_pos_x;
+		self.date_.pos_y = line_below_1_pos_y;
 
-		self.seconds_.pos_x = line_bottom_1_end_x - (2 * regular_width);
-		self.seconds_.pos_y = line_bottom_1_pos_y;
+		self.seconds_.pos_x = line_below_1_end_x - (2 * regular_width) + regular_spacing;
+		self.seconds_.pos_y = line_below_1_pos_y;
 		self.seconds_.size_x = 2 * regular_width;
-		self.seconds_.size_y = line_bottom_1_size_y;
+		self.seconds_.size_y = regular_height;
+
+		// ---- line below 2 ----
+
+		var line_below_2_size_y = micro_height + small_spacing + small_height;
+		var line_below_2_pos_y = line_below_1_end_y + regular_spacing;
+		var line_below_2_end_y = line_below_2_pos_y + line_below_2_size_y;
+
+		var line_below_2_size_x = Math.floor(self.secondLeg_(line_below_2_end_y) * 2).toNumber() - regular_spacing;
+		var line_below_2_pos_x = (self.screen_size_x_ - line_below_2_size_x) / 2;
+		//var line_below_2_end_x = line_below_2_pos_x + line_below_2_size_x;
+
+		self.hr_.pos_x = line_below_2_pos_x;
+		self.hr_.pos_y = line_below_2_pos_y;
+		self.hr_.label_height = micro_height + small_spacing;
+		self.hr_.field_count = 3;
+		self.hr_.field_width = small_width;
+		self.hr_.field_height = small_height - small_spacing - Font.STYLE_SMALL.weight;
+		self.hr_.gauge_width = Font.STYLE_SMALL.weight;
+
+		self.steps_.pos_x = line_below_2_pos_x + 3 * (small_width + small_spacing);
+		self.steps_.pos_y = line_below_2_pos_y;
+		self.steps_.label_height = micro_height + small_spacing;
+		self.steps_.field_count = 3;
+		self.steps_.field_width = small_width;
+		self.steps_.field_height = small_height - small_spacing - Font.STYLE_SMALL.weight;
+		self.steps_.gauge_width = Font.STYLE_SMALL.weight;
 
 		// ---- line above 1 ----
 
-		var line_top_1_size_y = small_height;
-		var line_top_1_pos_y = clock_pos_y - 2 * small_padding - small_height;
-		//var line_top_1_end_y = line_top_1_pos_y + line_top_1_size_y;
+		var line_above_1_size_y = small_height;
+		var line_above_1_end_y = clock_pos_y -  2 * regular_spacing;
+		var line_above_1_pos_y = line_above_1_end_y - line_above_1_size_y;
 
-		//var line_top_1_size_x = Math.ceil(self.secondLeg_(line_top_1_pos_y) * 2).toNumber();
-		//var line_top_1_pos_x = (self.screen_size_.x - line_top_1_size_x) / 2;
-		var line_top_1_size_x = line_bottom_1_size_x;
-		var line_top_1_pos_x = line_bottom_1_pos_x;
-		//var line_top_1_end_x = line_top_1_pos_x + line_top_1_size_x;
+		//var line_above_1_size_x = Math.ceil(self.secondLeg_(line_above_1_pos_y) * 2).toNumber();
+		//var line_above_1_pos_x = (self.screen_size_.x - line_above_1_size_x) / 2;
+		//var line_above_1_end_x = line_above_1_pos_x + line_above_1_size_x;
+		var line_above_1_size_x = line_below_1_size_x;
+		var line_above_1_pos_x = line_below_1_pos_x;
+		//var line_above_1_end_x = line_below_1_end_x;
 
-		self.weather_.pos_x = line_top_1_pos_x;
-		self.weather_.pos_y = line_top_1_pos_y;
-		self.weather_.size_x = line_top_1_size_x;
-		self.weather_.size_y = line_top_1_size_y;
+		self.weather_.pos_x = line_above_1_pos_x;
+		self.weather_.pos_y = line_above_1_pos_y;
+		self.weather_.size_x = line_above_1_size_x;
+
+		// ---- debugging ----
+
+		self.line_above_1_size_y_ = line_above_1_size_y;
+		self.line_above_1_size_x_ = line_above_1_size_x;
+		self.line_above_1_pos_y_ = line_above_1_pos_y;
+		self.line_above_1_pos_x_ = line_above_1_pos_x;
+
+		self.line_below_1_size_y_ = line_below_1_size_y;
+		self.line_below_1_size_x_ = line_below_1_size_x;
+		self.line_below_1_pos_y_ = line_below_1_pos_y;
+		self.line_below_1_pos_x_ = line_below_1_pos_x;
+
+		self.line_below_2_size_y_ = line_below_2_size_y;
+		self.line_below_2_size_x_ = line_below_2_size_x;
+		self.line_below_2_pos_y_ = line_below_2_pos_y;
+		self.line_below_2_pos_x_ = line_below_2_pos_x;
 	}
 
 	function onUpdate(_dc as Graphics.Dc) as Void {
@@ -205,7 +220,27 @@ class View extends WatchUi.WatchFace {
 		_dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
 		_dc.clear();
 
-		self.bezel_.render(_dc);
+		// ---- debugging ----
+
+		if (false) {
+			_dc.setColor(0x555555, Graphics.COLOR_BLACK);
+			_dc.fillRectangle(
+				self.line_above_1_pos_x_, self.line_above_1_pos_y_,
+				self.line_above_1_size_x_, self.line_above_1_size_y_
+			);
+
+			_dc.fillRectangle(
+				self.line_below_1_pos_x_, self.line_below_1_pos_y_,
+				self.line_below_1_size_x_, self.line_below_1_size_y_
+			);
+
+			_dc.fillRectangle(
+				self.line_below_2_pos_x_, self.line_below_2_pos_y_,
+				self.line_below_2_size_x_, self.line_below_2_size_y_
+			);
+		}
+
+		// ---- update ----
 
 		var clock = System.getClockTime();
 
@@ -227,6 +262,9 @@ class View extends WatchUi.WatchFace {
 		if (self.is_high_power_) {
 			self.seconds_.render(_dc);
 		}
+
+		self.hr_.render(_dc);
+		self.steps_.render(_dc);
 	}
 
 	function onPartialUpdate(_dc as Graphics.Dc) as Void {
@@ -253,12 +291,14 @@ class View extends WatchUi.WatchFace {
 		if (self.is_night_mode_ != is_night_mode) {
 			self.is_night_mode_ = is_night_mode;
 
-			self.bezel_.onNightMode(is_night_mode);
 			self.clock_.onNightMode(is_night_mode);
 		}
 
 		self.clock_.refresh();
 		self.weather_.refresh();
+
+		self.hr_.refresh();
+		self.steps_.refresh();
 	}
 
 	hidden function refreshHour_() as Void {
@@ -288,9 +328,8 @@ class View extends WatchUi.WatchFace {
 	}
 
 	hidden function secondLeg_(_leg as Lang.Number) as Lang.Numeric {
-		var half_screen_ = self.screen_size_x_ / 2;
-		var hypotenuse = half_screen_ - 2;
-		var leg = half_screen_ - _leg; // center of triangle is in the center of screen
+		var hypotenuse = self.screen_size_x_ / 2;
+		var leg = hypotenuse - _leg; // center of triangle is in the center of screen
 
 		return Math.sqrt((hypotenuse * hypotenuse) - (leg * leg)).toNumber();
 	}

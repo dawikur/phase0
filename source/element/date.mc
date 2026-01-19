@@ -17,10 +17,10 @@ class Date extends Label {
 		];
 	}
 
-	function refresh() as Void {
+	function get_() as Lang.String {
 		var now = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
 
-		self.label = $.join(" ", [
+		return Utils.joinStr(" ", [
 			Resources.DAYS_OF_WEEK[now.day_of_week as Lang.Number],
 			now.day.format("%02d"),
 			Resources.MONTHS[now.month as Lang.Number],

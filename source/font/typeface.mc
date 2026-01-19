@@ -25,22 +25,36 @@ class Typeface {
 		_dc as Graphics.Dc, _pos_x as Lang.Number, _pos_y as Lang.Number, _str as Lang.String, _style as Style
 	) as Void {
 		var chars = _str.toCharArray();
-		for (var i = 0; i < chars.size(); ++i) {
+		var chars_size = chars.size();
+		if (chars_size == 0) {
+			return;
+		}
+
+		var size = _style.size;
+
+		for (var i = 0; i < chars_size; ++i) {
 			var glyph = self.getOrEmpty(chars[i]);
 
 			glyph.render(_dc, _pos_x, _pos_y, _style);
-			_pos_x += _style.size * (glyph.width + 1);
+			_pos_x += size * glyph.advance_;
 		}
 	}
 
 	function measure(_str as Lang.String, _style as Style) as Lang.Number {
-		var width = 0;
-
 		var chars = _str.toCharArray();
-		for (var i = 0; i < chars.size(); ++i) {
+		var chars_size = chars.size();
+		if (chars_size == 0) {
+			return 0;
+		}
+
+		var size = _style.size;
+
+		var width = size * self.getOrEmpty(chars[0]).width;
+
+		for (var i = 1; i < chars_size; ++i) {
 			var glyph = self.getOrEmpty(chars[i]);
 
-			width += _style.size * (glyph.width + 1);
+			width += size * glyph.advance_;
 		}
 
 		return width;

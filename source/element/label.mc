@@ -25,16 +25,14 @@ class Style {
 }
 
 class Label {
-	var pos_x as Lang.Number = 0;
-	var pos_y as Lang.Number = 0;
-	var size_x as Lang.Number = 0;
-	var size_y as Lang.Number = 0;
-
 	var label as Lang.String = "";
 
-	var styles as Lang.Array<Style> = [];
+	var pos_x as Lang.Number = 0;
+	var pos_y as Lang.Number = 0;
 
-	protected var padding_x_ as Lang.Number = 0;
+	var padding_x as Lang.Number = 0;
+
+	var styles as Lang.Array<Style> = [];
 
 	function initialize() {
 	}
@@ -48,17 +46,27 @@ class Label {
 			return;
 		}
 
-		for (var i = 0; i < self.styles.size(); ++i) {
-			var style = self.styles[i];
+		var styles = self.styles;
+		var styles_size = styles.size();
+		var pos_x = self.pos_x + self.padding_x;
+		var pos_y = self.pos_y;
+		var label = self.label;
+
+		for (var i = 0; i < styles_size; ++i) {
+			var style = styles[i];
 
 			_dc.setColor(style.color, Graphics.COLOR_TRANSPARENT);
-			style.typeface.render(_dc, self.pos_x + self.padding_x_, self.pos_y, self.label, style.style);
+			style.typeface.render(_dc, pos_x, pos_y, label, style.style);
 		}
 	}
 
-	function refresh() as Void {}
+	function refresh() as Void {
+		self.label = self.get_();
+	}
 
-	function onNightMode(_is_night_mode as Lang.Boolean) as Void {}
+	function get_() as Lang.String {
+		return "";
+	}
 }
 
 } // module Element
