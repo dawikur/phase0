@@ -20,14 +20,17 @@ JUNGLE    := monkey.jungle
 SRCS      := $(shell find source -type f)
 RSCS      := $(shell find resources -type f)
 
-BUILD_SOURCE_DIR := $(BUILD_DIR)source/
-
+BUILD_SOURCE_DIR       := $(BUILD_DIR)source/
 TYPEFACE               := $(BUILD_SOURCE_DIR)font_typeface.mc
 TYPEFACE_DIGITS        := $(BUILD_SOURCE_DIR)font_digits.mc
 TYPEFACE_DIGITS_BLURED := $(BUILD_SOURCE_DIR)font_digits_blured.mc
-FONTS := $(TYPEFACE) $(TYPEFACE_DIGITS) $(TYPEFACE_DIGITS_BLURED)
+FONTS_MC := $(TYPEFACE) $(TYPEFACE_DIGITS) $(TYPEFACE_DIGITS_BLURED)
 
-PRG_DEPS := $(JUNGLE) $(SRCS) $(RSCS) $(FONTS)
+BUILD_RESOURCES_DIR := $(BUILD_DIR)resources/
+FONTS_XML           := $(BUILD_RESOURCES_DIR)fonts.xml
+
+PRG_DEPS   := $(JUNGLE) $(SRCS) $(RSCS) $(FONTS_MC)
+FONTS_DEPS := scripts/generate_fonts scripts/fonts_data.py scripts/fonts_model.py
 
 # ---- settings ----
 
@@ -54,10 +57,16 @@ $(PRG_TEST): $(PRG_DEPS)
 		--private-key $(HOME)/Documents/developer_key \
 		--unit-test
 
-$(BUILD_SOURCE_DIR)font_%.mc: scripts/generate_fonts scripts/fonts_data.py $(BUILD_SOURCE_DIR)
+$(BUILD_SOURCE_DIR)font_%.mc: $(FONTS_DEPS) $(BUILD_SOURCE_DIR)
 	@$< --$* > $@
 
 $(BUILD_SOURCE_DIR):
+	@mkdir -p $@
+
+$(FONTS_XML): $(FONTS_DEPS) $(BUILD_RESOURCES_DIR)
+	@$< --xml > $@
+
+$(BUILD_RESOURCES_DIR):
 	@mkdir -p $@
 
 # ---- aliases ----

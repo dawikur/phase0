@@ -16,6 +16,11 @@ def argsparse() -> argparse.Namespace:
     group.add_argument(
         "--digits_blured", action="store_true", help="Generate blured digits typeface"
     )
+    group.add_argument(
+        "--xml",
+        action="store_true",
+        help="Generate xml resource with fnt and png files",
+    )
 
     return parser.parse_args()
 
@@ -79,6 +84,10 @@ def generate_font(font: list[fonts_data.Glyph], name: str, verify_size: bool) ->
     )
 
 
+def generate_fonts_xml() -> None:
+    pass
+
+
 def main() -> None:
     args = argsparse()
 
@@ -88,6 +97,8 @@ def main() -> None:
         generate_font(fonts_data.DIGITS, "DIGITS", False)
     elif args.digits_blured:
         generate_font(fonts_data.DIGITS_BLURED, "DIGITS_BLURED", False)
+    elif args.xml:
+        generate_fonts_xml()
     else:
         assert False
 
