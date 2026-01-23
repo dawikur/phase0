@@ -20,17 +20,18 @@ JUNGLE    := monkey.jungle
 SRCS      := $(shell find source -type f)
 RSCS      := $(shell find resources -type f)
 
-BUILD_SOURCE_DIR       := $(BUILD_DIR)source/
-TYPEFACE               := $(BUILD_SOURCE_DIR)font_typeface.mc
-TYPEFACE_DIGITS        := $(BUILD_SOURCE_DIR)font_digits.mc
-TYPEFACE_DIGITS_BLURED := $(BUILD_SOURCE_DIR)font_digits_blured.mc
-FONTS_MC := $(TYPEFACE) $(TYPEFACE_DIGITS) $(TYPEFACE_DIGITS_BLURED)
-
 BUILD_RESOURCES_DIR := $(BUILD_DIR)resources/
-FONTS_XML           := $(BUILD_RESOURCES_DIR)fonts.xml
+BUILD_SOURCE_DIR    := $(BUILD_DIR)source/
 
-PRG_DEPS   := $(JUNGLE) $(SRCS) $(RSCS) $(FONTS_MC)
-FONTS_DEPS := scripts/generate_fonts scripts/fonts_data.py scripts/fonts_model.py
+FONTS_MC_DEPS  := scripts/generate_fonts_mc scripts/fonts_data.py scripts/fonts_model.py
+FONTS_MC       := $(BUILD_SOURCE_DIR)fonts.mc
+FONTS_XML_DEPS := scripts/generate_fonts_xml scripts/fonts_data.py scripts/fonts_model.py
+FONTS_XML      := $(BUILD_RESOURCES_DIR)fonts.xml
+
+ICON_DEPS := scripts/generate_icon scripts/fonts_data.py scripts/fonts_model.py
+ICON      := $(BUILD_RESOURCES_DIR)icon.svg
+
+PRG_DEPS   := $(JUNGLE) $(SRCS) $(RSCS) $(FONTS_MC) $(ICON)
 
 # ---- settings ----
 
@@ -57,14 +58,17 @@ $(PRG_TEST): $(PRG_DEPS)
 		--private-key $(HOME)/Documents/developer_key \
 		--unit-test
 
-$(BUILD_SOURCE_DIR)font_%.mc: $(FONTS_DEPS) $(BUILD_SOURCE_DIR)
-	@$< --$* > $@
+$(FONTS_MC): $(FONTS_MC_DEPS) $(BUILD_SOURCE_DIR)
+	@$< --mc > $@
+
+$(FONTS_XML): $(FONTS_XML_DEPS) $(BUILD_RESOURCES_DIR)
+	@$< --xml > $@
+
+$(ICON): $(ICON_DEPS) $(BUILD_RESOURCES_DIR)
+	@$< > $@
 
 $(BUILD_SOURCE_DIR):
 	@mkdir -p $@
-
-$(FONTS_XML): $(FONTS_DEPS) $(BUILD_RESOURCES_DIR)
-	@$< --xml > $@
 
 $(BUILD_RESOURCES_DIR):
 	@mkdir -p $@
@@ -106,7 +110,7 @@ SIMULATE: BUILD
 c: clean
 clean:
 	@echo " [ clean ]"
-	$(RM) -r $(BUILD_DIR) bin
+	$(RM) -r bin $(BUILD_DIR)
 .PHONY: clean
 
 # ---- help ----
@@ -128,7 +132,6 @@ help:
 	echo "     h, help            print help message"
 	echo ""
 	echo " Arguments:"
-	echo "     BUILD_DIR          (default: $(BUILD_DIR))"
 	echo "     DEVICE             (default: $(DEVICE))"
 	echo "     NAME               (default: $(NAME))"
 	echo ""

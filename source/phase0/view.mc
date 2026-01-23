@@ -98,31 +98,31 @@ class View extends WatchUi.WatchFace {
 
 		// ---- glyphs ----
 
-		var digit_colon = Font.DIGITS.getOrEmpty(':');
-		var digit_zero = Font.DIGITS.getOrEmpty('0');
-		var typeface_zero = Font.TYPEFACE.getOrEmpty('0');
+		var digit_colon = Font.TYPEFACE_DIGITS.getOrEmpty(':');
+		var digit_zero = Font.TYPEFACE_DIGITS.getOrEmpty('0');
+		var dot_zero = Font.TYPEFACE_DOT.getOrEmpty('0');
 
-		Test.assertNotEqualMessage(digit_colon.width, 0, "Can't find glyph for DIGIT ':'");
-		Test.assertNotEqualMessage(digit_zero.width, 0, "Can't find glyph for DIGIT '0'");
-		Test.assertNotEqualMessage(typeface_zero.width, 0, "Can't find glyph for TYPEFACE '0'");
+		Test.assertNotEqualMessage(digit_colon.width, 0, "Can't find glyph for Digit ':'");
+		Test.assertNotEqualMessage(digit_zero.width, 0, "Can't find glyph for Digit '0'");
+		Test.assertNotEqualMessage(dot_zero.width, 0, "Can't find glyph for Typeface '0'");
 
 		// ---- measurements ----
 
-		var regular_width = Font.STYLE_REGULAR.size * (typeface_zero.width + 1);
-		var regular_height = Font.STYLE_REGULAR.size * Font.TYPEFACE.height;
+		var regular_width = Font.STYLE_REGULAR.size * (dot_zero.width + 1);
+		var regular_height = Font.STYLE_REGULAR.size * Font.TYPEFACE_DOT.height;
 		var regular_spacing = Font.STYLE_REGULAR.size;
 
-		var small_width = Font.STYLE_SMALL.size * (typeface_zero.width + 1);
-		var small_height = Font.STYLE_SMALL.size * Font.TYPEFACE.height;
+		var small_width = Font.STYLE_SMALL.size * (dot_zero.width + 1);
+		var small_height = Font.STYLE_SMALL.size * Font.TYPEFACE_DOT.height;
 		var small_spacing = Font.STYLE_SMALL.size;
 
-		//var micro_width = Font.STYLE_MICRO.size * (typeface_zero.width + 1);
-		var micro_height = Font.STYLE_MICRO.size * Font.TYPEFACE.height;
+		//var micro_width = Font.STYLE_MICRO.size * (dot_zero.width + 1);
+		var micro_height = Font.STYLE_MICRO.size * Font.TYPEFACE_DOT.height;
 		//var micro_spacing = Font.STYLE_MICRO.size;
 
 		// ---- line main ----
 
-		var clock_size_y = Font.STYLE_REGULAR.size * Font.DIGITS.height;
+		var clock_size_y = Font.STYLE_REGULAR.size * Font.TYPEFACE_DIGITS.height;
 		var clock_pos_y = (self.screen_size_y_ - clock_size_y) / 2;
 		var clock_end_y = clock_pos_y + clock_size_y;
 

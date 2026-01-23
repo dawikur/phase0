@@ -12,8 +12,8 @@ class Date extends Label {
 		Label.initialize();
 
 		self.styles = [
-			new Element.Style(Font.TYPEFACE, Font.STYLE_REGULAR, 0x555555),
-			new Element.Style(Font.TYPEFACE, Font.STYLE_REGULAR_THIN, 0xAAAAAA),
+			new Element.Style(Font.TYPEFACE_DOT, Font.STYLE_REGULAR, 0x555555),
+			new Element.Style(Font.TYPEFACE_DOT, Font.STYLE_REGULAR_THIN, 0xAAAAAA),
 		];
 	}
 

@@ -1,7 +1,9 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-bin
 .build
+bin
+
 .mypy_cache
+.venv
 
 __pycache__

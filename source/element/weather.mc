@@ -16,7 +16,7 @@ class Weather extends Label {
 		Label.initialize();
 
 		self.styles = [
-			new Element.Style(Font.TYPEFACE, Font.STYLE_SMALL, 0xAAAAAA),
+			new Element.Style(Font.TYPEFACE_DOT, Font.STYLE_SMALL, 0xAAAAAA),
 		];
 
 		var deviceSettings = System.getDeviceSettings();

@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+from typing import Tuple
+
+import fonts_data
+
+ICON = fonts_data.ICON
+ICON_BLURED = ICON.blure()
+
+
+def rgba_to_svg(color: Tuple[int, int, int, int]) -> str:
+    r, g, b, a = color
+    if a == 255:
+        return f"rgb({r},{g},{b})"
+    return f"rgba({r},{g},{b},{a / 255})"
+
+
+def main() -> None:
+    svg_width = ICON.width * fonts_data.STYLE_REGULAR.size
+    svg_height = ICON.height * fonts_data.STYLE_REGULAR.size
+
+    svg = []
+    svg.append(
+        f'<svg xmlns="http://www.w3.org/2000/svg" '
+        f'width="{svg_width}" height="{svg_height}" '
+        f'viewBox="0 0 {svg_width} {svg_height}">'
+    )
+
+    for icon, style, color in [
+        (ICON, fonts_data.STYLE_REGULAR, (0xAA, 0x55, 0x00, 0xFF)),
+        (ICON_BLURED, fonts_data.STYLE_REGULAR_THIN, (0xAA, 0x55, 0x00, 0xFF)),
+        (ICON, fonts_data.STYLE_REGULAR_THIN, (0xFF, 0xAA, 0x00, 0xFF)),
+    ]:
+        fill = rgba_to_svg(color)
+
+        for y in range(icon.height):
+            for x in range(icon.width):
+                if icon.pixel(x, y):
+                    for dy in range(style.weight):
+                        for dx in range(style.weight):
+                            px = x * style.size + dx
+                            py = y * style.size + dy
+                            svg.append(
+                                f'<rect x="{px}" y="{py}" '
+                                f'width="1" height="1" fill="{fill}" />'
+                            )
+
+    svg.append("</svg>")
+
+    print("\n".join(svg))
+
+
+if __name__ == "__main__":
+    main()

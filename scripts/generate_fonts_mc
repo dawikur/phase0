@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+import textwrap
+
+import fonts_data
+
+
+def to_number(row: str) -> int:
+    number = 0
+
+    for index, char in enumerate(row):
+        if char == "1":
+            number |= 1 << index
+
+    return number
+
+
+def to_name(*names: str) -> str:
+    return f"{" ".join(names).replace(" ", "_").upper()}"
+
+
+def generate_style(style: fonts_data.Style) -> None:
+    print(
+        f'const {to_name("STYLE", style.name)} = new Style("{style.name}", {style.size}, {style.weight});'
+    )
+
+
+def generate_typeface(typeface: fonts_data.Typeface, verify_size: bool) -> None:
+    width, height = typeface.glyphs[0].width, typeface.glyphs[0].height
+
+    print(
+        textwrap.dedent(
+            f"""\
+        const {to_name("TYPEFACE", typeface.name)} as Typeface = new Typeface(
+        \t"{typeface.name}",
+        \t{{"""
+        )
+    )
+
+    for glyph in typeface.glyphs:
+        assert glyph.height == height, textwrap.dedent(
+            f"""\
+            Height of each glyph has to match.
+                font == '{typeface.name}'
+                glyph['{typeface.glyphs[0].name}'].height == {typeface.glyphs[0].height}
+                glyph['{glyph.name}'].height == {glyph.height}
+        """
+        )
+
+        if verify_size:
+            assert glyph.width == width
+
+        print(
+            f"\t\t'{glyph.name}' => new Glyph([{", ".join(f"{to_number(row)}" for row in glyph.bitmap)}], {glyph.width}),"
+        )
+
+    print(
+        textwrap.dedent(
+            f"""\
+        \t}},
+        \t{height}
+        );
+        """
+        )
+    )
+
+
+def main() -> None:
+    print(
+        textwrap.dedent(
+            """\
+        // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+        // This is a generated file
+
+        import Toybox.Lang;
+
+        module Font {
+        """
+        )
+    )
+
+    generate_typeface(fonts_data.TYPEFACE_DOT, False)
+    generate_typeface(fonts_data.TYPEFACE_DIGITS, False)
+    generate_typeface(fonts_data.TYPEFACE_DIGITS_BLURED, False)
+
+    print("")
+
+    generate_style(fonts_data.STYLE_REGULAR_BOLD)
+    generate_style(fonts_data.STYLE_REGULAR)
+    generate_style(fonts_data.STYLE_REGULAR_THIN)
+
+    generate_style(fonts_data.STYLE_SMALL_BOLD)
+    generate_style(fonts_data.STYLE_SMALL)
+
+    generate_style(fonts_data.STYLE_MICRO)
+
+    print(
+        textwrap.dedent(
+            """\
+        } // module Font"""
+        )
+    )
+
+
+if __name__ == "__main__":
+    main()

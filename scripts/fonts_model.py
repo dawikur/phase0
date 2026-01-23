@@ -2,10 +2,12 @@
 
 import textwrap
 from dataclasses import dataclass
+from typing import List
 
 
 @dataclass
 class Style:
+    name: str
     size: int
     weight: int
 
@@ -71,3 +73,9 @@ class Glyph:
             self.name,
             new_bitmap,
         )
+
+
+@dataclass
+class Typeface:
+    name: str
+    glyphs: List[Glyph]

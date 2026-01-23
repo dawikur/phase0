@@ -17,14 +17,14 @@ class Clock extends Label {
 		Label.initialize();
 
 		self.day_styles_ = [
-			new Element.Style(Font.DIGITS, Font.STYLE_REGULAR, 0xAA5500),
-			new Element.Style(Font.DIGITS_BLURED, Font.STYLE_REGULAR_THIN, 0xAA5500),
-			new Element.Style(Font.DIGITS, Font.STYLE_REGULAR_THIN, 0xFFAA00),
+			new Element.Style(Font.TYPEFACE_DIGITS, Font.STYLE_REGULAR, 0xAA5500),
+			new Element.Style(Font.TYPEFACE_DIGITS_BLURED, Font.STYLE_REGULAR_THIN, 0xAA5500),
+			new Element.Style(Font.TYPEFACE_DIGITS, Font.STYLE_REGULAR_THIN, 0xFFAA00),
 		];
 		self.night_styles_ = [
-			new Element.Style(Font.DIGITS, Font.STYLE_REGULAR, 0x555555),
-			new Element.Style(Font.DIGITS_BLURED, Font.STYLE_REGULAR_THIN, 0x555555),
-			new Element.Style(Font.DIGITS, Font.STYLE_REGULAR_THIN, 0xAAAAAA),
+			new Element.Style(Font.TYPEFACE_DIGITS, Font.STYLE_REGULAR, 0x555555),
+			new Element.Style(Font.TYPEFACE_DIGITS_BLURED, Font.STYLE_REGULAR_THIN, 0x555555),
+			new Element.Style(Font.TYPEFACE_DIGITS, Font.STYLE_REGULAR_THIN, 0xAAAAAA),
 		];
 
 		self.styles = self.day_styles_;

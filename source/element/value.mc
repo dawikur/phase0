@@ -28,7 +28,7 @@ class Value {
 		var pos_y = self.pos_y;
 
 		_dc.setColor(0xAA5500, Graphics.COLOR_TRANSPARENT);
-		Font.TYPEFACE.render(
+		Font.TYPEFACE_DOT.render(
 			_dc,
 			pos_x,
 			pos_y,
@@ -39,7 +39,7 @@ class Value {
 		pos_y += self.label_height;
 
 		_dc.setColor(0x555555, Graphics.COLOR_TRANSPARENT);
-		Font.TYPEFACE.render(
+		Font.TYPEFACE_DOT.render(
 			_dc,
 			pos_x,
 			pos_y,
@@ -60,7 +60,7 @@ class Value {
 		pos_x += (self.field_count - str.length()) * self.field_width;
 
 		_dc.setColor(0xAAAAAA, Graphics.COLOR_TRANSPARENT);
-		Font.TYPEFACE.render(
+		Font.TYPEFACE_DOT.render(
 			_dc,
 			pos_x,
 			pos_y,
