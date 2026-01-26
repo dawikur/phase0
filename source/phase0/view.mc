@@ -13,6 +13,36 @@ import Toybox.UserProfile;
 
 module Phase0 {
 
+class Box {
+	var size_x as Lang.Number;
+	var size_y as Lang.Number;
+
+	var pos_x as Lang.Number;
+	var pos_y as Lang.Number;
+
+	var end_x as Lang.Number;
+	var end_y as Lang.Number;
+
+	var center_x as Lang.Number;
+	var center_y as Lang.Number;
+
+	function initialize(
+		_pos_x as Lang.Number,
+		_pos_y as Lang.Number,
+		_end_x as Lang.Number,
+		_end_y as Lang.Number
+	) {
+		self.size_x = _end_x - _pos_x;
+		self.size_y = _end_y - _pos_y;
+		self.pos_x = _pos_x;
+		self.pos_y = _pos_y;
+		self.end_x = _end_x;
+		self.end_y = _end_y;
+		self.center_x = _pos_x + (self.size_x / 2);
+		self.center_y = _pos_y + (self.size_y / 2);
+	}
+}
+
 class View extends WatchUi.WatchFace {
 
 	// ---- base ----
@@ -45,23 +75,6 @@ class View extends WatchUi.WatchFace {
 	hidden const hr_ = new Element.HR();
 	hidden const steps_ = new Element.Steps();
 
-	// ---- debugging ----
-
-	hidden var line_above_1_size_x_ as Lang.Number = 0;
-	hidden var line_above_1_size_y_ as Lang.Number = 0;
-	hidden var line_above_1_pos_x_ as Lang.Number = 0;
-	hidden var line_above_1_pos_y_ as Lang.Number = 0;
-
-	hidden var line_below_1_size_x_ as Lang.Number = 0;
-	hidden var line_below_1_size_y_ as Lang.Number = 0;
-	hidden var line_below_1_pos_x_ as Lang.Number = 0;
-	hidden var line_below_1_pos_y_ as Lang.Number = 0;
-
-	hidden var line_below_2_size_x_ as Lang.Number = 0;
-	hidden var line_below_2_size_y_ as Lang.Number = 0;
-	hidden var line_below_2_pos_x_ as Lang.Number = 0;
-	hidden var line_below_2_pos_y_ as Lang.Number = 0;
-
 	// ---- methods ----
 
 	function initialize() {
@@ -92,124 +105,80 @@ class View extends WatchUi.WatchFace {
 		WatchUi.requestUpdate();
 	}
 
-	function onLayout(dc as Graphics.Dc) as Void {
-		self.screen_size_x_ = dc.getWidth();
-		self.screen_size_y_ = dc.getHeight();
-
-		// ---- glyphs ----
-
-		var digit_colon = Font.TYPEFACE_DIGITS.getOrEmpty(':');
-		var digit_zero = Font.TYPEFACE_DIGITS.getOrEmpty('0');
-		var dot_zero = Font.TYPEFACE_DOT.getOrEmpty('0');
-
-		Test.assertNotEqualMessage(digit_colon.width, 0, "Can't find glyph for Digit ':'");
-		Test.assertNotEqualMessage(digit_zero.width, 0, "Can't find glyph for Digit '0'");
-		Test.assertNotEqualMessage(dot_zero.width, 0, "Can't find glyph for Typeface '0'");
+	function onLayout(_dc as Graphics.Dc) as Void {
+		self.screen_size_x_ = _dc.getWidth();
+		self.screen_size_y_ = _dc.getHeight();
 
 		// ---- measurements ----
 
-		var regular_width = Font.STYLE_REGULAR.size * (dot_zero.width + 1);
-		var regular_height = Font.STYLE_REGULAR.size * Font.TYPEFACE_DOT.height;
-		var regular_spacing = Font.STYLE_REGULAR.size;
+		var clock_size = _dc.getTextDimensions("00:00", Font.DIGITS_REGULAR);
 
-		var small_width = Font.STYLE_SMALL.size * (dot_zero.width + 1);
-		var small_height = Font.STYLE_SMALL.size * Font.TYPEFACE_DOT.height;
-		var small_spacing = Font.STYLE_SMALL.size;
+		var regular_size = _dc.getTextDimensions("0", Font.DOT_REGULAR);
+		var regular_spacing = 3;
 
-		//var micro_width = Font.STYLE_MICRO.size * (dot_zero.width + 1);
-		var micro_height = Font.STYLE_MICRO.size * Font.TYPEFACE_DOT.height;
-		//var micro_spacing = Font.STYLE_MICRO.size;
+		var small_size = _dc.getTextDimensions("0", Font.DOT_SMALL);
+		var small_spacing = 2;
 
-		// ---- line main ----
-
-		var clock_size_y = Font.STYLE_REGULAR.size * Font.TYPEFACE_DIGITS.height;
-		var clock_pos_y = (self.screen_size_y_ - clock_size_y) / 2;
-		var clock_end_y = clock_pos_y + clock_size_y;
-
-		var clock_size_x = Font.STYLE_REGULAR.size * (4 * digit_zero.width + digit_colon.width + 4);
-		var clock_pos_x = (self.screen_size_x_ - clock_size_x) / 2;
-		//var clock_end_x = clock_pos_x + clock_size_x;
-
-		self.clock_.pos_x = clock_pos_x;
-		self.clock_.pos_y = clock_pos_y;
-
-		// ---- line below 1 ----
-
-		var line_below_1_size_y = regular_height;
-		var line_below_1_pos_y = clock_end_y + 2 * regular_spacing;
-		var line_below_1_end_y = line_below_1_pos_y + line_below_1_size_y;
-
-		var line_below_1_size_x = Math.floor(self.secondLeg_(line_below_1_end_y) * 2).toNumber() - 2 * regular_spacing;
-		var line_below_1_pos_x = (self.screen_size_x_ - line_below_1_size_x) / 2;
-		var line_below_1_end_x = line_below_1_pos_x + line_below_1_size_x;
-
-		self.date_.pos_x = line_below_1_pos_x;
-		self.date_.pos_y = line_below_1_pos_y;
-
-		self.seconds_.pos_x = line_below_1_end_x - (2 * regular_width) + regular_spacing;
-		self.seconds_.pos_y = line_below_1_pos_y;
-		self.seconds_.size_x = 2 * regular_width;
-		self.seconds_.size_y = regular_height;
-
-		// ---- line below 2 ----
-
-		var line_below_2_size_y = micro_height + small_spacing + small_height;
-		var line_below_2_pos_y = line_below_1_end_y + regular_spacing;
-		var line_below_2_end_y = line_below_2_pos_y + line_below_2_size_y;
-
-		var line_below_2_size_x = Math.floor(self.secondLeg_(line_below_2_end_y) * 2).toNumber() - regular_spacing;
-		var line_below_2_pos_x = (self.screen_size_x_ - line_below_2_size_x) / 2;
-		//var line_below_2_end_x = line_below_2_pos_x + line_below_2_size_x;
-
-		self.hr_.pos_x = line_below_2_pos_x;
-		self.hr_.pos_y = line_below_2_pos_y;
-		self.hr_.label_height = micro_height + small_spacing;
-		self.hr_.field_count = 3;
-		self.hr_.field_width = small_width;
-		self.hr_.field_height = small_height - small_spacing - Font.STYLE_SMALL.weight;
-		self.hr_.gauge_width = Font.STYLE_SMALL.weight;
-
-		self.steps_.pos_x = line_below_2_pos_x + 3 * (small_width + small_spacing);
-		self.steps_.pos_y = line_below_2_pos_y;
-		self.steps_.label_height = micro_height + small_spacing;
-		self.steps_.field_count = 3;
-		self.steps_.field_width = small_width;
-		self.steps_.field_height = small_height - small_spacing - Font.STYLE_SMALL.weight;
-		self.steps_.gauge_width = Font.STYLE_SMALL.weight;
+		var tiny_size = _dc.getTextDimensions("0", Font.DOT_TINY);
+		//var tiny_spacing = 1;
 
 		// ---- line above 1 ----
 
-		var line_above_1_size_y = small_height;
-		var line_above_1_end_y = clock_pos_y -  2 * regular_spacing;
-		var line_above_1_pos_y = line_above_1_end_y - line_above_1_size_y;
+		var line_above_1 = self.boxFor_(
+			(self.screen_size_y_ - clock_size[1]) / 2 - small_spacing,
+			-regular_size[1]
+		);
 
-		//var line_above_1_size_x = Math.ceil(self.secondLeg_(line_above_1_pos_y) * 2).toNumber();
-		//var line_above_1_pos_x = (self.screen_size_.x - line_above_1_size_x) / 2;
-		//var line_above_1_end_x = line_above_1_pos_x + line_above_1_size_x;
-		var line_above_1_size_x = line_below_1_size_x;
-		var line_above_1_pos_x = line_below_1_pos_x;
-		//var line_above_1_end_x = line_below_1_end_x;
+		self.weather_.pos_x = line_above_1.center_x;
+		self.weather_.pos_y = line_above_1.center_y;
+		self.weather_.size_x = line_above_1.size_x;
+		self.weather_.justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
-		self.weather_.pos_x = line_above_1_pos_x;
-		self.weather_.pos_y = line_above_1_pos_y;
-		self.weather_.size_x = line_above_1_size_x;
+		// ---- line main ----
 
-		// ---- debugging ----
+		self.clock_.pos_x = self.screen_size_x_ / 2;
+		self.clock_.pos_y = self.screen_size_y_ / 2;
+		self.clock_.justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
-		self.line_above_1_size_y_ = line_above_1_size_y;
-		self.line_above_1_size_x_ = line_above_1_size_x;
-		self.line_above_1_pos_y_ = line_above_1_pos_y;
-		self.line_above_1_pos_x_ = line_above_1_pos_x;
+		// ---- line below 1 ----
 
-		self.line_below_1_size_y_ = line_below_1_size_y;
-		self.line_below_1_size_x_ = line_below_1_size_x;
-		self.line_below_1_pos_y_ = line_below_1_pos_y;
-		self.line_below_1_pos_x_ = line_below_1_pos_x;
+		var line_below_1 = self.boxFor_(
+			(self.screen_size_y_ + clock_size[1]) / 2 + 2 * regular_spacing,
+			regular_size[1]
+		);
 
-		self.line_below_2_size_y_ = line_below_2_size_y;
-		self.line_below_2_size_x_ = line_below_2_size_x;
-		self.line_below_2_pos_y_ = line_below_2_pos_y;
-		self.line_below_2_pos_x_ = line_below_2_pos_x;
+		self.date_.pos_x = line_below_1.pos_x;
+		self.date_.pos_y = line_below_1.pos_y;
+		self.date_.justify = Graphics.TEXT_JUSTIFY_LEFT;
+
+		self.seconds_.pos_x = line_below_1.end_x;
+		self.seconds_.pos_y = line_below_1.pos_y;
+		self.seconds_.justify = Graphics.TEXT_JUSTIFY_RIGHT;
+		self.seconds_.size_x = 2 * regular_size[0];
+		self.seconds_.size_y = regular_size[1];
+
+		// ---- line below 2 ----
+
+		var line_below_2 = self.boxFor_(
+			line_below_1.end_y + regular_spacing,
+			tiny_size[1] + small_spacing + small_size[1]
+		);
+
+		self.hr_.pos_x = line_below_2.pos_x;
+		self.hr_.pos_y = line_below_2.pos_y;
+		self.hr_.label_height = tiny_size[1] + small_spacing;
+		self.hr_.field_count = 3;
+		self.hr_.field_width = small_size[0];
+		self.hr_.field_height = small_size[1] - small_spacing;
+		self.hr_.gauge_width = small_spacing;
+
+		self.steps_.pos_x = line_below_2.pos_x + 3 * (small_size[0] + small_spacing);
+		self.steps_.pos_y = line_below_2.pos_y;
+		self.steps_.label_height = tiny_size[1] + small_spacing;
+		self.steps_.field_count = 3;
+		self.steps_.field_width = small_size[0];
+		self.steps_.field_height = small_size[1] - small_spacing;
+		self.steps_.gauge_width = small_spacing;
 	}
 
 	function onUpdate(_dc as Graphics.Dc) as Void {
@@ -220,39 +189,19 @@ class View extends WatchUi.WatchFace {
 		_dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
 		_dc.clear();
 
-		// ---- debugging ----
-
-		if (false) {
-			_dc.setColor(0x555555, Graphics.COLOR_BLACK);
-			_dc.fillRectangle(
-				self.line_above_1_pos_x_, self.line_above_1_pos_y_,
-				self.line_above_1_size_x_, self.line_above_1_size_y_
-			);
-
-			_dc.fillRectangle(
-				self.line_below_1_pos_x_, self.line_below_1_pos_y_,
-				self.line_below_1_size_x_, self.line_below_1_size_y_
-			);
-
-			_dc.fillRectangle(
-				self.line_below_2_pos_x_, self.line_below_2_pos_y_,
-				self.line_below_2_size_x_, self.line_below_2_size_y_
-			);
-		}
-
 		// ---- update ----
 
 		var clock = System.getClockTime();
 
-		self.refreshSec_();
+		self.refreshSec_(_dc);
 
 		if (self.last_refresh_min_ != clock.min) {
 			self.last_refresh_min_ = clock.min;
-			self.refreshMin_();
+			self.refreshMin_(_dc);
 		}
 		if (self.last_refresh_hour_ != clock.hour) {
 			self.last_refresh_hour_ = clock.hour;
-			self.refreshHour_();
+			self.refreshHour_(_dc);
 		}
 
 		self.clock_.render(_dc);
@@ -278,15 +227,15 @@ class View extends WatchUi.WatchFace {
 		_dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
 		_dc.clear();
 
-		self.seconds_.refresh();
+		self.seconds_.refresh(_dc);
 		self.seconds_.render(_dc);
 	}
 
-	hidden function refreshSec_() as Void {
-		self.seconds_.refresh();
+	hidden function refreshSec_(_dc as Graphics.Dc) as Void {
+		self.seconds_.refresh(_dc);
 	}
 
-	hidden function refreshMin_() as Void {
+	hidden function refreshMin_(_dc as Graphics.Dc) as Void {
 		var is_night_mode = self.isNightMode_();
 		if (self.is_night_mode_ != is_night_mode) {
 			self.is_night_mode_ = is_night_mode;
@@ -294,15 +243,15 @@ class View extends WatchUi.WatchFace {
 			self.clock_.onNightMode(is_night_mode);
 		}
 
-		self.clock_.refresh();
-		self.weather_.refresh();
+		self.clock_.refresh(_dc);
+		self.weather_.refresh(_dc);
 
-		self.hr_.refresh();
-		self.steps_.refresh();
+		self.hr_.refresh(_dc);
+		self.steps_.refresh(_dc);
 	}
 
-	hidden function refreshHour_() as Void {
-		self.date_.refresh();
+	hidden function refreshHour_(_dc as Graphics.Dc) as Void {
+		self.date_.refresh(_dc);
 	}
 
 	hidden function isNightMode_() as Lang.Boolean {
@@ -332,6 +281,33 @@ class View extends WatchUi.WatchFace {
 		var leg = hypotenuse - _leg; // center of triangle is in the center of screen
 
 		return Math.sqrt((hypotenuse * hypotenuse) - (leg * leg)).toNumber();
+	}
+
+	hidden function boxFor_(_y as Lang.Number, _dy as Lang.Number) as Box {
+		var pos_y = 0;
+		var end_y = 0;
+
+		if (_dy < 0) { // above
+			pos_y = _y + _dy;
+			end_y = _y;
+		} else { // below
+			pos_y = _y;
+			end_y = _y + _dy;
+		}
+
+		var size_pos = Math.floor(self.secondLeg_(pos_y) * 2).toNumber();
+		var size_end = Math.floor(self.secondLeg_(end_y) * 2).toNumber();
+
+		var size_x = size_pos < size_end ? size_pos : size_end;
+		var pos_x = (self.screen_size_x_ - size_x) / 2;
+		var end_x = pos_x + size_x;
+
+		return new Box(
+			pos_x,
+			pos_y,
+			end_x,
+			end_y
+		);
 	}
 }
 

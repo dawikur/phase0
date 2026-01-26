@@ -20,18 +20,18 @@ JUNGLE    := monkey.jungle
 SRCS      := $(shell find source -type f)
 RSCS      := $(shell find resources -type f)
 
-BUILD_RESOURCES_DIR := $(BUILD_DIR)resources/
+RESOURCES_DIR       := resources/
+RESOURCES_BASE_DIR  := $(RESOURCES_DIR)base/
 BUILD_SOURCE_DIR    := $(BUILD_DIR)source/
 
-FONTS_MC_DEPS  := scripts/generate_fonts_mc scripts/fonts_data.py scripts/fonts_model.py
-FONTS_MC       := $(BUILD_SOURCE_DIR)fonts.mc
-FONTS_XML_DEPS := scripts/generate_fonts_xml scripts/fonts_data.py scripts/fonts_model.py
-FONTS_XML      := $(BUILD_RESOURCES_DIR)fonts.xml
+FONTS_DEPS     := scripts/generate_fonts scripts/fonts_data.py scripts/fonts_model.py
+FONTS          := $(RESOURCES_BASE_DIR)fonts.xml
+DRAWABLES_DEPS := scripts/generate_icon scripts/fonts_data.py scripts/fonts_model.py
+DRAWABLES      := $(RESOURCES_BASE_DIR)drawables.xml
 
-ICON_DEPS := scripts/generate_icon scripts/fonts_data.py scripts/fonts_model.py
-ICON      := $(BUILD_RESOURCES_DIR)icon.svg
+RESOURCES := $(FONTS) $(DRAWABLES)
 
-PRG_DEPS   := $(JUNGLE) $(SRCS) $(RSCS) $(FONTS_MC) $(ICON)
+PRG_DEPS   := $(JUNGLE) $(SRCS) $(RSCS) $(RESOURCES)
 
 # ---- settings ----
 
@@ -58,19 +58,13 @@ $(PRG_TEST): $(PRG_DEPS)
 		--private-key $(HOME)/Documents/developer_key \
 		--unit-test
 
-$(FONTS_MC): $(FONTS_MC_DEPS) $(BUILD_SOURCE_DIR)
-	@$< --mc > $@
+$(FONTS): $(FONTS_DEPS)
+	@$< --resources $(RESOURCES_DIR) --build $(BUILD_DIR)
 
-$(FONTS_XML): $(FONTS_XML_DEPS) $(BUILD_RESOURCES_DIR)
-	@$< --xml > $@
-
-$(ICON): $(ICON_DEPS) $(BUILD_RESOURCES_DIR)
-	@$< > $@
+$(DRAWABLES): $(DRAWABLES_DEPS)
+	@$< --resources $(RESOURCES_DIR) --build $(BUILD_DIR)
 
 $(BUILD_SOURCE_DIR):
-	@mkdir -p $@
-
-$(BUILD_RESOURCES_DIR):
 	@mkdir -p $@
 
 # ---- aliases ----
@@ -78,14 +72,20 @@ $(BUILD_RESOURCES_DIR):
 b: build
 build_tag:
 	@echo " [ build ]"
-build: build_tag $(PRG)
-.PHONY: build build_tag
+build: resources build_tag $(PRG)
+.PHONY: b build build_tag
 
 B: BUILD
 BUILD_TAG:
 	@echo " [ build w/ tests ]"
-BUILD: BUILD_TAG $(PRG_TEST)
-.PHONY: BUILD BUILD_TAG
+BUILD: resources BUILD_TAG $(PRG_TEST)
+.PHONY: B BUILD BUILD_TAG
+
+r: resources
+resources_tag:
+	@echo " [ resources ]"
+resources: resources_tag $(RESOURCES)
+.PHONY: r resources resources_tag
 
 s: simulate
 simulate: build
@@ -95,7 +95,7 @@ simulate: build
 	sleep 1
 	$(MONKEYDO) $(PRG) $(DEVICE)
 	wait $$SIM_PID
-.PHONY: simulate
+.PHONY: s simulate
 
 S: SIMULATE
 SIMULATE: BUILD
@@ -105,13 +105,13 @@ SIMULATE: BUILD
 	sleep 1
 	$(MONKEYDO) $(PRG_TEST) $(DEVICE) -t
 	wait $$SIM_PID
-.PHONY: SIMULATE
+.PHONY: S SIMULATE
 
 c: clean
 clean:
 	@echo " [ clean ]"
-	$(RM) -r bin $(BUILD_DIR)
-.PHONY: clean
+	$(RM) -r bin $(BUILD_DIR) $(RESOURCES)
+.PHONY: c clean
 
 # ---- help ----
 
@@ -125,7 +125,7 @@ help:
 	echo " Target:"
 	echo "     b, build           build project"
 	echo "     B, BUILD           build project w/ tests"
-	echo "     f, fonts           generate fonts"
+	echo "     r, resources       generate resources"
 	echo "     s, simulate        run simulator"
 	echo "     S, SIMULATE        run simulator w/ tests"
 	echo "     c, clean           remove build directory"

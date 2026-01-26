@@ -14,7 +14,7 @@ class Seconds extends Label {
 		Label.initialize();
 
 		self.styles = [
-			new Element.Style(Font.TYPEFACE_DOT, Font.STYLE_REGULAR_THIN, 0xAAAAAA),
+			new Element.Style(Font.DOT_REGULAR_THIN, 0xAAAAAA),
 		];
 	}
 

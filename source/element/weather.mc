@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import Toybox.Application;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
@@ -12,19 +13,31 @@ class Weather extends Label {
 
 	hidden var unitsSystem_ as System.UnitsSystem;
 
+	hidden var regular_styles_ as Lang.Array<Element.Style>;
+	hidden var small_styles_ as Lang.Array<Element.Style>;
+	hidden var tiny_styles_ as Lang.Array<Element.Style>;
+
 	function initialize() {
 		Label.initialize();
 
-		self.styles = [
-			new Element.Style(Font.TYPEFACE_DOT, Font.STYLE_SMALL, 0xAAAAAA),
+		self.regular_styles_ = [
+			new Element.Style(Font.DOT_REGULAR, 0x555555),
 		];
+		self.small_styles_ = [
+			new Element.Style(Font.DOT_SMALL, 0xAAAAAA),
+		];
+		self.tiny_styles_ = [
+			new Element.Style(Font.DOT_TINY, 0xAAAAAA),
+		];
+
+		self.styles = self.regular_styles_;
 
 		var deviceSettings = System.getDeviceSettings();
 
 		self.unitsSystem_ = deviceSettings.distanceUnits;
 	}
 
-	function refresh() as Void {
+	function refresh(_dc as Graphics.Dc) as Void {
 		var maybeCurrentConditions = Weather.getCurrentConditions();
 		if (maybeCurrentConditions != null) {
 			var currentConditions = maybeCurrentConditions;
@@ -34,7 +47,7 @@ class Weather extends Label {
 			if (currentConditions.condition != null) {
 				var condition = currentConditions.condition as Lang.Number;
 
-				self.label += Resources.CONDITIONS[condition];
+				self.label += Application.loadResource(Resources.CONDITIONS[condition]) as Lang.String;
 			}
 
 			if (currentConditions.temperature != null) {
@@ -46,29 +59,18 @@ class Weather extends Label {
 					unit = "F";
 				}
 
-				self.label += "\t";
+				self.label += "  ";
 				self.label += temperature.toNumber().format("%d");
 				self.label += unit;
 			}
-		}
 
-		var width = 0;
-		var styles = self.styles;
-		var styles_size = styles.size();
-		var label = self.label;
-
-		for (var i = 0; i < styles_size; ++i) {
-			var style = styles[i];
-
-			var width_i = style.typeface.measure(label, style.style);
-
-			if (width < width_i) {
-				width = width_i;
+			if (_dc.getTextWidthInPixels(self.label, self.regular_styles_[0].font) <= self.size_x) {
+				self.styles = self.regular_styles_;
+			} else if (_dc.getTextWidthInPixels(self.label, self.small_styles_[0].font) <= self.size_x) {
+				self.styles = self.small_styles_;
+			} else {
+				self.styles = self.tiny_styles_;
 			}
-		}
-
-		if (width < self.size_x) {
-			self.padding_x = (self.size_x - width) / 2;
 		}
 	}
 }

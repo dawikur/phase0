@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+import textwrap
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
+
+import fonts_data
+from args_parse import parse_folders
+from PIL import Image, ImageDraw
+
+INVISIBLE_GLYPHS = [" ", "\t"]
+
+
+class Atlas:
+    img: Image
+    draw: ImageDraw
+
+    pos_x: int
+    pos_y: int
+
+    def __init__(self, width: int, height: int):
+        self.img = Image.new("1", (width, height), 0)
+        self.draw = ImageDraw.Draw(self.img)
+
+        self.pos_x = 0
+        self.pos_y = 0
+
+    def add(
+        self,
+        glyph: fonts_data.Glyph,
+        style: fonts_data.Style,
+    ) -> None:
+        for y in range(0, glyph.height):
+            for x in range(0, glyph.width):
+                if glyph.pixel(glyph.xoffset + x, glyph.yoffset + y):
+                    pos_x = self.pos_x + x * style.size
+                    pos_y = self.pos_y + y * style.size
+
+                    self.draw.rectangle(
+                        [
+                            pos_x,
+                            pos_y,
+                            pos_x + style.weight - 1,
+                            pos_y + style.weight - 1,
+                        ],
+                        fill=1,
+                    )
+
+    def advance(self, dx: int) -> None:
+        self.pos_x += dx
+
+
+@dataclass
+class Glyph:
+    id: int
+    x: int
+    y: int
+    width: int
+    height: int
+    xoffset: int
+    yoffset: int
+    xadvance: int
+
+    def __str__(self) -> str:
+        return (
+            f"char id={self.id} "
+            f"x={self.x} y={self.y} "
+            f"width={self.width} height={self.height} "
+            f"xoffset={self.xoffset} yoffset={self.yoffset} "
+            f"xadvance={self.xadvance} page=0 chnl=0"
+        )
+
+
+class Fnt:
+    name: str
+    atlas_w: int
+    atlas_h: int
+    line_h: int
+
+    glyphs: List[Glyph]
+
+    def __init__(self, name: str, atlas_w: int, atlas_h: int, line_h: int) -> None:
+        self.name = name
+        self.atlas_w = atlas_w
+        self.atlas_h = atlas_h
+        self.line_h = line_h
+
+        self.glyphs = []
+
+    def __str__(self) -> str:
+        return (
+            textwrap.dedent(
+                f"""\
+            info face="{self.name}" size={self.line_h}
+            common lineHeight={self.line_h} base={self.line_h} scaleW={self.atlas_w} scaleH={self.atlas_h} pages=1
+            page id=0 file="{self.name}.png"
+            chars count={len(self.glyphs)}
+        """
+            )
+            + "\n".join(str(glyph) for glyph in self.glyphs)
+        )
+
+    def add(
+        self,
+        name: str,
+        atlas_x: int,
+        atlas_y: int,
+        width: int,
+        height: int,
+        xoffset: int,
+        yoffset: int,
+        xadvance: int,
+    ) -> None:
+        self.glyphs.append(
+            Glyph(
+                id=ord(name[0]),
+                x=atlas_x,
+                y=atlas_y,
+                width=width if (width and height) else 0,
+                height=height if (width and height) else 0,
+                xoffset=xoffset if (width and height) else 0,
+                yoffset=yoffset if (width and height) else 0,
+                xadvance=xadvance,
+            )
+        )
+
+
+def parse_typeface_and_style(
+    typeface: fonts_data.Typeface, style: fonts_data.Style
+) -> Tuple[str, Image, str]:
+    atlas_w = 0
+    atlas_h = 0
+    line_h = 0
+
+    for glyph in sorted(typeface.glyphs, key=lambda glyph: glyph.name):
+        width = glyph.width * style.size
+        height = glyph.height * style.size
+        yadvance = glyph.yadvance * style.size
+
+        atlas_w += width
+        atlas_h = max(atlas_h, height)
+        line_h = max(line_h, yadvance)
+
+    fnt = Fnt(
+        name=f"{typeface.name} {style.name}".replace(" ", "_").lower(),
+        atlas_w=atlas_w,
+        atlas_h=atlas_h,
+        line_h=line_h,
+    )
+
+    atlas = Atlas(width=fnt.atlas_w, height=fnt.atlas_h)
+
+    for glyph in sorted(typeface.glyphs, key=lambda glyph: glyph.name):
+        width = glyph.width * style.size
+        xoffset = glyph.xoffset * style.size
+        xadvance = glyph.xadvance * style.size + 1
+
+        height = glyph.height * style.size
+        yoffset = glyph.yoffset * style.size
+
+        fnt.add(
+            name=glyph.name,
+            atlas_x=atlas.pos_x,
+            atlas_y=atlas.pos_y,
+            width=width,
+            height=height,
+            xoffset=xoffset,
+            yoffset=yoffset,
+            xadvance=xadvance,
+        )
+
+        atlas.add(glyph, style)
+        atlas.advance(width)
+
+    return fnt.name, atlas.img, str(fnt)
+
+
+def main() -> None:
+    folders = parse_folders()
+
+    fonts_xml = []
+    fonts_xml.append("<fonts>")
+
+    fonts_mc = []
+    fonts_mc.append(
+        textwrap.dedent(
+            """\
+        // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+        // This fie is autogenerated
+
+        import Toybox.Application;
+        import Toybox.WatchUi;
+
+        module Font {
+    """
+        )
+    )
+
+    for typeface, style in [
+        # TODO: combine those two
+        (fonts_data.TYPEFACE_DIGITS_BLURED, fonts_data.STYLE_REGULAR_THIN),
+        (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR),
+        (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR_THIN),
+        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_REGULAR),
+        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_REGULAR_THIN),
+        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_SMALL),
+        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_TINY),
+    ]:
+        font_name, atlas, fnt = parse_typeface_and_style(typeface, style)
+
+        font_png = folders.build("resources", f"{font_name}.png")
+        atlas.save(font_png)
+
+        font_fnt = folders.build("resources", f"{font_name}.fnt")
+        font_fnt.write_text(fnt)
+
+        FONT_NAME = font_name.upper()
+
+        fonts_xml.append(
+            f'\t<font id="{FONT_NAME}" filename="../../{font_fnt}" antialias="false" />'
+        )
+        fonts_mc.append(
+            f"const {FONT_NAME} = Application.loadResource(Rez.Fonts.{FONT_NAME}) as WatchUi.FontResource;"
+        )
+
+    fonts_xml.append("</fonts>")
+    fonts_mc.append("\n} // module Font")
+
+    folders.build("source", "fonts.mc").write_text("\n".join(fonts_mc))
+    folders.resources("base", "fonts.xml").write_text("\n".join(fonts_xml))
+
+
+if __name__ == "__main__":
+    main()

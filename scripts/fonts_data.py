@@ -14,23 +14,13 @@ STYLE_REGULAR_THIN = Style("Regular Thin", 3, 1)
 STYLE_SMALL_BOLD = Style("Small Bold", 2, 2)
 STYLE_SMALL      = Style("Small", 2, 1)
 
-STYLE_MICRO = Style("Micro", 1, 1)
+STYLE_TINY = Style("Tiny", 1, 1)
 
 TYPEFACE_DOT = Typeface("Dot", [
     # non-ascii:
     #     á à â ä å æ ç ć è é ê ë í î ï ł ñ ó ô ö œ ś ù û ü ź ż ß
     #     Å Ä Ö Ł Ś
 
-    Glyph("█", [
-        "11111",
-        "11111",
-        "11111",
-        "11111",
-        "11111",
-        "11111",
-        "11111",
-        "00000",
-    ]),
     Glyph(" ", [
         "000",
         "000",
@@ -40,16 +30,6 @@ TYPEFACE_DOT = Typeface("Dot", [
         "000",
         "000",
         "000",
-    ]),
-    Glyph("\t", [
-        "00000",
-        "00000",
-        "00000",
-        "00000",
-        "00000",
-        "00000",
-        "00000",
-        "00000",
     ]),
     Glyph("0", [
         "01110",
@@ -989,6 +969,17 @@ TYPEFACE_DOT = Typeface("Dot", [
         "00010",
         "00000",
         "00000",
+        "00000",
+    ]),
+
+    Glyph("█", [
+        "11111",
+        "11111",
+        "11111",
+        "11111",
+        "11111",
+        "11111",
+        "11111",
         "00000",
     ]),
 ])

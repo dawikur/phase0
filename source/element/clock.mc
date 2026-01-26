@@ -17,14 +17,13 @@ class Clock extends Label {
 		Label.initialize();
 
 		self.day_styles_ = [
-			new Element.Style(Font.TYPEFACE_DIGITS, Font.STYLE_REGULAR, 0xAA5500),
-			new Element.Style(Font.TYPEFACE_DIGITS_BLURED, Font.STYLE_REGULAR_THIN, 0xAA5500),
-			new Element.Style(Font.TYPEFACE_DIGITS, Font.STYLE_REGULAR_THIN, 0xFFAA00),
+			new Element.Style(Font.DIGITS_BLURED_REGULAR_THIN, 0xAA5500),
+			new Element.Style(Font.DIGITS_REGULAR, 0xAA5500),
+			new Element.Style(Font.DIGITS_REGULAR_THIN, 0xFFAA00),
 		];
 		self.night_styles_ = [
-			new Element.Style(Font.TYPEFACE_DIGITS, Font.STYLE_REGULAR, 0x555555),
-			new Element.Style(Font.TYPEFACE_DIGITS_BLURED, Font.STYLE_REGULAR_THIN, 0x555555),
-			new Element.Style(Font.TYPEFACE_DIGITS, Font.STYLE_REGULAR_THIN, 0xAAAAAA),
+			new Element.Style(Font.DIGITS_BLURED_REGULAR_THIN, 0xAA5500),
+			new Element.Style(Font.DIGITS_REGULAR, 0xAA5500),
 		];
 
 		self.styles = self.day_styles_;
@@ -37,7 +36,7 @@ class Clock extends Label {
 		var clock = System.getClockTime();
 
 		if (self.is24Hour_) {
-			return Utils.joinStr(":", [
+			return Lang.format("$1$:$2$", [
 				clock.hour.format("%02d"),
 				clock.min.format("%02d"),
 			]);
@@ -50,7 +49,7 @@ class Clock extends Label {
 		// TODO: use it
 		// var ampm = clock.hour < 12 ? "am" : "pm";
 
-		return Utils.joinStr(":", [
+		return Lang.format("$1$:$2$", [
 			hour.format("%02d"),
 			clock.min.format("%02d"),
 		]);

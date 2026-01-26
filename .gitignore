@@ -3,6 +3,9 @@
 .build
 bin
 
+resources/base/drawables.xml
+resources/base/fonts.xml
+
 .mypy_cache
 .venv
 

@@ -3,23 +3,21 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
+import Toybox.WatchUi;
 
 module Element {
 
 typedef Data as Lang.Dictionary<Lang.Symbol, Lang.Object>;
 
 class Style {
-	var typeface as Font.Typeface;
-	var style as Font.Style;
+	var font as WatchUi.FontResource;
 	var color as Lang.Number;
 
 	function initialize(
-		_typeface as Font.Typeface,
-		_style as Font.Style,
+		_font as WatchUi.FontResource,
 		_color as Lang.Number
 	) {
-		self.typeface = _typeface;
-		self.style = _style;
+		self.font = _font;
 		self.color = _color;
 	}
 }
@@ -29,8 +27,7 @@ class Label {
 
 	var pos_x as Lang.Number = 0;
 	var pos_y as Lang.Number = 0;
-
-	var padding_x as Lang.Number = 0;
+	var justify as Lang.Number = 0;
 
 	var styles as Lang.Array<Style> = [];
 
@@ -39,28 +36,31 @@ class Label {
 
 	function render(_dc as Graphics.Dc) as Void {
 		if (self.label == "") {
-			self.refresh();
+			self.refresh(_dc);
 		}
 
 		if (self.label == "") {
 			return;
 		}
 
+		var label = self.label;
+
+		var pos_x = self.pos_x;
+		var pos_y = self.pos_y;
+		var justify = self.justify;
+
 		var styles = self.styles;
 		var styles_size = styles.size();
-		var pos_x = self.pos_x + self.padding_x;
-		var pos_y = self.pos_y;
-		var label = self.label;
 
 		for (var i = 0; i < styles_size; ++i) {
 			var style = styles[i];
 
 			_dc.setColor(style.color, Graphics.COLOR_TRANSPARENT);
-			style.typeface.render(_dc, pos_x, pos_y, label, style.style);
+			_dc.drawText(pos_x, pos_y, style.font, label, justify);
 		}
 	}
 
-	function refresh() as Void {
+	function refresh(_dc as Graphics.Dc) as Void {
 		self.label = self.get_();
 	}
 

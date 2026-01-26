@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import textwrap
+from pathlib import Path
 from typing import Tuple
 
 import fonts_data
+from args_parse import parse_folders
 
 ICON = fonts_data.ICON
 ICON_BLURED = ICON.blure()
@@ -17,11 +20,13 @@ def rgba_to_svg(color: Tuple[int, int, int, int]) -> str:
 
 
 def main() -> None:
+    folders = parse_folders()
+
     svg_width = ICON.width * fonts_data.STYLE_REGULAR.size
     svg_height = ICON.height * fonts_data.STYLE_REGULAR.size
 
-    svg = []
-    svg.append(
+    icon_svg = []
+    icon_svg.append(
         f'<svg xmlns="http://www.w3.org/2000/svg" '
         f'width="{svg_width}" height="{svg_height}" '
         f'viewBox="0 0 {svg_width} {svg_height}">'
@@ -41,14 +46,23 @@ def main() -> None:
                         for dx in range(style.weight):
                             px = x * style.size + dx
                             py = y * style.size + dy
-                            svg.append(
+                            icon_svg.append(
                                 f'<rect x="{px}" y="{py}" '
                                 f'width="1" height="1" fill="{fill}" />'
                             )
 
-    svg.append("</svg>")
+    icon_svg.append("</svg>")
 
-    print("\n".join(svg))
+    folders.build("resources", "icon.svg").write_text("\n".join(icon_svg))
+
+    folders.resources("base", "drawables.xml").write_text(
+        textwrap.dedent(
+            f"""\
+        <drawables xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+        \t<bitmap id="Icon" filename="../../{folders.build("resources", "icon.svg")}" dithering="none" />
+        </drawables>"""
+        )
+    )
 
 
 if __name__ == "__main__":

@@ -28,24 +28,12 @@ class Value {
 		var pos_y = self.pos_y;
 
 		_dc.setColor(0xAA5500, Graphics.COLOR_TRANSPARENT);
-		Font.TYPEFACE_DOT.render(
-			_dc,
-			pos_x,
-			pos_y,
-			self.label,
-			Font.STYLE_MICRO
-		);
+		_dc.drawText(pos_x, pos_y, Font.DOT_TINY, self.label, Graphics.TEXT_JUSTIFY_LEFT);
 
 		pos_y += self.label_height;
 
 		_dc.setColor(0x555555, Graphics.COLOR_TRANSPARENT);
-		Font.TYPEFACE_DOT.render(
-			_dc,
-			pos_x,
-			pos_y,
-			self.bg_(),
-			Font.STYLE_SMALL
-		);
+		_dc.drawText(pos_x, pos_y, Font.DOT_SMALL, self.bg_(), Graphics.TEXT_JUSTIFY_LEFT);
 
 		// ---- value ----
 
@@ -60,13 +48,7 @@ class Value {
 		pos_x += (self.field_count - str.length()) * self.field_width;
 
 		_dc.setColor(0xAAAAAA, Graphics.COLOR_TRANSPARENT);
-		Font.TYPEFACE_DOT.render(
-			_dc,
-			pos_x,
-			pos_y,
-			str,
-			Font.STYLE_SMALL
-		);
+		_dc.drawText(pos_x, pos_y, Font.DOT_SMALL, str, Graphics.TEXT_JUSTIFY_LEFT);
 
 		pos_x += str.length() * self.field_width;
 
@@ -98,7 +80,7 @@ class Value {
 		}
 	}
 
-	function refresh() as Void {
+	function refresh(_dc as Graphics.Dc) as Void {
 		self.max_ = self.getMax_();
 	}
 
@@ -118,7 +100,15 @@ class Value {
 			case 3: return "███";
 			case 4: return "████";
 			case 5: return "█████";
-			default: return Utils.repeatStr("█", self.field_count);
+			case 6: return "██████";
+			case 7: return "███████";
+			default: {
+				var result = "";
+				for (var i = 0; i < self.field_count; ++i) {
+					result += "█";
+				}
+				return result;
+			}
 		}
 	}
 }
