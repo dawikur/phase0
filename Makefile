@@ -24,14 +24,14 @@ RESOURCES_DIR       := resources/
 RESOURCES_BASE_DIR  := $(RESOURCES_DIR)base/
 BUILD_SOURCE_DIR    := $(BUILD_DIR)source/
 
-FONTS_DEPS     := scripts/generate_fonts scripts/fonts_data.py scripts/fonts_model.py
-FONTS          := $(RESOURCES_BASE_DIR)fonts.xml
 DRAWABLES_DEPS := scripts/generate_icon scripts/fonts_data.py scripts/fonts_model.py
 DRAWABLES      := $(RESOURCES_BASE_DIR)drawables.xml
+FONTS_DEPS     := scripts/generate_fonts scripts/fonts_data.py scripts/fonts_model.py
+FONTS          := $(RESOURCES_BASE_DIR)fonts.xml
 
-RESOURCES := $(FONTS) $(DRAWABLES)
+RESOURCES := $(DRAWABLES) $(FONTS)
 
-PRG_DEPS   := $(JUNGLE) $(SRCS) $(RSCS) $(RESOURCES)
+PRG_DEPS := $(JUNGLE) $(SRCS) $(RSCS) $(RESOURCES)
 
 # ---- settings ----
 

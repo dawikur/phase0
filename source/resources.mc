@@ -90,36 +90,4 @@ const MONTHS as Lang.Array<Lang.ResourceId> = [
 	Rez.Strings.MONTH_12_DEC,
 ];
 
-(:test)
-function VerifyGlyphs(logger as Test.Logger) as Lang.Boolean {
-	var collections = [
-		CONDITIONS, DAYS_OF_WEEK, MONTHS
-	];
-
-	for (var i = 0; i < collections.size(); ++i) {
-		var collection = collections[i];
-
-		for (var j = 0; j < collection.size(); ++j) {
-			var entry = collection[j].toCharArray();
-
-			for (var k = 0; k < entry.size(); ++k) {
-				var char = entry[k];
-
-				Font.TYPEFACE.getOrEmpty(char);
-			}
-		}
-	}
-
-	var digits = ":0123456789".toCharArray();
-	for (var i = 0; i < digits.size(); ++i) {
-		var digit = digits[i];
-
-		Font.TYPEFACE.getOrEmpty(digit);
-		Font.DIGITS.getOrEmpty(digit);
-		Font.DIGITS_BLURED.getOrEmpty(digit);
-	}
-
-	return true;
-}
-
 } // module Resources

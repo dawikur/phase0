@@ -1262,7 +1262,7 @@ TYPEFACE_DIGITS = Typeface("Digits", [
     ]),
 ])
 
-TYPEFACE_DIGITS_BLURED = Typeface("Digits Blured", list(
+TYPEFACE_DIGITS_BLURRED = Typeface("Digits Blurred", list(
     glyph.blure() for glyph in TYPEFACE_DIGITS.glyphs
 ))
 

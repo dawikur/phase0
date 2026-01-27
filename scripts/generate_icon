@@ -9,7 +9,7 @@ import fonts_data
 from args_parse import parse_folders
 
 ICON = fonts_data.ICON
-ICON_BLURED = ICON.blure()
+ICON_BLURRED = ICON.blure()
 
 
 def rgba_to_svg(color: Tuple[int, int, int, int]) -> str:
@@ -34,7 +34,7 @@ def main() -> None:
 
     for icon, style, color in [
         (ICON, fonts_data.STYLE_REGULAR, (0xAA, 0x55, 0x00, 0xFF)),
-        (ICON_BLURED, fonts_data.STYLE_REGULAR_THIN, (0xAA, 0x55, 0x00, 0xFF)),
+        (ICON_BLURRED, fonts_data.STYLE_REGULAR_THIN, (0xAA, 0x55, 0x00, 0xFF)),
         (ICON, fonts_data.STYLE_REGULAR_THIN, (0xFF, 0xAA, 0x00, 0xFF)),
     ]:
         fill = rgba_to_svg(color)
@@ -55,14 +55,10 @@ def main() -> None:
 
     folders.build("resources", "icon.svg").write_text("\n".join(icon_svg))
 
-    folders.resources("base", "drawables.xml").write_text(
-        textwrap.dedent(
-            f"""\
+    folders.resources("base", "drawables.xml").write_text(textwrap.dedent(f"""\
         <drawables xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
         \t<bitmap id="Icon" filename="../../{folders.build("resources", "icon.svg")}" dithering="none" />
-        </drawables>"""
-        )
-    )
+        </drawables>"""))
 
 
 if __name__ == "__main__":

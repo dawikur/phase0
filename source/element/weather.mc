@@ -6,28 +6,28 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Weather;
 
-module Element {
+module Label {
 
-class Weather extends Label {
+class Weather extends Base {
 	var size_x as Lang.Number = 0;
 
 	hidden var unitsSystem_ as System.UnitsSystem;
 
-	hidden var regular_styles_ as Lang.Array<Element.Style>;
-	hidden var small_styles_ as Lang.Array<Element.Style>;
-	hidden var tiny_styles_ as Lang.Array<Element.Style>;
+	hidden var regular_styles_ as Lang.Array<Label.Style>;
+	hidden var small_styles_ as Lang.Array<Label.Style>;
+	hidden var tiny_styles_ as Lang.Array<Label.Style>;
 
 	function initialize() {
-		Label.initialize();
+		Base.initialize();
 
 		self.regular_styles_ = [
-			new Element.Style(Font.DOT_REGULAR, 0x555555),
+			new Label.Style(Font.DOT_REGULAR, 0x555555),
 		];
 		self.small_styles_ = [
-			new Element.Style(Font.DOT_SMALL, 0xAAAAAA),
+			new Label.Style(Font.DOT_SMALL, 0xAAAAAA),
 		];
 		self.tiny_styles_ = [
-			new Element.Style(Font.DOT_TINY, 0xAAAAAA),
+			new Label.Style(Font.DOT_TINY, 0xAAAAAA),
 		];
 
 		self.styles = self.regular_styles_;
@@ -42,12 +42,12 @@ class Weather extends Label {
 		if (maybeCurrentConditions != null) {
 			var currentConditions = maybeCurrentConditions;
 
-			self.label = "";
+			self.label_ = "";
 
 			if (currentConditions.condition != null) {
 				var condition = currentConditions.condition as Lang.Number;
 
-				self.label += Application.loadResource(Resources.CONDITIONS[condition]) as Lang.String;
+				self.label_ += Application.loadResource(Resources.CONDITIONS[condition]) as Lang.String;
 			}
 
 			if (currentConditions.temperature != null) {
@@ -59,14 +59,14 @@ class Weather extends Label {
 					unit = "F";
 				}
 
-				self.label += "  ";
-				self.label += temperature.toNumber().format("%d");
-				self.label += unit;
+				self.label_ += "  ";
+				self.label_ += temperature.toNumber().format("%d");
+				self.label_ += unit;
 			}
 
-			if (_dc.getTextWidthInPixels(self.label, self.regular_styles_[0].font) <= self.size_x) {
+			if (_dc.getTextWidthInPixels(self.label_, self.regular_styles_[0].font) <= self.size_x) {
 				self.styles = self.regular_styles_;
-			} else if (_dc.getTextWidthInPixels(self.label, self.small_styles_[0].font) <= self.size_x) {
+			} else if (_dc.getTextWidthInPixels(self.label_, self.small_styles_[0].font) <= self.size_x) {
 				self.styles = self.small_styles_;
 			} else {
 				self.styles = self.tiny_styles_;
@@ -75,4 +75,4 @@ class Weather extends Label {
 	}
 }
 
-} // module Element
+} // module Label

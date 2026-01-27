@@ -5,25 +5,23 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.UserProfile;
 
-module Element {
+module Label {
 
-class Clock extends Label {
+class Clock extends Base {
 	hidden var is24Hour_ as Lang.Boolean;
 
-	hidden var day_styles_ as Lang.Array<Element.Style>;
-	hidden var night_styles_ as Lang.Array<Element.Style>;
+	hidden var day_styles_ as Lang.Array<Label.Style>;
+	hidden var night_styles_ as Lang.Array<Label.Style>;
 
 	function initialize() {
-		Label.initialize();
+		Base.initialize();
 
 		self.day_styles_ = [
-			new Element.Style(Font.DIGITS_BLURED_REGULAR_THIN, 0xAA5500),
-			new Element.Style(Font.DIGITS_REGULAR, 0xAA5500),
-			new Element.Style(Font.DIGITS_REGULAR_THIN, 0xFFAA00),
+			new Label.Style(Font.DOT_LARGE_BLURRED, 0xAA5500),
+			new Label.Style(Font.DOT_LARGE_THIN, 0xFFAA00),
 		];
 		self.night_styles_ = [
-			new Element.Style(Font.DIGITS_BLURED_REGULAR_THIN, 0xAA5500),
-			new Element.Style(Font.DIGITS_REGULAR, 0xAA5500),
+			new Label.Style(Font.DOT_LARGE_BLURRED, 0xAA5500),
 		];
 
 		self.styles = self.day_styles_;
@@ -64,4 +62,4 @@ class Clock extends Label {
 	}
 }
 
-} // module Element
+} // module Label

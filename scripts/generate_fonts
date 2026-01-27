@@ -4,7 +4,7 @@
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import fonts_data
 from args_parse import parse_folders
@@ -31,6 +31,8 @@ class Atlas:
         self,
         glyph: fonts_data.Glyph,
         style: fonts_data.Style,
+        dx: int = 0,
+        dy: int = 0,
     ) -> None:
         for y in range(0, glyph.height):
             for x in range(0, glyph.width):
@@ -40,10 +42,10 @@ class Atlas:
 
                     self.draw.rectangle(
                         [
-                            pos_x,
-                            pos_y,
-                            pos_x + style.weight - 1,
-                            pos_y + style.weight - 1,
+                            dx + pos_x,
+                            dy + pos_y,
+                            dx + pos_x + style.weight - 1,
+                            dy + pos_y + style.weight - 1,
                         ],
                         fill=1,
                     )
@@ -90,17 +92,12 @@ class Fnt:
         self.glyphs = []
 
     def __str__(self) -> str:
-        return (
-            textwrap.dedent(
-                f"""\
+        return textwrap.dedent(f"""\
             info face="{self.name}" size={self.line_h}
             common lineHeight={self.line_h} base={self.line_h} scaleW={self.atlas_w} scaleH={self.atlas_h} pages=1
             page id=0 file="{self.name}.png"
             chars count={len(self.glyphs)}
-        """
-            )
-            + "\n".join(str(glyph) for glyph in self.glyphs)
-        )
+        """) + "\n".join(str(glyph) for glyph in self.glyphs)
 
     def add(
         self,
@@ -128,23 +125,62 @@ class Fnt:
 
 
 def parse_typeface_and_style(
-    typeface: fonts_data.Typeface, style: fonts_data.Style
+    typefaces: Union[fonts_data.Typeface, List[fonts_data.Typeface]],
+    styles: Union[fonts_data.Style, List[fonts_data.Style]],
+    name: Optional[str] = None,
 ) -> Tuple[str, Image, str]:
+    if not isinstance(typefaces, list):
+        typefaces = [typefaces]
+    if not isinstance(styles, list):
+        styles = [styles]
+
+    assert len(typefaces) == len(styles)
+
+    if name is None:
+        if 1 == len(typefaces):
+            name = (
+                name
+                or f"{typefaces[0].name} {styles[0].name}".replace(" ", "_").lower()
+            )
+        else:
+            assert False, "Name is required if there isn't exactly one typeface"
+
+    if not typefaces:
+        fnt = Fnt(name=name.lower(), atlas_w=0, atlas_h=0, line_h=0)
+        atlas = Atlas(width=0, height=0)
+        return fnt.name, atlas.img, str(fnt)
+
+    glyph_lists = [sorted(tf.glyphs, key=lambda g: g.name) for tf in typefaces]
+
+    glyph_count = len(glyph_lists[0])
+    for gl in glyph_lists:
+        assert len(gl) == glyph_count
+
     atlas_w = 0
     atlas_h = 0
     line_h = 0
 
-    for glyph in sorted(typeface.glyphs, key=lambda glyph: glyph.name):
-        width = glyph.width * style.size
-        height = glyph.height * style.size
-        yadvance = glyph.yadvance * style.size
+    # ---- First pass: atlas metrics ----
+    for idx in range(glyph_count):
+        glyph_names = {glyph_lists[i][idx].name for i in range(len(glyph_lists))}
+        assert len(glyph_names) == 1
 
-        atlas_w += width
-        atlas_h = max(atlas_h, height)
-        line_h = max(line_h, yadvance)
+        widths = []
+        heights = []
+        yadvances = []
+
+        for glyphs, style in zip(glyph_lists, styles):
+            glyph = glyphs[idx]
+            widths.append(glyph.width * style.size)
+            heights.append(glyph.height * style.size)
+            yadvances.append(glyph.yadvance * style.size)
+
+        atlas_w += max(widths)
+        atlas_h = max(atlas_h, max(heights))
+        line_h = max(line_h, max(yadvances))
 
     fnt = Fnt(
-        name=f"{typeface.name} {style.name}".replace(" ", "_").lower(),
+        name=name.lower(),
         atlas_w=atlas_w,
         atlas_h=atlas_h,
         line_h=line_h,
@@ -152,27 +188,45 @@ def parse_typeface_and_style(
 
     atlas = Atlas(width=fnt.atlas_w, height=fnt.atlas_h)
 
-    for glyph in sorted(typeface.glyphs, key=lambda glyph: glyph.name):
-        width = glyph.width * style.size
-        xoffset = glyph.xoffset * style.size
-        xadvance = glyph.xadvance * style.size + 1
+    # ---- Second pass: glyph placement ----
+    for idx in range(glyph_count):
+        glyphs_at_idx = [gl[idx] for gl in glyph_lists]
+        glyph_name = glyphs_at_idx[0].name
 
-        height = glyph.height * style.size
-        yoffset = glyph.yoffset * style.size
+        widths = []
+        heights = []
+        xoffsets = []
+        yoffsets = []
+        xadvances = []
+
+        for glyph, style in zip(glyphs_at_idx, styles):
+            widths.append(glyph.width * style.size)
+            heights.append(glyph.height * style.size)
+            xoffsets.append(glyph.xoffset * style.size)
+            yoffsets.append(glyph.yoffset * style.size)
+            xadvances.append(glyph.xadvance * style.size + 1)
+
+        max_width = max(widths)
+        max_height = max(heights)
 
         fnt.add(
-            name=glyph.name,
+            name=glyph_name,
             atlas_x=atlas.pos_x,
             atlas_y=atlas.pos_y,
-            width=width,
-            height=height,
-            xoffset=xoffset,
-            yoffset=yoffset,
-            xadvance=xadvance,
+            width=max_width,
+            height=max_height,
+            xoffset=min(xoffsets),
+            yoffset=min(yoffsets),
+            xadvance=max(xadvances),
         )
 
-        atlas.add(glyph, style)
-        atlas.advance(width)
+        # Draw all glyphs centered on top of each other
+        for glyph, style, w, h in zip(glyphs_at_idx, styles, widths, heights):
+            dx = (max_width - w) / 2
+            dy = (max_height - h) / 2
+            atlas.add(glyph, style, dx, dy)
+
+        atlas.advance(max_width)
 
     return fnt.name, atlas.img, str(fnt)
 
@@ -184,9 +238,7 @@ def main() -> None:
     fonts_xml.append("<fonts>")
 
     fonts_mc = []
-    fonts_mc.append(
-        textwrap.dedent(
-            """\
+    fonts_mc.append(textwrap.dedent("""\
         // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
         // This fie is autogenerated
 
@@ -194,22 +246,9 @@ def main() -> None:
         import Toybox.WatchUi;
 
         module Font {
-    """
-        )
-    )
+    """))
 
-    for typeface, style in [
-        # TODO: combine those two
-        (fonts_data.TYPEFACE_DIGITS_BLURED, fonts_data.STYLE_REGULAR_THIN),
-        (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR),
-        (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR_THIN),
-        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_REGULAR),
-        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_REGULAR_THIN),
-        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_SMALL),
-        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_TINY),
-    ]:
-        font_name, atlas, fnt = parse_typeface_and_style(typeface, style)
-
+    def store(font_name: str, atlas: Image, fnt: str) -> None:
         font_png = folders.build("resources", f"{font_name}.png")
         atlas.save(font_png)
 
@@ -224,6 +263,30 @@ def main() -> None:
         fonts_mc.append(
             f"const {FONT_NAME} = Application.loadResource(Rez.Fonts.{FONT_NAME}) as WatchUi.FontResource;"
         )
+
+    for meta_data in [
+        (
+            [fonts_data.TYPEFACE_DIGITS_BLURRED, fonts_data.TYPEFACE_DIGITS],
+            [fonts_data.STYLE_REGULAR_THIN, fonts_data.STYLE_REGULAR],
+            "dot_large_blurred",
+        ),
+        (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR_THIN, "dot_large_thin"),
+        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_REGULAR),
+        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_REGULAR_THIN),
+        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_SMALL),
+        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_TINY),
+    ]:
+        artefacts = parse_typeface_and_style(*meta_data)
+        store(*artefacts)
+
+    fonts_mc.append("")
+
+    for style in [
+        (fonts_data.STYLE_REGULAR),
+        (fonts_data.STYLE_SMALL),
+        (fonts_data.STYLE_TINY),
+    ]:
+        fonts_mc.append(f"const SPACING_{style.name.upper()} = {style.size};")
 
     fonts_xml.append("</fonts>")
     fonts_mc.append("\n} // module Font")

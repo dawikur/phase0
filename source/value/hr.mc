@@ -1,15 +1,16 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.Lang;
-import Toybox.Graphics;
+import Toybox.ActivityMonitor;
+import Toybox.UserProfile;
 
-module Element {
+module Value {
 
-class HR extends Value {
+class HR extends Base {
 	function initialize() {
-		Value.initialize();
+		Base.initialize();
 
-		self.label = "HR:";
+		self.label = "HR";
 	}
 
 	function get_() as Lang.Number or Null {
@@ -24,4 +25,4 @@ class HR extends Value {
 	}
 }
 
-} // module Element
+} // module Value

@@ -61,19 +61,18 @@ class View extends WatchUi.WatchFace {
 	// ---- line above 2 ----
 
 	// ---- line above 1 ----
-	hidden const weather_ = new Element.Weather();
+	hidden const weather_ = new Label.Weather();
 
 	// ---- line main ----
-	hidden const clock_ = new Element.Clock();
+	hidden const clock_ = new Label.Clock();
 
 	// ---- line below 1 ----
-	hidden const date_ = new Element.Date();
-	hidden const seconds_ = new Element.Seconds();
+	hidden const date_ = new Label.Date();
+	hidden const seconds_ = new Label.Seconds();
 
 	// ---- line below 2 ----
 
-	hidden const hr_ = new Element.HR();
-	hidden const steps_ = new Element.Steps();
+	hidden var values_ as Lang.Array<Value.Base> = [];
 
 	// ---- methods ----
 
@@ -111,16 +110,16 @@ class View extends WatchUi.WatchFace {
 
 		// ---- measurements ----
 
-		var clock_size = _dc.getTextDimensions("00:00", Font.DIGITS_REGULAR);
+		var clock_size = _dc.getTextDimensions("00:00", Font.DOT_LARGE_BLURRED);
 
 		var regular_size = _dc.getTextDimensions("0", Font.DOT_REGULAR);
-		var regular_spacing = 3;
+		var regular_spacing = Font.SPACING_REGULAR;
 
 		var small_size = _dc.getTextDimensions("0", Font.DOT_SMALL);
-		var small_spacing = 2;
+		var small_spacing = Font.SPACING_SMALL;
 
 		var tiny_size = _dc.getTextDimensions("0", Font.DOT_TINY);
-		//var tiny_spacing = 1;
+		//var tiny_spacing = Font.SPACING_TINY;
 
 		// ---- line above 1 ----
 
@@ -164,21 +163,29 @@ class View extends WatchUi.WatchFace {
 			tiny_size[1] + small_spacing + small_size[1]
 		);
 
-		self.hr_.pos_x = line_below_2.pos_x;
-		self.hr_.pos_y = line_below_2.pos_y;
-		self.hr_.label_height = tiny_size[1] + small_spacing;
-		self.hr_.field_count = 3;
-		self.hr_.field_width = small_size[0];
-		self.hr_.field_height = small_size[1] - small_spacing;
-		self.hr_.gauge_width = small_spacing;
-
-		self.steps_.pos_x = line_below_2.pos_x + 3 * (small_size[0] + small_spacing);
-		self.steps_.pos_y = line_below_2.pos_y;
-		self.steps_.label_height = tiny_size[1] + small_spacing;
-		self.steps_.field_count = 3;
-		self.steps_.field_width = small_size[0];
-		self.steps_.field_height = small_size[1] - small_spacing;
-		self.steps_.gauge_width = small_spacing;
+		self.values_ = [];
+		var pos_x = line_below_2.pos_x;
+		pos_x += self.addValue_(
+			new Value.HR(),
+			pos_x,
+			line_below_2.pos_y,
+			3,
+			small_spacing
+		) * small_size[0];
+		pos_x += self.addValue_(
+			new Value.HR(),
+			pos_x,
+			line_below_2.pos_y,
+			4,
+			small_spacing
+		) * small_size[0];
+		pos_x += self.addValue_(
+			new Value.Floors(),
+			pos_x,
+			line_below_2.pos_y,
+			3,
+			small_spacing
+		) * small_size[0];
 	}
 
 	function onUpdate(_dc as Graphics.Dc) as Void {
@@ -212,8 +219,9 @@ class View extends WatchUi.WatchFace {
 			self.seconds_.render(_dc);
 		}
 
-		self.hr_.render(_dc);
-		self.steps_.render(_dc);
+		for (var i = 0; i < self.values_.size(); ++i) {
+			self.values_[i].render(_dc);
+		}
 	}
 
 	function onPartialUpdate(_dc as Graphics.Dc) as Void {
@@ -246,8 +254,9 @@ class View extends WatchUi.WatchFace {
 		self.clock_.refresh(_dc);
 		self.weather_.refresh(_dc);
 
-		self.hr_.refresh(_dc);
-		self.steps_.refresh(_dc);
+		for (var i = 0; i < self.values_.size(); ++i) {
+			self.values_[i].refresh(_dc);
+		}
 	}
 
 	hidden function refreshHour_(_dc as Graphics.Dc) as Void {
@@ -308,6 +317,23 @@ class View extends WatchUi.WatchFace {
 			end_x,
 			end_y
 		);
+	}
+
+	hidden function addValue_(
+		_value as Value.Base,
+		_pos_x as Lang.Number,
+		_pos_y as Lang.Number,
+		_count as Lang.Number,
+		_spacing as Lang.Number
+	) as Lang.Number {
+		_value.pos_x = _pos_x;
+		_value.pos_y = _pos_y;
+		_value.count = _count;
+		_value.spacing = _spacing;
+
+		self.values_.add(_value);
+
+		return _count + 1;
 	}
 }
 

@@ -35,14 +35,12 @@ class Glyph:
 
         idx = 0
         for row in self.bitmap:
-            assert self.width == len(row), textwrap.dedent(
-                f"""\
+            assert self.width == len(row), textwrap.dedent(f"""\
                 Width of each row has to match.
                     glyph == '{self.name}'
                     row[0] == '{self.bitmap[0]}', len == {len(self.bitmap[0])}
                     row[{idx}] == '{row}', len == {len(row)}
-            """
-            )
+            """)
             idx += 1
 
         while self.is_column_empty_(self.xoffset):
@@ -108,7 +106,7 @@ class Glyph:
         if x < 0 or self.width_ <= x:
             return False
 
-        for y in range(self.height):
+        for y in range(self.height_):
             if self.pixel(x, y):
                 return False
 
@@ -118,7 +116,7 @@ class Glyph:
         if y < 0 or self.height_ <= y:
             return False
 
-        for x in range(self.width):
+        for x in range(self.width_):
             if self.pixel(x, y):
                 return False
 

@@ -6,15 +6,15 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Time;
 
-module Element {
+module Label {
 
-class Date extends Label {
+class Date extends Base {
 	function initialize() {
-		Label.initialize();
+		Base.initialize();
 
 		self.styles = [
-			new Element.Style(Font.DOT_REGULAR, 0x555555),
-			new Element.Style(Font.DOT_REGULAR_THIN, 0xAAAAAA),
+			new Label.Style(Font.DOT_REGULAR, 0x555555),
+			new Label.Style(Font.DOT_REGULAR_THIN, 0xAAAAAA),
 		];
 	}
 
@@ -29,4 +29,4 @@ class Date extends Label {
 	}
 }
 
-} // module Element
+} // module Label

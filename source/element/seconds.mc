@@ -4,17 +4,17 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
 
-module Element {
+module Label {
 
-class Seconds extends Label {
+class Seconds extends Base {
 	var size_x as Lang.Number = 0;
 	var size_y as Lang.Number = 0;
 
 	function initialize() {
-		Label.initialize();
+		Base.initialize();
 
 		self.styles = [
-			new Element.Style(Font.DOT_REGULAR_THIN, 0xAAAAAA),
+			new Label.Style(Font.DOT_REGULAR_THIN, 0xAAAAAA),
 		];
 	}
 
@@ -25,4 +25,4 @@ class Seconds extends Label {
 	}
 }
 
-} // module Element
+} // module Label
