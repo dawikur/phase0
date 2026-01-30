@@ -173,7 +173,7 @@ class View extends WatchUi.WatchFace {
 			small_spacing
 		) * small_size[0];
 		pos_x += self.addValue_(
-			new Value.HR(),
+			new Value.Steps(),
 			pos_x,
 			line_below_2.pos_y,
 			4,
@@ -181,6 +181,13 @@ class View extends WatchUi.WatchFace {
 		) * small_size[0];
 		pos_x += self.addValue_(
 			new Value.Floors(),
+			pos_x,
+			line_below_2.pos_y,
+			3,
+			small_spacing
+		) * small_size[0];
+		pos_x += self.addValue_(
+			new Value.Battery(),
 			pos_x,
 			line_below_2.pos_y,
 			3,
@@ -211,16 +218,26 @@ class View extends WatchUi.WatchFace {
 			self.refreshHour_(_dc);
 		}
 
-		self.clock_.render(_dc);
-		self.date_.render(_dc);
-		self.weather_.render(_dc);
+		if (self.is_night_mode_) {
+			self.clock_.render(_dc);
+			self.date_.render(_dc);
 
-		if (self.is_high_power_) {
-			self.seconds_.render(_dc);
-		}
+			if (self.is_high_power_) {
+				self.seconds_.render(_dc);
+			}
+		} else {
+			self.clock_.render(_dc);
+			self.date_.render(_dc);
 
-		for (var i = 0; i < self.values_.size(); ++i) {
-			self.values_[i].render(_dc);
+			self.weather_.render(_dc);
+
+			if (self.is_high_power_) {
+				self.seconds_.render(_dc);
+			}
+
+			for (var i = 0; i < self.values_.size(); ++i) {
+				self.values_[i].render(_dc);
+			}
 		}
 	}
 
@@ -241,22 +258,17 @@ class View extends WatchUi.WatchFace {
 
 	hidden function refreshSec_(_dc as Graphics.Dc) as Void {
 		self.seconds_.refresh(_dc);
-	}
-
-	hidden function refreshMin_(_dc as Graphics.Dc) as Void {
-		var is_night_mode = self.isNightMode_();
-		if (self.is_night_mode_ != is_night_mode) {
-			self.is_night_mode_ = is_night_mode;
-
-			self.clock_.onNightMode(is_night_mode);
-		}
-
-		self.clock_.refresh(_dc);
-		self.weather_.refresh(_dc);
 
 		for (var i = 0; i < self.values_.size(); ++i) {
 			self.values_[i].refresh(_dc);
 		}
+	}
+
+	hidden function refreshMin_(_dc as Graphics.Dc) as Void {
+		self.is_night_mode_ = self.isNightMode_();
+
+		self.clock_.refresh(_dc);
+		self.weather_.refresh(_dc);
 	}
 
 	hidden function refreshHour_(_dc as Graphics.Dc) as Void {
@@ -264,25 +276,25 @@ class View extends WatchUi.WatchFace {
 	}
 
 	hidden function isNightMode_() as Lang.Boolean {
-		var userProfile = UserProfile.getProfile();
-		if (userProfile.sleepTime == null) {
+		var user_profile = UserProfile.getProfile();
+		if (user_profile.sleepTime == null) {
 			return false;
 		}
-		if (userProfile.wakeTime == null) {
+		if (user_profile.wakeTime == null) {
 			return false;
 		}
 
-		var sleepTime = userProfile.sleepTime as Time.Duration;
-		var wakeTime = userProfile.wakeTime as Time.Duration;
+		var sleep_time = user_profile.sleepTime as Time.Duration;
+		var wake_time = user_profile.wakeTime as Time.Duration;
 
 		var now = Time.now();
         var midnight = Time.today();
         var since_midnight = now.subtract(midnight) as Time.Duration;
 
-		if(sleepTime.greaterThan(wakeTime)) {
-			return since_midnight.greaterThan(sleepTime) || since_midnight.lessThan(wakeTime);
+		if(sleep_time.greaterThan(wake_time)) {
+			return since_midnight.greaterThan(sleep_time) || since_midnight.lessThan(wake_time);
 		}
-		return since_midnight.greaterThan(sleepTime) and since_midnight.lessThan(wakeTime);
+		return since_midnight.greaterThan(sleep_time) and since_midnight.lessThan(wake_time);
 	}
 
 	hidden function secondLeg_(_leg as Lang.Number) as Lang.Numeric {

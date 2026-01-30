@@ -55,16 +55,16 @@ class Base {
 		// ---- value ----
 
 		var bg = self.bg_();
+		var bg_size = _dc.getTextDimensions(bg, self.value_font_);
+		pos_x += bg_size[0];
+
 		_dc.setColor(self.value_bg_, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(pos_x, pos_y, self.value_font_, bg, Graphics.TEXT_JUSTIFY_LEFT);
+		_dc.drawText(pos_x, pos_y, self.value_font_, bg, Graphics.TEXT_JUSTIFY_RIGHT);
 
 		var value = self.get_();
 		if (value == null) {
 			return;
 		}
-
-		var bg_size = _dc.getTextDimensions(bg, self.value_font_);
-		pos_x += bg_size[0];
 
 		var str = self.formatValue_(value.toFloat());
 		_dc.setColor(self.value_fg_, Graphics.COLOR_TRANSPARENT);

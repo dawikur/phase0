@@ -9,7 +9,7 @@ class Steps extends Base {
 	function initialize() {
 		Base.initialize();
 
-		self.label = "Steps";
+		self.label = Application.loadResource(Rez.Strings.LABEL_STEPS) as Lang.String;
 	}
 
 	function get_() as Lang.Number or Null {

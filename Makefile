@@ -3,9 +3,30 @@
 # ---- arguments ----
 
 DEVICE ?= fr955
+MODE   ?= debug
 NAME   ?= phase0
+V      ?= 0
 
 # ---- variables ----
+
+TAG.debug             :=
+NAME_SUFFIX.debug     :=
+FLAG_MONKEYC.debug    :=
+FLAG_SIMULATE.debug   :=
+
+TAG.test              := " \(test\)"
+NAME_SUFFIX.test      := _test
+FLAG_MONKEYC.test     := --unit-test
+FLAG_SIMULATE.test    := -t
+
+TAG.release           := " \(release\)"
+NAME_SUFFIX.release   := _release
+FLAG_MONKEYC.release  := --release
+FLAG_SIMULATE.release :=
+
+Q.0 := @
+Q.1 :=
+Q   := $(Q.$(V))
 
 SDK_DIR   := $(shell cat "${HOME}/.Garmin/ConnectIQ/current-sdk.cfg")
 SDK_DIR   := $(patsubst %/,%,$(SDK_DIR))/
@@ -14,8 +35,7 @@ MONKEYDO  := $(SDK_DIR)bin/monkeydo
 CONNECTIQ := $(SDK_DIR)bin/connectiq
 
 BUILD_DIR := .build/
-PRG       := $(BUILD_DIR)$(NAME).PRG
-PRG_TEST  := $(BUILD_DIR)$(NAME)_test.PRG
+PRG       := $(BUILD_DIR)$(NAME)$(NAME_SUFFIX.$(MODE)).PRG
 JUNGLE    := monkey.jungle
 SRCS      := $(shell find source -type f)
 RSCS      := $(shell find resources -type f)
@@ -39,100 +59,88 @@ PRG_DEPS := $(JUNGLE) $(SRCS) $(RSCS) $(RESOURCES)
 .ONESHELL:
 .DELETE_ON_ERROR:
 
+MAKEFLAGS += --no-print-directory
+
 # ---- targets ----
 
 $(PRG): $(PRG_DEPS)
-	@$(MONKEYC) \
-		--jungles $< \
-		--device $(DEVICE) \
-		--output $@ \
-		--warn \
-		--private-key $(HOME)/Documents/developer_key
-
-$(PRG_TEST): $(PRG_DEPS)
-	@$(MONKEYC) \
+	$(Q)$(MONKEYC) \
 		--jungles $< \
 		--device $(DEVICE) \
 		--output $@ \
 		--warn \
 		--private-key $(HOME)/Documents/developer_key \
-		--unit-test
+		$(FLAG_MONKEYC.$(MODE))
 
 $(FONTS): $(FONTS_DEPS)
-	@$< --resources $(RESOURCES_DIR) --build $(BUILD_DIR)
+	$(Q)$< --resources $(RESOURCES_DIR) --build $(BUILD_DIR)
 
 $(DRAWABLES): $(DRAWABLES_DEPS)
-	@$< --resources $(RESOURCES_DIR) --build $(BUILD_DIR)
+	$(Q)$< --resources $(RESOURCES_DIR) --build $(BUILD_DIR)
 
 $(BUILD_SOURCE_DIR):
-	@mkdir -p $@
+	$(Q)mkdir -p $@
 
 # ---- aliases ----
 
-b: build
 build_tag:
-	@echo " [ build ]"
-build: resources build_tag $(PRG)
+	$(Q)echo " [ build$(TAG.$(MODE)) ]"
+b build: resources build_tag $(PRG)
 .PHONY: b build build_tag
 
-B: BUILD
-BUILD_TAG:
-	@echo " [ build w/ tests ]"
-BUILD: resources BUILD_TAG $(PRG_TEST)
-.PHONY: B BUILD BUILD_TAG
+bt build_test:
+	$(Q)$(MAKE) MODE=test build
+.PHONY: bt build_test
 
-r: resources
+br build_release:
+	$(Q)$(MAKE) MODE=release build
+.PHONY: br build_release
+
 resources_tag:
-	@echo " [ resources ]"
-resources: resources_tag $(RESOURCES)
+	$(Q)echo " [ resources ]"
+r resources: resources_tag $(RESOURCES)
 .PHONY: r resources resources_tag
 
-s: simulate
-simulate: build
-	@echo " [ simulate ]"
+s simulate: build
+	$(Q)echo " [ simulate$(TAG.$(MODE)) ]"
 	$(CONNECTIQ)&
 	SIM_PID=$$!
 	sleep 1
-	$(MONKEYDO) $(PRG) $(DEVICE)
+	$(MONKEYDO) $(PRG) $(DEVICE) $(FLAG_SIMULATE.$(MODE))
 	wait $$SIM_PID
 .PHONY: s simulate
 
-S: SIMULATE
-SIMULATE: BUILD
-	@echo " [ simulate w/ tests ]"
-	$(CONNECTIQ)&
-	SIM_PID=$$!
-	sleep 1
-	$(MONKEYDO) $(PRG_TEST) $(DEVICE) -t
-	wait $$SIM_PID
-.PHONY: S SIMULATE
+st simulate_test:
+	$(Q)$(MAKE) MODE=test simulate
+.PHONY: st simulate_test
 
-c: clean
-clean:
-	@echo " [ clean ]"
+c clean:
+	$(Q)echo " [ clean ]"
 	$(RM) -r bin $(BUILD_DIR) $(RESOURCES)
 .PHONY: c clean
 
 # ---- help ----
 
-h: help
-help:
-	@echo " [ help ]"
+h help:
+	$(Q)echo " [ help ]"
 	echo " Makefile for ConnectIQ project."
 	echo ""
 	echo " Usage: make [target] [arguments]"
 	echo ""
 	echo " Target:"
-	echo "     b, build           build project"
-	echo "     B, BUILD           build project w/ tests"
-	echo "     r, resources       generate resources"
-	echo "     s, simulate        run simulator"
-	echo "     S, SIMULATE        run simulator w/ tests"
-	echo "     c, clean           remove build directory"
-	echo "     h, help            print help message"
+	echo "     b , build          build project"
+	echo "     bt, build_test     build project w/ tests"
+	echo "     br, build_release  build project release"
+	echo "     r , resources      generate resources"
+	echo "     s , simulate       run simulator"
+	echo "     st, simulate_test  run simulator w/ tests"
+	echo "     c , clean          remove build directory"
+	echo "     h , help           print help message"
 	echo ""
 	echo " Arguments:"
 	echo "     DEVICE             (default: $(DEVICE))"
+	echo "     MODE               (default: $(MODE))"
 	echo "     NAME               (default: $(NAME))"
+	echo "     V                  (default: $(V))"
 	echo ""
 .PHONY: help

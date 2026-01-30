@@ -10,7 +10,7 @@ class HR extends Base {
 	function initialize() {
 		Base.initialize();
 
-		self.label = "HR";
+		self.label = Application.loadResource(Rez.Strings.LABEL_HR) as Lang.String;
 	}
 
 	function get_() as Lang.Number or Null {
@@ -19,8 +19,8 @@ class HR extends Base {
 	}
 
 	function getMax_() as Lang.Number or Null {
-		var currentSport = UserProfile.getCurrentSport();
-		var zones = UserProfile.getHeartRateZones(currentSport) as Lang.Array<Lang.Number>;
+		var current_sport = UserProfile.getCurrentSport();
+		var zones = UserProfile.getHeartRateZones(current_sport) as Lang.Array<Lang.Number>;
 		return zones[5] as Lang.Number;
 	}
 }

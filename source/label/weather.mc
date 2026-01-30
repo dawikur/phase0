@@ -1,0 +1,67 @@
+// Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+import Toybox.Application;
+import Toybox.Graphics;
+import Toybox.Lang;
+import Toybox.System;
+import Toybox.Weather;
+
+module Label {
+
+class Weather extends Base {
+	var size_x as Lang.Number = 0;
+
+	hidden var units_system_ as System.UnitsSystem;
+
+	function initialize() {
+		Base.initialize();
+
+		self.styles = [
+			new Label.Style(Font.DOT_REGULAR, 0x555555),
+		];
+
+		var device_settings = System.getDeviceSettings();
+
+		self.units_system_ = device_settings.distanceUnits;
+	}
+
+	function refresh(_dc as Graphics.Dc) as Void {
+		var current_conditions = Weather.getCurrentConditions();
+		if (current_conditions != null) {
+			self.label_ = "";
+
+			if (current_conditions.condition != null) {
+				var condition = current_conditions.condition as Lang.Number;
+
+				self.label_ += Application.loadResource(Resources.CONDITIONS[condition]) as Lang.String;
+			}
+
+			if (current_conditions.temperature != null) {
+				var temperature = current_conditions.temperature as Lang.Numeric;
+				var unit = "C";
+
+				if (self.units_system_ == System.UNIT_STATUTE) {
+					temperature = (temperature * 1.8) + 32;
+					unit = "F";
+				}
+
+				self.label_ += "  ";
+				self.label_ += temperature.toNumber().format("%d");
+				self.label_ += unit;
+			}
+
+			if (_dc.getTextWidthInPixels(self.label_, Font.DOT_REGULAR) <= self.size_x) {
+				self.styles[0].font = Font.DOT_REGULAR;
+				self.styles[0].color = 0x555555;
+			} else if (_dc.getTextWidthInPixels(self.label_, Font.DOT_SMALL) <= self.size_x) {
+				self.styles[0].font = Font.DOT_SMALL;
+				self.styles[0].color = 0xAAAAAA;
+			} else {
+				self.styles[0].font = Font.DOT_TINY;
+				self.styles[0].color = 0xAAAAAA;
+			}
+		}
+	}
+}
+
+} // module Label

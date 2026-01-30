@@ -9,7 +9,7 @@ class Floors extends Base {
 	function initialize() {
 		Base.initialize();
 
-		self.label = "Floors:";
+		self.label = Application.loadResource(Rez.Strings.LABEL_FLOORS) as Lang.String;
 	}
 
 	function get_() as Lang.Number or Null {
