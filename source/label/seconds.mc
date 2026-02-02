@@ -13,9 +13,10 @@ class Seconds extends Base {
 	function initialize() {
 		Base.initialize();
 
-		self.styles = [
-			new Label.Style(Font.DOT_REGULAR_THIN, 0xAAAAAA),
+		self.styles_ = [
+			new Label.Style(Font.DOT_REGULAR, 0x555555),
 		];
+		self.justify_ = Graphics.TEXT_JUSTIFY_RIGHT;
 	}
 
 	function get_() as Lang.String {

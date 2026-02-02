@@ -34,7 +34,7 @@ MONKEYC   := $(SDK_DIR)bin/monkeyc
 MONKEYDO  := $(SDK_DIR)bin/monkeydo
 CONNECTIQ := $(SDK_DIR)bin/connectiq
 
-BUILD_DIR := .build/
+BUILD_DIR := build/
 PRG       := $(BUILD_DIR)$(NAME)$(NAME_SUFFIX.$(MODE)).PRG
 JUNGLE    := monkey.jungle
 SRCS      := $(shell find source -type f)

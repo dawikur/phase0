@@ -22,8 +22,8 @@ def rgba_to_svg(color: Tuple[int, int, int, int]) -> str:
 def main() -> None:
     folders = parse_folders()
 
-    svg_width = ICON.width * fonts_data.STYLE_REGULAR.size
-    svg_height = ICON.height * fonts_data.STYLE_REGULAR.size
+    svg_width = ICON_BLURRED.xadvance * fonts_data.STYLE_REGULAR.size
+    svg_height = ICON_BLURRED.yadvance * fonts_data.STYLE_REGULAR.size
 
     icon_svg = []
     icon_svg.append(
@@ -39,8 +39,8 @@ def main() -> None:
     ]:
         fill = rgba_to_svg(color)
 
-        for y in range(icon.height):
-            for x in range(icon.width):
+        for y in range(icon.yadvance):
+            for x in range(icon.xadvance):
                 if icon.pixel(x, y):
                     for dy in range(style.weight):
                         for dx in range(style.weight):

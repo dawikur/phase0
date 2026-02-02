@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import os
 import textwrap
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import fonts_data
-from args_parse import parse_folders
+from args_parse import Folders, parse_folders
 from PIL import Image, ImageDraw
 
 INVISIBLE_GLYPHS = [" ", "\t"]
@@ -231,9 +233,7 @@ def parse_typeface_and_style(
     return fnt.name, atlas.img, str(fnt)
 
 
-def main() -> None:
-    folders = parse_folders()
-
+def generate_fonts(folders: Folders) -> None:
     fonts_xml = []
     fonts_xml.append("<fonts>")
 
@@ -293,6 +293,55 @@ def main() -> None:
 
     folders.build("source", "fonts.mc").write_text("\n".join(fonts_mc))
     folders.resources("base", "fonts.xml").write_text("\n".join(fonts_xml))
+
+
+def verify_glyphs(folders: Folders) -> None:
+    unique_glyphs = {glyph.name for glyph in fonts_data.TYPEFACE_DOT.glyphs}
+    all_unique_chars: set[str] = set()
+    all_unique_chars.update(":0123456789")  # numbers
+    all_unique_chars.update("-CF")  # temp
+    all_unique_chars.update(".kMGTPEZY█")  # value suffixes and bg
+
+    diff = all_unique_chars - unique_glyphs
+    if diff:
+        print(f"WARNING: Missing general glyphs: {sorted(list(diff))}")
+
+    for dirpath, _, filenames in os.walk(folders.resources()):
+        for filename in filenames:
+            if filename == "strings.xml":
+                try:
+                    unique_chars: set[str] = set()
+
+                    file_path = os.path.join(dirpath, filename)
+                    tree = ET.parse(file_path)
+                    root = tree.getroot()
+
+                    for elem in root.iter("string"):
+                        if elem.text:
+                            unique_chars.update(elem.text)
+                            all_unique_chars.update(elem.text)
+
+                    diff = unique_chars - unique_glyphs
+                    if diff:
+                        print(
+                            f"WARNING: Missing glyphs for '{dirpath}': {sorted(list(diff))}"
+                        )
+
+                except ET.ParseError as e:
+                    print(f"XML parse error in {file_path}: {e}")
+                except Exception as e:
+                    print(f"Error reading {file_path}: {e}")
+
+    diff = unique_glyphs - all_unique_chars
+    if diff:
+        print(f"WARNING: Unnecessary glyphs: {sorted(list(diff))}")
+
+
+def main() -> None:
+    folders = parse_folders()
+
+    generate_fonts(folders)
+    verify_glyphs(folders)
 
 
 if __name__ == "__main__":

@@ -131,13 +131,11 @@ class View extends WatchUi.WatchFace {
 		self.weather_.pos_x = line_above_1.center_x;
 		self.weather_.pos_y = line_above_1.center_y;
 		self.weather_.size_x = line_above_1.size_x;
-		self.weather_.justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
 		// ---- line main ----
 
 		self.clock_.pos_x = self.screen_size_x_ / 2;
 		self.clock_.pos_y = self.screen_size_y_ / 2;
-		self.clock_.justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
 		// ---- line below 1 ----
 
@@ -148,11 +146,9 @@ class View extends WatchUi.WatchFace {
 
 		self.date_.pos_x = line_below_1.pos_x;
 		self.date_.pos_y = line_below_1.pos_y;
-		self.date_.justify = Graphics.TEXT_JUSTIFY_LEFT;
 
 		self.seconds_.pos_x = line_below_1.end_x;
 		self.seconds_.pos_y = line_below_1.pos_y;
-		self.seconds_.justify = Graphics.TEXT_JUSTIFY_RIGHT;
 		self.seconds_.size_x = 2 * regular_size[0];
 		self.seconds_.size_y = regular_size[1];
 
@@ -166,33 +162,37 @@ class View extends WatchUi.WatchFace {
 		self.values_ = [];
 		var pos_x = line_below_2.pos_x;
 		pos_x += self.addValue_(
+			_dc,
 			new Value.HR(),
 			pos_x,
 			line_below_2.pos_y,
 			3,
 			small_spacing
-		) * small_size[0];
+		);
 		pos_x += self.addValue_(
+			_dc,
 			new Value.Steps(),
 			pos_x,
 			line_below_2.pos_y,
-			4,
+			3,
 			small_spacing
-		) * small_size[0];
+		);
 		pos_x += self.addValue_(
+			_dc,
 			new Value.Floors(),
 			pos_x,
 			line_below_2.pos_y,
 			3,
 			small_spacing
-		) * small_size[0];
+		);
 		pos_x += self.addValue_(
+			_dc,
 			new Value.Battery(),
 			pos_x,
 			line_below_2.pos_y,
 			3,
 			small_spacing
-		) * small_size[0];
+		);
 	}
 
 	function onUpdate(_dc as Graphics.Dc) as Void {
@@ -332,6 +332,7 @@ class View extends WatchUi.WatchFace {
 	}
 
 	hidden function addValue_(
+		_dc as Graphics.Dc,
 		_value as Value.Base,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number,
@@ -345,7 +346,7 @@ class View extends WatchUi.WatchFace {
 
 		self.values_.add(_value);
 
-		return _count + 1;
+		return _value.width(_dc);
 	}
 }
 

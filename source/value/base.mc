@@ -19,12 +19,14 @@ class Base {
 	hidden var label_font_ as WatchUi.FontResource;
 	hidden var label_color_ as Lang.Number;
 
-	hidden var value_font_ as WatchUi.FontResource;
-	hidden var value_bg_ as Lang.Number;
-	hidden var value_fg_ as Lang.Number;
+	hidden var bg_font_ as WatchUi.FontResource;
+	hidden var bg_color_ as Lang.Number;
 
-	hidden var gauge_ as Lang.Number;
-	hidden var gauge_max_ as Lang.Number;
+	hidden var value_font_ as WatchUi.FontResource;
+	hidden var value_color_ as Lang.Number;
+
+	hidden var gauge_color_ as Lang.Number;
+	hidden var gauge_max_color_ as Lang.Number;
 
 	hidden var max_ as Lang.Number or Null = null;
 
@@ -32,16 +34,21 @@ class Base {
 		self.label_font_ = Font.DOT_TINY;
 		self.label_color_ = 0xAA5500;
 
-		self.value_font_ = Font.DOT_SMALL;
-		self.value_bg_ = 0x555555;
-		self.value_fg_ = 0xAAAAAA;
+		self.bg_font_ = Font.DOT_SMALL;
+		self.bg_color_ = 0x555555;
 
-		self.gauge_ = 0x555555;
-		self.gauge_max_ = 0xAA5500;
+		self.value_font_ = Font.DOT_SMALL;
+		self.value_color_ = 0xAAAAAA;
+
+		self.gauge_color_ = 0x555555;
+		self.gauge_max_color_ = 0xAA5500;
+	}
+
+	function width(_dc as Graphics.Dc) as Lang.Number {
+		return (self.count + 1) *_dc.getTextWidthInPixels("8", self.value_font_);
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
-
 		// ---- label ----
 
 		var pos_x = self.pos_x;
@@ -58,8 +65,8 @@ class Base {
 		var bg_size = _dc.getTextDimensions(bg, self.value_font_);
 		pos_x += bg_size[0];
 
-		_dc.setColor(self.value_bg_, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(pos_x, pos_y, self.value_font_, bg, Graphics.TEXT_JUSTIFY_RIGHT);
+		_dc.setColor(self.bg_color_, Graphics.COLOR_TRANSPARENT);
+		_dc.drawText(pos_x, pos_y, self.bg_font_, bg, Graphics.TEXT_JUSTIFY_RIGHT);
 
 		var value = self.get_();
 		if (value == null) {
@@ -67,7 +74,7 @@ class Base {
 		}
 
 		var str = self.formatValue_(value.toFloat());
-		_dc.setColor(self.value_fg_, Graphics.COLOR_TRANSPARENT);
+		_dc.setColor(self.value_color_, Graphics.COLOR_TRANSPARENT);
 		_dc.drawText(pos_x, pos_y, self.value_font_, str, Graphics.TEXT_JUSTIFY_RIGHT);
 
 		// ---- gauge ----
@@ -79,11 +86,11 @@ class Base {
 		var gauge_height = 0;
 
 		if (value < self.max_) {
-			_dc.setColor(self.gauge_, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(self.gauge_color_, Graphics.COLOR_TRANSPARENT);
 
 			gauge_height = ((value.toFloat() / self.max_) * bg_size[1]).toNumber();
 		} else {
-			_dc.setColor(self.gauge_max_, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(self.gauge_max_color_, Graphics.COLOR_TRANSPARENT);
 
 			gauge_height = bg_size[1];
 		}
@@ -93,7 +100,7 @@ class Base {
 				pos_x + self.spacing,
 				pos_y + bg_size[1] - gauge_height,
 				self.spacing,
-				gauge_height
+				gauge_height - self.spacing
 			);
 		}
 	}

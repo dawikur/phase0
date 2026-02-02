@@ -12,10 +12,11 @@ class Date extends Base {
 	function initialize() {
 		Base.initialize();
 
-		self.styles = [
+		self.styles_ = [
 			new Label.Style(Font.DOT_REGULAR, 0x555555),
 			new Label.Style(Font.DOT_REGULAR_THIN, 0xAAAAAA),
 		];
+		self.justify_ = Graphics.TEXT_JUSTIFY_LEFT;
 	}
 
 	function get_() as Lang.String {

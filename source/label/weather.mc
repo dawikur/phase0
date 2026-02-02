@@ -16,9 +16,10 @@ class Weather extends Base {
 	function initialize() {
 		Base.initialize();
 
-		self.styles = [
+		self.styles_ = [
 			new Label.Style(Font.DOT_REGULAR, 0x555555),
 		];
+		self.justify_ = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
 		var device_settings = System.getDeviceSettings();
 
@@ -51,14 +52,14 @@ class Weather extends Base {
 			}
 
 			if (_dc.getTextWidthInPixels(self.label_, Font.DOT_REGULAR) <= self.size_x) {
-				self.styles[0].font = Font.DOT_REGULAR;
-				self.styles[0].color = 0x555555;
+				self.styles_[0].font = Font.DOT_REGULAR;
+				self.styles_[0].color = 0x555555;
 			} else if (_dc.getTextWidthInPixels(self.label_, Font.DOT_SMALL) <= self.size_x) {
-				self.styles[0].font = Font.DOT_SMALL;
-				self.styles[0].color = 0xAAAAAA;
+				self.styles_[0].font = Font.DOT_SMALL;
+				self.styles_[0].color = 0xAAAAAA;
 			} else {
-				self.styles[0].font = Font.DOT_TINY;
-				self.styles[0].color = 0xAAAAAA;
+				self.styles_[0].font = Font.DOT_TINY;
+				self.styles_[0].color = 0xAAAAAA;
 			}
 		}
 	}

@@ -23,11 +23,10 @@ class Style {
 class Base {
 	var pos_x as Lang.Number = 0;
 	var pos_y as Lang.Number = 0;
-	var justify as Lang.Number = 0;
 
-	var styles as Lang.Array<Style> = [];
-
-	var label_ as Lang.String = "";
+	protected var label_ as Lang.String = "";
+	protected var styles_ as Lang.Array<Style> = [];
+	protected var justify_ as Lang.Number = 0;
 
 	function initialize() {
 	}
@@ -45,9 +44,9 @@ class Base {
 
 		var pos_x = self.pos_x;
 		var pos_y = self.pos_y;
-		var justify = self.justify;
 
-		var styles = self.styles;
+		var justify = self.justify_;
+		var styles = self.styles_;
 		var styles_size = styles.size();
 
 		for (var i = 0; i < styles_size; ++i) {
@@ -62,7 +61,6 @@ class Base {
 		self.label_ = self.get_();
 	}
 
-	// implement this
 	function get_() as Lang.String {
 		return "";
 	}

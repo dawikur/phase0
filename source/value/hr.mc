@@ -15,7 +15,11 @@ class HR extends Base {
 
 	function get_() as Lang.Number or Null {
 		var history = ActivityMonitor.getHeartRateHistory(1, true);
-		return history.getMax();
+		var value = history.getMax();
+		if (value != null && value != ActivityMonitor.INVALID_HR_SAMPLE) {
+			return null;
+		}
+		return null;
 	}
 
 	function getMax_() as Lang.Number or Null {
