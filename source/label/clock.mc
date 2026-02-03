@@ -12,22 +12,31 @@ class Clock {
 	var pos_y as Lang.Number = 0;
 
 	hidden var label_ as Lang.String = "";
-	hidden var ampm_ as Lang.String or Null = null;
-	hidden var ampm_padding_ as Lang.Number = 0;
+
+	hidden var fg_style_ as Label.Style;
+	hidden var bg_style_ as Label.Style;
 
 	hidden var is_24_Hour_ as Lang.Boolean;
+
+	hidden var ampm_ as Lang.String or Null = null;
+	hidden var ampm_padding_ as Lang.Number = 0;
+	hidden var ampm_style_ as Label.Style;
 
 	function initialize() {
 		var device_settings = System.getDeviceSettings();
 		self.is_24_Hour_ = device_settings.is24Hour;
+
+		self.fg_style_ = new Label.Style(Font.DOT_LARGE, 0xFFAA00);
+		self.bg_style_ = new Label.Style(Font.DOT_LARGE_THIN, 0x555555);
+		self.ampm_style_ = new Label.Style(Font.DOT_SMALL, 0xAA5500);
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
-		if (self.label_ == "") {
+		if (self.label_.length() == 0) {
 			self.refresh(_dc);
 		}
 
-		if (self.label_ == "") {
+		if (self.label_.length() == 0) {
 			return;
 		}
 
@@ -36,22 +45,17 @@ class Clock {
 		var pos_x = self.pos_x;
 		var pos_y = self.pos_y;
 
-		_dc.setColor(0x555555, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(pos_x, pos_y, Font.DOT_LARGE_THIN, "88:88", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+		var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
-		_dc.setColor(0xAA5500, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(pos_x, pos_y, Font.DOT_LARGE_BLURRED, label, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
-
-		_dc.setColor(0xFFAA00, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(pos_x, pos_y, Font.DOT_LARGE_THIN, label, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+		self.fg_style_.draw(_dc, pos_x, pos_y, label, justify);
+		self.bg_style_.draw(_dc, pos_x, pos_y, "88:88", justify);
 
 		if (self.ampm_ != null) {
 			var ampm_ = self.ampm_ as Lang.String;
 
 			pos_x += self.ampm_padding_;
 
-			_dc.setColor(0xAA5500, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(pos_x, pos_y, Font.DOT_SMALL, ampm_, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+			self.ampm_style_.draw(_dc, pos_x, pos_y, ampm_, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 		}
 	}
 

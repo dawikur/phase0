@@ -110,7 +110,7 @@ class View extends WatchUi.WatchFace {
 
 		// ---- measurements ----
 
-		var clock_size = _dc.getTextDimensions("00:00", Font.DOT_LARGE_BLURRED);
+		var clock_size = _dc.getTextDimensions("00:00", Font.DOT_LARGE);
 
 		var regular_size = _dc.getTextDimensions("0", Font.DOT_REGULAR);
 		var regular_spacing = Font.SPACING_REGULAR;
@@ -119,7 +119,7 @@ class View extends WatchUi.WatchFace {
 		var small_spacing = Font.SPACING_SMALL;
 
 		var tiny_size = _dc.getTextDimensions("0", Font.DOT_TINY);
-		//var tiny_spacing = Font.SPACING_TINY;
+		var tiny_spacing = Font.SPACING_TINY;
 
 		// ---- line above 1 ----
 
@@ -154,43 +154,53 @@ class View extends WatchUi.WatchFace {
 
 		// ---- line below 2 ----
 
+		self.values_ = [];
+
 		var line_below_2 = self.boxFor_(
-			line_below_1.end_y + regular_spacing,
-			tiny_size[1] + small_spacing + small_size[1]
+			line_below_1.end_y + small_spacing,
+			tiny_size[1] + regular_size[1]
 		);
 
-		self.values_ = [];
 		var pos_x = line_below_2.pos_x;
 		pos_x += self.addValue_(
 			_dc,
-			new Value.HR(),
+			new Value.HR(false),
 			pos_x,
 			line_below_2.pos_y,
-			3,
 			small_spacing
 		);
 		pos_x += self.addValue_(
 			_dc,
-			new Value.Steps(),
+			new Value.Steps(false),
 			pos_x,
 			line_below_2.pos_y,
-			3,
 			small_spacing
 		);
 		pos_x += self.addValue_(
 			_dc,
-			new Value.Floors(),
+			new Value.Floors(false),
 			pos_x,
 			line_below_2.pos_y,
-			3,
 			small_spacing
 		);
-		pos_x += self.addValue_(
+
+		// ---- line below 3 ----
+
+		var battery = new Value.Battery(true);
+		var battery_width = battery.width(_dc);
+		var battery_height = battery.height(_dc);
+
+		var battery_end_y =
+			self.screen_size_y_ - (
+				(self.screen_size_y_ / 2) -
+				Math.floor(self.secondLeg_((self.screen_size_y_ + battery_width) / 2)).toNumber()
+			);
+
+		self.addValue_(
 			_dc,
-			new Value.Battery(),
-			pos_x,
-			line_below_2.pos_y,
-			3,
+			battery,
+			(self.screen_size_x_ - battery_width) / 2,
+			battery_end_y - battery_height,
 			small_spacing
 		);
 	}
@@ -336,12 +346,10 @@ class View extends WatchUi.WatchFace {
 		_value as Value.Base,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number,
-		_count as Lang.Number,
 		_spacing as Lang.Number
 	) as Lang.Number {
 		_value.pos_x = _pos_x;
 		_value.pos_y = _pos_y;
-		_value.count = _count;
 		_value.spacing = _spacing;
 
 		self.values_.add(_value);

@@ -6,18 +6,15 @@ import Toybox.System;
 module Value {
 
 class Battery extends Base {
-	function initialize() {
-		Base.initialize();
+	function initialize(_small as Lang.Boolean) {
+		Base.initialize(_small);
 
-		self.label = Application.loadResource(Rez.Strings.LABEL_BATTERY) as Lang.String;
+		self.header_ = Application.loadResource(Rez.Strings.LABEL_BATTERY) as Lang.String;
+		self.max_value_ = 100;
 	}
 
-	function get_() as Lang.Number or Null {
+	function getValue_() as Lang.Number or Null {
 		return System.getSystemStats().battery.toNumber();
-	}
-
-	function getMax_() as Lang.Number or Null {
-		return 100;
 	}
 }
 

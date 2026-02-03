@@ -18,25 +18,41 @@ class Style {
 		self.font = _font;
 		self.color = _color;
 	}
+
+	function draw(
+		_dc as Graphics.Dc,
+		_pos_x as Lang.Number,
+		_pos_y as Lang.Number,
+		_str as Lang.String,
+		_justify as Lang.Number
+	) as Void {
+		_dc.setColor(self.color, Graphics.COLOR_TRANSPARENT);
+		_dc.drawText(_pos_x, _pos_y, self.font, _str, _justify);
+	}
 }
 
 class Base {
 	var pos_x as Lang.Number = 0;
 	var pos_y as Lang.Number = 0;
 
-	protected var label_ as Lang.String = "";
-	protected var styles_ as Lang.Array<Style> = [];
-	protected var justify_ as Lang.Number = 0;
+	hidden var label_ as Lang.String = "";
+	hidden var styles_ as Lang.Array<Style> = [];
+	hidden var justify_ as Lang.Number = 0;
 
 	function initialize() {
+		self.styles_ = [
+			new Label.Style(Font.DOT_REGULAR, 0x555555),
+			new Label.Style(Font.DOT_REGULAR_THIN, 0xFFFFFF),
+		];
+		self.justify_ = Graphics.TEXT_JUSTIFY_LEFT;
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
-		if (self.label_ == "") {
+		if (self.label_.length() == 0) {
 			self.refresh(_dc);
 		}
 
-		if (self.label_ == "") {
+		if (self.label_.length() == 0) {
 			return;
 		}
 
@@ -50,19 +66,11 @@ class Base {
 		var styles_size = styles.size();
 
 		for (var i = 0; i < styles_size; ++i) {
-			var style = styles[i];
-
-			_dc.setColor(style.color, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(pos_x, pos_y, style.font, label, justify);
+			styles[i].draw(_dc, pos_x, pos_y, label, justify);
 		}
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		self.label_ = self.get_();
-	}
-
-	function get_() as Lang.String {
-		return "";
 	}
 }
 
