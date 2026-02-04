@@ -59,6 +59,7 @@ class View extends WatchUi.WatchFace {
 	hidden var last_refresh_hour_ as Lang.Number = -1;
 
 	// ---- line above 2 ----
+	hidden const sun_moon_ = new Label.SunMoon();
 
 	// ---- line above 1 ----
 	hidden const weather_ = new Label.Weather();
@@ -71,7 +72,6 @@ class View extends WatchUi.WatchFace {
 	hidden const seconds_ = new Label.Seconds();
 
 	// ---- line below 2 ----
-
 	hidden var values_ as Lang.Array<Value.Base> = [];
 
 	// ---- methods ----
@@ -121,6 +121,17 @@ class View extends WatchUi.WatchFace {
 		var tiny_size = _dc.getTextDimensions("0", Font.DOT_TINY);
 		var tiny_spacing = Font.SPACING_TINY;
 
+		// ---- line above 3 ----
+
+		var sun_moon_width = _dc.getTextWidthInPixels("00:00 00:00", Font.DOT_TINY);
+		var sun_moon_pos_y = (self.screen_size_y_ / 2) -
+			Math.ceil(self.secondLeg_((self.screen_size_x_ + sun_moon_width) / 2)).toNumber();
+
+		self.sun_moon_.pos_x = self.screen_size_x_ / 2;
+		self.sun_moon_.pos_y = sun_moon_pos_y;
+
+		// ---- line above 2 ----
+
 		// ---- line above 1 ----
 
 		var line_above_1 = self.boxFor_(
@@ -166,22 +177,19 @@ class View extends WatchUi.WatchFace {
 			_dc,
 			new Value.HR(false),
 			pos_x,
-			line_below_2.pos_y,
-			small_spacing
+			line_below_2.pos_y
 		);
 		pos_x += self.addValue_(
 			_dc,
 			new Value.Steps(false),
 			pos_x,
-			line_below_2.pos_y,
-			small_spacing
+			line_below_2.pos_y
 		);
 		pos_x += self.addValue_(
 			_dc,
 			new Value.Floors(false),
 			pos_x,
-			line_below_2.pos_y,
-			small_spacing
+			line_below_2.pos_y
 		);
 
 		// ---- line below 3 ----
@@ -190,18 +198,14 @@ class View extends WatchUi.WatchFace {
 		var battery_width = battery.width(_dc);
 		var battery_height = battery.height(_dc);
 
-		var battery_end_y =
-			self.screen_size_y_ - (
-				(self.screen_size_y_ / 2) -
-				Math.floor(self.secondLeg_((self.screen_size_y_ + battery_width) / 2)).toNumber()
-			);
+		var battery_end_y = (self.screen_size_y_ / 2) +
+			Math.floor(self.secondLeg_((self.screen_size_x_ + battery_width) / 2)).toNumber();
 
 		self.addValue_(
 			_dc,
 			battery,
 			(self.screen_size_x_ - battery_width) / 2,
-			battery_end_y - battery_height,
-			small_spacing
+			battery_end_y - battery_height
 		);
 	}
 
@@ -228,22 +232,20 @@ class View extends WatchUi.WatchFace {
 			self.refreshHour_(_dc);
 		}
 
-		if (self.is_night_mode_) {
-			self.clock_.render(_dc);
-			self.date_.render(_dc);
+		self.clock_.render(_dc);
+		self.date_.render(_dc);
 
-			if (self.is_high_power_) {
-				self.seconds_.render(_dc);
-			}
+		if (self.is_high_power_) {
+			self.seconds_.render(_dc);
 		} else {
-			self.clock_.render(_dc);
-			self.date_.render(_dc);
+			self.seconds_.renderPlaceholder(_dc);
+		}
+
+		if (self.is_night_mode_) {
+		} else {
+			self.sun_moon_.render(_dc);
 
 			self.weather_.render(_dc);
-
-			if (self.is_high_power_) {
-				self.seconds_.render(_dc);
-			}
 
 			for (var i = 0; i < self.values_.size(); ++i) {
 				self.values_[i].render(_dc);
@@ -282,6 +284,7 @@ class View extends WatchUi.WatchFace {
 	}
 
 	hidden function refreshHour_(_dc as Graphics.Dc) as Void {
+		self.sun_moon_.refresh(_dc);
 		self.date_.refresh(_dc);
 	}
 
@@ -345,12 +348,10 @@ class View extends WatchUi.WatchFace {
 		_dc as Graphics.Dc,
 		_value as Value.Base,
 		_pos_x as Lang.Number,
-		_pos_y as Lang.Number,
-		_spacing as Lang.Number
+		_pos_y as Lang.Number
 	) as Lang.Number {
 		_value.pos_x = _pos_x;
 		_value.pos_y = _pos_y;
-		_value.spacing = _spacing;
 
 		self.values_.add(_value);
 

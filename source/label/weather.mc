@@ -24,18 +24,18 @@ class Weather extends Base {
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		var current_conditions = Weather.getCurrentConditions();
-		if (current_conditions != null) {
+		var weather = Weather.getCurrentConditions();
+		if (weather != null) {
 			self.label_ = "";
 
-			if (current_conditions.condition != null) {
-				var condition = current_conditions.condition as Lang.Number;
+			if (weather.condition != null) {
+				var condition = weather.condition as Lang.Number;
 
 				self.label_ += Application.loadResource(Resources.CONDITIONS[condition]) as Lang.String;
 			}
 
-			if (current_conditions.temperature != null) {
-				var temperature = current_conditions.temperature as Lang.Numeric;
+			if (weather.temperature != null) {
+				var temperature = weather.temperature as Lang.Numeric;
 				var unit = "C";
 
 				if (self.units_system_ == System.UNIT_STATUTE) {
@@ -46,6 +46,34 @@ class Weather extends Base {
 				self.label_ += "  ";
 				self.label_ += temperature.toNumber().format("%d");
 				self.label_ += unit;
+			}
+		}
+
+		var now = Time.now().value();
+
+		if (self.label_.length() != 0) {
+			// update data
+			Application.Storage.setValue("weather", self.label_);
+			Application.Storage.setValue("weather_timestamp", now);
+		} else {
+			// read data
+			try {
+				var data = Application.Storage.getValue("weather") as Lang.String;
+				var timestamp = Application.Storage.getValue("weather_timestamp") as Lang.Number;
+				var data_age = now - timestamp;
+
+				if (0 < data_age and data_age < 3600) {
+					// data valid
+					self.label_ = data;
+				} else {
+					// data expired: clear cache
+					Application.Storage.deleteValue("weather");
+					Application.Storage.deleteValue("weather_timestamp");
+				}
+			} catch (ex instanceof Lang.UnexpectedTypeException) {
+				// error: clear data
+				Application.Storage.deleteValue("weather");
+				Application.Storage.deleteValue("weather_timestamp");
 			}
 		}
 	}

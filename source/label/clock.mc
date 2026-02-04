@@ -48,7 +48,7 @@ class Clock {
 		var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
 		self.fg_style_.draw(_dc, pos_x, pos_y, label, justify);
-		self.bg_style_.draw(_dc, pos_x, pos_y, "88:88", justify);
+		self.bg_style_.draw(_dc, pos_x, pos_y, "00:00", justify);
 
 		if (self.ampm_ != null) {
 			var ampm_ = self.ampm_ as Lang.String;

@@ -39,12 +39,13 @@ PRG       := $(BUILD_DIR)$(NAME)$(NAME_SUFFIX.$(MODE)).PRG
 JUNGLE    := monkey.jungle
 SRCS      := $(shell find source -type f)
 RSCS      := $(shell find resources -type f)
+STRINGS   := $(shell find resources -name strings.xml)
 
 RESOURCES_DIR       := resources/
 RESOURCES_BASE_DIR  := $(RESOURCES_DIR)base/
 BUILD_SOURCE_DIR    := $(BUILD_DIR)source/
 
-DRAWABLES_DEPS := scripts/generate_icon scripts/fonts_data.py scripts/fonts_model.py
+DRAWABLES_DEPS := scripts/generate_icon scripts/fonts_data.py scripts/fonts_model.py $(STRINGS)
 DRAWABLES      := $(RESOURCES_BASE_DIR)drawables.xml
 FONTS_DEPS     := scripts/generate_fonts scripts/fonts_data.py scripts/fonts_model.py
 FONTS          := $(RESOURCES_BASE_DIR)fonts.xml

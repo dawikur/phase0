@@ -306,8 +306,8 @@ def get_required_glyphs(folders: Folders) -> set[str]:
     all_unique_chars: set[str] = set()
     all_unique_chars.update(" ")  # whitespace
     all_unique_chars.update(":0123456789")  # numbers
-    all_unique_chars.update("-CF")  # temp
-    all_unique_chars.update(".kMGTPEZY█")  # value suffixes and bg
+    all_unique_chars.update("-CF")  # temperature
+    all_unique_chars.update(".kMGTPEZY")  # value suffixes
 
     for dirpath, _, filenames in os.walk(folders.resources()):
         for filename in filenames:
