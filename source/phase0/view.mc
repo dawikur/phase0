@@ -115,11 +115,11 @@ class View extends WatchUi.WatchFace {
 		var regular_size = _dc.getTextDimensions("0", Font.DOT_REGULAR);
 		var regular_spacing = Font.SPACING_REGULAR;
 
-		var small_size = _dc.getTextDimensions("0", Font.DOT_SMALL);
+		//var small_size = _dc.getTextDimensions("0", Font.DOT_SMALL);
 		var small_spacing = Font.SPACING_SMALL;
 
 		var tiny_size = _dc.getTextDimensions("0", Font.DOT_TINY);
-		var tiny_spacing = Font.SPACING_TINY;
+		//var tiny_spacing = Font.SPACING_TINY;
 
 		// ---- line above 3 ----
 
@@ -158,7 +158,7 @@ class View extends WatchUi.WatchFace {
 		self.date_.pos_x = line_below_1.pos_x;
 		self.date_.pos_y = line_below_1.pos_y;
 
-		self.seconds_.pos_x = line_below_1.end_x;
+		self.seconds_.pos_x = line_below_1.end_x - 2 * regular_size[0];
 		self.seconds_.pos_y = line_below_1.pos_y;
 		self.seconds_.size_x = 2 * regular_size[0];
 		self.seconds_.size_y = regular_size[1];
@@ -235,11 +235,11 @@ class View extends WatchUi.WatchFace {
 		self.clock_.render(_dc);
 		self.date_.render(_dc);
 
-		if (self.is_high_power_) {
+		//if (self.is_high_power_) {
 			self.seconds_.render(_dc);
-		} else {
-			self.seconds_.renderPlaceholder(_dc);
-		}
+		//} else {
+		//	self.seconds_.renderPlaceholder(_dc);
+		//}
 
 		if (self.is_night_mode_) {
 		} else {

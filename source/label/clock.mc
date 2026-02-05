@@ -13,22 +13,14 @@ class Clock {
 
 	hidden var label_ as Lang.String = "";
 
-	hidden var fg_style_ as Label.Style;
-	hidden var bg_style_ as Label.Style;
-
 	hidden var is_24_Hour_ as Lang.Boolean;
 
 	hidden var ampm_ as Lang.String or Null = null;
 	hidden var ampm_padding_ as Lang.Number = 0;
-	hidden var ampm_style_ as Label.Style;
 
 	function initialize() {
 		var device_settings = System.getDeviceSettings();
 		self.is_24_Hour_ = device_settings.is24Hour;
-
-		self.fg_style_ = new Label.Style(Font.DOT_LARGE, 0xFFAA00);
-		self.bg_style_ = new Label.Style(Font.DOT_LARGE_THIN, 0x555555);
-		self.ampm_style_ = new Label.Style(Font.DOT_SMALL, 0xAA5500);
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
@@ -40,22 +32,23 @@ class Clock {
 			return;
 		}
 
-		var label = self.label_;
-
 		var pos_x = self.pos_x;
 		var pos_y = self.pos_y;
 
 		var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
-		self.fg_style_.draw(_dc, pos_x, pos_y, label, justify);
-		self.bg_style_.draw(_dc, pos_x, pos_y, "00:00", justify);
+		_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
+		_dc.drawText(pos_x, pos_y, Font.DOT_LARGE, self.label_, justify);
+
+		_dc.setColor(Render.COLOR_BG, Graphics.COLOR_TRANSPARENT);
+		_dc.drawText(pos_x, pos_y, Font.DOT_LARGE_THIN, "00:00", justify);
 
 		if (self.ampm_ != null) {
 			var ampm_ = self.ampm_ as Lang.String;
 
 			pos_x += self.ampm_padding_;
 
-			self.ampm_style_.draw(_dc, pos_x, pos_y, ampm_, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+			Render.label(_dc, pos_x, pos_y, ampm_, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 		}
 	}
 
@@ -77,10 +70,10 @@ class Clock {
 				hour = 12;
 			}
 
-			self.ampm_ = clock.hour < 12 ? "a\nm" : "p\nm";
+			self.ampm_ = clock.hour < 12 ? "A\nM" : "P\nM";
 
-			self.ampm_padding_ += _dc.getTextWidthInPixels("xx", Font.DOT_SMALL);
 			self.ampm_padding_ += _dc.getTextWidthInPixels("88:88", Font.DOT_LARGE_THIN) / 2;
+			self.ampm_padding_ += _dc.getTextWidthInPixels("x", Font.DOT_SMALL);
 
 			self.label_ = Lang.format("$1$:$2$", [
 				hour.format("%02d"),

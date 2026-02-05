@@ -49,31 +49,12 @@ class Weather extends Base {
 			}
 		}
 
-		var now = Time.now().value();
-
 		if (self.label_.length() != 0) {
-			// update data
-			Application.Storage.setValue("weather", self.label_);
-			Application.Storage.setValue("weather_timestamp", now);
+			Cache.setValue("weather", self.label_);
 		} else {
-			// read data
-			try {
-				var data = Application.Storage.getValue("weather") as Lang.String;
-				var timestamp = Application.Storage.getValue("weather_timestamp") as Lang.Number;
-				var data_age = now - timestamp;
-
-				if (0 < data_age and data_age < 3600) {
-					// data valid
-					self.label_ = data;
-				} else {
-					// data expired: clear cache
-					Application.Storage.deleteValue("weather");
-					Application.Storage.deleteValue("weather_timestamp");
-				}
-			} catch (ex instanceof Lang.UnexpectedTypeException) {
-				// error: clear data
-				Application.Storage.deleteValue("weather");
-				Application.Storage.deleteValue("weather_timestamp");
+			var data = Cache.getValue("weather", 28800); // 8 hours
+			if (data != null) {
+				self.label_ = data;
 			}
 		}
 	}

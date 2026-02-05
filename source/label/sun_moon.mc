@@ -16,108 +16,63 @@ class SunMoon {
 	hidden var spacing_ as Lang.Number = 0;
 
 	hidden var header_ as Lang.String;
-	hidden var header_style_ as Label.Style;
 
-	hidden var fg_style_ as Label.Style;
-	hidden var bg_style_ as Label.Style;
-
-	hidden var moon_color_ as Lang.Number;
-	hidden var moon_full_color_ as Lang.Number;
-
-	hidden var dawn_dusk_ as Lang.String or Null;
-	hidden var moon_phase_ as Lang.Float or Null;
+	hidden var dawn_dusk_ as Lang.String;
+	hidden var moon_phase_ as Lang.Float;
 
 	function initialize() {
 		self.spacing_ = Font.SPACING_TINY;
 
 		self.header_ = "Dawn Dusk";
-		self.header_style_ = new Label.Style(Font.DOT_TINY, 0xFFAA00);
 
-		self.fg_style_ = new Label.Style(Font.DOT_SMALL, 0xFFFFFF);
-		self.bg_style_ = new Label.Style(Font.DOT_SMALL, 0x555555);
-
-		self.moon_color_ = 0xAAAAAA;
-		self.moon_full_color_ = 0xFFFFFF;
-
-		self.dawn_dusk_ = null;
-		self.moon_phase_ = null;
+		self.dawn_dusk_ = "";
+		self.moon_phase_ = 0.0;
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
+		if (self.dawn_dusk_.length() == 0) {
+			self.refresh(_dc);
+		}
+
 		var pos_x = self.pos_x;
 		var pos_y = self.pos_y;
 
 		// ---- header ----
 
-		self.header_style_.draw(_dc, pos_x, pos_y, self.header_, Graphics.TEXT_JUSTIFY_CENTER);
-		pos_y += _dc.getFontHeight(self.header_style_.font) + self.spacing_;
+		Render.label(_dc, pos_x, pos_y, self.header_, Graphics.TEXT_JUSTIFY_CENTER);
+		pos_y += Render.labelHeight(_dc) + self.spacing_;
 
 		// ---- text ----
 
-		if (self.dawn_dusk_ == null ) {
+		if (self.dawn_dusk_.length() == 0) {
 			var text = "00:00 00:00";
-			self.bg_style_.draw(_dc, pos_x, pos_y, text, Graphics.TEXT_JUSTIFY_CENTER);
+			Render.textSmall(_dc, pos_x, pos_y, text, Graphics.TEXT_JUSTIFY_CENTER);
 		} else {
 			var text = self.dawn_dusk_ as Lang.String;
-			self.fg_style_.draw(_dc, pos_x, pos_y, text, Graphics.TEXT_JUSTIFY_CENTER);
+			Render.textSmall(_dc, pos_x, pos_y, text, Graphics.TEXT_JUSTIFY_CENTER);
 		}
 
-		// ---- moon gauge ----
+		// ---- gauge ----
 
 		pos_x -= self.spacing_;
 		pos_y += self.spacing_;
 
-		var gauge_max_height = _dc.getFontHeight(self.fg_style_.font);
+		var value = 0;
+		var from_bottom = Render.GAUGE_BOTTOM;
 
-		if (self.moon_phase_ != null) {
-			var moon_phase = self.moon_phase_ as Lang.Float;
-
-			if (moon_phase < 0.5) {
-				var gauge_height = 2 * (moon_phase * gauge_max_height).toNumber();
-
-				System.println("moon phase: " + moon_phase + ", gauge1: " + gauge_height);
-
-				_dc.setColor(self.moon_color_, Graphics.COLOR_TRANSPARENT);
-				_dc.fillRectangle(
-					pos_x,
-					pos_y + gauge_max_height - gauge_height,
-					self.spacing_,
-					gauge_height
-				);
-			} else if (0.5 < moon_phase) {
-				var gauge_height = 2 * ((1.0 - moon_phase) * gauge_max_height).toNumber();
-
-				System.println("moon phase: " + moon_phase + ", gauge2: " + gauge_height);
-
-				_dc.setColor(self.moon_color_, Graphics.COLOR_TRANSPARENT);
-				_dc.fillRectangle(
-					pos_x,
-					pos_y,
-					self.spacing_,
-					gauge_height
-				);
-			} else {
-				System.println("moon phase: " + moon_phase + ", gauge: full");
-
-				_dc.setColor(self.moon_full_color_, Graphics.COLOR_TRANSPARENT);
-				_dc.fillRectangle(
-					pos_x,
-					pos_y,
-					self.spacing_,
-					gauge_max_height
-				);
-			}
+		var moon_phase = self.moon_phase_;
+		if (moon_phase < 0.5) { // moon growing
+			value = 2 * moon_phase;
+		} else if (0.5 < moon_phase) { // moon shinking
+			value = 2 * (1.0 - moon_phase);
+			from_bottom = Render.GAUGE_TOP;
+		} else { // full moon
+			value = 1.0;
 		}
 
-		_dc.setColor(self.bg_style_.color, Graphics.COLOR_TRANSPARENT);
-		for (var i = 0; i < gauge_max_height; i += 2 * self.spacing_) {
-			_dc.fillRectangle(
-				pos_x,
-				pos_y + i,
-				1,
-				1
-			);
-		}
+		var gauge_max_height = Render.textSmallHeight(_dc);
+
+		Render.gaugeSmall(_dc, pos_x, pos_y, value, gauge_max_height, from_bottom);
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
@@ -125,6 +80,15 @@ class SunMoon {
 
 		self.refreshDawnDusk(now);
 		self.refreshMoonPhase(now);
+
+		if (self.dawn_dusk_.length() != 0) {
+			Cache.setValue("dusk_dawn", self.dawn_dusk_);
+		} else {
+			var data = Cache.getValue("dusk_dawn", 86400); // 24 hours
+			if (data != null) {
+				self.dawn_dusk_ = data;
+			}
+		}
 	}
 
 	function refreshDawnDusk(_now as Time.Moment) as Void {
