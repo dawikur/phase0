@@ -74,6 +74,9 @@ class View extends WatchUi.WatchFace {
 	// ---- line below 2 ----
 	hidden var values_ as Lang.Array<Value.Base> = [];
 
+	// ---- line below 3 ----
+	hidden var battery_ as Value.Battery = new Value.Battery();
+
 	// ---- methods ----
 
 	function initialize() {
@@ -115,7 +118,7 @@ class View extends WatchUi.WatchFace {
 		var regular_size = _dc.getTextDimensions("0", Font.DOT_REGULAR);
 		var regular_spacing = Font.SPACING_REGULAR;
 
-		//var small_size = _dc.getTextDimensions("0", Font.DOT_SMALL);
+		var small_size = _dc.getTextDimensions("0", Font.DOT_SMALL);
 		var small_spacing = Font.SPACING_SMALL;
 
 		var tiny_size = _dc.getTextDimensions("0", Font.DOT_TINY);
@@ -194,19 +197,14 @@ class View extends WatchUi.WatchFace {
 
 		// ---- line below 3 ----
 
-		var battery = new Value.Battery(true);
-		var battery_width = battery.width(_dc);
-		var battery_height = battery.height(_dc);
-
-		var battery_end_y = (self.screen_size_y_ / 2) +
-			Math.floor(self.secondLeg_((self.screen_size_x_ + battery_width) / 2)).toNumber();
-
-		self.addValue_(
-			_dc,
-			battery,
-			(self.screen_size_x_ - battery_width) / 2,
-			battery_end_y - battery_height
+		var line_below_3 = self.boxFor_(
+			line_below_2.end_y + regular_spacing,
+			regular_size[1]
 		);
+
+		self.battery_.pos_x = self.screen_size_x_ / 2;
+		self.battery_.pos_y = line_below_3.center_y;
+		self.battery_.size_x = line_below_3.size_x;
 	}
 
 	function onUpdate(_dc as Graphics.Dc) as Void {
@@ -241,16 +239,44 @@ class View extends WatchUi.WatchFace {
 		//	self.seconds_.renderPlaceholder(_dc);
 		//}
 
+		// Icons
+		{
+			var device_settings = System.getDeviceSettings();
+			var format = "$1$\n$2$\n$3$";
+
+			Render.icons(
+				_dc, 12, self.screen_size_y_ / 2,
+				Lang.format(format, [
+					(device_settings.phoneConnected ? Font.ICON_BLUETOOTH : ""),
+					(0 < device_settings.alarmCount ? Font.ICON_ALARM : ""),
+					(0 < device_settings.notificationCount ? Font.ICON_NOTIFICATION : "")
+				]),
+				Lang.format(format, [
+					Font.ICON_BLUETOOTH,
+					Font.ICON_ALARM,
+					Font.ICON_NOTIFICATION
+				])
+			);
+		}
+
+
 		if (self.is_night_mode_) {
 		} else {
+			// -- line above 3 --
 			self.sun_moon_.render(_dc);
 
+			// -- line above 1 --
 			self.weather_.render(_dc);
 
+			// -- line below 2 --
 			for (var i = 0; i < self.values_.size(); ++i) {
 				self.values_[i].render(_dc);
 			}
+
+			// -- line below 3 --
+			self.battery_.render(_dc);
 		}
+
 	}
 
 	function onPartialUpdate(_dc as Graphics.Dc) as Void {
@@ -281,6 +307,7 @@ class View extends WatchUi.WatchFace {
 
 		self.clock_.refresh(_dc);
 		self.weather_.refresh(_dc);
+		self.battery_.refresh(_dc);
 	}
 
 	hidden function refreshHour_(_dc as Graphics.Dc) as Void {
@@ -289,6 +316,7 @@ class View extends WatchUi.WatchFace {
 	}
 
 	hidden function isNightMode_() as Lang.Boolean {
+	return false;
 		var user_profile = UserProfile.getProfile();
 		if (user_profile.sleepTime == null) {
 			return false;

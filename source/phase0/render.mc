@@ -19,6 +19,9 @@ const FONT_TINY as WatchUi.FontResource = Font.DOT_TINY;
 const SPACING as Lang.Number = Font.SPACING_SMALL;
 const SPACING_SMALL as Lang.Number = Font.SPACING_TINY;
 
+const ICONS_FG as WatchUi.FontResource = Font.ICONS_SMALL;
+const ICONS_BG as WatchUi.FontResource = Font.ICONS_SMALL;
+
 // ////////////////////////////////////////////////////////////////////////////
 // Label
 
@@ -78,19 +81,13 @@ function textSmall(
 	_text as Lang.String,
 	_justify as Lang.Number
 ) as Void {
+	// text
 	_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
 	_dc.drawText(_pos_x, _pos_y, FONT_SMALL, _text, _justify);
-}
 
-function textBgSmall(
-	_dc as Graphics.Dc,
-	_pos_x as Lang.Number,
-	_pos_y as Lang.Number,
-	_text as Lang.String,
-	_justify as Lang.Number
-) as Void {
+	// shade
 	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_SMALL, _text, _justify);
+	_dc.drawText(_pos_x +1, _pos_y +1, FONT_SMALL, _text, _justify);
 }
 
 function textSmallHeight(_dc as Graphics.Dc) as Lang.Number {
@@ -328,6 +325,37 @@ function gaugeSmall(
 			1
 		);
 	}
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// Icons
+
+function icons(
+	_dc as Graphics.Dc,
+	_pos_x as Lang.Number,
+	_pos_y as Lang.Number,
+	_fg as Lang.String,
+	_bg as Lang.String
+) as Void {
+	var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
+
+	// bg
+	if (_bg.length() != 0) {
+		_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+		_dc.drawText(_pos_x, _pos_y, ICONS_BG, _bg, justify);
+	}
+
+	// fg
+	_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
+	_dc.drawText(_pos_x, _pos_y, ICONS_FG, _fg, justify);
+
+	// shade
+	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+	_dc.drawText(_pos_x +1, _pos_y +1, ICONS_BG, _fg, justify);
+}
+
+function iconsWidth(_dc as Graphics.Dc, _icons as Lang.String) as Lang.Number {
+	return _dc.getTextWidthInPixels(_icons, ICONS_FG);
 }
 
 } // module Render
