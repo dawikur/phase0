@@ -10,6 +10,7 @@ import Toybox.Weather;
 import Toybox.System;
 import Toybox.ActivityMonitor;
 import Toybox.UserProfile;
+import Toybox.SensorHistory;
 
 module Phase0 {
 
@@ -59,23 +60,23 @@ class View extends WatchUi.WatchFace {
 	hidden var last_refresh_hour_ as Lang.Number = -1;
 
 	// ---- line above 2 ----
-	hidden const sun_moon_ = new Label.SunMoon();
+	hidden const sun_moon_ = new Element.SunMoon();
 
 	// ---- line above 1 ----
-	hidden const weather_ = new Label.Weather();
+	hidden const weather_ = new Element.Weather();
 
 	// ---- line main ----
-	hidden const clock_ = new Label.Clock();
+	hidden const clock_ = new Element.Clock();
 
 	// ---- line below 1 ----
-	hidden const date_ = new Label.Date();
-	hidden const seconds_ = new Label.Seconds();
+	hidden const date_ = new Element.Date();
+	hidden const seconds_ = new Element.Seconds();
 
 	// ---- line below 2 ----
-	hidden var values_ as Lang.Array<Value.Base> = [];
+	hidden var fields_ as Lang.Array<Field.Base> = [];
 
 	// ---- line below 3 ----
-	hidden var battery_ as Value.Battery = new Value.Battery();
+	hidden var battery_ as Element.Battery = new Element.Battery();
 
 	// ---- methods ----
 
@@ -118,7 +119,7 @@ class View extends WatchUi.WatchFace {
 		var regular_size = _dc.getTextDimensions("0", Font.DOT_REGULAR);
 		var regular_spacing = Font.SPACING_REGULAR;
 
-		var small_size = _dc.getTextDimensions("0", Font.DOT_SMALL);
+		//var small_size = _dc.getTextDimensions("0", Font.DOT_SMALL);
 		var small_spacing = Font.SPACING_SMALL;
 
 		var tiny_size = _dc.getTextDimensions("0", Font.DOT_TINY);
@@ -168,29 +169,28 @@ class View extends WatchUi.WatchFace {
 
 		// ---- line below 2 ----
 
-		self.values_ = [];
-
 		var line_below_2 = self.boxFor_(
 			line_below_1.end_y + small_spacing,
 			tiny_size[1] + regular_size[1]
 		);
-
 		var pos_x = line_below_2.pos_x;
-		pos_x += self.addValue_(
+
+		self.fields_ = [];
+		pos_x += self.addField_(
 			_dc,
-			new Value.HR(false),
+			new Field.HR(false),
 			pos_x,
 			line_below_2.pos_y
 		);
-		pos_x += self.addValue_(
+		pos_x += self.addField_(
 			_dc,
-			new Value.Steps(false),
+			new Field.Steps(false),
 			pos_x,
 			line_below_2.pos_y
 		);
-		pos_x += self.addValue_(
+		pos_x += self.addField_(
 			_dc,
-			new Value.Floors(false),
+			new Field.Floors(false),
 			pos_x,
 			line_below_2.pos_y
 		);
@@ -245,7 +245,7 @@ class View extends WatchUi.WatchFace {
 			var format = "$1$\n$2$\n$3$";
 
 			Render.icons(
-				_dc, 12, self.screen_size_y_ / 2,
+				_dc, 13, self.screen_size_y_ / 2,
 				Lang.format(format, [
 					(device_settings.phoneConnected ? Font.ICON_BLUETOOTH : ""),
 					(0 < device_settings.alarmCount ? Font.ICON_ALARM : ""),
@@ -258,7 +258,59 @@ class View extends WatchUi.WatchFace {
 				])
 			);
 		}
+		// Bars
+		{
+			var activity_monitor = ActivityMonitor.getInfo();
 
+			// body battery
+			var body_battery = 0.0;
+			var bb_iterator = Toybox.SensorHistory.getBodyBatteryHistory({:period => 1});
+			if (bb_iterator != null) {
+				var bb = bb_iterator.next();
+
+				if(bb != null) {
+					body_battery = (bb.data as Lang.Number).toFloat() / 100;
+				}
+			}
+
+			Render.gaugeColor(
+				_dc,
+				self.screen_size_x_ - 22,
+				self.screen_size_y_ / 2 - 34,
+				body_battery,
+				68,
+				Render.GAUGE_BOTTOM,
+				0x005555
+			);
+
+			// stress
+			var stress_score = (activity_monitor.stressScore != null) ?
+				activity_monitor.stressScore as Lang.Number :
+				0;
+			Render.gaugeColor(
+				_dc,
+				self.screen_size_x_ - 22 + 7,
+				self.screen_size_y_ / 2 - 34,
+				stress_score.toFloat() / 100,
+				68,
+				Render.GAUGE_BOTTOM,
+				0x555500
+			);
+
+			// move bar
+			var move_bar_level = (activity_monitor.moveBarLevel != null) ?
+				activity_monitor.moveBarLevel as Lang.Number :
+				0;
+			Render.gaugeColor(
+				_dc,
+				self.screen_size_x_ - 22 + 14,
+				self.screen_size_y_ / 2 - 34,
+				move_bar_level.toFloat() / 5,
+				68,
+				Render.GAUGE_BOTTOM,
+				0x550000
+			);
+		}
 
 		if (self.is_night_mode_) {
 		} else {
@@ -269,8 +321,8 @@ class View extends WatchUi.WatchFace {
 			self.weather_.render(_dc);
 
 			// -- line below 2 --
-			for (var i = 0; i < self.values_.size(); ++i) {
-				self.values_[i].render(_dc);
+			for (var i = 0; i < self.fields_.size(); ++i) {
+				self.fields_[i].render(_dc);
 			}
 
 			// -- line below 3 --
@@ -297,8 +349,8 @@ class View extends WatchUi.WatchFace {
 	hidden function refreshSec_(_dc as Graphics.Dc) as Void {
 		self.seconds_.refresh(_dc);
 
-		for (var i = 0; i < self.values_.size(); ++i) {
-			self.values_[i].refresh(_dc);
+		for (var i = 0; i < self.fields_.size(); ++i) {
+			self.fields_[i].refresh(_dc);
 		}
 	}
 
@@ -316,7 +368,6 @@ class View extends WatchUi.WatchFace {
 	}
 
 	hidden function isNightMode_() as Lang.Boolean {
-	return false;
 		var user_profile = UserProfile.getProfile();
 		if (user_profile.sleepTime == null) {
 			return false;
@@ -372,18 +423,18 @@ class View extends WatchUi.WatchFace {
 		);
 	}
 
-	hidden function addValue_(
+	hidden function addField_(
 		_dc as Graphics.Dc,
-		_value as Value.Base,
+		_field as Field.Base,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number
 	) as Lang.Number {
-		_value.pos_x = _pos_x;
-		_value.pos_y = _pos_y;
+		_field.pos_x = _pos_x;
+		_field.pos_y = _pos_y;
 
-		self.values_.add(_value);
+		self.fields_.add(_field);
 
-		return _value.width(_dc);
+		return _field.width(_dc);
 	}
 }
 

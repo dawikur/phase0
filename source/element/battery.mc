@@ -4,7 +4,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Graphics;
 
-module Value {
+module Element {
 
 class Battery {
 	var pos_x as Lang.Number = 0;
@@ -58,4 +58,4 @@ class Battery {
 	}
 }
 
-} // module Value
+} // module Element

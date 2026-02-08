@@ -4,22 +4,22 @@ import Toybox.ActivityMonitor;
 import Toybox.Graphics;
 import Toybox.Lang;
 
-module Value {
+module Field {
 
-class Floors extends Base {
+class Steps extends Base {
 	function initialize(_small as Lang.Boolean) {
 		Base.initialize(_small);
 
-		self.header_ = Application.loadResource(Rez.Strings.LABEL_FLOORS) as Lang.String;
+		self.header_ = Application.loadResource(Rez.Strings.LABEL_STEPS) as Lang.String;
 	}
 
 	function getValue_() as Lang.Number or Null {
-		return ActivityMonitor.getInfo().floorsClimbed;
+		return ActivityMonitor.getInfo().steps;
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		self.max_value_ = ActivityMonitor.getInfo().floorsClimbedGoal;
+		self.max_value_ = ActivityMonitor.getInfo().stepGoal;
 	}
 }
 
-} // module Value
+} // module Field

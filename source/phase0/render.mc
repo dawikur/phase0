@@ -36,6 +36,10 @@ function label(
 	_dc.drawText(_pos_x, _pos_y, FONT_TINY, _label, _justify);
 }
 
+function labelWidth(_dc as Graphics.Dc, _label as Lang.String) as Lang.Number {
+	return _dc.getTextWidthInPixels(_label, FONT_TINY);
+}
+
 function labelHeight(_dc as Graphics.Dc) as Lang.Number {
 	return _dc.getFontHeight(FONT_TINY);
 }
@@ -59,6 +63,14 @@ function text(
 	// shade
 	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
 	_dc.drawText(_pos_x, _pos_y, FONT_BG, _text, _justify);
+}
+
+function textWidth(_dc as Graphics.Dc, _label as Lang.String) as Lang.Number {
+	return _dc.getTextWidthInPixels(_label, FONT_FG);
+}
+
+function textHeight(_dc as Graphics.Dc) as Lang.Number {
+	return _dc.getFontHeight(FONT_FG);
 }
 
 function textBg(
@@ -318,6 +330,49 @@ function gaugeSmall(
 
 	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
 	for (var i = 0; i < _max_height; i += 2 * SPACING_SMALL) {
+		_dc.fillRectangle(
+			_pos_x,
+			_pos_y + i,
+			1,
+			1
+		);
+	}
+}
+
+function gaugeColor(
+	_dc as Graphics.Dc,
+	_pos_x as Lang.Number,
+	_pos_y as Lang.Number,
+	_value as Lang.Float,
+	_max_height as Lang.Number,
+	_from_bottom as Lang.Boolean,
+	_color_fg as Lang.Number
+) as Void {
+	if (_value <= 0.0) {
+	} else if (_value < 1.0) {
+		var height = (_value * _max_height).toNumber();
+
+		var top_spacing = (_from_bottom ? _max_height - height : 0);
+
+		_dc.setColor(_color_fg, Graphics.COLOR_TRANSPARENT);
+		_dc.fillRectangle(
+			_pos_x,
+			_pos_y + top_spacing,
+			SPACING,
+			height
+		);
+	} else { // == 1.0
+		_dc.setColor(_color_fg, Graphics.COLOR_TRANSPARENT);
+		_dc.fillRectangle(
+			_pos_x,
+			_pos_y,
+			SPACING,
+			_max_height
+		);
+	}
+
+	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+	for (var i = 0; i < _max_height; i += 2 * SPACING) {
 		_dc.fillRectangle(
 			_pos_x,
 			_pos_y + i,

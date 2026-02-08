@@ -4,17 +4,15 @@
         <iq:products>
             <iq:product id="fr955"/>
         </iq:products>
-
         <iq:permissions>
             <iq:uses-permission id="Positioning"/>
+            <iq:uses-permission id="SensorHistory"/>
             <iq:uses-permission id="UserProfile"/>
         </iq:permissions>
-
         <iq:languages>
             <!-- TODO: more languages -->
             <iq:language>eng</iq:language>
         </iq:languages>
-
         <iq:barrels/>
     </iq:application>
 </iq:manifest>

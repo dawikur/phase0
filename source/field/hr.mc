@@ -5,7 +5,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.UserProfile;
 
-module Value {
+module Field {
 
 class HR extends Base {
 	function initialize(_small as Lang.Boolean) {
@@ -40,4 +40,4 @@ class HR extends Base {
 	}
 }
 
-} // module Value
+} // module Field

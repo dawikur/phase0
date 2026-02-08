@@ -5,7 +5,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.UserProfile;
 
-module Label {
+module Element {
 
 class Clock {
 	var pos_x as Lang.Number = 0;
@@ -84,4 +84,4 @@ class Clock {
 	}
 }
 
-} // module Label
+} // module Element

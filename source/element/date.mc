@@ -6,7 +6,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Time;
 
-module Label {
+module Element {
 
 class Date extends Base {
 	function initialize() {
@@ -24,4 +24,4 @@ class Date extends Base {
 	}
 }
 
-} // module Label
+} // module Element

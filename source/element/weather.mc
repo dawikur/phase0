@@ -6,7 +6,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Weather;
 
-module Label {
+module Element {
 
 class Weather extends Base {
 	var size_x as Lang.Number = 0;
@@ -60,4 +60,4 @@ class Weather extends Base {
 	}
 }
 
-} // module Label
+} // module Element

@@ -2,12 +2,13 @@
 
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.Math;
 import Toybox.System;
+import Toybox.Time;
 import Toybox.WatchUi;
 import Toybox.Weather;
-import Toybox.Time;
 
-module Label {
+module Element {
 
 class SunMoon {
 	var pos_x as Lang.Number = 0;
@@ -54,25 +55,27 @@ class SunMoon {
 
 		// ---- gauge ----
 
-		pos_x -= self.spacing_;
-		pos_y += self.spacing_;
+		if (0 < self.moon_phase_) {
+			pos_x -= self.spacing_;
+			pos_y += self.spacing_;
 
-		var value = 0;
-		var from_bottom = Render.GAUGE_BOTTOM;
+			var value = 0;
+			var from_bottom = Render.GAUGE_BOTTOM;
 
-		var moon_phase = self.moon_phase_;
-		if (moon_phase < 0.5) { // moon growing
-			value = 2 * moon_phase;
-		} else if (0.5 < moon_phase) { // moon shinking
-			value = 2 * (1.0 - moon_phase);
-			from_bottom = Render.GAUGE_TOP;
-		} else { // full moon
-			value = 1.0;
+			var moon_phase = self.moon_phase_;
+			if (moon_phase < 0.5) { // moon growing
+				value = 2 * moon_phase;
+			} else if (0.5 < moon_phase) { // moon shinking
+				value = 2 * (1.0 - moon_phase);
+				from_bottom = Render.GAUGE_TOP;
+			} else { // full moon
+				value = 1.0;
+			}
+
+			var gauge_max_height = Render.textSmallHeight(_dc);
+
+			Render.gauge(_dc, pos_x, pos_y, value, gauge_max_height, from_bottom);
 		}
-
-		var gauge_max_height = Render.textSmallHeight(_dc);
-
-		Render.gaugeSmall(_dc, pos_x, pos_y, value, gauge_max_height, from_bottom);
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
@@ -124,20 +127,23 @@ class SunMoon {
 	}
 
 	function refreshMoonPhase(_now as Time.Moment) as Void {
-		var LUNAR_CYCLE_SECONDS = 2551442; // 29.530588853 days * 86400 seconds
+		var LUNAR_CYCLE_DAYS = 29.530588853;
+		var SECONDS_PER_DAY = 86400;
 		var NEW_MOON_REF = 947182440; // Jan 6, 2000 18:14 UTC
 
 		var now = _now.value();
 		var seconds_since = now - NEW_MOON_REF;
+		var days_since = seconds_since.toFloat() / SECONDS_PER_DAY;
 
-		var phase_seconds = seconds_since % LUNAR_CYCLE_SECONDS;
-
-		if (phase_seconds < 0) {
-			phase_seconds += LUNAR_CYCLE_SECONDS;
+		var phase_days = days_since - Math.floor(days_since / LUNAR_CYCLE_DAYS) * LUNAR_CYCLE_DAYS;
+		if (phase_days < 0) {
+			phase_days += LUNAR_CYCLE_DAYS;
 		}
 
-		self.moon_phase_ = phase_seconds.toFloat() / LUNAR_CYCLE_SECONDS;
+		phase_days = Math.round(phase_days) as Lang.Float;
+
+		self.moon_phase_ = phase_days / LUNAR_CYCLE_DAYS;
 	}
 }
 
-} // module Label
+} // module Element

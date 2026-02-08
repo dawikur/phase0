@@ -4,7 +4,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
 
-module Label {
+module Element {
 
 class Seconds extends Base {
 	var size_x as Lang.Number = 0;
@@ -25,4 +25,4 @@ class Seconds extends Base {
 	}
 }
 
-} // module Label
+} // module Element

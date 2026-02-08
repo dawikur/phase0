@@ -4,7 +4,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-module Value {
+module Field {
 
 class Base {
 	var pos_x as Lang.Number = 0;
@@ -106,4 +106,4 @@ class Base {
 	}
 }
 
-} // module Value
+} // module Field
