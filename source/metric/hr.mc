@@ -5,11 +5,11 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.UserProfile;
 
-module Field {
+module Metric {
 
 class HR extends Base {
-	function initialize(_small as Lang.Boolean) {
-		Base.initialize(_small);
+	function initialize() {
+		Base.initialize();
 
 		self.header_ = Application.loadResource(Rez.Strings.LABEL_HR) as Lang.String;
 	}
@@ -25,7 +25,7 @@ class HR extends Base {
 
 		var history_it = ActivityMonitor.getHeartRateHistory(1, true);
 		var history = history_it.next();
-		if (history != null && history.heartRate != ActivityMonitor.INVALID_HR_SAMPLE) {
+		if (history != null and history.heartRate != ActivityMonitor.INVALID_HR_SAMPLE) {
 			return history.heartRate;
 		}
 
@@ -40,4 +40,4 @@ class HR extends Base {
 	}
 }
 
-} // module Field
+} // module Metric

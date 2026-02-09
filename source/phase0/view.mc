@@ -63,17 +63,17 @@ class View extends WatchUi.WatchFace {
 	hidden const sun_moon_ = new Element.SunMoon();
 
 	// ---- line above 1 ----
-	hidden const weather_ = new Element.Weather();
+	hidden const weather_ = new Text.Weather();
 
 	// ---- line main ----
 	hidden const clock_ = new Element.Clock();
 
 	// ---- line below 1 ----
-	hidden const date_ = new Element.Date();
-	hidden const seconds_ = new Element.Seconds();
+	hidden const date_ = new Text.Date();
+	hidden const seconds_ = new Text.Seconds();
 
 	// ---- line below 2 ----
-	hidden var fields_ as Lang.Array<Field.Base> = [];
+	hidden var metrics_ as Lang.Array<Metric.Base> = [];
 
 	// ---- line below 3 ----
 	hidden var battery_ as Element.Battery = new Element.Battery();
@@ -175,22 +175,22 @@ class View extends WatchUi.WatchFace {
 		);
 		var pos_x = line_below_2.pos_x;
 
-		self.fields_ = [];
-		pos_x += self.addField_(
+		self.metrics_ = [];
+		pos_x += self.addMetric_(
 			_dc,
-			new Field.HR(false),
+			new Metric.HR(),
 			pos_x,
 			line_below_2.pos_y
 		);
-		pos_x += self.addField_(
+		pos_x += self.addMetric_(
 			_dc,
-			new Field.Steps(false),
+			new Metric.Steps(),
 			pos_x,
 			line_below_2.pos_y
 		);
-		pos_x += self.addField_(
+		pos_x += self.addMetric_(
 			_dc,
-			new Field.Floors(false),
+			new Metric.Floors(),
 			pos_x,
 			line_below_2.pos_y
 		);
@@ -242,18 +242,35 @@ class View extends WatchUi.WatchFace {
 		// Icons
 		{
 			var device_settings = System.getDeviceSettings();
-			var format = "$1$\n$2$\n$3$";
 
+			var icon_alarm = "";
+			if (0 < device_settings.alarmCount) {
+				icon_alarm = Font.ICON_ALARM;
+			}
+
+			var icon_bluetooth = "";
+			if (device_settings.phoneConnected) {
+				icon_bluetooth = Font.ICON_BLUETOOTH;
+			}
+
+			var icon_notification = "";
+			if (device_settings has :doNotDisturb and device_settings.doNotDisturb) {
+				icon_notification = Font.ICON_DO_NOT_DISTURB;
+			} else if (0 < device_settings.notificationCount) {
+				icon_notification = Font.ICON_NOTIFICATION;
+			}
+
+			var format = "$1$\n$2$\n$3$";
 			Render.icons(
-				_dc, 13, self.screen_size_y_ / 2,
+				_dc, 14, self.screen_size_y_ / 2,
 				Lang.format(format, [
-					(device_settings.phoneConnected ? Font.ICON_BLUETOOTH : ""),
-					(0 < device_settings.alarmCount ? Font.ICON_ALARM : ""),
-					(0 < device_settings.notificationCount ? Font.ICON_NOTIFICATION : "")
+					icon_alarm,
+					icon_bluetooth,
+					icon_notification
 				]),
 				Lang.format(format, [
-					Font.ICON_BLUETOOTH,
 					Font.ICON_ALARM,
+					Font.ICON_BLUETOOTH,
 					Font.ICON_NOTIFICATION
 				])
 			);
@@ -263,53 +280,54 @@ class View extends WatchUi.WatchFace {
 			var activity_monitor = ActivityMonitor.getInfo();
 
 			// body battery
-			var body_battery = 0.0;
 			var bb_iterator = Toybox.SensorHistory.getBodyBatteryHistory({:period => 1});
 			if (bb_iterator != null) {
 				var bb = bb_iterator.next();
 
 				if(bb != null) {
-					body_battery = (bb.data as Lang.Number).toFloat() / 100;
+					var body_battery = bb.data as Lang.Number;
+
+					Render.gaugeColor(
+						_dc,
+						self.screen_size_x_ - 23,
+						self.screen_size_y_ / 2 - 34,
+						body_battery.toFloat() / 100,
+						68,
+						Render.GAUGE_BOTTOM,
+						0x005555
+					);
 				}
 			}
 
-			Render.gaugeColor(
-				_dc,
-				self.screen_size_x_ - 22,
-				self.screen_size_y_ / 2 - 34,
-				body_battery,
-				68,
-				Render.GAUGE_BOTTOM,
-				0x005555
-			);
-
 			// stress
-			var stress_score = (activity_monitor.stressScore != null) ?
-				activity_monitor.stressScore as Lang.Number :
-				0;
-			Render.gaugeColor(
-				_dc,
-				self.screen_size_x_ - 22 + 7,
-				self.screen_size_y_ / 2 - 34,
-				stress_score.toFloat() / 100,
-				68,
-				Render.GAUGE_BOTTOM,
-				0x555500
-			);
+			if (activity_monitor.stressScore != null) {
+				var stress_score = activity_monitor.stressScore as Lang.Number;
+
+				Render.gaugeColor(
+					_dc,
+					self.screen_size_x_ - 23 + 8,
+					self.screen_size_y_ / 2 - 34,
+					stress_score.toFloat() / 100,
+					68,
+					Render.GAUGE_BOTTOM,
+					0x555500
+				);
+			}
 
 			// move bar
-			var move_bar_level = (activity_monitor.moveBarLevel != null) ?
-				activity_monitor.moveBarLevel as Lang.Number :
-				0;
-			Render.gaugeColor(
-				_dc,
-				self.screen_size_x_ - 22 + 14,
-				self.screen_size_y_ / 2 - 34,
-				move_bar_level.toFloat() / 5,
-				68,
-				Render.GAUGE_BOTTOM,
-				0x550000
-			);
+			if (activity_monitor.moveBarLevel != null) {
+				var move_bar_level = activity_monitor.moveBarLevel as Lang.Number;
+
+				Render.gaugeColor(
+					_dc,
+					self.screen_size_x_ - 23 + 16,
+					self.screen_size_y_ / 2 - 34,
+					move_bar_level.toFloat() / 5,
+					68,
+					Render.GAUGE_BOTTOM,
+					0xAA0000
+				);
+			}
 		}
 
 		if (self.is_night_mode_) {
@@ -321,8 +339,8 @@ class View extends WatchUi.WatchFace {
 			self.weather_.render(_dc);
 
 			// -- line below 2 --
-			for (var i = 0; i < self.fields_.size(); ++i) {
-				self.fields_[i].render(_dc);
+			for (var i = 0; i < self.metrics_.size(); ++i) {
+				self.metrics_[i].render(_dc);
 			}
 
 			// -- line below 3 --
@@ -349,8 +367,8 @@ class View extends WatchUi.WatchFace {
 	hidden function refreshSec_(_dc as Graphics.Dc) as Void {
 		self.seconds_.refresh(_dc);
 
-		for (var i = 0; i < self.fields_.size(); ++i) {
-			self.fields_[i].refresh(_dc);
+		for (var i = 0; i < self.metrics_.size(); ++i) {
+			self.metrics_[i].refresh(_dc);
 		}
 	}
 
@@ -384,7 +402,7 @@ class View extends WatchUi.WatchFace {
         var since_midnight = now.subtract(midnight) as Time.Duration;
 
 		if(sleep_time.greaterThan(wake_time)) {
-			return since_midnight.greaterThan(sleep_time) || since_midnight.lessThan(wake_time);
+			return since_midnight.greaterThan(sleep_time) or since_midnight.lessThan(wake_time);
 		}
 		return since_midnight.greaterThan(sleep_time) and since_midnight.lessThan(wake_time);
 	}
@@ -423,18 +441,18 @@ class View extends WatchUi.WatchFace {
 		);
 	}
 
-	hidden function addField_(
+	hidden function addMetric_(
 		_dc as Graphics.Dc,
-		_field as Field.Base,
+		_metric as Metric.Base,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number
 	) as Lang.Number {
-		_field.pos_x = _pos_x;
-		_field.pos_y = _pos_y;
+		_metric.pos_x = _pos_x;
+		_metric.pos_y = _pos_y;
 
-		self.fields_.add(_field);
+		self.metrics_.add(_metric);
 
-		return _field.width(_dc);
+		return _metric.width(_dc);
 	}
 }
 

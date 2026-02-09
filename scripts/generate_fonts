@@ -203,7 +203,7 @@ def parse_typeface_and_style(
         glyph_comment = glyphs_at_idx[0].name[1:]
 
         if glyph_name == "#" and glyph_comment != "":
-            glyph_name = str(idx)
+            glyph_name = chr(ord("0") + idx)
 
         if required_glyphs is None or glyph_name in required_glyphs:
             widths = []
@@ -313,19 +313,17 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
 
     fonts_mc.append(f"\n// Icons\n")
     for icon_meta_data in [
-        (fonts_data.TYPEFACE_ICONS, fonts_data.STYLE_SMALL),
+        (fonts_data.TYPEFACE_ICONS, fonts_data.STYLE_SMALL, "icons"),
     ]:
         *artefacts, names_comments = parse_typeface_and_style(*icon_meta_data)
         store(*artefacts)
 
         fonts_mc.append("")
         for id, comment in names_comments.items():
-            ID = ord("0") + int(id)
+            ID = id
             NAME = "_".join(comment.split()).upper()
 
-            assert ID < 127
-
-            fonts_mc.append(f"const ICON_{NAME} = '{chr(ID)}';")
+            fonts_mc.append(f"const ICON_{NAME} = '{ID}';")
 
     # #########################################################################
     # Styles

@@ -41,7 +41,7 @@ class Clock {
 		_dc.drawText(pos_x, pos_y, Font.DOT_LARGE, self.label_, justify);
 
 		_dc.setColor(Render.COLOR_BG, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(pos_x, pos_y, Font.DOT_LARGE_THIN, "00:00", justify);
+		_dc.drawText(pos_x, pos_y, Font.DOT_LARGE_THIN, "88:88", justify);
 
 		if (self.ampm_ != null) {
 			var ampm_ = self.ampm_ as Lang.String;
@@ -70,7 +70,10 @@ class Clock {
 				hour = 12;
 			}
 
-			self.ampm_ = clock.hour < 12 ? "A\nM" : "P\nM";
+			self.ampm_ =
+				clock.hour < 12 ?
+				"A\nM" :
+				"P\nM";
 
 			self.ampm_padding_ += _dc.getTextWidthInPixels("88:88", Font.DOT_LARGE_THIN) / 2;
 			self.ampm_padding_ += _dc.getTextWidthInPixels("x", Font.DOT_SMALL);

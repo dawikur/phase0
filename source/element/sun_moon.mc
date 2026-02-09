@@ -14,20 +14,14 @@ class SunMoon {
 	var pos_x as Lang.Number = 0;
 	var pos_y as Lang.Number = 0;
 
-	hidden var spacing_ as Lang.Number = 0;
+	hidden var spacing_ as Lang.Number = Render.SPACING;
 
-	hidden var header_ as Lang.String;
+	hidden var header_ as Lang.String = "Dawn     Dusk";
 
-	hidden var dawn_dusk_ as Lang.String;
-	hidden var moon_phase_ as Lang.Float;
+	hidden var dawn_dusk_ as Lang.String = "";
+	hidden var moon_phase_ as Lang.Float = 0.0;
 
 	function initialize() {
-		self.spacing_ = Font.SPACING_TINY;
-
-		self.header_ = "Dawn Dusk";
-
-		self.dawn_dusk_ = "";
-		self.moon_phase_ = 0.0;
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
@@ -45,37 +39,22 @@ class SunMoon {
 
 		// ---- text ----
 
+		// TODO: dim previous event
+		// TODO: handle 12/24h times
 		if (self.dawn_dusk_.length() == 0) {
-			var text = "00:00 00:00";
-			Render.textSmall(_dc, pos_x, pos_y, text, Graphics.TEXT_JUSTIFY_CENTER);
+			var text = "00:00   00:00";
+			Render.textSmallColor(_dc, pos_x, pos_y, text, Graphics.TEXT_JUSTIFY_CENTER, Render.COLOR_BG);
 		} else {
-			var text = self.dawn_dusk_ as Lang.String;
-			Render.textSmall(_dc, pos_x, pos_y, text, Graphics.TEXT_JUSTIFY_CENTER);
+			Render.textSmall(_dc, pos_x, pos_y, self.dawn_dusk_, Graphics.TEXT_JUSTIFY_CENTER);
 		}
 
-		// ---- gauge ----
+		// ---- moon ----
 
-		if (0 < self.moon_phase_) {
-			pos_x -= self.spacing_;
-			pos_y += self.spacing_;
+		pos_y = self.pos_y;
+		pos_y += (Render.labelHeight(_dc) + self.spacing_ + Render.textSmallHeight(_dc)) / 2;
 
-			var value = 0;
-			var from_bottom = Render.GAUGE_BOTTOM;
-
-			var moon_phase = self.moon_phase_;
-			if (moon_phase < 0.5) { // moon growing
-				value = 2 * moon_phase;
-			} else if (0.5 < moon_phase) { // moon shinking
-				value = 2 * (1.0 - moon_phase);
-				from_bottom = Render.GAUGE_TOP;
-			} else { // full moon
-				value = 1.0;
-			}
-
-			var gauge_max_height = Render.textSmallHeight(_dc);
-
-			Render.gauge(_dc, pos_x, pos_y, value, gauge_max_height, from_bottom);
-		}
+		var moon_phase = Math.round(self.moon_phase_ * 8).toNumber();
+		Render.icons(_dc, pos_x, pos_y, "" + (Font.ICON_MOON0 + moon_phase), "");
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
@@ -85,9 +64,9 @@ class SunMoon {
 		self.refreshMoonPhase(now);
 
 		if (self.dawn_dusk_.length() != 0) {
-			Cache.setValue("dusk_dawn", self.dawn_dusk_);
+			Cache.setValue("dawn_dusk", self.dawn_dusk_);
 		} else {
-			var data = Cache.getValue("dusk_dawn", 86400); // 24 hours
+			var data = Cache.getValue("dawn_dusk", 86400); // 24 hours
 			if (data != null) {
 				self.dawn_dusk_ = data;
 			}
@@ -118,7 +97,7 @@ class SunMoon {
 		var sunrise_info = Time.Gregorian.info(sunrise, Time.FORMAT_SHORT);
 		var sunset_info = Time.Gregorian.info(sunset, Time.FORMAT_SHORT);
 
-		self.dawn_dusk_ = Lang.format("$1$:$2$ $3$:$4$", [
+		self.dawn_dusk_ = Lang.format("$1$:$2$   $3$:$4$", [
 			sunrise_info.hour.format("%02d"),
 			sunrise_info.min.format("%02d"),
 			sunset_info.hour.format("%02d"),

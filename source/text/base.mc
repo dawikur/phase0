@@ -5,17 +5,16 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.WatchUi;
 
-module Element {
+module Text {
 
 class Base {
 	var pos_x as Lang.Number = 0;
 	var pos_y as Lang.Number = 0;
 
 	hidden var label_ as Lang.String = "";
-	hidden var justify_ as Lang.Number = 0;
+	hidden var justify_ as Lang.Number = Graphics.TEXT_JUSTIFY_LEFT;
 
 	function initialize() {
-		self.justify_ = Graphics.TEXT_JUSTIFY_LEFT;
 	}
 
 	function width(_dc as Graphics.Dc) as Lang.Number {
@@ -42,4 +41,4 @@ class Base {
 	}
 }
 
-} // module Element
+} // module Text

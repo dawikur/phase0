@@ -6,7 +6,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Weather;
 
-module Element {
+module Text {
 
 class Weather extends Base {
 	var size_x as Lang.Number = 0;
@@ -19,7 +19,6 @@ class Weather extends Base {
 		self.justify_ = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
 		var device_settings = System.getDeviceSettings();
-
 		self.units_system_ = device_settings.distanceUnits;
 	}
 
@@ -60,4 +59,4 @@ class Weather extends Base {
 	}
 }
 
-} // module Element
+} // module Text

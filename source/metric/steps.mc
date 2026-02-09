@@ -4,11 +4,11 @@ import Toybox.ActivityMonitor;
 import Toybox.Graphics;
 import Toybox.Lang;
 
-module Field {
+module Metric {
 
 class Steps extends Base {
-	function initialize(_small as Lang.Boolean) {
-		Base.initialize(_small);
+	function initialize() {
+		Base.initialize();
 
 		self.header_ = Application.loadResource(Rez.Strings.LABEL_STEPS) as Lang.String;
 	}
@@ -22,4 +22,4 @@ class Steps extends Base {
 	}
 }
 
-} // module Field
+} // module Metric
