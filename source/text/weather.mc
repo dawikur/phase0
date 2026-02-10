@@ -51,9 +51,9 @@ class Weather extends Base {
 		if (self.label_.length() != 0) {
 			Cache.setValue("weather", self.label_);
 		} else {
-			var data = Cache.getValue("weather", 28800); // 8 hours
+			var data = Cache.getValue("weather", 8); // 8 hours
 			if (data != null) {
-				self.label_ = data;
+				self.label_ = data as Lang.String;
 			}
 		}
 	}

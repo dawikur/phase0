@@ -6,22 +6,24 @@ import Toybox.Time;
 
 module Cache {
 
-function setValue(_name as Lang.String, _data as Lang.String) as Void {
+typedef Data as Lang.String or Lang.Number;
+
+function setValue(_name as Lang.String, _data as Data) as Void {
 	var now = Time.now().value();
 
 	Application.Storage.setValue(_name, _data);
 	Application.Storage.setValue(_name + "_timestamp", now);
 }
 
-function getValue(_name as Lang.String, _til as Lang.Number) as Lang.String or Null {
+function getValue(_name as Lang.String, _til_in_hours as Lang.Number) as Data or Null {
 	try {
-		var data = Application.Storage.getValue(_name) as Lang.String;
+		var data = Application.Storage.getValue(_name) as Data;
 		var timestamp = Application.Storage.getValue(_name + "_timestamp") as Lang.Number;
 
 		var now = Time.now().value();
 		var data_age = now - timestamp;
 
-		if (0 < data_age and data_age < _til) {
+		if (0 < data_age and data_age < (_til_in_hours * 3600)) {
 			return data;
 		}
 

@@ -23,7 +23,7 @@ class Clock {
 		self.is_24_Hour_ = device_settings.is24Hour;
 	}
 
-	function render(_dc as Graphics.Dc) as Void {
+	function render(_dc as Graphics.Dc, _is_night_mode as Lang.Boolean) as Void {
 		if (self.label_.length() == 0) {
 			self.refresh(_dc);
 		}
@@ -37,11 +37,16 @@ class Clock {
 
 		var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
-		_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(pos_x, pos_y, Font.DOT_LARGE, self.label_, justify);
+		if (_is_night_mode) {
+			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
+			_dc.drawText(pos_x, pos_y, Font.DOT_LARGE, self.label_, justify);
+		} else {
+			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
+			_dc.drawText(pos_x, pos_y, Font.DOT_LARGE_BOLD, self.label_, justify);
 
-		_dc.setColor(Render.COLOR_BG, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(pos_x, pos_y, Font.DOT_LARGE_THIN, "88:88", justify);
+			_dc.setColor(Render.COLOR_BG, Graphics.COLOR_TRANSPARENT);
+			_dc.drawText(pos_x, pos_y, Font.DOT_LARGE_THIN, "88:88", justify);
+		}
 
 		if (self.ampm_ != null) {
 			var ampm_ = self.ampm_ as Lang.String;

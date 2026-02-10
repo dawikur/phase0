@@ -1,8 +1,9 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.Lang;
-import Toybox.System;
 import Toybox.Graphics;
+import Toybox.Lang;
+import Toybox.Math;
+import Toybox.System;
 
 module Element {
 
@@ -33,7 +34,7 @@ class Battery {
 		var bar_width = Render.iconsWidth(_dc, "" + Font.ICON_BATTERY_EMPTY);
 
 		var bar_all_count = (self.size_x - borders_width) / bar_width;
-		var bar_charged_count = (System.getSystemStats().battery / 100 * bar_all_count).toNumber();
+		var bar_charged_count = Math.round(System.getSystemStats().battery / 100 * bar_all_count).toNumber();
 
 		self.charge_ = "";
 		self.frame_ = "";

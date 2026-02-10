@@ -284,7 +284,8 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
 
     fonts_mc.append(f"\n// Digits\n")
     for digits_meta_data in [
-        (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR_BOLD, "dot_large"),
+        (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR_BOLD, "dot_large_bold"),
+        (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR, "dot_large"),
         (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR_THIN, "dot_large_thin"),
     ]:
         digits_glyphs = set("0123456789:")

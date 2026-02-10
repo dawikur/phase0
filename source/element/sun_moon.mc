@@ -4,6 +4,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 import Toybox.System;
+import Toybox.Test;
 import Toybox.Time;
 import Toybox.WatchUi;
 import Toybox.Weather;
@@ -19,7 +20,7 @@ class SunMoon {
 	hidden var header_ as Lang.String = "Dawn     Dusk";
 
 	hidden var dawn_dusk_ as Lang.String = "";
-	hidden var moon_phase_ as Lang.Float = 0.0;
+	hidden var moon_phase_ as Lang.Number = 0;
 
 	function initialize() {
 	}
@@ -50,11 +51,9 @@ class SunMoon {
 
 		// ---- moon ----
 
-		pos_y = self.pos_y;
-		pos_y += (Render.labelHeight(_dc) + self.spacing_ + Render.textSmallHeight(_dc)) / 2;
+		pos_y += (Render.textSmallHeight(_dc)) / 2;
 
-		var moon_phase = Math.round(self.moon_phase_ * 8).toNumber();
-		Render.icons(_dc, pos_x, pos_y, "" + (Font.ICON_MOON0 + moon_phase), "");
+		Render.icons(_dc, pos_x, pos_y, "" + (Font.ICON_MOON0 + self.moon_phase_), "");
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
@@ -66,9 +65,9 @@ class SunMoon {
 		if (self.dawn_dusk_.length() != 0) {
 			Cache.setValue("dawn_dusk", self.dawn_dusk_);
 		} else {
-			var data = Cache.getValue("dawn_dusk", 86400); // 24 hours
+			var data = Cache.getValue("dawn_dusk", 24);
 			if (data != null) {
-				self.dawn_dusk_ = data;
+				self.dawn_dusk_ = data as Lang.String;
 			}
 		}
 	}
@@ -106,22 +105,96 @@ class SunMoon {
 	}
 
 	function refreshMoonPhase(_now as Time.Moment) as Void {
+		self.moon_phase_ = SunMoon.getMoonPhase(_now);
+	}
+
+	static function getMoonPhase(_moment as Time.Moment) as Lang.Number {
 		var LUNAR_CYCLE_DAYS = 29.530588853;
 		var SECONDS_PER_DAY = 86400;
 		var NEW_MOON_REF = 947182440; // Jan 6, 2000 18:14 UTC
 
-		var now = _now.value();
-		var seconds_since = now - NEW_MOON_REF;
+		var seconds_since = _moment.value() - NEW_MOON_REF;
 		var days_since = seconds_since.toFloat() / SECONDS_PER_DAY;
 
-		var phase_days = days_since - Math.floor(days_since / LUNAR_CYCLE_DAYS) * LUNAR_CYCLE_DAYS;
-		if (phase_days < 0) {
-			phase_days += LUNAR_CYCLE_DAYS;
+		// Continuous phase in range [0, 1)
+		var phase = days_since / LUNAR_CYCLE_DAYS;
+		phase -= Math.floor(phase);
+
+		// Center each phase in its bucket
+		var phaseIndex = Math.floor((phase * 8) + 0.5).toNumber();
+
+		// Wrap just in case
+		if (phaseIndex == 8) {
+			phaseIndex = 0;
 		}
 
-		phase_days = Math.round(phase_days) as Lang.Float;
+		return phaseIndex;
+	}
 
-		self.moon_phase_ = phase_days / LUNAR_CYCLE_DAYS;
+	(:test)
+	static function getMoonPhaseTest(_logger as Test.Logger) as Lang.Boolean {
+		var one_day = new Time.Duration(24 * 60 * 60); // h * min * 60
+
+		var new_moons = [
+			Time.Gregorian.moment({
+				:year  => 2000,
+				:month => 1,
+				:day   => 6,
+				:hour  => 18,
+				:min   => 14,
+				:sec   => 0
+			}),
+			Time.Gregorian.moment({
+				:year  => 2026,
+				:month => 2,
+				:day   => 17,
+				:hour  => 13,
+				:min   => 1,
+				:sec   => 0
+			}),
+		];
+
+		var moon_phases = [
+			/* day    phase */
+			/*   0 */ 0, 0,
+			/*   2 */ 1, 1, 1, 1,
+			/*   6 */ 2, 2, 2, 9,
+			/*  10 */ 3, 3, 3,
+			/*  13 */ 4, 4, 4, 4,
+			/*  17 */ 5, 5, 5, 9,
+			/*  21 */ 6, 6, 6, 9,
+			/*  25 */ 7, 7, 7,
+			/*  28 */ 0, 0,
+			/*  30 */ 0, 9,
+			/*  32 */ 1, 1,
+		];
+
+		for (var i = 0; i < new_moons.size(); ++i) {
+			var new_moon = new_moons[i];
+
+			for (var day = 0; day < moon_phases.size(); ++day) {
+				var moon_phase = moon_phases[day];
+
+				if (moon_phase == 9) {
+					continue;
+				}
+
+				_logger.debug(Lang.format(
+					"[$1$] Day: $2$, Moon phase $3$", [
+						i,
+						day,
+						moon_phase,
+					]
+				));
+
+				Test.assertEqual(
+					SunMoon.getMoonPhase(new_moon.add(one_day.multiply(day))),
+					moon_phase
+				);
+			}
+		}
+
+		return true;
 	}
 }
 

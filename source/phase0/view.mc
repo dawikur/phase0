@@ -66,7 +66,9 @@ class View extends WatchUi.WatchFace {
 	hidden const weather_ = new Text.Weather();
 
 	// ---- line main ----
+	hidden const icons_ = new Element.Icons();
 	hidden const clock_ = new Element.Clock();
+	hidden const bars_ = new Element.Bars();
 
 	// ---- line below 1 ----
 	hidden const date_ = new Text.Date();
@@ -149,8 +151,16 @@ class View extends WatchUi.WatchFace {
 
 		// ---- line main ----
 
+		self.icons_.pos_x = (self.screen_size_x_ - clock_size[0] - Render.iconsWidth(_dc, "0")) / 2 + small_spacing;
+		self.icons_.pos_y = self.screen_size_y_ / 2;
+
 		self.clock_.pos_x = self.screen_size_x_ / 2;
 		self.clock_.pos_y = self.screen_size_y_ / 2;
+
+		self.bars_.pos_x = (self.screen_size_x_ + clock_size[0]) / 2 + regular_spacing;
+		self.bars_.pos_y = (self.screen_size_y_ - clock_size[1]) / 2 + 2 * regular_spacing;
+		self.bars_.size_x = (self.screen_size_x_ - clock_size[0]) / 2 - regular_spacing;
+		self.bars_.size_y = clock_size[1] - 2 * regular_spacing;
 
 		// ---- line below 1 ----
 
@@ -230,113 +240,32 @@ class View extends WatchUi.WatchFace {
 			self.refreshHour_(_dc);
 		}
 
-		self.clock_.render(_dc);
-		self.date_.render(_dc);
-
-		//if (self.is_high_power_) {
-			self.seconds_.render(_dc);
-		//} else {
-		//	self.seconds_.renderPlaceholder(_dc);
-		//}
-
-		// Icons
-		{
-			var device_settings = System.getDeviceSettings();
-
-			var icon_alarm = "";
-			if (0 < device_settings.alarmCount) {
-				icon_alarm = Font.ICON_ALARM;
-			}
-
-			var icon_bluetooth = "";
-			if (device_settings.phoneConnected) {
-				icon_bluetooth = Font.ICON_BLUETOOTH;
-			}
-
-			var icon_notification = "";
-			if (device_settings has :doNotDisturb and device_settings.doNotDisturb) {
-				icon_notification = Font.ICON_DO_NOT_DISTURB;
-			} else if (0 < device_settings.notificationCount) {
-				icon_notification = Font.ICON_NOTIFICATION;
-			}
-
-			var format = "$1$\n$2$\n$3$";
-			Render.icons(
-				_dc, 14, self.screen_size_y_ / 2,
-				Lang.format(format, [
-					icon_alarm,
-					icon_bluetooth,
-					icon_notification
-				]),
-				Lang.format(format, [
-					Font.ICON_ALARM,
-					Font.ICON_BLUETOOTH,
-					Font.ICON_NOTIFICATION
-				])
-			);
-		}
-		// Bars
-		{
-			var activity_monitor = ActivityMonitor.getInfo();
-
-			// body battery
-			var bb_iterator = Toybox.SensorHistory.getBodyBatteryHistory({:period => 1});
-			if (bb_iterator != null) {
-				var bb = bb_iterator.next();
-
-				if(bb != null) {
-					var body_battery = bb.data as Lang.Number;
-
-					Render.gaugeColor(
-						_dc,
-						self.screen_size_x_ - 23,
-						self.screen_size_y_ / 2 - 34,
-						body_battery.toFloat() / 100,
-						68,
-						Render.GAUGE_BOTTOM,
-						0x005555
-					);
-				}
-			}
-
-			// stress
-			if (activity_monitor.stressScore != null) {
-				var stress_score = activity_monitor.stressScore as Lang.Number;
-
-				Render.gaugeColor(
-					_dc,
-					self.screen_size_x_ - 23 + 8,
-					self.screen_size_y_ / 2 - 34,
-					stress_score.toFloat() / 100,
-					68,
-					Render.GAUGE_BOTTOM,
-					0x555500
-				);
-			}
-
-			// move bar
-			if (activity_monitor.moveBarLevel != null) {
-				var move_bar_level = activity_monitor.moveBarLevel as Lang.Number;
-
-				Render.gaugeColor(
-					_dc,
-					self.screen_size_x_ - 23 + 16,
-					self.screen_size_y_ / 2 - 34,
-					move_bar_level.toFloat() / 5,
-					68,
-					Render.GAUGE_BOTTOM,
-					0xAA0000
-				);
-			}
-		}
-
 		if (self.is_night_mode_) {
+			self.clock_.render(_dc, true);
+			self.icons_.render(_dc, true);
 		} else {
+			// -- clock --
+			self.clock_.render(_dc, false);
+			self.icons_.render(_dc, false);
+
+			// TODO
+			//if (self.is_high_power_) {
+				self.seconds_.render(_dc);
+			//} else {
+			//	self.seconds_.renderPlaceholder(_dc);
+			//}
+
 			// -- line above 3 --
 			self.sun_moon_.render(_dc);
 
 			// -- line above 1 --
 			self.weather_.render(_dc);
+
+			// -- line main --
+			self.bars_.render(_dc);
+
+			// -- line below 1 --
+			self.date_.render(_dc);
 
 			// -- line below 2 --
 			for (var i = 0; i < self.metrics_.size(); ++i) {
@@ -352,6 +281,8 @@ class View extends WatchUi.WatchFace {
 	function onPartialUpdate(_dc as Graphics.Dc) as Void {
 		if (!self.is_visible_) { return; }
 
+		if (self.is_night_mode_) { return; }
+
 		_dc.setClip(
 			self.seconds_.pos_x, self.seconds_.pos_y,
 			self.seconds_.size_x, self.seconds_.size_y
@@ -366,6 +297,8 @@ class View extends WatchUi.WatchFace {
 
 	hidden function refreshSec_(_dc as Graphics.Dc) as Void {
 		self.seconds_.refresh(_dc);
+		self.icons_.refresh(_dc);
+		self.bars_.refresh(_dc);
 
 		for (var i = 0; i < self.metrics_.size(); ++i) {
 			self.metrics_[i].refresh(_dc);
