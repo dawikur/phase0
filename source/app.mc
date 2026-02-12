@@ -21,15 +21,7 @@ class App extends Application.AppBase {
 	}
 
 	function getInitialView() as $.InitialView {
-		if (WatchUi has :WatchFaceDelegate) {
-			return [view_, delegate_];
-		} else {
-			return [view_];
-		}
-	}
-
-	function onSettingsChanged() as Void {
-		view_.onSettingsChanged();
+		return [view_, delegate_];
 	}
 }
 

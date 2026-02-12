@@ -8,6 +8,8 @@ import Toybox.Application;
 module Phase0 {
 
 class Delegate extends WatchUi.WatchFaceDelegate {
+	hidden var last_tap_time_ as Lang.Number = 0;
+
 	hidden var view_ as View;
 
 	function initialize(_view as View) {
@@ -16,30 +18,13 @@ class Delegate extends WatchUi.WatchFaceDelegate {
 		view_ = _view;
 	}
 
-	// Get a Drawable for highlighting purposes.
-	//function getComplicationDrawable(complication as Application.WatchFaceConfig.ComplicationRef) as WatchUi.Drawable or WatchUi.ComplicationDrawableRef or Null {
-	//}
+	function onPowerBudgetExceeded(_power_info as WatchUi.WatchFacePowerInfo) as Void {
+		view_.onPowerBudgetExceeded();
+	}
 
-	// Handle a partial update exceeding the power budget.
-	//function onPowerBudgetExceeded(powerInfo as WatchUi.WatchFacePowerInfo) as Void {
-	//}
-
-	// Called when user does a touch and hold.
-	//function onPress(clickEvent as WatchUi.ClickEvent) as Lang.Boolean {
-	//}
-
-	// A screen tap event has occurred.
-	//function onTap(clickEvent as WatchUi.ClickEvent) as Lang.Boolean {
-	//}
-
-	// A watchface config change has occurred.
-	//function onWatchFaceConfigEdited(options as { :configId as Application.WatchFaceConfig.Id, :type as WatchUi.WatchFaceConfigType or Null, :committed as Lang.Boolean }) as Void {
-	//}
-
-	// Set the selected complication field.
-	//function setSelectedComplication(complicationIdentifier as Lang.Number) as Void {
-	//}
-
+	function onPress(_click_event as WatchUi.ClickEvent) as Lang.Boolean {
+		return view_.onPress(_click_event);
+	}
 }
 
 } // module Phase0

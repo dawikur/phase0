@@ -1,22 +1,23 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.Application;
+import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.Time;
 
-module Text {
+module Complication {
 
-class Date extends Base {
+class Date extends Text {
 	function initialize() {
-		Base.initialize();
+		Text.initialize(Complications.COMPLICATION_TYPE_DATE);
 	}
 
-	function refresh(_dc as Graphics.Dc) as Void {
+	hidden function getValue_() as Lang.String {
 		var now = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
 
-		self.label_ = Lang.format("$1$ $2$ $3$", [
+		return Lang.format("$1$ $2$ $3$", [
 			Application.loadResource(Resources.DAYS_OF_WEEK[now.day_of_week as Lang.Number]) as Lang.String,
 			now.day.format("%02d"),
 			Application.loadResource(Resources.MONTHS[now.month as Lang.Number]) as Lang.String,
@@ -24,4 +25,4 @@ class Date extends Base {
 	}
 }
 
-} // module Text
+} // module Complication

@@ -1,16 +1,17 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import Toybox.ActivityMonitor;
+import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
+import Toybox.SensorHistory;
+import Toybox.System;
 import Toybox.Test;
 import Toybox.Time;
+import Toybox.UserProfile;
 import Toybox.WatchUi;
 import Toybox.Weather;
-import Toybox.System;
-import Toybox.ActivityMonitor;
-import Toybox.UserProfile;
-import Toybox.SensorHistory;
 
 module Phase0 {
 
@@ -53,17 +54,21 @@ class View extends WatchUi.WatchFace {
 	hidden var is_visible_ as Lang.Boolean = false;
 	hidden var is_high_power_ as Lang.Boolean = true;
 
-	hidden var is_night_mode_ as Lang.Boolean or Null = null;
+	hidden var is_night_mode_ as Lang.Boolean = false;
+
+	hidden var is_base_ as Lang.Boolean = true;
 
 	// ---- refresh ----
 	hidden var last_refresh_min_ as Lang.Number = -1;
 	hidden var last_refresh_hour_ as Lang.Number = -1;
 
+	// ---- line above 3 ----
+	hidden const sun_moon_ = new Complication.SunMoon();
+
 	// ---- line above 2 ----
-	hidden const sun_moon_ = new Element.SunMoon();
 
 	// ---- line above 1 ----
-	hidden const weather_ = new Text.Weather();
+	hidden const weather_ = new Complication.Weather();
 
 	// ---- line main ----
 	hidden const icons_ = new Element.Icons();
@@ -71,14 +76,15 @@ class View extends WatchUi.WatchFace {
 	hidden const bars_ = new Element.Bars();
 
 	// ---- line below 1 ----
-	hidden const date_ = new Text.Date();
-	hidden const seconds_ = new Text.Seconds();
+	hidden const date_ = new Complication.Date();
+	hidden const seconds_ = new Complication.Seconds();
 
 	// ---- line below 2 ----
-	hidden var metrics_ as Lang.Array<Metric.Base> = [];
+	hidden var metrics_ as Complication.Metrics = [];
+	hidden var metrics_alt_ as Complication.Metrics = [];
 
 	// ---- line below 3 ----
-	hidden var battery_ as Element.Battery = new Element.Battery();
+	hidden var battery_ as Complication.Base = new Complication.Battery();
 
 	// ---- methods ----
 
@@ -88,26 +94,60 @@ class View extends WatchUi.WatchFace {
 
 	function onShow() as Void {
 		self.is_visible_ = true;
+		self.is_base_ = true;
 	}
 
 	function onHide() as Void {
 		self.is_visible_ = false;
+		self.is_base_ = true;
 	}
 
 	function onEnterSleep() as Void {
-		self.is_high_power_ = false;
-
+		self.is_base_ = true;
 		WatchUi.requestUpdate();
 	}
 
 	function onExitSleep() as Void {
-		self.is_high_power_ = true;
-
+		self.is_base_ = true;
 		WatchUi.requestUpdate();
 	}
 
 	function onSettingsChanged() as Void {
 		WatchUi.requestUpdate();
+	}
+
+	function onPowerBudgetExceeded() as Void {
+		self.is_high_power_ = false;
+	}
+
+	function onPress(_click_event as WatchUi.ClickEvent) as Lang.Boolean {
+		var coordinates = _click_event.getCoordinates();
+		var pos_x = coordinates[0];
+		var pos_y = coordinates[1];
+
+		if (self.clock_.contains(pos_x, pos_y)) {
+			self.is_base_ = ! self.is_base_;
+			WatchUi.requestUpdate();
+
+			return true;
+		}
+
+		var complications = [
+			self.sun_moon_,
+			self.weather_,
+			self.date_,
+			self.battery_
+		];
+		complications.addAll(self.getMetrics_());
+		var complications_size = complications.size();
+		for (var i = 0; i < complications_size; ++i) {
+			var complication = complications[i];
+			if (complication.contains(pos_x, pos_y)) {
+				return complication.open();
+			}
+		}
+
+		return false;
 	}
 
 	function onLayout(_dc as Graphics.Dc) as Void {
@@ -127,17 +167,6 @@ class View extends WatchUi.WatchFace {
 		var tiny_size = _dc.getTextDimensions("0", Font.DOT_TINY);
 		//var tiny_spacing = Font.SPACING_TINY;
 
-		// ---- line above 3 ----
-
-		var sun_moon_width = _dc.getTextWidthInPixels("00:00 00:00", Font.DOT_TINY);
-		var sun_moon_pos_y = (self.screen_size_y_ / 2) -
-			Math.ceil(self.secondLeg_((self.screen_size_x_ + sun_moon_width) / 2)).toNumber();
-
-		self.sun_moon_.pos_x = self.screen_size_x_ / 2;
-		self.sun_moon_.pos_y = sun_moon_pos_y;
-
-		// ---- line above 2 ----
-
 		// ---- line above 1 ----
 
 		var line_above_1 = self.boxFor_(
@@ -148,14 +177,36 @@ class View extends WatchUi.WatchFace {
 		self.weather_.pos_x = line_above_1.center_x;
 		self.weather_.pos_y = line_above_1.center_y;
 		self.weather_.size_x = line_above_1.size_x;
+		self.weather_.size_y = line_above_1.size_y;
+
+		// ---- line above 2 ----
+
+		var line_above_2 = self.boxFor_(
+			line_above_1.pos_y - small_spacing,
+			-tiny_size[1] - regular_size[1]
+		);
+
+		// ---- line above 3 ----
+
+		var sun_moon_width = _dc.getTextWidthInPixels("00:00 00:00", Font.DOT_TINY);
+		var sun_moon_pos_y = (self.screen_size_y_ / 2) -
+			Math.ceil(self.secondLeg_((self.screen_size_x_ + sun_moon_width) / 2)).toNumber();
+
+		self.sun_moon_.pos_x = self.screen_size_x_ / 2;
+		self.sun_moon_.pos_y = sun_moon_pos_y;
+		self.sun_moon_.size_x = line_above_2.size_x;
+		self.sun_moon_.size_y = self.sun_moon_.height(_dc);
+		self.sun_moon_.small = true;
 
 		// ---- line main ----
 
 		self.icons_.pos_x = (self.screen_size_x_ - clock_size[0] - Render.iconsWidth(_dc, "0")) / 2 + small_spacing;
 		self.icons_.pos_y = self.screen_size_y_ / 2;
 
-		self.clock_.pos_x = self.screen_size_x_ / 2;
-		self.clock_.pos_y = self.screen_size_y_ / 2;
+		self.clock_.center_x = self.screen_size_x_ / 2;
+		self.clock_.center_y = self.screen_size_y_ / 2;
+		self.clock_.radius_x = clock_size[0] / 2;
+		self.clock_.radius_y = clock_size[1] / 2;
 
 		self.bars_.pos_x = (self.screen_size_x_ + clock_size[0]) / 2 + regular_spacing;
 		self.bars_.pos_y = (self.screen_size_y_ - clock_size[1]) / 2 + 2 * regular_spacing;
@@ -171,6 +222,8 @@ class View extends WatchUi.WatchFace {
 
 		self.date_.pos_x = line_below_1.pos_x;
 		self.date_.pos_y = line_below_1.pos_y;
+		self.date_.size_x = line_below_1.size_x;
+		self.date_.size_y = line_below_1.size_y;
 
 		self.seconds_.pos_x = line_below_1.end_x - 2 * regular_size[0];
 		self.seconds_.pos_y = line_below_1.pos_y;
@@ -188,22 +241,27 @@ class View extends WatchUi.WatchFace {
 		self.metrics_ = [];
 		pos_x += self.addMetric_(
 			_dc,
-			new Metric.HR(),
+			self.metrics_,
+			new Complication.HR(),
 			pos_x,
 			line_below_2.pos_y
 		);
 		pos_x += self.addMetric_(
 			_dc,
-			new Metric.Steps(),
+			self.metrics_,
+			new Complication.Steps(),
 			pos_x,
 			line_below_2.pos_y
 		);
 		pos_x += self.addMetric_(
 			_dc,
-			new Metric.Floors(),
+			self.metrics_,
+			new Complication.Floors(),
 			pos_x,
 			line_below_2.pos_y
 		);
+
+		self.metrics_alt_ = [];
 
 		// ---- line below 3 ----
 
@@ -212,9 +270,10 @@ class View extends WatchUi.WatchFace {
 			regular_size[1]
 		);
 
-		self.battery_.pos_x = self.screen_size_x_ / 2;
-		self.battery_.pos_y = line_below_3.center_y;
+		self.battery_.pos_x = line_below_3.pos_x;
+		self.battery_.pos_y = line_below_3.pos_y;
 		self.battery_.size_x = line_below_3.size_x;
+		self.battery_.size_y = line_below_3.size_y;
 	}
 
 	function onUpdate(_dc as Graphics.Dc) as Void {
@@ -248,15 +307,16 @@ class View extends WatchUi.WatchFace {
 			self.clock_.render(_dc, false);
 			self.icons_.render(_dc, false);
 
-			// TODO
-			//if (self.is_high_power_) {
+			if (self.is_high_power_) {
 				self.seconds_.render(_dc);
-			//} else {
-			//	self.seconds_.renderPlaceholder(_dc);
-			//}
+			} else {
+				self.seconds_.renderPlaceholder(_dc);
+			}
 
 			// -- line above 3 --
 			self.sun_moon_.render(_dc);
+
+			// -- line above 2--
 
 			// -- line above 1 --
 			self.weather_.render(_dc);
@@ -268,8 +328,16 @@ class View extends WatchUi.WatchFace {
 			self.date_.render(_dc);
 
 			// -- line below 2 --
-			for (var i = 0; i < self.metrics_.size(); ++i) {
-				self.metrics_[i].render(_dc);
+			if (self.is_base_) {
+				var metrics_size = self.metrics_.size();
+				for (var i = 0; i < metrics_size; ++i) {
+					self.metrics_[i].render(_dc);
+				}
+			} else {
+				var metrics_alt_size = self.metrics_alt_.size();
+				for (var i = 0; i < metrics_alt_size; ++i) {
+					self.metrics_alt_[i].render(_dc);
+				}
 			}
 
 			// -- line below 3 --
@@ -280,8 +348,8 @@ class View extends WatchUi.WatchFace {
 
 	function onPartialUpdate(_dc as Graphics.Dc) as Void {
 		if (!self.is_visible_) { return; }
-
 		if (self.is_night_mode_) { return; }
+		if (!self.is_high_power_) { return; }
 
 		_dc.setClip(
 			self.seconds_.pos_x, self.seconds_.pos_y,
@@ -300,8 +368,13 @@ class View extends WatchUi.WatchFace {
 		self.icons_.refresh(_dc);
 		self.bars_.refresh(_dc);
 
-		for (var i = 0; i < self.metrics_.size(); ++i) {
+		var metrics_size = self.metrics_.size();
+		for (var i = 0; i < metrics_size; ++i) {
 			self.metrics_[i].refresh(_dc);
+		}
+		var metrics_alt_size = self.metrics_alt_.size();
+		for (var i = 0; i < metrics_alt_size; ++i) {
+			self.metrics_alt_[i].refresh(_dc);
 		}
 	}
 
@@ -376,16 +449,27 @@ class View extends WatchUi.WatchFace {
 
 	hidden function addMetric_(
 		_dc as Graphics.Dc,
-		_metric as Metric.Base,
+		_metrics as Complication.Metrics,
+		_metric as Complication.Metric,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number
 	) as Lang.Number {
 		_metric.pos_x = _pos_x;
 		_metric.pos_y = _pos_y;
 
-		self.metrics_.add(_metric);
+		_metric.size_x = _metric.width(_dc);
+		_metric.size_y = _metric.height(_dc);
 
-		return _metric.width(_dc);
+		_metrics.add(_metric);
+
+		return _metric.size_x;
+	}
+
+	hidden function getMetrics_() as Complication.Metrics {
+		return
+			self.is_base_ ?
+			self.metrics_ :
+			self.metrics_alt_;
 	}
 }
 

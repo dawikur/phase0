@@ -63,6 +63,18 @@ function text(
 	_dc.drawText(_pos_x, _pos_y, FONT_BG, _text, _justify);
 }
 
+function textBg(
+	_dc as Graphics.Dc,
+	_pos_x as Lang.Number,
+	_pos_y as Lang.Number,
+	_text as Lang.String,
+	_justify as Lang.Number
+) as Void {
+	// bg
+	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+	_dc.drawText(_pos_x, _pos_y, FONT_BG, _text, _justify);
+}
+
 function textWidth(_dc as Graphics.Dc, _label as Lang.String) as Lang.Number {
 	return _dc.getTextWidthInPixels(_label, FONT_FG);
 }
@@ -89,24 +101,24 @@ function textSmall(
 	_dc.drawText(_pos_x +1, _pos_y +1, FONT_SMALL, _text, _justify);
 }
 
+function textSmallBg(
+	_dc as Graphics.Dc,
+	_pos_x as Lang.Number,
+	_pos_y as Lang.Number,
+	_text as Lang.String,
+	_justify as Lang.Number
+) as Void {
+	// bg
+	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+	_dc.drawText(_pos_x, _pos_y, FONT_SMALL, _text, _justify);
+}
+
 function textSmallWidth(_dc as Graphics.Dc, _label as Lang.String) as Lang.Number {
 	return _dc.getTextWidthInPixels(_label, FONT_SMALL);
 }
 
 function textSmallHeight(_dc as Graphics.Dc) as Lang.Number {
 	return _dc.getFontHeight(FONT_SMALL);
-}
-
-function textSmallColor(
-	_dc as Graphics.Dc,
-	_pos_x as Lang.Number,
-	_pos_y as Lang.Number,
-	_text as Lang.String,
-	_justify as Lang.Number,
-	_color as Lang.Number
-) as Void {
-	_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_SMALL, _text, _justify);
 }
 
 // ////////////////////////////////////////////////////////////////////////////

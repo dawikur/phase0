@@ -4,6 +4,42 @@
 make [build|simulate|clean|help]
 ```
 
+## TODO
+
+* Metrics
+  * Core
+    * CAL calories
+    * DST distance (today), km/mi
+    * ACT active minutes
+  * Outdoor
+    * ALT altitude
+    * GPS heading
+    * TEMP temperature
+  * Advanced
+    * REC recovery
+    * VO2 vo2 max
+    * RHR resting HR
+    * LOAD training load
+  * Other
+    * pushes
+    * respiration rate
+    * time to recover
+    * intensity minutes
+    * training status
+* Bars
+  * Battery %
+  * HR %
+  * Steps Goal %
+  * Calories Goal %
+  * Active minutes Goal %
+  * ... any other Goal %
+  * Hydration
+  * Stress
+* Icons
+  * Phone disconnected icon
+
+## Checklist
+
 * Visual polish
   * Optical centering audit
     * Check HH:MM vs side bars vs icons at 1× scale

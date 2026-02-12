@@ -9,94 +9,78 @@ import Toybox.Time;
 import Toybox.WatchUi;
 import Toybox.Weather;
 
-module Element {
+module Complication {
 
-class SunMoon {
-	var pos_x as Lang.Number = 0;
-	var pos_y as Lang.Number = 0;
-
-	hidden var spacing_ as Lang.Number = Render.SPACING;
-
-	hidden var header_ as Lang.String = "Dawn     Dusk";
-
-	hidden var dawn_dusk_ as Lang.String = "";
+class SunMoon extends Text {
 	hidden var moon_phase_ as Lang.Number = 0;
 
 	function initialize() {
-	}
+		Text.initialize(Complications.COMPLICATION_TYPE_SUNRISE);
 
-	function render(_dc as Graphics.Dc) as Void {
-		if (self.dawn_dusk_.length() == 0) {
-			self.refresh(_dc);
-		}
+		self.label_ = Lang.format("$1$     $2$", [
+			Application.loadResource(Rez.Strings.LABEL_DAWN) as Lang.String,
+			Application.loadResource(Rez.Strings.LABEL_DUSK) as Lang.String,
+		]);
 
-		var pos_x = self.pos_x;
-		var pos_y = self.pos_y;
+		self.value_bg_ = "00:00   00:00";
 
-		// ---- header ----
-
-		Render.label(_dc, pos_x, pos_y, self.header_, Graphics.TEXT_JUSTIFY_CENTER);
-		pos_y += Render.labelHeight(_dc) + self.spacing_;
-
-		// ---- text ----
-
-		// TODO: dim previous event
-		// TODO: handle 12/24h times
-		if (self.dawn_dusk_.length() == 0) {
-			var text = "00:00   00:00";
-			Render.textSmallColor(_dc, pos_x, pos_y, text, Graphics.TEXT_JUSTIFY_CENTER, Render.COLOR_BG);
-		} else {
-			Render.textSmall(_dc, pos_x, pos_y, self.dawn_dusk_, Graphics.TEXT_JUSTIFY_CENTER);
-		}
-
-		// ---- moon ----
-
-		pos_y += (Render.textSmallHeight(_dc)) / 2;
-
-		Render.icons(_dc, pos_x, pos_y, "" + (Font.ICON_MOON0 + self.moon_phase_), "");
+		self.justify_ = Graphics.TEXT_JUSTIFY_CENTER;
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		var now = Time.now();
+		self.value_ = self.getValue_();
+		self.moon_phase_ = self.getMoonPhase_(Time.now());
 
-		self.refreshDawnDusk(now);
-		self.refreshMoonPhase(now);
-
-		if (self.dawn_dusk_.length() != 0) {
-			Cache.setValue("dawn_dusk", self.dawn_dusk_);
+		if (self.value_.length() != 0) {
+			Cache.setValue("dawn_dusk", self.value_);
 		} else {
 			var data = Cache.getValue("dawn_dusk", 24);
 			if (data != null) {
-				self.dawn_dusk_ = data as Lang.String;
+				self.value_ = data as Lang.String;
 			}
 		}
 	}
 
-	function refreshDawnDusk(_now as Time.Moment) as Void {
+	function render(_dc as Graphics.Dc) as Void {
+		Text.render(_dc);
+
+		var pos_x = self.pos_x;
+		var pos_y = self.pos_y + Render.textSmallHeight(_dc) / 2;
+
+		if (self.label_.length() != 0) {
+			pos_y += Render.labelHeight(_dc) + self.spacing_;
+		}
+
+		Render.icons(_dc, pos_x, pos_y, "" + (Font.ICON_MOON0 + self.moon_phase_), "");
+	}
+
+	function getValue_() as Lang.String {
 		var weather = Weather.getCurrentConditions();
 		if (weather == null) {
-			return;
+			return "";
 		}
 
 		var location = weather.observationLocationPosition;
 		if (location == null) {
-			return;
+			return "";
 		}
 
-		var sunrise = Weather.getSunrise(location, _now);
+		var now = Time.now();
+
+		var sunrise = Weather.getSunrise(location, now);
 		if (sunrise == null) {
-			return;
+			return "";
 		}
 
-		var sunset = Weather.getSunset(location, _now);
+		var sunset = Weather.getSunset(location, now);
 		if (sunset == null) {
-			return;
+			return "";
 		}
 
 		var sunrise_info = Time.Gregorian.info(sunrise, Time.FORMAT_SHORT);
 		var sunset_info = Time.Gregorian.info(sunset, Time.FORMAT_SHORT);
 
-		self.dawn_dusk_ = Lang.format("$1$:$2$   $3$:$4$", [
+		return Lang.format("$1$:$2$   $3$:$4$", [
 			sunrise_info.hour.format("%02d"),
 			sunrise_info.min.format("%02d"),
 			sunset_info.hour.format("%02d"),
@@ -104,11 +88,7 @@ class SunMoon {
 		]);
 	}
 
-	function refreshMoonPhase(_now as Time.Moment) as Void {
-		self.moon_phase_ = SunMoon.getMoonPhase(_now);
-	}
-
-	static function getMoonPhase(_moment as Time.Moment) as Lang.Number {
+	function getMoonPhase_(_moment as Time.Moment) as Lang.Number {
 		var LUNAR_CYCLE_DAYS = 29.530588853;
 		var SECONDS_PER_DAY = 86400;
 		var NEW_MOON_REF = 947182440; // Jan 6, 2000 18:14 UTC
@@ -153,6 +133,7 @@ class SunMoon {
 				:sec   => 0
 			}),
 		];
+		var new_moons_size = new_moons.size();
 
 		var moon_phases = [
 			/* day    phase */
@@ -168,11 +149,14 @@ class SunMoon {
 			/*  30 */ 0, 9,
 			/*  32 */ 1, 1,
 		];
+		var moon_phases_size = moon_phases.size();
 
-		for (var i = 0; i < new_moons.size(); ++i) {
+		var sun_moon = new SunMoon();
+
+		for (var i = 0; i < new_moons_size; ++i) {
 			var new_moon = new_moons[i];
 
-			for (var day = 0; day < moon_phases.size(); ++day) {
+			for (var day = 0; day < moon_phases_size; ++day) {
 				var moon_phase = moon_phases[day];
 
 				if (moon_phase == 9) {
@@ -188,7 +172,7 @@ class SunMoon {
 				));
 
 				Test.assertEqual(
-					SunMoon.getMoonPhase(new_moon.add(one_day.multiply(day))),
+					sun_moon.getMoonPhase(new_moon.add(one_day.multiply(day))),
 					moon_phase
 				);
 			}
@@ -198,4 +182,4 @@ class SunMoon {
 	}
 }
 
-} // module Element
+} // module Complication

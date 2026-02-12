@@ -1,20 +1,22 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import Toybox.Activity;
 import Toybox.ActivityMonitor;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.UserProfile;
+import Toybox.Complications;
 
-module Metric {
+module Complication {
 
-class HR extends Base {
+class HR extends Metric {
 	function initialize() {
-		Base.initialize();
+		Metric.initialize(Complications.COMPLICATION_TYPE_HEART_RATE);
 
-		self.header_ = Application.loadResource(Rez.Strings.LABEL_HR) as Lang.String;
+		self.label_ = Application.loadResource(Rez.Strings.LABEL_HR) as Lang.String;
 	}
 
-	function getValue_() as Lang.Number or Null {
+	hidden function getValue_() as Lang.Number or Null {
 		var activity_info = Activity.getActivityInfo();
 		if (activity_info != null) {
 			var sample = activity_info.currentHeartRate;
@@ -32,12 +34,12 @@ class HR extends Base {
 		return null;
 	}
 
-	function refresh(_dc as Graphics.Dc) as Void {
+	hidden function getValueMax_() as Lang.Number or Null {
 		var current_sport = UserProfile.getCurrentSport();
 		var zones = UserProfile.getHeartRateZones(current_sport) as Lang.Array<Lang.Number>;
 
-		self.max_value_ = zones[5] as Lang.Number;
+		return zones[5] as Lang.Number;
 	}
 }
 
-} // module Metric
+} // module Complication

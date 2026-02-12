@@ -1,23 +1,21 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.Graphics;
+import Toybox.Complications;
 import Toybox.Lang;
 import Toybox.System;
 
-module Text {
+module Complication {
 
-class Seconds extends Base {
-	var size_x as Lang.Number = 0;
-	var size_y as Lang.Number = 0;
-
+class Seconds extends Text {
 	function initialize() {
-		Base.initialize();
+		Text.initialize(Complications.COMPLICATION_TYPE_INVALID);
 	}
 
-	function refresh(_dc as Graphics.Dc) as Void {
+	hidden function getValue_() as Lang.String {
 		var clock = System.getClockTime();
 
-		self.label_ = clock.sec.format("%02d");
+		return clock.sec.format("%02d");
 	}
 
 	function renderPlaceholder(_dc as Graphics.Dc) as Void {
@@ -25,4 +23,4 @@ class Seconds extends Base {
 	}
 }
 
-} // module Text
+} // module Complication

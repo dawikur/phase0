@@ -115,6 +115,10 @@ st simulate_test:
 	$(Q)$(MAKE) MODE=test simulate
 .PHONY: st simulate_test
 
+sr simulate_release:
+	$(Q)$(MAKE) MODE=release simulate
+.PHONY: sr simulate_release
+
 c clean:
 	$(Q)echo " [ clean ]"
 	$(RM) -r bin $(BUILD_DIR) $(RESOURCES)

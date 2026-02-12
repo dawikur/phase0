@@ -5,31 +5,18 @@ import Toybox.Lang;
 import Toybox.Math;
 import Toybox.System;
 
-module Element {
+module Complication {
 
-class Battery {
-	var pos_x as Lang.Number = 0;
-	var pos_y as Lang.Number = 0;
-
-	var size_x as Lang.Number = 0;
-
+class Battery extends Base {
 	var charge_ as Lang.String = "";
 	var frame_ as Lang.String = "";
 	var charging_ as Lang.String = "";
 
 	function initialize() {
-	}
-
-	function render(_dc as Graphics.Dc) as Void {
-		if (System.getSystemStats().charging) {
-			Render.icons(_dc, self.pos_x, self.pos_y, self.charging_, "");
-		} else {
-			Render.icons(_dc, self.pos_x, self.pos_y, self.charge_, self.frame_);
-		}
+		Base.initialize(Complications.COMPLICATION_TYPE_BATTERY);
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-
 		var borders_width = Render.iconsWidth(_dc, Font.ICON_BATTERY_BEGIN + Font.ICON_BATTERY_END);
 		var bar_width = Render.iconsWidth(_dc, "" + Font.ICON_BATTERY_EMPTY);
 
@@ -56,6 +43,17 @@ class Battery {
 
 		self.frame_ += Font.ICON_BATTERY_END;
 		self.charging_ += Font.ICON_BATTERY_END;
+	}
+
+	function render(_dc as Graphics.Dc) as Void {
+		var pos_x = self.pos_x + self.size_x / 2;
+		var pos_y = self.pos_y + self.size_y / 2;
+
+		if (System.getSystemStats().charging) {
+			Render.icons(_dc, pos_x, pos_y, self.charging_, "");
+		} else {
+			Render.icons(_dc, pos_x, pos_y, self.charge_, self.frame_);
+		}
 	}
 }
 

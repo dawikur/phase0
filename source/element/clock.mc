@@ -8,19 +8,32 @@ import Toybox.UserProfile;
 module Element {
 
 class Clock {
-	var pos_x as Lang.Number = 0;
-	var pos_y as Lang.Number = 0;
+	var center_x as Lang.Number = 0;
+	var center_y as Lang.Number = 0;
+
+	var radius_x as Lang.Number = 0;
+	var radius_y as Lang.Number = 0;
 
 	hidden var label_ as Lang.String = "";
 
 	hidden var is_24_Hour_ as Lang.Boolean;
 
-	hidden var ampm_ as Lang.String or Null = null;
-	hidden var ampm_padding_ as Lang.Number = 0;
+	hidden var ampm_ as Lang.String = "";
 
 	function initialize() {
 		var device_settings = System.getDeviceSettings();
 		self.is_24_Hour_ = device_settings.is24Hour;
+	}
+
+	function contains(_x as Lang.Number, _y as Lang.Number) as Lang.Boolean {
+		var pos_x = self.center_x - self.radius_x;
+		var pos_y = self.center_y - self.radius_y;
+		var end_x = self.center_x + self.radius_x;
+		var end_y = self.center_y + self.radius_y;
+
+		return
+			pos_x <= _x && _x <= end_x &&
+			pos_y <= _y && _y <= end_y;
 	}
 
 	function render(_dc as Graphics.Dc, _is_night_mode as Lang.Boolean) as Void {
@@ -32,38 +45,27 @@ class Clock {
 			return;
 		}
 
-		var pos_x = self.pos_x;
-		var pos_y = self.pos_y;
-
 		var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
 		if (_is_night_mode) {
 			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(pos_x, pos_y, Font.DOT_LARGE, self.label_, justify);
+			_dc.drawText(self.center_x, self.center_y, Font.DOT_LARGE, self.label_, justify);
 		} else {
 			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(pos_x, pos_y, Font.DOT_LARGE_BOLD, self.label_, justify);
+			_dc.drawText(self.center_x, self.center_y, Font.DOT_LARGE_BOLD, self.label_, justify);
 
 			_dc.setColor(Render.COLOR_BG, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(pos_x, pos_y, Font.DOT_LARGE_THIN, "88:88", justify);
+			_dc.drawText(self.center_x, self.center_y, Font.DOT_LARGE_THIN, "88:88", justify);
 		}
 
-		if (self.ampm_ != null) {
-			var ampm_ = self.ampm_ as Lang.String;
-
-			pos_x += self.ampm_padding_;
-
-			Render.label(_dc, pos_x, pos_y, ampm_, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
-		}
+		// TODO: self.ampm_
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
 		var clock = System.getClockTime();
 
 		if (self.is_24_Hour_) {
-			self.ampm_ = null;
-
-			self.ampm_padding_ = 0;
+			self.ampm_ = "";
 
 			self.label_ = Lang.format("$1$:$2$", [
 				clock.hour.format("%02d"),
@@ -75,13 +77,7 @@ class Clock {
 				hour = 12;
 			}
 
-			self.ampm_ =
-				clock.hour < 12 ?
-				"A\nM" :
-				"P\nM";
-
-			self.ampm_padding_ += _dc.getTextWidthInPixels("88:88", Font.DOT_LARGE_THIN) / 2;
-			self.ampm_padding_ += _dc.getTextWidthInPixels("x", Font.DOT_SMALL);
+			self.ampm_ = clock.hour < 12 ? "AM" : "PM";
 
 			self.label_ = Lang.format("$1$:$2$", [
 				hour.format("%02d"),
