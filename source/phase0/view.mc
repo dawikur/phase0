@@ -1,17 +1,12 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.ActivityMonitor;
-import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
-import Toybox.SensorHistory;
 import Toybox.System;
-import Toybox.Test;
 import Toybox.Time;
 import Toybox.UserProfile;
 import Toybox.WatchUi;
-import Toybox.Weather;
 
 module Phase0 {
 
@@ -261,6 +256,8 @@ class View extends WatchUi.WatchFace {
 			line_below_2.pos_y
 		);
 
+		pos_x = line_below_2.pos_x;
+
 		self.metrics_alt_ = [];
 
 		// ---- line below 3 ----
@@ -328,16 +325,10 @@ class View extends WatchUi.WatchFace {
 			self.date_.render(_dc);
 
 			// -- line below 2 --
-			if (self.is_base_) {
-				var metrics_size = self.metrics_.size();
-				for (var i = 0; i < metrics_size; ++i) {
-					self.metrics_[i].render(_dc);
-				}
-			} else {
-				var metrics_alt_size = self.metrics_alt_.size();
-				for (var i = 0; i < metrics_alt_size; ++i) {
-					self.metrics_alt_[i].render(_dc);
-				}
+			var metrics = self.getMetrics_();
+			var metrics_size = metrics.size();
+			for (var i = 0; i < metrics_size; ++i) {
+				metrics[i].render(_dc);
 			}
 
 			// -- line below 3 --
@@ -466,6 +457,10 @@ class View extends WatchUi.WatchFace {
 	}
 
 	hidden function getMetrics_() as Complication.Metrics {
+		if (self.metrics_alt_.size() == 0) {
+			return self.metrics_;
+		}
+
 		return
 			self.is_base_ ?
 			self.metrics_ :

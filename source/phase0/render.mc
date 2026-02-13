@@ -367,10 +367,20 @@ function icons(
 ) as Void {
 	var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
+	// fg
+	if (_bg.length() == 0) {
+		_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
+		_dc.drawText(_pos_x, _pos_y, ICONS, _fg, justify);
+
+		return;
+	}
+
 	// bg
-	if (_bg.length() != 0) {
+	if (_fg.length() == 0) {
 		_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
 		_dc.drawText(_pos_x, _pos_y, ICONS, _bg, justify);
+
+		return;
 	}
 
 	// fg
@@ -379,7 +389,7 @@ function icons(
 
 	// shade
 	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x +1, _pos_y +1, ICONS, _fg, justify);
+	_dc.drawText(_pos_x +1, _pos_y +1, ICONS, _bg, justify);
 }
 
 function iconsWidth(_dc as Graphics.Dc, _icons as Lang.String) as Lang.Number {

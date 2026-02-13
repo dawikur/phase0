@@ -1,12 +1,11 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
-import Toybox.System;
 import Toybox.Test;
 import Toybox.Time;
-import Toybox.WatchUi;
 import Toybox.Weather;
 
 module Complication {
@@ -51,7 +50,17 @@ class SunMoon extends Text {
 			pos_y += Render.labelHeight(_dc) + self.spacing_;
 		}
 
-		Render.icons(_dc, pos_x, pos_y, "" + (Font.ICON_MOON0 + self.moon_phase_), "");
+		var is_new_moon = self.moon_phase_ == 0;
+		var is_full_moon = self.moon_phase_ == 4;
+		var moon_icon = "" + (Font.ICON_MOON0 + self.moon_phase_);
+
+		if (is_full_moon) {
+			Render.icons(_dc, pos_x, pos_y, moon_icon, "");
+		} else if (is_new_moon) {
+			Render.icons(_dc, pos_x, pos_y, "", moon_icon);
+		} else {
+			Render.icons(_dc, pos_x, pos_y, moon_icon, moon_icon);
+		}
 	}
 
 	function getValue_() as Lang.String {

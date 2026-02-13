@@ -3,8 +3,6 @@
 import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.System;
-import Toybox.WatchUi;
 
 module Complication {
 

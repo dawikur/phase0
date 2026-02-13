@@ -2,7 +2,6 @@
 
 import Toybox.Activity;
 import Toybox.ActivityMonitor;
-import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.UserProfile;
 import Toybox.Complications;

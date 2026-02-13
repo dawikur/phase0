@@ -1,10 +1,7 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.Activity;
 import Toybox.ActivityMonitor;
-import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.UserProfile;
 import Toybox.Complications;
 
 module Complication {

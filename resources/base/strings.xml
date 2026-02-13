@@ -83,5 +83,8 @@
 	<string id="LABEL_FLOORS">Floors</string>
 	<string id="LABEL_HR">HR</string>
 	<string id="LABEL_STEPS">Steps</string>
+	<string id="LABEL_VO2_RUNNING">VO2 Run.</string>
+	<string id="LABEL_VO2_CYCLING">VO2 Bike</string>
+	<string id="LABEL_CALORIES">Calories</string>
 
 </strings>

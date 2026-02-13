@@ -2,9 +2,7 @@
 
 import Toybox.Application;
 import Toybox.Complications;
-import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.System;
 import Toybox.Time;
 
 module Complication {

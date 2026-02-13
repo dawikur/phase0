@@ -3,7 +3,6 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
-import Toybox.System;
 
 module Element {
 
