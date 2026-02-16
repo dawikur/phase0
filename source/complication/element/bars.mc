@@ -4,68 +4,15 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-module Element {
+module Complication {
 
-class Bars {
-	var pos_x as Lang.Number = 0;
-	var pos_y as Lang.Number = 0;
-
-	var size_x as Lang.Number = 0;
-	var size_y as Lang.Number = 0;
-
+class Bars extends Base {
 	hidden var body_battery_ as Lang.Float or Null = null;
 	hidden var stress_ as Lang.Float or Null = null;
 	hidden var move_ as Lang.Float or Null = null;
 
 	function initialize() {
-	}
-
-	function render(_dc as Graphics.Dc) as Void {
-		var pos_x = self.pos_x;
-		var pos_y = self.pos_y;
-		var size_y = self.size_y;
-
-		var spacing = self.size_x / 3;
-
-		if (self.body_battery_ != null) {
-			Render.gaugeColor(
-				_dc,
-				pos_x,
-				pos_y,
-				self.body_battery_,
-				size_y,
-				Render.GAUGE_BOTTOM,
-				0x005555
-			);
-		}
-
-		pos_x += spacing;
-
-		if (self.stress_ != null) {
-			Render.gaugeColor(
-				_dc,
-				pos_x,
-				pos_y,
-				self.stress_,
-				size_y,
-				Render.GAUGE_BOTTOM,
-				0x555500
-			);
-		}
-
-		pos_x += spacing;
-
-		if (self.move_ != null) {
-			Render.gaugeColor(
-				_dc,
-				pos_x,
-				pos_y,
-				self.move_,
-				size_y,
-				Render.GAUGE_BOTTOM,
-				0xAA0000
-			);
-		}
+		Base.initialize(Complications.COMPLICATION_TYPE_INVALID);
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
@@ -132,6 +79,54 @@ class Bars {
 			self.move_ = null;
 		}
 	}
+
+	function render(_dc as Graphics.Dc) as Void {
+		var pos_x = self.pos_x;
+		var pos_y = self.pos_y;
+		var size_y = self.size_y;
+
+		var spacing = self.size_x / 3;
+
+		if (self.body_battery_ != null) {
+			Render.gaugeColor(
+				_dc,
+				pos_x,
+				pos_y,
+				self.body_battery_,
+				size_y,
+				Render.GAUGE_BOTTOM,
+				0x005555
+			);
+		}
+
+		pos_x += spacing;
+
+		if (self.stress_ != null) {
+			Render.gaugeColor(
+				_dc,
+				pos_x,
+				pos_y,
+				self.stress_,
+				size_y,
+				Render.GAUGE_BOTTOM,
+				0x555500
+			);
+		}
+
+		pos_x += spacing;
+
+		if (self.move_ != null) {
+			Render.gaugeColor(
+				_dc,
+				pos_x,
+				pos_y,
+				self.move_,
+				size_y,
+				Render.GAUGE_BOTTOM,
+				0xAA0000
+			);
+		}
+	}
 }
 
-} // module Element
+} // module Complication

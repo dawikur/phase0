@@ -52,7 +52,8 @@ class Battery extends Base {
 		if (System.getSystemStats().charging) {
 			Render.icons(_dc, pos_x, pos_y, self.charging_, "");
 		} else {
-			Render.icons(_dc, pos_x, pos_y, self.charge_, self.frame_);
+			Render.icons(_dc, pos_x, pos_y, self.charge_, "");
+			Render.icons(_dc, pos_x, pos_y, "", self.frame_);
 		}
 	}
 }

@@ -4,7 +4,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
 
-module Element {
+module Main {
 
 class Clock {
 	var center_x as Lang.Number = 0;
@@ -35,31 +35,6 @@ class Clock {
 			pos_y <= _y && _y <= end_y;
 	}
 
-	function render(_dc as Graphics.Dc, _is_night_mode as Lang.Boolean) as Void {
-		if (self.label_.length() == 0) {
-			self.refresh(_dc);
-		}
-
-		if (self.label_.length() == 0) {
-			return;
-		}
-
-		var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
-
-		if (_is_night_mode) {
-			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(self.center_x, self.center_y, Font.DOT_LARGE, self.label_, justify);
-		} else {
-			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(self.center_x, self.center_y, Font.DOT_LARGE_BOLD, self.label_, justify);
-
-			_dc.setColor(Render.COLOR_BG, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(self.center_x, self.center_y, Font.DOT_LARGE_THIN, "88:88", justify);
-		}
-
-		// TODO: self.ampm_
-	}
-
 	function refresh(_dc as Graphics.Dc) as Void {
 		var clock = System.getClockTime();
 
@@ -85,6 +60,31 @@ class Clock {
 
 		}
 	}
+
+	function render(_dc as Graphics.Dc, _is_night_mode as Lang.Boolean) as Void {
+		if (self.label_.length() == 0) {
+			self.refresh(_dc);
+		}
+
+		if (self.label_.length() == 0) {
+			return;
+		}
+
+		var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
+
+		if (_is_night_mode) {
+			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
+			_dc.drawText(self.center_x, self.center_y, Font.DOT_LARGE, self.label_, justify);
+		} else {
+			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
+			_dc.drawText(self.center_x, self.center_y, Font.DOT_LARGE_BOLD, self.label_, justify);
+
+			_dc.setColor(Render.COLOR_BG, Graphics.COLOR_TRANSPARENT);
+			_dc.drawText(self.center_x, self.center_y, Font.DOT_LARGE_THIN, "88:88", justify);
+		}
+
+		// TODO: self.ampm_
+	}
 }
 
-} // module Element
+} // module Main

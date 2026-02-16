@@ -24,6 +24,8 @@ class SunMoon extends Text {
 		self.value_bg_ = "00:00   00:00";
 
 		self.justify_ = Graphics.TEXT_JUSTIFY_CENTER;
+
+		self.small = true;
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {

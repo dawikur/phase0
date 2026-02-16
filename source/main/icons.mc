@@ -5,7 +5,7 @@ import Toybox.Lang;
 import Toybox.Math;
 import Toybox.System;
 
-module Element {
+module Main {
 
 class Icons {
 	var pos_x as Lang.Number = 0;
@@ -21,22 +21,6 @@ class Icons {
 			Font.ICON_BLUETOOTH,
 			Font.ICON_NOTIFICATION
 		]);
-	}
-
-	function render(_dc as Graphics.Dc, _is_night_mode as Lang.Boolean) as Void {
-		if (_is_night_mode) {
-			Render.icons(
-				_dc, pos_x, pos_y,
-				self.enabled_,
-				""
-			);
-		} else {
-			Render.icons(
-				_dc, pos_x, pos_y,
-				self.enabled_,
-				self.all_
-			);
-		}
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
@@ -65,6 +49,22 @@ class Icons {
 			icon_notification
 		]);
 	}
+
+	function render(_dc as Graphics.Dc, _is_night_mode as Lang.Boolean) as Void {
+		if (_is_night_mode) {
+			Render.icons(
+				_dc, pos_x, pos_y,
+				self.enabled_,
+				""
+			);
+		} else {
+			Render.icons(
+				_dc, pos_x, pos_y,
+				self.enabled_,
+				self.all_
+			);
+		}
+	}
 }
 
-} // module Element
+} // module Main
