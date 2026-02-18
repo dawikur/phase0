@@ -69,7 +69,7 @@ class Text extends Base {
 
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		self.value_ = self.getValue_();
+		self.value_ = self.getValue();
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
@@ -106,7 +106,7 @@ class Text extends Base {
 		}
 	}
 
-	hidden function getValue_() as Lang.String {
+	function getValue() as Lang.String {
 		return "";
 	}
 }

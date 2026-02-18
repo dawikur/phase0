@@ -10,6 +10,14 @@ const COLOR_FG as Lang.Number = 0xFFFFFF;
 const COLOR_BG as Lang.Number = 0x555555;
 const COLOR_ACCENT as Lang.Number = 0xAA5500;
 
+const COLOR_RED as Lang.Number = 0xAA0000;
+const COLOR_GREEN as Lang.Number = 0x00AA00;
+const COLOR_BLUE as Lang.Number = 0x0000AA;
+
+const COLOR_CYAN as Lang.Number = 0x005555;
+const COLOR_MAGENTA as Lang.Number = 0x550055;
+const COLOR_YELLOW as Lang.Number = 0x555500;
+
 const FONT_FG as WatchUi.FontResource = Font.DOT_REGULAR;
 const FONT_BG as WatchUi.FontResource = Font.DOT_REGULAR_THIN;
 
@@ -18,7 +26,7 @@ const FONT_TINY as WatchUi.FontResource = Font.DOT_TINY;
 
 const SPACING as Lang.Number = Font.SPACING_SMALL;
 
-const ICONS as WatchUi.FontResource = Font.ICONS;
+const FONT_ICONS as WatchUi.FontResource = Font.ICONS;
 
 // ////////////////////////////////////////////////////////////////////////////
 // Label
@@ -370,7 +378,7 @@ function icons(
 	// fg
 	if (_bg.length() == 0) {
 		_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_pos_x, _pos_y, ICONS, _fg, justify);
+		_dc.drawText(_pos_x, _pos_y, FONT_ICONS, _fg, justify);
 
 		return;
 	}
@@ -378,22 +386,35 @@ function icons(
 	// bg
 	if (_fg.length() == 0) {
 		_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_pos_x, _pos_y, ICONS, _bg, justify);
+		_dc.drawText(_pos_x, _pos_y, FONT_ICONS, _bg, justify);
 
 		return;
 	}
 
 	// fg
 	_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, ICONS, _fg, justify);
+	_dc.drawText(_pos_x, _pos_y, FONT_ICONS, _fg, justify);
 
 	// shade
 	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x +1, _pos_y +1, ICONS, _bg, justify);
+	_dc.drawText(_pos_x +1, _pos_y +1, FONT_ICONS, _bg, justify);
+}
+
+function iconsColor(
+	_dc as Graphics.Dc,
+	_pos_x as Lang.Number,
+	_pos_y as Lang.Number,
+	_icons as Lang.String,
+	_color as Lang.Number
+) as Void {
+	var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
+
+	_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
+	_dc.drawText(_pos_x +1, _pos_y +1, FONT_ICONS, _icons, justify);
 }
 
 function iconsWidth(_dc as Graphics.Dc, _icons as Lang.String) as Lang.Number {
-	return _dc.getTextWidthInPixels(_icons, ICONS);
+	return _dc.getTextWidthInPixels(_icons, FONT_ICONS);
 }
 
 } // module Render

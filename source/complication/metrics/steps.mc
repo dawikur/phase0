@@ -13,11 +13,11 @@ class Steps extends Metric {
 		self.label_ = Application.loadResource(Rez.Strings.LABEL_STEPS) as Lang.String;
 	}
 
-	hidden function getValue_() as Lang.Number or Null {
+	function getValue() as Lang.Number or Null {
 		return ActivityMonitor.getInfo().steps;
 	}
 
-	hidden function getValueMax_() as Lang.Number or Null {
+	function getValueMax() as Lang.Number or Null {
 		return ActivityMonitor.getInfo().stepGoal;
 	}
 }

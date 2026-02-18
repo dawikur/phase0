@@ -8,14 +8,14 @@ import Toybox.Complications;
 
 module Complication {
 
-class HR extends Metric {
+class HeartRate extends Metric {
 	function initialize() {
 		Metric.initialize(Complications.COMPLICATION_TYPE_HEART_RATE);
 
 		self.label_ = Application.loadResource(Rez.Strings.LABEL_HR) as Lang.String;
 	}
 
-	hidden function getValue_() as Lang.Number or Null {
+	function getValue() as Lang.Number or Null {
 		var activity_info = Activity.getActivityInfo();
 		if (activity_info != null) {
 			var sample = activity_info.currentHeartRate;
@@ -33,7 +33,7 @@ class HR extends Metric {
 		return null;
 	}
 
-	hidden function getValueMax_() as Lang.Number or Null {
+	function getValueMax() as Lang.Number or Null {
 		var current_sport = UserProfile.getCurrentSport();
 		var zones = UserProfile.getHeartRateZones(current_sport) as Lang.Array<Lang.Number>;
 

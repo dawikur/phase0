@@ -8,6 +8,7 @@ import Toybox.System;
 module Complication {
 
 class Battery extends Base {
+	var color_ as Lang.Number = Render.COLOR_FG;
 	var charge_ as Lang.String = "";
 	var frame_ as Lang.String = "";
 	var charging_ as Lang.String = "";
@@ -17,11 +18,20 @@ class Battery extends Base {
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
+		var value = System.getSystemStats().battery;
+		if (value < 10.0) {
+			self.color_ = Render.COLOR_RED;
+		} else if (value < 20) {
+			self.color_ = Render.COLOR_YELLOW;
+		} else {
+			self.color_ = Render.COLOR_FG;
+		}
+
 		var borders_width = Render.iconsWidth(_dc, Font.ICON_BATTERY_BEGIN + Font.ICON_BATTERY_END);
 		var bar_width = Render.iconsWidth(_dc, "" + Font.ICON_BATTERY_EMPTY);
 
 		var bar_all_count = (self.size_x - borders_width) / bar_width;
-		var bar_charged_count = Math.round(System.getSystemStats().battery / 100 * bar_all_count).toNumber();
+		var bar_charged_count = Math.round(value / 100 * bar_all_count).toNumber();
 
 		self.charge_ = "";
 		self.frame_ = "";
@@ -49,11 +59,12 @@ class Battery extends Base {
 		var pos_x = self.pos_x + self.size_x / 2;
 		var pos_y = self.pos_y + self.size_y / 2;
 
+		Render.iconsColor(_dc, pos_x, pos_y, self.charge_, self.color_);
+
 		if (System.getSystemStats().charging) {
-			Render.icons(_dc, pos_x, pos_y, self.charging_, "");
+			Render.iconsColor(_dc, pos_x, pos_y, self.frame_, Render.COLOR_FG);
 		} else {
-			Render.icons(_dc, pos_x, pos_y, self.charge_, "");
-			Render.icons(_dc, pos_x, pos_y, "", self.frame_);
+			Render.iconsColor(_dc, pos_x, pos_y, self.frame_, Render.COLOR_BG);
 		}
 	}
 }

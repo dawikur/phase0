@@ -6,18 +6,18 @@ import Toybox.Complications;
 
 module Complication {
 
-class Floors extends Metric {
+class FloorsClimbed extends Metric {
 	function initialize() {
 		Metric.initialize(Complications.COMPLICATION_TYPE_FLOORS_CLIMBED);
 
 		self.label_ = Application.loadResource(Rez.Strings.LABEL_FLOORS) as Lang.String;
 	}
 
-	hidden function getValue_() as Lang.Number or Null {
+	function getValue() as Lang.Number or Null {
 		return ActivityMonitor.getInfo().floorsClimbed;
 	}
 
-	hidden function getValueMax_() as Lang.Number or Null {
+	function getValueMax() as Lang.Number or Null {
 		return ActivityMonitor.getInfo().floorsClimbedGoal;
 	}
 }

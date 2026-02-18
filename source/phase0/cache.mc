@@ -6,7 +6,7 @@ import Toybox.Time;
 
 module Cache {
 
-typedef Data as Lang.String or Lang.Number;
+typedef Data as Lang.String or Lang.Number or Lang.Float;
 
 function setValue(_name as Lang.String, _data as Data) as Void {
 	var now = Time.now().value();

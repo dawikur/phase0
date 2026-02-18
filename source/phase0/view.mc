@@ -13,6 +13,8 @@ module Phase0 {
 typedef Complications as Lang.Array<Complication.Base>;
 
 class View extends WatchUi.WatchFace {
+	// ==== fields ====
+
 	// ---- base ----
 	hidden var is_base_view_ as Lang.Boolean = true;
 	hidden var is_high_power_ as Lang.Boolean = true;
@@ -26,7 +28,7 @@ class View extends WatchUi.WatchFace {
 	// ---- complications ----
 
 	hidden const clock_ = new Main.Clock();
-	hidden const icons_ = new Main.Icons();
+	hidden const status_ = new Main.Status();
 	hidden const seconds_ = new Main.Seconds();
 
 	hidden var complications_per_min_ as Complications = [];
@@ -35,7 +37,7 @@ class View extends WatchUi.WatchFace {
 	hidden var metrics_ as Complication.Metrics = [];
 	hidden var metrics_alt_ as Complication.Metrics = [];
 
-	// ---- methods ----
+	// ==== methods ====
 
 	function initialize() {
 		WatchFace.initialize();
@@ -107,7 +109,7 @@ class View extends WatchUi.WatchFace {
 	}
 
 	function onLayout(_dc as Graphics.Dc) as Void {
-		// ---- complications ----
+		// ==== complications ====
 
 		self.complications_per_min_ = [];
 		self.complications_per_hour_ = [];
@@ -133,20 +135,25 @@ class View extends WatchUi.WatchFace {
 
 		// ---- line main ----
 
-		self.icons_.pos_x = small_spacing + (
+		self.status_.pos_x = small_spacing + (
 			screen_size_x - clock_size[0] - Render.iconsWidth(_dc, "0")
 		) / 2 + small_spacing;
-		self.icons_.pos_y = screen_size_y / 2;
+		self.status_.pos_y = screen_size_y / 2;
 
 		self.clock_.center_x = screen_size_x / 2;
 		self.clock_.center_y = screen_size_y / 2;
 		self.clock_.radius_x = clock_size[0] / 2;
 		self.clock_.radius_y = clock_size[1] / 2;
 
+		var bars = new Complication.Bars();
+		bars.add(new Complication.BarBodyBattery());
+		bars.add(new Complication.BarStress());
+		bars.add(new Complication.BarMove());
+
 		self.addComplication_(
 			_dc,
 			self.complications_per_min_,
-			new Complication.Bars(),
+			bars,
 			(screen_size_x + clock_size[0]) / 2 + regular_spacing,
 			(screen_size_y - clock_size[1]) / 2 + 2 * regular_spacing,
 			(screen_size_x - clock_size[0]) / 2 - regular_spacing,
@@ -234,7 +241,7 @@ class View extends WatchUi.WatchFace {
 		pos_x += self.addMetric_(
 			_dc,
 			self.metrics_,
-			new Complication.HR(),
+			new Complication.HeartRate(),
 			pos_x,
 			line_below_2.pos_y
 		);
@@ -248,7 +255,7 @@ class View extends WatchUi.WatchFace {
 		pos_x += self.addMetric_(
 			_dc,
 			self.metrics_,
-			new Complication.Floors(),
+			new Complication.FloorsClimbed(),
 			pos_x,
 			line_below_2.pos_y
 		);
@@ -277,12 +284,12 @@ class View extends WatchUi.WatchFace {
 	function onUpdate(_dc as Graphics.Dc) as Void {
 		if (!self.is_visible_) { return; }
 
-		// ---- update ----
+		// ==== update ====
 
 		var clock = System.getClockTime();
 
 		{
-			self.icons_.refresh(_dc);
+			self.status_.refresh(_dc);
 			self.seconds_.refresh(_dc);
 
 			self.refresh_(_dc, self.getMetrics_());
@@ -302,7 +309,7 @@ class View extends WatchUi.WatchFace {
 			self.refresh_(_dc, self.complications_per_hour_);
 		}
 
-		// ---- render ----
+		// ==== render ====
 
 		_dc.clearClip();
 
@@ -311,10 +318,10 @@ class View extends WatchUi.WatchFace {
 
 		if (self.is_night_mode_) {
 			self.clock_.render(_dc, true);
-			self.icons_.render(_dc, true);
+			self.status_.render(_dc, true);
 		} else {
 			self.clock_.render(_dc, false);
-			self.icons_.render(_dc, false);
+			self.status_.render(_dc, false);
 
 			self.seconds_.render(_dc, self.is_high_power_);
 

@@ -29,8 +29,8 @@ class SunMoon extends Text {
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		self.value_ = self.getValue_();
-		self.moon_phase_ = self.getMoonPhase_(Time.now());
+		self.value_ = self.getValue();
+		self.moon_phase_ = getMoonPhase(Time.now());
 
 		if (self.value_.length() != 0) {
 			Cache.setValue("dawn_dusk", self.value_);
@@ -56,16 +56,16 @@ class SunMoon extends Text {
 		var is_full_moon = self.moon_phase_ == 4;
 		var moon_icon = "" + (Font.ICON_MOON0 + self.moon_phase_);
 
-		if (is_full_moon) {
-			Render.icons(_dc, pos_x, pos_y, moon_icon, "");
-		} else if (is_new_moon) {
+		if (is_new_moon) {
 			Render.icons(_dc, pos_x, pos_y, "", moon_icon);
+		} else if (is_full_moon) {
+			Render.icons(_dc, pos_x, pos_y, moon_icon, "");
 		} else {
 			Render.icons(_dc, pos_x, pos_y, moon_icon, moon_icon);
 		}
 	}
 
-	function getValue_() as Lang.String {
+	function getValue() as Lang.String {
 		var weather = Weather.getCurrentConditions();
 		if (weather == null) {
 			return "";
@@ -99,7 +99,7 @@ class SunMoon extends Text {
 		]);
 	}
 
-	function getMoonPhase_(_moment as Time.Moment) as Lang.Number {
+	static function getMoonPhase(_moment as Time.Moment) as Lang.Number {
 		var LUNAR_CYCLE_DAYS = 29.530588853;
 		var SECONDS_PER_DAY = 86400;
 		var NEW_MOON_REF = 947182440; // Jan 6, 2000 18:14 UTC
@@ -162,8 +162,6 @@ class SunMoon extends Text {
 		];
 		var moon_phases_size = moon_phases.size();
 
-		var sun_moon = new SunMoon();
-
 		for (var i = 0; i < new_moons_size; ++i) {
 			var new_moon = new_moons[i];
 
@@ -183,7 +181,7 @@ class SunMoon extends Text {
 				));
 
 				Test.assertEqual(
-					sun_moon.getMoonPhase(new_moon.add(one_day.multiply(day))),
+					SunMoon.getMoonPhase(new_moon.add(one_day.multiply(day))),
 					moon_phase
 				);
 			}

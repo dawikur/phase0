@@ -7,7 +7,7 @@ import Toybox.System;
 
 module Main {
 
-class Icons {
+class Status {
 	var pos_x as Lang.Number = 0;
 	var pos_y as Lang.Number = 0;
 

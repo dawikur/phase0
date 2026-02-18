@@ -31,8 +31,8 @@ class Metric extends Base {
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		self.value_ = self.getValue_();
-		self.value_max_ = self.getValueMax_();
+		self.value_ = self.getValue();
+		self.value_max_ = self.getValueMax();
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
@@ -78,11 +78,11 @@ class Metric extends Base {
 		Render.gauge(_dc, pos_x, pos_y, value.toFloat() / value_max, gauge_max_height, Render.GAUGE_BOTTOM);
 	}
 
-	hidden function getValue_() as Lang.Number or Null {
+	function getValue() as Lang.Number or Null {
 		return null;
 	}
 
-	hidden function getValueMax_() as Lang.Number or Null {
+	function getValueMax() as Lang.Number or Null {
 		return null;
 	}
 }

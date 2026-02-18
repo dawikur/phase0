@@ -13,7 +13,7 @@ class VO2Bike extends Metric {
 		self.label_ = Application.loadResource(Rez.Strings.LABEL_VO2_CYCLING) as Lang.String;
 	}
 
-	hidden function getValue_() as Lang.Number or Null {
+	function getValue() as Lang.Number or Null {
 		return UserProfile.getProfile().vo2maxCycling;
 	}
 }

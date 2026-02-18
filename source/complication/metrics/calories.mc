@@ -13,7 +13,7 @@ class Calories extends Metric {
 		self.label_ = Application.loadResource(Rez.Strings.LABEL_CALORIES) as Lang.String;
 	}
 
-	hidden function getValue_() as Lang.Number or Null {
+	function getValue() as Lang.Number or Null {
 		return ActivityMonitor.getInfo().calories;
 	}
 }

@@ -12,7 +12,7 @@ class Date extends Text {
 		Text.initialize(Complications.COMPLICATION_TYPE_DATE);
 	}
 
-	hidden function getValue_() as Lang.String {
+	hidden function getValue() as Lang.String {
 		var now = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
 
 		return Lang.format("$1$ $2$ $3$", [
