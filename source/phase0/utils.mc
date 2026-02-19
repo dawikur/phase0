@@ -18,6 +18,9 @@ class Box {
 	var center_x as Lang.Number;
 	var center_y as Lang.Number;
 
+	var radius_x as Lang.Number;
+	var radius_y as Lang.Number;
+
 	function initialize(
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number,
@@ -30,8 +33,10 @@ class Box {
 		self.pos_y = _pos_y;
 		self.end_x = _end_x;
 		self.end_y = _end_y;
-		self.center_x = _pos_x + (self.size_x / 2);
-		self.center_y = _pos_y + (self.size_y / 2);
+		self.radius_x = self.size_x / 2;
+		self.radius_y = self.size_y / 2;
+		self.center_x = _pos_x + self.radius_x;
+		self.center_y = _pos_y + self.radius_y;
 	}
 
 	static function secondLeg(_screen_size as Lang.Number, _leg as Lang.Number) as Lang.Numeric {

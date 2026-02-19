@@ -10,13 +10,13 @@ const COLOR_FG as Lang.Number = 0xFFFFFF;
 const COLOR_BG as Lang.Number = 0x555555;
 const COLOR_ACCENT as Lang.Number = 0xAA5500;
 
-const COLOR_RED as Lang.Number = 0xAA0000;
-const COLOR_GREEN as Lang.Number = 0x00AA00;
-const COLOR_BLUE as Lang.Number = 0x0000AA;
+const COLOR_RED as Lang.Number = 0xAA0000; // Physiological Intensity
+const COLOR_GREEN as Lang.Number = 0x00AA00; // Movement / Activity
+const COLOR_BLUE as Lang.Number = 0x0000AA; // System Resources
 
-const COLOR_CYAN as Lang.Number = 0x005555;
-const COLOR_MAGENTA as Lang.Number = 0x550055;
-const COLOR_YELLOW as Lang.Number = 0x555500;
+const COLOR_CYAN as Lang.Number = 0x005555; // Recovery / Balance
+const COLOR_MAGENTA as Lang.Number = 0x550055; // Vertical Dimension
+const COLOR_YELLOW as Lang.Number = 0x555500; // Tension / Metabolic Energy
 
 const FONT_FG as WatchUi.FontResource = Font.DOT_REGULAR;
 const FONT_BG as WatchUi.FontResource = Font.DOT_REGULAR_THIN;

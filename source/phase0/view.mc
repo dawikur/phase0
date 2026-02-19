@@ -10,9 +10,10 @@ import Toybox.WatchUi;
 
 module Phase0 {
 
-typedef Complications as Lang.Array<Complication.Base>;
-
 class View extends WatchUi.WatchFace {
+	typedef Complications as Lang.Array<Complication.Base>;
+	typedef Metrics as Lang.Array<Complication.Metric>;
+
 	// ==== fields ====
 
 	// ---- base ----
@@ -34,8 +35,8 @@ class View extends WatchUi.WatchFace {
 	hidden var complications_per_min_ as Complications = [];
 	hidden var complications_per_hour_ as Complications = [];
 
-	hidden var metrics_ as Complication.Metrics = [];
-	hidden var metrics_alt_ as Complication.Metrics = [];
+	hidden var metrics_base_ as Metrics = [];
+	hidden var metrics_alt_ as Metrics = [];
 
 	// ==== methods ====
 
@@ -114,7 +115,7 @@ class View extends WatchUi.WatchFace {
 		self.complications_per_min_ = [];
 		self.complications_per_hour_ = [];
 
-		self.metrics_ = [];
+		self.metrics_base_ = [];
 		self.metrics_alt_ = [];
 
 		// ---- measurements ----
@@ -137,7 +138,7 @@ class View extends WatchUi.WatchFace {
 
 		self.status_.pos_x = small_spacing + (
 			screen_size_x - clock_size[0] - Render.iconsWidth(_dc, "0")
-		) / 2 + small_spacing;
+		) / 2;
 		self.status_.pos_y = screen_size_y / 2;
 
 		self.clock_.center_x = screen_size_x / 2;
@@ -145,15 +146,15 @@ class View extends WatchUi.WatchFace {
 		self.clock_.radius_x = clock_size[0] / 2;
 		self.clock_.radius_y = clock_size[1] / 2;
 
-		var bars = new Complication.Bars();
-		bars.add(new Complication.BarBodyBattery());
-		bars.add(new Complication.BarStress());
-		bars.add(new Complication.BarMove());
+		var gauges = new Complication.Gauges();
+		gauges.add(new Complication.Gauge(new Data.BodyBattery()));
+		gauges.add(new Complication.Gauge(new Data.Stress()));
+		gauges.add(new Complication.Gauge(new Data.Move()));
 
 		self.addComplication_(
 			_dc,
 			self.complications_per_min_,
-			bars,
+			gauges,
 			(screen_size_x + clock_size[0]) / 2 + regular_spacing,
 			(screen_size_y - clock_size[1]) / 2 + 2 * regular_spacing,
 			(screen_size_x - clock_size[0]) / 2 - regular_spacing,
@@ -240,22 +241,22 @@ class View extends WatchUi.WatchFace {
 		var pos_x = line_below_2.pos_x;
 		pos_x += self.addMetric_(
 			_dc,
-			self.metrics_,
-			new Complication.HeartRate(),
+			self.metrics_base_,
+			new Complication.Metric(new Data.HeartRate()),
 			pos_x,
 			line_below_2.pos_y
 		);
 		pos_x += self.addMetric_(
 			_dc,
-			self.metrics_,
-			new Complication.Steps(),
+			self.metrics_base_,
+			new Complication.Metric(new Data.Steps()),
 			pos_x,
 			line_below_2.pos_y
 		);
 		pos_x += self.addMetric_(
 			_dc,
-			self.metrics_,
-			new Complication.FloorsClimbed(),
+			self.metrics_base_,
+			new Complication.Metric(new Data.FloorsClimbed()),
 			pos_x,
 			line_below_2.pos_y
 		);
@@ -377,7 +378,7 @@ class View extends WatchUi.WatchFace {
 
 	hidden function refresh_(
 		_dc as Graphics.Dc,
-		_complications as Complications or Complication.Metrics
+		_complications as Complications or Metrics
 	) as Void {
 		var complications_size = _complications.size();
 		for (var i = 0; i < complications_size; ++i) {
@@ -387,7 +388,7 @@ class View extends WatchUi.WatchFace {
 
 	hidden function render_(
 		_dc as Graphics.Dc,
-		_complications as Complications or Complication.Metrics
+		_complications as Complications or Metrics
 	) as Void {
 		var complications_size = _complications.size();
 		for (var i = 0; i < complications_size; ++i) {
@@ -414,7 +415,7 @@ class View extends WatchUi.WatchFace {
 
 	hidden function addMetric_(
 		_dc as Graphics.Dc,
-		_metrics as Complication.Metrics,
+		_metrics as Metrics,
 		_metric as Complication.Metric,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number
@@ -430,14 +431,14 @@ class View extends WatchUi.WatchFace {
 		return _metric.size_x;
 	}
 
-	hidden function getMetrics_() as Complication.Metrics {
+	hidden function getMetrics_() as Metrics {
 		if (self.metrics_alt_.size() == 0) {
-			return self.metrics_;
+			return self.metrics_base_;
 		}
 
 		return
 			self.is_base_view_ ?
-			self.metrics_ :
+			self.metrics_base_ :
 			self.metrics_alt_;
 	}
 }
