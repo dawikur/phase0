@@ -10,8 +10,8 @@ class Battery extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_BATTERY,
-			"Battery", // TODO
-			Render.COLOR_BLUE
+			"Batt",
+			CATEGORY_SYSTEM
 		);
 	}
 

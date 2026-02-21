@@ -10,8 +10,8 @@ class ActiveMinutesDay extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Active Minutes/Day", // TODO
-			Render.COLOR_GREEN
+			"Act/D",
+			CATEGORY_MOVEMENT
 		);
 	}
 

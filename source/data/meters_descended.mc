@@ -10,17 +10,15 @@ class MetersDescended extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Meters Descended", // TODO
-			Render.COLOR_MAGENTA
+			"M Dn",
+			CATEGORY_VERTICAL
 		);
 	}
 
 	function get() as Lang.Number or Null {
-		// TODO: this is in meters, convertion to ft
-		// System.DeviceSettings.elevationUnits
 		var meters_descended = ActivityMonitor.getInfo().metersDescended;
 		if (meters_descended != null) {
-			return meters_descended.toNumber();
+			return Units.convertElevation(meters_descended as Lang.Number);
 		}
 		return null;
 	}

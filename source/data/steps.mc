@@ -10,8 +10,8 @@ class Steps extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_STEPS,
-			Application.loadResource(Rez.Strings.LABEL_STEPS) as Lang.String,
-			Render.COLOR_GREEN
+			"Steps",
+			CATEGORY_MOVEMENT
 		);
 	}
 

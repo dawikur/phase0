@@ -11,15 +11,10 @@ import Toybox.Weather;
 module Complication {
 
 class Weather extends Text {
-	hidden var units_system_ as System.UnitsSystem;
-
 	function initialize() {
 		Text.initialize(Complications.COMPLICATION_TYPE_CURRENT_WEATHER);
 
 		self.justify_ = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
-
-		var device_settings = System.getDeviceSettings();
-		self.units_system_ = device_settings.distanceUnits;
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
@@ -35,15 +30,10 @@ class Weather extends Text {
 			}
 
 			if (weather.temperature != null) {
-				var temperature = weather.temperature as Lang.Numeric;
-				var unit = "C";
+				var temperature = Data.Units.convertTemperature(weather.temperature as Lang.Number);
+				var unit = Data.Units.getTemperature();
 
-				if (self.units_system_ == System.UNIT_STATUTE) {
-					temperature = (temperature * 1.8) + 32;
-					unit = "F";
-				}
-
-				temp = temperature.toNumber().format("%d") + unit;
+				temp = temperature.format("%d") + unit;
 			}
 
 			var value = text + "  " + temp;

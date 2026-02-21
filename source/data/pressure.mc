@@ -12,8 +12,8 @@ class Pressure extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE,
-			"Pressure", // TODO
-			Render.COLOR_BLUE
+			"Press",
+			CATEGORY_SYSTEM
 		);
 	}
 

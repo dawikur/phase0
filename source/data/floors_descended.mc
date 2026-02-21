@@ -10,8 +10,8 @@ class FloorsDescended extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Floors Desc", // TODO
-			Render.COLOR_MAGENTA
+			"Fl Dn",
+			CATEGORY_VERTICAL
 		);
 	}
 

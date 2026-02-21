@@ -10,8 +10,8 @@ class Move extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Move", // TODO
-			Render.COLOR_RED
+			"Move",
+			CATEGORY_PHYSIOLOGICAL
 		);
 	}
 

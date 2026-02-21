@@ -10,17 +10,15 @@ class MetersClimbed extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Meters Climbed", // TODO
-			Render.COLOR_MAGENTA
+			"M Up",
+			CATEGORY_VERTICAL
 		);
 	}
 
 	function get() as Lang.Number or Null {
-		// TODO: this is in meters, convertion to ft
-		// System.DeviceSettings.elevationUnits
 		var meters_climbed = ActivityMonitor.getInfo().metersClimbed;
 		if (meters_climbed != null) {
-			return meters_climbed.toNumber();
+			return Units.convertElevation(meters_climbed as Lang.Number);
 		}
 		return null;
 	}

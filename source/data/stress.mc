@@ -10,8 +10,8 @@ class Stress extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_STRESS,
-			"Stress", // TODO
-			Render.COLOR_YELLOW
+			"Strs",
+			CATEGORY_ENERGY
 		);
 	}
 

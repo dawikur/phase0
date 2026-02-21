@@ -33,7 +33,7 @@ class Gauge {
 				self.value_,
 				_size_y,
 				Render.GAUGE_BOTTOM,
-				self.impl_.color
+				self.impl_.category
 			);
 		}
 	}

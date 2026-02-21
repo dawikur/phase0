@@ -12,18 +12,17 @@ class Elevation extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_ALTITUDE,
-			"Elevation", // TODO
-			Render.COLOR_MAGENTA
+			"Elev",
+			CATEGORY_VERTICAL
 		);
 	}
 
 	function getMaybe() as Lang.Number or Null {
-		// TODO: this is in meters
 		var elevation_iterator = SensorHistory.getElevationHistory({:period => 1});
 		if (elevation_iterator != null) {
 			var elevation_maybe = elevation_iterator.next();
 			if (elevation_maybe != null) {
-				return elevation_maybe.data as Lang.Number;
+				return Units.convertElevation(elevation_maybe.data as Lang.Number);
 			}
 		}
 		return null;

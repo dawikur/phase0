@@ -6,19 +6,26 @@ import Toybox.Complications;
 
 module Data {
 
+const CATEGORY_ENERGY = Render.COLOR_YELLOW;
+const CATEGORY_MOVEMENT = Render.COLOR_GREEN;
+const CATEGORY_PHYSIOLOGICAL = Render.COLOR_RED;
+const CATEGORY_RECOVERY = Render.COLOR_CYAN;
+const CATEGORY_SYSTEM = Render.COLOR_BLUE;
+const CATEGORY_VERTICAL = Render.COLOR_MAGENTA;
+
 class Base {
 	var type as Complications.Type;
 	var name as Lang.String;
-	var color as Lang.Number;
+	var category as Lang.Number;
 
 	function initialize(
 		_type as Complications.Type,
 		_name as Lang.String,
-		_color as Lang.Number
+		_category as Lang.Number
 	) {
 		self.type = _type;
 		self.name = _name;
-		self.color = _color;
+		self.category = _category;
 	}
 
 	function get() as Lang.Number or Null {

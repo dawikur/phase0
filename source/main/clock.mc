@@ -13,15 +13,10 @@ class Clock {
 	var radius_x as Lang.Number = 0;
 	var radius_y as Lang.Number = 0;
 
+	hidden var ampm_ as Lang.String = "";
 	hidden var label_ as Lang.String = "";
 
-	hidden var is_24_Hour_ as Lang.Boolean;
-
-	hidden var ampm_ as Lang.String = "";
-
 	function initialize() {
-		var device_settings = System.getDeviceSettings();
-		self.is_24_Hour_ = device_settings.is24Hour;
 	}
 
 	function contains(_x as Lang.Number, _y as Lang.Number) as Lang.Boolean {
@@ -38,27 +33,13 @@ class Clock {
 	function refresh(_dc as Graphics.Dc) as Void {
 		var clock = System.getClockTime();
 
-		if (self.is_24_Hour_) {
-			self.ampm_ = "";
+		self.ampm_ = Data.Units.getAmPm(clock.hour);
 
-			self.label_ = Lang.format("$1$:$2$", [
-				clock.hour.format("%02d"),
-				clock.min.format("%02d"),
-			]);
-		} else {
-			var hour = clock.hour % 12;
-			if (hour == 0) {
-				hour = 12;
-			}
-
-			self.ampm_ = clock.hour < 12 ? "AM" : "PM";
-
-			self.label_ = Lang.format("$1$:$2$", [
-				hour.format("%02d"),
-				clock.min.format("%02d"),
-			]);
-
-		}
+		var hour = Data.Units.convertHour(clock.hour);
+		self.label_ = Lang.format("$1$:$2$", [
+			hour.format("%02d"),
+			clock.min.format("%02d"),
+		]);
 	}
 
 	function render(_dc as Graphics.Dc, _is_night_mode as Lang.Boolean) as Void {

@@ -10,8 +10,8 @@ class FloorsClimbed extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_FLOORS_CLIMBED,
-			Application.loadResource(Rez.Strings.LABEL_FLOORS) as Lang.String,
-			Render.COLOR_MAGENTA
+			"Floors",
+			CATEGORY_VERTICAL
 		);
 	}
 

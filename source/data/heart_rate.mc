@@ -12,8 +12,8 @@ class HeartRate extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_HEART_RATE,
-			Application.loadResource(Rez.Strings.LABEL_HR) as Lang.String,
-			Render.COLOR_RED
+			"HR",
+			CATEGORY_PHYSIOLOGICAL
 		);
 	}
 
@@ -22,14 +22,6 @@ class HeartRate extends Base {
 		if (activity_info != null) {
 			if (activity_info.currentHeartRate != null) {
 				return activity_info.currentHeartRate;
-			}
-		}
-
-		var history_iterator = ActivityMonitor.getHeartRateHistory(1, true);
-		var history_sample = history_iterator.next();
-		if (history_sample != null and history_sample.heartRate != ActivityMonitor.INVALID_HR_SAMPLE) {
-			if (history_sample.heartRate != null) {
-				return 300 + history_sample.heartRate as Lang.Number;
 			}
 		}
 

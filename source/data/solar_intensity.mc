@@ -10,8 +10,8 @@ class SolarIntensity extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_SOLAR_INPUT,
-			"Solar Intensity", // TODO
-			Render.COLOR_YELLOW
+			"Solar",
+			CATEGORY_ENERGY
 		);
 	}
 

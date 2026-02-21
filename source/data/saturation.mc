@@ -12,8 +12,8 @@ class Saturation extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_PULSE_OX,
-			"Saturation", // TODO
-			Render.COLOR_RED
+			"SPO2",
+			CATEGORY_PHYSIOLOGICAL
 		);
 	}
 

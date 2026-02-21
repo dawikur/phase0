@@ -10,8 +10,8 @@ class Pushes extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_WHEELCHAIR_PUSHES,
-			"Pushes", // TODO
-			Render.COLOR_GREEN
+			"Push",
+			CATEGORY_MOVEMENT
 		);
 	}
 

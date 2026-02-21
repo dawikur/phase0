@@ -10,8 +10,8 @@ class RecoveryTime extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_RECOVERY_TIME,
-			"Recovery Time", // TODO
-			Render.COLOR_YELLOW
+			"Recov",
+			CATEGORY_RECOVERY
 		);
 	}
 

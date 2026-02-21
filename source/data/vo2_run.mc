@@ -10,8 +10,8 @@ class VO2Run extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_VO2MAX_RUN,
-			Application.loadResource(Rez.Strings.LABEL_VO2_RUNNING) as Lang.String,
-			Render.COLOR_RED
+			"VO2R",
+			CATEGORY_PHYSIOLOGICAL
 		);
 	}
 

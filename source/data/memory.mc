@@ -11,8 +11,8 @@ class Memory extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Memory", // TODO
-			Render.COLOR_BLUE
+			"Mem",
+			CATEGORY_SYSTEM
 		);
 	}
 

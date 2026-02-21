@@ -11,7 +11,6 @@ class Metric extends Base {
 
 	hidden var count_ as Lang.Number = 3;
 
-	hidden var label_ as Lang.String = "";
 	hidden var value_ as Lang.Number or Null = null;
 	hidden var value_max_ as Lang.Number or Null = null;
 
@@ -28,7 +27,7 @@ class Metric extends Base {
 	}
 
 	function height(_dc as Graphics.Dc) as Lang.Number {
-		if (self.label_.length() == 0) {
+		if (self.impl_.name.length() == 0) {
 			return Render.numberHeight(_dc);
 		}
 		return Render.labelHeight(_dc) + self.spacing_ + Render.numberHeight(_dc);
@@ -51,8 +50,8 @@ class Metric extends Base {
 
 		// ---- label ----
 
-		if (self.label_.length() != 0) {
-			Render.label(_dc, pos_x, pos_y, self.label_, Graphics.TEXT_JUSTIFY_LEFT);
+		if (self.impl_.name.length() != 0) {
+			Render.label(_dc, pos_x, pos_y, self.impl_.name, Graphics.TEXT_JUSTIFY_LEFT);
 			pos_y += Render.labelHeight(_dc) + self.spacing_;
 		}
 

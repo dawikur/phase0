@@ -6,23 +6,11 @@ make [build|simulate|clean|help]
 
 ## TODO
 
-* Metrics
-  * Outdoor
-    * ALT altitude
-    * GPS heading
-    * TEMP temperature
-  * Advanced
-    * RHR resting HR
-    * LOAD training load
-  * Other
-    * training status
-* Bars
-  * Hydration
-* Formats
-  * am/pm
-  * use 12/24 hour format everywhere
-  * distance in m/ft
-  * temperature in C/F
+* Clock
+  * am/pm marker
+* Amoled display
+  * AOD option
+  * burnout prevention
 * Settings
   * Clock Colors
   * Label Color

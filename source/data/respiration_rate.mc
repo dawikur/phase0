@@ -10,8 +10,8 @@ class RespirationRate extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_RESPIRATION_RATE,
-			"Respiration Rate", // TODO
-			Render.COLOR_RED
+			"Resp",
+			CATEGORY_PHYSIOLOGICAL
 		);
 	}
 

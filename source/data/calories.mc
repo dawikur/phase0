@@ -10,8 +10,8 @@ class Calories extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_CALORIES,
-			Application.loadResource(Rez.Strings.LABEL_CALORIES) as Lang.String,
-			Render.COLOR_YELLOW
+			"Cal",
+			CATEGORY_ENERGY
 		);
 	}
 

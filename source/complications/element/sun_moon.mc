@@ -11,14 +11,16 @@ import Toybox.Weather;
 module Complication {
 
 class SunMoon extends Text {
+	static const MOON_PHASES = 16;
+
 	hidden var moon_phase_ as Lang.Number = 0;
 
 	function initialize() {
 		Text.initialize(Complications.COMPLICATION_TYPE_SUNRISE);
 
 		self.label_ = Lang.format("$1$     $2$", [
-			Application.loadResource(Rez.Strings.LABEL_DAWN) as Lang.String,
-			Application.loadResource(Rez.Strings.LABEL_DUSK) as Lang.String,
+			"Dawn",
+			"Dusk",
 		]);
 
 		self.value_bg_ = "00:00   00:00";
@@ -53,8 +55,8 @@ class SunMoon extends Text {
 		}
 
 		var is_new_moon = self.moon_phase_ == 0;
-		var is_full_moon = self.moon_phase_ == 4;
-		var moon_icon = "" + (Font.ICON_MOON0 + self.moon_phase_);
+		var is_full_moon = self.moon_phase_ == (SunMoon.MOON_PHASES / 2);
+		var moon_icon = "" + (Font.ICON_MOON00 + self.moon_phase_);
 
 		if (is_new_moon) {
 			Render.icons(_dc, pos_x, pos_y, "", moon_icon);
@@ -89,13 +91,17 @@ class SunMoon extends Text {
 		}
 
 		var sunrise_info = Time.Gregorian.info(sunrise, Time.FORMAT_SHORT);
+		var sunrise_hour = Data.Units.convertHour(sunrise_info.hour);
+		var sunrise_min = sunrise_info.min;
 		var sunset_info = Time.Gregorian.info(sunset, Time.FORMAT_SHORT);
+		var sunset_hour = Data.Units.convertHour(sunset_info.hour);
+		var sunset_min = sunset_info.min;
 
 		return Lang.format("$1$:$2$   $3$:$4$", [
-			sunrise_info.hour.format("%02d"),
-			sunrise_info.min.format("%02d"),
-			sunset_info.hour.format("%02d"),
-			sunset_info.min.format("%02d"),
+			sunrise_hour.format("%02d"),
+			sunrise_min.format("%02d"),
+			sunset_hour.format("%02d"),
+			sunset_min.format("%02d"),
 		]);
 	}
 
@@ -112,10 +118,10 @@ class SunMoon extends Text {
 		phase -= Math.floor(phase);
 
 		// Center each phase in its bucket
-		var phaseIndex = Math.floor((phase * 8) + 0.5).toNumber();
+		var phaseIndex = Math.floor((phase * SunMoon.MOON_PHASES) + 0.5).toNumber();
 
 		// Wrap just in case
-		if (phaseIndex == 8) {
+		if (phaseIndex == SunMoon.MOON_PHASES) {
 			phaseIndex = 0;
 		}
 

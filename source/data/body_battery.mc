@@ -12,8 +12,8 @@ class BodyBattery extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_BODY_BATTERY,
-			"BodyBattery", // TODO
-			Render.COLOR_CYAN
+			"Body",
+			CATEGORY_RECOVERY
 		);
 	}
 

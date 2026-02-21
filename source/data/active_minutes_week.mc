@@ -10,8 +10,8 @@ class ActiveMinutesWeek extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INTENSITY_MINUTES,
-			"Active Minutes/Week", // TODO
-			Render.COLOR_GREEN
+			"Act/W",
+			CATEGORY_MOVEMENT
 		);
 	}
 

@@ -45,12 +45,12 @@ class View extends WatchUi.WatchFace {
 	}
 
 	function onShow() as Void {
-		self.is_base_view_ = true;
+		//self.is_base_view_ = true;
 		self.is_visible_ = true;
 	}
 
 	function onHide() as Void {
-		self.is_base_view_ = true;
+		//self.is_base_view_ = true;
 		self.is_visible_ = false;
 	}
 
@@ -262,6 +262,27 @@ class View extends WatchUi.WatchFace {
 		);
 
 		pos_x = line_below_2.pos_x;
+		pos_x += self.addMetric_(
+			_dc,
+			self.metrics_alt_,
+			new Complication.Metric(new Data.Calories()),
+			pos_x,
+			line_below_2.pos_y
+		);
+		pos_x += self.addMetric_(
+			_dc,
+			self.metrics_alt_,
+			new Complication.Metric(new Data.Distance()),
+			pos_x,
+			line_below_2.pos_y
+		);
+		pos_x += self.addMetric_(
+			_dc,
+			self.metrics_alt_,
+			new Complication.Metric(new Data.SolarIntensity()),
+			pos_x,
+			line_below_2.pos_y
+		);
 
 		// ---- line below 3 ----
 
