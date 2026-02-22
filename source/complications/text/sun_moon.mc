@@ -56,7 +56,7 @@ class SunMoon extends Text {
 
 		var is_new_moon = self.moon_phase_ == 0;
 		var is_full_moon = self.moon_phase_ == (SunMoon.MOON_PHASES / 2);
-		var moon_icon = "" + (Font.ICON_MOON00 + self.moon_phase_);
+		var moon_icon = "" + (Font.ICON_MOON_00 + self.moon_phase_);
 
 		if (is_new_moon) {
 			Render.icons(_dc, pos_x, pos_y, "", moon_icon);
@@ -141,30 +141,37 @@ class SunMoon extends Text {
 				:min   => 14,
 				:sec   => 0
 			}),
-			Time.Gregorian.moment({
-				:year  => 2026,
-				:month => 2,
-				:day   => 17,
-				:hour  => 13,
-				:min   => 1,
-				:sec   => 0
-			}),
+			// Time.Gregorian.moment({
+			// 	:year  => 2026,
+			// 	:month => 2,
+			// 	:day   => 17,
+			// 	:hour  => 13,
+			// 	:min   => 1,
+			// 	:sec   => 0
+			// }),
 		];
 		var new_moons_size = new_moons.size();
 
 		var moon_phases = [
 			/* day    phase */
-			/*   0 */ 0, 0,
-			/*   2 */ 1, 1, 1, 1,
-			/*   6 */ 2, 2, 2, 9,
-			/*  10 */ 3, 3, 3,
-			/*  13 */ 4, 4, 4, 4,
-			/*  17 */ 5, 5, 5, 9,
-			/*  21 */ 6, 6, 6, 9,
-			/*  25 */ 7, 7, 7,
-			/*  28 */ 0, 0,
-			/*  30 */ 0, 9,
-			/*  32 */ 1, 1,
+			/*   0 */  0,
+			/*   1 */  1,  1,
+			/*   3 */  2,  2,
+			/*   5 */  3,  3,
+			/*   7 */  4,  4,
+			/*   9 */  5,  5,
+			/*  11 */  6,  6,
+			/*  13 */  7,
+			/*  14 */  8,  8,
+			/*  16 */  9,  9,
+			/*  17 */ 10, 10,
+			/*  20 */ 11, 11,
+			/*  22 */ 12, 12,
+			/*  24 */ 13,
+			/*  25 */ 14, 14,
+			/*  27 */ 15, 15,
+			/*  29 */  0,  0,
+			/*   0 */  1,  1, 2,
 		];
 		var moon_phases_size = moon_phases.size();
 
@@ -173,10 +180,6 @@ class SunMoon extends Text {
 
 			for (var day = 0; day < moon_phases_size; ++day) {
 				var moon_phase = moon_phases[day];
-
-				if (moon_phase == 9) {
-					continue;
-				}
 
 				_logger.debug(Lang.format(
 					"[$1$] Day: $2$, Moon phase $3$", [

@@ -184,7 +184,17 @@ class View extends WatchUi.WatchFace {
 		var line_above_2 = Box.ForY(
 			screen_size_y,
 			line_above_1.pos_y - small_spacing,
-			-tiny_size[1] - regular_size[1]
+			- regular_size[1]
+		);
+
+		self.addComplication_(
+			_dc,
+			self.complications_per_min_,
+			new Complication.Conditions(),
+			line_above_2.center_x,
+			line_above_2.center_y,
+			line_above_2.size_x,
+			line_above_2.size_y
 		);
 
 		// ---- line above 3 ----
@@ -316,6 +326,9 @@ class View extends WatchUi.WatchFace {
 
 			self.refresh_(_dc, self.getMetrics_());
 		}
+
+		// TODO: remove
+		self.refresh_(_dc, self.complications_per_min_);
 
 		if (self.last_refresh_min_ != clock.min) {
 			self.last_refresh_min_ = clock.min;
