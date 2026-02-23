@@ -1,5 +1,5 @@
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
-	<string id="AppName">phase0</string>
+	<string id="APP_NAME">phase0</string>
 
 	<string id="CONDITION_00_CLEAR">Clear</string>
 	<string id="CONDITION_01_PARTLY_CLOUDY">Partly Cloudy</string>
@@ -76,6 +76,8 @@
 	<string id="MONTH_10_OCT">Oct</string>
 	<string id="MONTH_11_NOV">Nov</string>
 	<string id="MONTH_12_DEC">Dec</string>
+
+    <string id="MilitaryFormatTitle">Military Format for 24 Hour Time</string>
 
 	<!-- TODO: labels -->
 </strings>

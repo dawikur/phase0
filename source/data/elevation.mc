@@ -18,14 +18,9 @@ class Elevation extends Base {
 	}
 
 	function getMaybe() as Lang.Number or Null {
-		var elevation_iterator = SensorHistory.getElevationHistory({:period => 1});
-		if (elevation_iterator != null) {
-			var elevation_maybe = elevation_iterator.next();
-			if (elevation_maybe != null) {
-				return Units.convertElevation(elevation_maybe.data as Lang.Number);
-			}
-		}
-		return null;
+		return self.getSensorHistoryData_(
+			SensorHistory.getElevationHistory({:period => 1})
+		) as Lang.Number or Null;
 	}
 }
 

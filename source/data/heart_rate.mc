@@ -25,7 +25,9 @@ class HeartRate extends Base {
 			}
 		}
 
-		return null;
+		return self.getSensorHistoryData_(
+			SensorHistory.getStressHistory({:period => 1})
+		) as Lang.Number or Null;
 	}
 
 	function getMax() as Lang.Number or Null {

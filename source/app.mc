@@ -23,6 +23,10 @@ class App extends Application.AppBase {
 	function getInitialView() as $.InitialView {
 		return [view_, delegate_];
 	}
+
+	function onSettingsChanged() as Void {
+		WatchUi.requestUpdate();
+	}
 }
 
 function getApp() as App {

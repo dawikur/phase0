@@ -17,15 +17,10 @@ class Pressure extends Base {
 		);
 	}
 
-	function get() as Lang.Number or Null {
-		var pressure_iterator = SensorHistory.getPressureHistory({:period => 1});
-		if (pressure_iterator != null) {
-			var pressure_maybe = pressure_iterator.next();
-			if (pressure_maybe != null) {
-				return pressure_maybe.data as Lang.Number;
-			}
-		}
-		return null;
+	function getMaybe() as Lang.Number or Null {
+		return self.getSensorHistoryData_(
+			SensorHistory.getPressureHistory({:period => 1})
+		) as Lang.Number or Null;
 	}
 
 	function getMax() as Lang.Number or Null {

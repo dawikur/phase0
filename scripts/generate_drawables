@@ -57,7 +57,7 @@ def main() -> None:
 
     folders.resources("base", "drawables.xml").write_text(textwrap.dedent(f"""\
         <drawables xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
-        \t<bitmap id="Icon" filename="../../{folders.build("resources", "icon.svg")}" dithering="none" />
+        \t<bitmap id="ICON" filename="../../{folders.build("resources", "icon.svg")}" dithering="none" />
         </drawables>"""))
 
 

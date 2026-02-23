@@ -15,8 +15,10 @@ class Stress extends Base {
 		);
 	}
 
-	function get() as Lang.Number or Null {
-		return ActivityMonitor.getInfo().stressScore;
+	function getMaybe() as Lang.Number or Null {
+		return self.getSensorHistoryData_(
+			SensorHistory.getHeartRateHistory({:period => 1})
+		) as Lang.Number or Null;
 	}
 
 	function getMax() as Lang.Number or Null {

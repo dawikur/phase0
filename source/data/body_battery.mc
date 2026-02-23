@@ -5,6 +5,7 @@ import Toybox.ActivityMonitor;
 import Toybox.Lang;
 import Toybox.UserProfile;
 import Toybox.Complications;
+import Toybox.SensorHistory;
 
 module Data {
 
@@ -17,15 +18,10 @@ class BodyBattery extends Base {
 		);
 	}
 
-	function get() as Lang.Number or Null {
-		var body_battery_iterator = SensorHistory.getBodyBatteryHistory({:period => 1});
-		if (body_battery_iterator != null) {
-			var body_battery_maybe = body_battery_iterator.next();
-			if (body_battery_maybe != null) {
-				return body_battery_maybe.data as Lang.Number;
-			}
-		}
-		return null;
+	function getMaybe() as Lang.Number or Null {
+		return self.getSensorHistoryData_(
+			SensorHistory.getBodyBatteryHistory({:period => 1})
+		) as Lang.Number or Null;
 	}
 
 	function getMax() as Lang.Number or Null {

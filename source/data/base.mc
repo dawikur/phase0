@@ -3,6 +3,7 @@
 import Toybox.ActivityMonitor;
 import Toybox.Lang;
 import Toybox.Complications;
+import Toybox.SensorHistory;
 
 module Data {
 
@@ -47,6 +48,18 @@ class Base {
 	}
 
 	function getMax() as Lang.Number or Null {
+		return null;
+	}
+
+	static protected function getSensorHistoryData_(
+		_iterator as SensorHistory.SensorHistoryIterator
+	) as Lang.Number or Lang.Float or Null {
+		if (_iterator != null) {
+			var data_maybe = _iterator.next();
+			if (data_maybe != null) {
+				return data_maybe.data;
+			}
+		}
 		return null;
 	}
 }

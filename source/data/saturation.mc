@@ -17,15 +17,10 @@ class Saturation extends Base {
 		);
 	}
 
-	function get() as Lang.Number or Null {
-		var oxygen_saturation_iterator = SensorHistory.getOxygenSaturationHistory({:period => 1});
-		if (oxygen_saturation_iterator != null) {
-			var oxygen_saturation_maybe = oxygen_saturation_iterator.next();
-			if (oxygen_saturation_maybe != null) {
-				return oxygen_saturation_maybe.data as Lang.Number;
-			}
-		}
-		return null;
+	function getMaybe() as Lang.Number or Null {
+		return self.getSensorHistoryData_(
+			SensorHistory.getOxygenSaturationHistory({:period => 1})
+		) as Lang.Number or Null;
 	}
 
 	function getMax() as Lang.Number or Null {
