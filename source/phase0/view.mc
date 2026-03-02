@@ -13,6 +13,7 @@ module Phase0 {
 class View extends WatchUi.WatchFace {
 	typedef Complications as Lang.Array<Complication.Base>;
 	typedef Metrics as Lang.Array<Complication.Metric>;
+	typedef Gauges as Lang.Array<Complication.Gauge>;
 
 	// ==== fields ====
 
@@ -28,9 +29,11 @@ class View extends WatchUi.WatchFace {
 
 	// ---- complications ----
 
-	hidden const clock_ = new Main.Clock();
 	hidden const status_ = new Main.Status();
+
+	hidden const clock_ = new Main.Clock();
 	hidden const seconds_ = new Main.Seconds();
+	hidden const battery_ = new Main.Battery();
 
 	hidden var complications_per_min_ as Complications = [];
 	hidden var complications_per_hour_ as Complications = [];
@@ -115,202 +118,176 @@ class View extends WatchUi.WatchFace {
 		self.complications_per_min_ = [];
 		self.complications_per_hour_ = [];
 
-		self.metrics_base_ = [];
-		self.metrics_alt_ = [];
-
 		// ---- measurements ----
 
 		var screen_size_x = _dc.getWidth();
 		var screen_size_y = _dc.getHeight();
 
 		var clock_size = _dc.getTextDimensions("00:00", Font.DOT_LARGE);
+		var clock_size_x = clock_size[0];
+		var clock_size_y = clock_size[1];
 
-		var regular_size = _dc.getTextDimensions("0", Font.DOT_REGULAR);
-		var regular_spacing = Font.SPACING_REGULAR;
+		var line_1_height = Render.textHeight(_dc);
+		var line_2_height = Render.labelHeight(_dc) + Render.SPACING + Render.textHeight(_dc);
+		var line_3_height = Render.labelHeight(_dc) + Render.SPACING + Render.textSmallHeight(_dc);
 
-		//var small_size = _dc.getTextDimensions("0", Font.DOT_SMALL);
-		var small_spacing = Font.SPACING_SMALL;
+		var side_size_x = Render.iconsWidth(_dc, " ");
 
-		var tiny_size = _dc.getTextDimensions("0", Font.DOT_TINY);
-		//var tiny_spacing = Font.SPACING_TINY;
+		var spacing_x = (
+			(screen_size_x - clock_size_x) / 2
+			- side_size_x
+		) / 2;
+		var spacing_y = (
+			(screen_size_y - clock_size_y) / 2
+			- line_1_height
+			- line_2_height
+			- line_3_height
+		) / 4;
+
 
 		// ---- line main ----
 
-		self.status_.pos_x = small_spacing + (
-			screen_size_x - clock_size[0] - Render.iconsWidth(_dc, "0")
-		) / 2;
-		self.status_.pos_y = screen_size_y / 2;
+		self.status_.center_x = (screen_size_x - clock_size_x - side_size_x) / 2;
+		self.status_.center_y = screen_size_y / 2;
 
 		self.clock_.center_x = screen_size_x / 2;
 		self.clock_.center_y = screen_size_y / 2;
 		self.clock_.radius_x = clock_size[0] / 2;
 		self.clock_.radius_y = clock_size[1] / 2;
 
-		var gauges = new Complication.Gauges();
-		gauges.add(new Complication.Gauge(new Data.BodyBattery()));
-		gauges.add(new Complication.Gauge(new Data.Stress()));
-		gauges.add(new Complication.Gauge(new Data.Move()));
+		var gauges = [
+			new Complication.Gauge(new Data.BodyBattery()),
+			new Complication.Gauge(new Data.Stress()),
+			new Complication.Gauge(new Data.Move()),
+		];
 
-		self.addComplication_(
-			_dc,
-			self.complications_per_min_,
-			gauges,
-			(screen_size_x + clock_size[0]) / 2 + regular_spacing,
-			(screen_size_y - clock_size[1]) / 2 + 2 * regular_spacing,
-			(screen_size_x - clock_size[0]) / 2 - regular_spacing,
-			clock_size[1] - 2 * regular_spacing
-		);
+		self.onLayoutGauges_(gauges, Box.PosSize (
+			(screen_size_x + clock_size_x) / 2 + 2 * spacing_x,
+			(screen_size_y - clock_size_y) / 2 + 2 * Font.SPACING_REGULAR,
+			side_size_x,
+			clock_size_y - 2 * Font.SPACING_REGULAR
+		));
+
+		self.complications_per_min_.addAll(gauges);
 
 		// ---- line above 1 ----
 
 		var line_above_1 = Box.ForY(
-			screen_size_x,
-			(screen_size_y - clock_size[1]) / 2 - small_spacing,
-			-regular_size[1]
+			screen_size_y,
+			(screen_size_y - clock_size[1]) / 2 - spacing_y,
+			-line_1_height
 		);
 
-		self.addComplication_(
-			_dc,
-			self.complications_per_min_,
-			new Complication.Weather(),
-			line_above_1.center_x,
-			line_above_1.center_y,
-			line_above_1.size_x,
-			line_above_1.size_y
-		);
+		var weather = new Complication.Weather();
+			weather.pos_x = line_above_1.center_x;
+			weather.pos_y = line_above_1.center_y;
+			weather.size_x = line_above_1.size_x;
+			weather.size_y = line_above_1.size_y;
+		self.complications_per_min_.add(weather);
 
 		// ---- line above 2 ----
 
 		var line_above_2 = Box.ForY(
 			screen_size_y,
-			line_above_1.pos_y - small_spacing,
-			- regular_size[1]
+			line_above_1.pos_y - spacing_y,
+			- (line_2_height - spacing_y)
 		);
 
-		self.addComplication_(
-			_dc,
-			self.complications_per_min_,
-			new Complication.Conditions(),
-			line_above_2.center_x,
-			line_above_2.center_y,
-			line_above_2.size_x,
-			line_above_2.size_y
-		);
+		var conditions = new Complication.Conditions();
+			conditions.pos_x = line_above_2.center_x;
+			conditions.pos_y = line_above_2.center_y;
+			conditions.size_x = line_above_2.size_x;
+			conditions.size_y = line_above_2.size_y;
+		self.complications_per_min_.add(conditions);
 
 		// ---- line above 3 ----
 
-		{
-			var sun_moon = new Complication.SunMoon();
+		var line_above_3 = Box.ForY(
+			screen_size_y,
+			line_above_2.pos_y - spacing_y,
+			- line_3_height
+		);
 
-			var sun_moon_width = _dc.getTextWidthInPixels(
-				"00:00 00:00", Font.DOT_TINY
-			);
-			var sun_moon_pos_y = (screen_size_y / 2) - Math.ceil(Box.secondLeg(
-				screen_size_x, (screen_size_x + sun_moon_width) / 2
-			)).toNumber();
-
-			sun_moon.pos_x = screen_size_x / 2;
-			sun_moon.pos_y = sun_moon_pos_y;
-			sun_moon.size_x = line_above_2.size_x;
-			sun_moon.size_y = sun_moon.height(_dc);
-
-			self.complications_per_hour_.add(sun_moon);
-		}
+		var sun_moon = new Complication.SunMoon();
+			sun_moon.pos_x = line_above_3.center_x;
+			sun_moon.pos_y = line_above_3.pos_y;
+			sun_moon.size_x = line_above_3.size_x;
+			sun_moon.size_y = line_above_3.size_y;
+		self.complications_per_hour_.add(sun_moon);
 
 		// ---- line below 1 ----
 
 		var line_below_1 = Box.ForY(
 			screen_size_y,
-			(screen_size_y + clock_size[1]) / 2 + 2 * regular_spacing,
-			regular_size[1]
+			(screen_size_y + clock_size[1]) / 2 + spacing_y,
+			line_1_height
 		);
 
-		self.seconds_.pos_x = line_below_1.end_x - 2 * regular_size[0];
+		var seconds_size_x = Render.textWidth(_dc, "00");
+
+		self.seconds_.pos_x = line_below_1.end_x - seconds_size_x;
 		self.seconds_.pos_y = line_below_1.pos_y;
-		self.seconds_.size_x = 2 * regular_size[0];
-		self.seconds_.size_y = regular_size[1];
+		self.seconds_.size_x = seconds_size_x;
+		self.seconds_.size_y = line_below_1.size_y;
 
-		self.addComplication_(
-			_dc,
-			self.complications_per_hour_,
-			new Complication.Date(),
-			line_below_1.pos_x,
-			line_below_1.pos_y,
-			line_below_1.size_x - self.seconds_.size_x,
-			line_below_1.size_y - self.seconds_.size_y
-		);
+		var am_pm_size_x =
+			Render.iconsWidth(_dc, "" + Font.ICON_AM_PM_BEGIN + Font.ICON_BATTERY_END) +
+			Render.textSmallWidth(_dc, "am");
+
+		if (!Data.Units.SETTINGS.is_24_hour) {
+			var am_pm = new Complication.AmPm();
+
+			am_pm.pos_x = self.seconds_.pos_x - am_pm_size_x - Render.SPACING;
+			am_pm.pos_y = line_below_1.pos_y;
+			am_pm.size_x = am_pm_size_x;
+			am_pm.size_y = line_below_1.size_y;
+
+			self.complications_per_hour_.add(am_pm);
+		}
+
+		var date = new Complication.Date();
+			date.pos_x = line_below_1.pos_x;
+			date.pos_y = line_below_1.pos_y;
+			date.size_x = line_below_1.size_x - seconds_size_x - am_pm_size_x - Render.SPACING;
+			date.size_y = line_below_1.size_y;
+		self.complications_per_hour_.add(date);
 
 		// ---- line below 2 ----
 
 		var line_below_2 = Box.ForY(
 			screen_size_y,
-			line_below_1.end_y + small_spacing,
-			tiny_size[1] + regular_size[1]
+			line_below_1.end_y + spacing_y,
+			line_2_height
 		);
 
-		var pos_x = line_below_2.pos_x;
-		pos_x += self.addMetric_(
-			_dc,
-			self.metrics_base_,
-			new Complication.Metric(new Data.HeartRate()),
-			pos_x,
-			line_below_2.pos_y
-		);
-		pos_x += self.addMetric_(
-			_dc,
-			self.metrics_base_,
-			new Complication.Metric(new Data.Steps()),
-			pos_x,
-			line_below_2.pos_y
-		);
-		pos_x += self.addMetric_(
-			_dc,
-			self.metrics_base_,
-			new Complication.Metric(new Data.FloorsClimbed()),
-			pos_x,
-			line_below_2.pos_y
-		);
+		// ---- metrics base
+		self.metrics_base_= [
+			new Complication.Metric(_dc, new Data.HeartRate(), 3),
+			new Complication.Metric(_dc, new Data.Steps(), 3),
+			new Complication.Metric(_dc, new Data.FloorsClimbed(), 3),
+		];
+		self.onLayoutMetrics_(self.metrics_base_, line_below_2);
 
-		pos_x = line_below_2.pos_x;
-		pos_x += self.addMetric_(
-			_dc,
-			self.metrics_alt_,
-			new Complication.Metric(new Data.Calories()),
-			pos_x,
-			line_below_2.pos_y
-		);
-		pos_x += self.addMetric_(
-			_dc,
-			self.metrics_alt_,
-			new Complication.Metric(new Data.Distance()),
-			pos_x,
-			line_below_2.pos_y
-		);
-		pos_x += self.addMetric_(
-			_dc,
-			self.metrics_alt_,
-			new Complication.Metric(new Data.SolarIntensity()),
-			pos_x,
-			line_below_2.pos_y
-		);
+		// ---- metrics alt
+		self.metrics_alt_ = [
+			new Complication.Metric(_dc, new Data.Calories(), 3),
+			new Complication.Metric(_dc, new Data.Distance(), 3),
+			new Complication.Metric(_dc, new Data.SolarIntensity(), 3),
+		];
+		self.onLayoutMetrics_(self.metrics_alt_, line_below_2);
 
 		// ---- line below 3 ----
 
 		var line_below_3 = Box.ForY(
 			screen_size_y,
-			line_below_2.end_y + regular_spacing,
-			regular_size[1]
+			line_below_2.end_y + spacing_y,
+			line_3_height
 		);
 
-		self.addComplication_(
-			_dc,
-			self.complications_per_min_,
-			new Complication.Battery(),
-			line_below_3.pos_x,
-			line_below_3.pos_y,
-			line_below_3.size_x,
-			line_below_3.size_y
-		);
+		self.battery_.pos_x = screen_size_x / 2 - side_size_x;
+		self.battery_.pos_y = line_below_3.pos_y;
+		self.battery_.size_x = 2 * side_size_x;
+		self.battery_.size_y = line_below_3.size_y;
 	}
 
 	function onUpdate(_dc as Graphics.Dc) as Void {
@@ -327,14 +304,12 @@ class View extends WatchUi.WatchFace {
 			self.refresh_(_dc, self.getMetrics_());
 		}
 
-		// TODO: remove
-		self.refresh_(_dc, self.complications_per_min_);
-
 		if (self.last_refresh_min_ != clock.min) {
 			self.last_refresh_min_ = clock.min;
 			self.is_night_mode_ = self.isNightMode_();
 
 			self.clock_.refresh(_dc);
+			self.battery_.refresh(_dc);
 
 			self.refresh_(_dc, self.complications_per_min_);
 		}
@@ -354,11 +329,15 @@ class View extends WatchUi.WatchFace {
 		if (self.is_night_mode_) {
 			self.clock_.render(_dc, true);
 			self.status_.render(_dc, true);
+
+			self.battery_.render(_dc);
 		} else {
 			self.clock_.render(_dc, false);
 			self.status_.render(_dc, false);
 
 			self.seconds_.render(_dc, self.is_high_power_);
+
+			self.battery_.render(_dc);
 
 			self.render_(_dc, self.getMetrics_());
 			self.render_(_dc, self.complications_per_min_);
@@ -430,41 +409,6 @@ class View extends WatchUi.WatchFace {
 		}
 	}
 
-	hidden function addComplication_(
-		_dc as Graphics.Dc,
-		_complications as Complications,
-		_complication as Complication.Base,
-		_pos_x as Lang.Number,
-		_pos_y as Lang.Number,
-		_size_x as Lang.Number,
-		_size_y as Lang.Number
-	) as Void {
-		_complication.pos_x = _pos_x;
-		_complication.pos_y = _pos_y;
-		_complication.size_x = _size_x;
-		_complication.size_y = _size_y;
-
-		_complications.add(_complication);
-	}
-
-	hidden function addMetric_(
-		_dc as Graphics.Dc,
-		_metrics as Metrics,
-		_metric as Complication.Metric,
-		_pos_x as Lang.Number,
-		_pos_y as Lang.Number
-	) as Lang.Number {
-		_metric.pos_x = _pos_x;
-		_metric.pos_y = _pos_y;
-
-		_metric.size_x = _metric.width(_dc);
-		_metric.size_y = _metric.height(_dc);
-
-		_metrics.add(_metric);
-
-		return _metric.size_x;
-	}
-
 	hidden function getMetrics_() as Metrics {
 		if (self.metrics_alt_.size() == 0) {
 			return self.metrics_base_;
@@ -474,6 +418,47 @@ class View extends WatchUi.WatchFace {
 			self.is_base_view_ ?
 			self.metrics_base_ :
 			self.metrics_alt_;
+	}
+
+	static hidden function onLayoutMetrics_(_metrics as Metrics, _box as Box) as Void {
+		var metrics_size = _metrics.size();
+
+		var occupied_size_x = 0;
+		for (var i = 0; i < metrics_size; ++i) {
+			occupied_size_x += _metrics[i].size_x;
+		}
+
+		var spacing = (_box.size_x - occupied_size_x) / (2 * metrics_size);
+
+		var pos_x = _box.pos_x + spacing;
+		var pos_y = _box.pos_y;
+		for (var i = 0; i < metrics_size; ++i) {
+			var metric = _metrics[i];
+
+			metric.pos_x = pos_x;
+			metric.pos_y = pos_y;
+
+			pos_x += 2 * spacing + metric.size_x;
+		}
+	}
+
+	static hidden function onLayoutGauges_(_gauges as Gauges, _box as Box) as Void {
+		var gauges_size = _gauges.size();
+
+		var spacing = _box.size_x / gauges_size;
+
+		var pos_x = _box.pos_x;
+		var pos_y = _box.pos_y;
+		var size_y = _box.size_y;
+		for (var i = 0; i < gauges_size; ++i) {
+			var gauge = _gauges[i];
+
+			gauge.pos_x = pos_x;
+			gauge.pos_y = pos_y;
+			gauge.size_y = size_y;
+
+			pos_x += spacing;
+		}
 	}
 }
 

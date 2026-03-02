@@ -1,7 +1,8 @@
 # TODO
 
-* Clock
-  * am/pm marker
+* Layout
+  * SunMoon can be on lane 2
+  * Conditions should be an actual list of conditions
 * Amoled display
   * AOD option
   * burnout prevention
@@ -13,3 +14,5 @@
   * Bars + Colors
   * BG color
   * Battery - bar, %, days remaining
+* Other
+  * Languages

@@ -9,28 +9,23 @@ module Complication {
 class Metric extends Base {
 	hidden var spacing_ as Lang.Number = Render.SPACING;
 
-	hidden var count_ as Lang.Number = 3;
-
 	hidden var value_ as Lang.Number or Null = null;
 	hidden var value_max_ as Lang.Number or Null = null;
 
 	hidden var impl_ as Data.Base;
+	hidden var count_ as Lang.Number;
 
-	function initialize(_impl as Data.Base) {
+	function initialize(_dc as Graphics.Dc, _impl as Data.Base, _count as Lang.Number) {
 		Base.initialize(_impl.type);
 
 		self.impl_ = _impl;
-	}
+		self.count_ = _count;
 
-	function width(_dc as Graphics.Dc) as Lang.Number {
-		return Render.numberWidth(_dc, self.count_) + 3 * self.spacing_;
-	}
-
-	function height(_dc as Graphics.Dc) as Lang.Number {
-		if (self.impl_.name.length() == 0) {
-			return Render.numberHeight(_dc);
+		self.size_x = Render.numberWidth(_dc, self.count_) + 3 * self.spacing_;
+		self.size_y = Render.numberHeight(_dc);
+		if (self.impl_.name.length() != 0) {
+			self.size_y += Render.labelHeight(_dc) + self.spacing_;
 		}
-		return Render.labelHeight(_dc) + self.spacing_ + Render.numberHeight(_dc);
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {

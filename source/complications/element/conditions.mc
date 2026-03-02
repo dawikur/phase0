@@ -52,10 +52,12 @@ class Conditions extends Base {
 					uv_icon = Font.ICON_UV_0;
 				} else if (uv_index <= 2) {
 					uv_icon = Font.ICON_UV_1;
-				} else if (uv_index < 7) {
+				} else if (uv_index <= 7) {
 					uv_icon = Font.ICON_UV_2;
-				} else {
+				} else if (uv_index <= 10) {
 					uv_icon = Font.ICON_UV_3;
+				} else {
+					uv_icon = Font.ICON_UV_4;
 				}
 
 				self.text_ += uv_index.format("%3d");

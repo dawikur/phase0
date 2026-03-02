@@ -8,8 +8,8 @@ import Toybox.System;
 module Main {
 
 class Status {
-	var pos_x as Lang.Number = 0;
-	var pos_y as Lang.Number = 0;
+	var center_x as Lang.Number = 0;
+	var center_y as Lang.Number = 0;
 
 	hidden var format_ as Lang.String = "$1$\n$2$\n$3$";
 	hidden var enabled_ as Lang.String = "";
@@ -53,13 +53,13 @@ class Status {
 	function render(_dc as Graphics.Dc, _is_night_mode as Lang.Boolean) as Void {
 		if (_is_night_mode) {
 			Render.icons(
-				_dc, pos_x, pos_y,
+				_dc, center_x, center_y,
 				self.enabled_,
 				""
 			);
 		} else {
 			Render.icons(
-				_dc, pos_x, pos_y,
+				_dc, center_x, center_y,
 				self.enabled_,
 				self.all_
 			);

@@ -39,6 +39,14 @@ class Box {
 		self.center_y = _pos_y + self.radius_y;
 	}
 
+	static function PosSize(
+		_pos_x as Lang.Number,
+		_pos_y as Lang.Number,
+		_size_x as Lang.Number,
+		_size_y as Lang.Number) as Box {
+		return new Box(_pos_x, _pos_y, _pos_x + _size_x, _pos_y + _size_y);
+	}
+
 	static function secondLeg(_screen_size as Lang.Number, _leg as Lang.Number) as Lang.Numeric {
 		var hypotenuse = _screen_size / 2;
 		var leg = hypotenuse - _leg; // center of triangle is in the center of screen

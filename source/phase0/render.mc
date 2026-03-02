@@ -368,8 +368,8 @@ function gaugeColor(
 
 function icons(
 	_dc as Graphics.Dc,
-	_pos_x as Lang.Number,
-	_pos_y as Lang.Number,
+	_center_x as Lang.Number,
+	_center_y as Lang.Number,
 	_fg as Lang.String,
 	_bg as Lang.String
 ) as Void {
@@ -378,7 +378,7 @@ function icons(
 	// fg
 	if (_bg.length() == 0) {
 		_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_pos_x, _pos_y, FONT_ICONS, _fg, justify);
+		_dc.drawText(_center_x, _center_y, FONT_ICONS, _fg, justify);
 
 		return;
 	}
@@ -386,31 +386,31 @@ function icons(
 	// bg
 	if (_fg.length() == 0) {
 		_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_pos_x, _pos_y, FONT_ICONS, _bg, justify);
+		_dc.drawText(_center_x, _center_y, FONT_ICONS, _bg, justify);
 
 		return;
 	}
 
 	// fg
 	_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_ICONS, _fg, justify);
+	_dc.drawText(_center_x, _center_y, FONT_ICONS, _fg, justify);
 
 	// shade
 	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x +1, _pos_y +1, FONT_ICONS, _bg, justify);
+	_dc.drawText(_center_x +1, _center_y +1, FONT_ICONS, _bg, justify);
 }
 
 function iconsColor(
 	_dc as Graphics.Dc,
-	_pos_x as Lang.Number,
-	_pos_y as Lang.Number,
+	_center_x as Lang.Number,
+	_center_y as Lang.Number,
 	_icons as Lang.String,
 	_color as Lang.Number
 ) as Void {
 	var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
 	_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x +1, _pos_y +1, FONT_ICONS, _icons, justify);
+	_dc.drawText(_center_x, _center_y, FONT_ICONS, _icons, justify);
 }
 
 function iconsWidth(_dc as Graphics.Dc, _icons as Lang.String) as Lang.Number {

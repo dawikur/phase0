@@ -5,9 +5,9 @@ import Toybox.Lang;
 import Toybox.Math;
 import Toybox.System;
 
-module Complication {
+module Main {
 
-class Battery extends Base {
+class Battery extends Complication.Base {
 	var impl_ as Data.Battery = new Data.Battery();
 
 	var color_ as Lang.Number = Render.COLOR_FG;
@@ -32,7 +32,7 @@ class Battery extends Base {
 			self.color_ = Render.COLOR_FG;
 		}
 
-		var borders_width = Render.iconsWidth(_dc, Font.ICON_BATTERY_BEGIN + Font.ICON_BATTERY_END);
+		var borders_width = Render.iconsWidth(_dc, "" + Font.ICON_BATTERY_BEGIN + Font.ICON_BATTERY_END);
 		var bar_width = Render.iconsWidth(_dc, "" + Font.ICON_BATTERY_EMPTY);
 
 		var bar_all_count = (self.size_x - borders_width) / bar_width;
@@ -74,4 +74,4 @@ class Battery extends Base {
 	}
 }
 
-} // module Element
+} // module Main

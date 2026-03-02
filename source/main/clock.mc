@@ -33,8 +33,6 @@ class Clock {
 	function refresh(_dc as Graphics.Dc) as Void {
 		var clock = System.getClockTime();
 
-		self.ampm_ = Data.Units.getAmPm(clock.hour);
-
 		var hour = Data.Units.convertHour(clock.hour);
 		self.label_ = Lang.format("$1$:$2$", [
 			hour.format("%02d"),

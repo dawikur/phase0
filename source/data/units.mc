@@ -50,7 +50,7 @@ function getAmPm(_hour as Lang.Number) as Lang.String {
 	if (SETTINGS.is_24_hour) {
 		return "";
 	}
-	return _hour < 12 ? "AM" : "PM";
+	return _hour < 12 ? "am" : "pm";
 }
 
 function convertDistance(_meters as Lang.Number) as Lang.Number {

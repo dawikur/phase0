@@ -93,11 +93,11 @@ b build: resources build_tag $(PRG)
 .PHONY: b build build_tag
 
 bt build_test:
-	$(Q)$(MAKE) MODE=test build
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test build
 .PHONY: bt build_test
 
 br build_release:
-	$(Q)$(MAKE) MODE=release build
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release build
 .PHONY: br build_release
 
 resources_tag:
@@ -120,11 +120,11 @@ s simulate: build
 .PHONY: s simulate
 
 st simulate_test:
-	$(Q)$(MAKE) MODE=test simulate
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test simulate
 .PHONY: st simulate_test
 
 sr simulate_release:
-	$(Q)$(MAKE) MODE=release simulate
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release simulate
 .PHONY: sr simulate_release
 
 c clean:
