@@ -61,7 +61,8 @@ class SunMoon extends Text {
 		if (is_new_moon) {
 			Render.icons(_dc, pos_x, pos_y, "", moon_icon);
 		} else if (is_full_moon) {
-			Render.icons(_dc, pos_x, pos_y, moon_icon, "");
+			Render.iconsColor(_dc, pos_x, pos_y, moon_icon, Render.COLOR_FG);
+			Render.iconsColor(_dc, pos_x +1, pos_y +1, moon_icon, Render.COLOR_FG);
 		} else {
 			Render.icons(_dc, pos_x, pos_y, moon_icon, moon_icon);
 		}
