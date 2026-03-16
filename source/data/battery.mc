@@ -11,7 +11,8 @@ class Battery extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_BATTERY,
 			"Batt",
-			CATEGORY_SYSTEM
+			CATEGORY_SYSTEM,
+			Font.ICON_NONE
 		);
 	}
 

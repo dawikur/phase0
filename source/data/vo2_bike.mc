@@ -11,7 +11,8 @@ class VO2Bike extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_VO2MAX_BIKE,
 			"VO2B",
-			CATEGORY_PHYSIOLOGICAL
+			CATEGORY_PHYSIOLOGICAL,
+			Font.ICON_NONE
 		);
 	}
 

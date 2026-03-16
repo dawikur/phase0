@@ -11,7 +11,8 @@ class Pushes extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_WHEELCHAIR_PUSHES,
 			"Push",
-			CATEGORY_MOVEMENT
+			CATEGORY_MOVEMENT,
+			Font.ICON_NONE
 		);
 	}
 

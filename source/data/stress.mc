@@ -11,7 +11,8 @@ class Stress extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_STRESS,
 			"Strs",
-			CATEGORY_ENERGY
+			CATEGORY_ENERGY,
+			Font.ICON_NONE
 		);
 	}
 

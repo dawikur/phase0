@@ -13,7 +13,8 @@ class Distance extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			"Dist",
-			CATEGORY_MOVEMENT
+			CATEGORY_MOVEMENT,
+			Font.ICON_NONE
 		);
 	}
 

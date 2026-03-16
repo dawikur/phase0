@@ -11,7 +11,8 @@ class Temperature extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE,
 			"Temp",
-			CATEGORY_ENERGY
+			CATEGORY_ENERGY,
+			Font.ICON_NONE
 		);
 	}
 

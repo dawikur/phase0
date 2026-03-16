@@ -14,7 +14,8 @@ class BodyBattery extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_BODY_BATTERY,
 			"Body",
-			CATEGORY_RECOVERY
+			CATEGORY_RECOVERY,
+			Font.ICON_NONE
 		);
 	}
 

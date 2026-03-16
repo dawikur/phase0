@@ -14,6 +14,7 @@ class View extends WatchUi.WatchFace {
 	typedef Complications as Lang.Array<Complication.Base>;
 	typedef Metrics as Lang.Array<Complication.Metric>;
 	typedef Gauges as Lang.Array<Complication.Gauge>;
+	typedef Conditions as Lang.Array<Complication.Condition>;
 
 	// ==== fields ====
 
@@ -193,12 +194,15 @@ class View extends WatchUi.WatchFace {
 			- (line_2_height - spacing_y)
 		);
 
-		var conditions = new Complication.Conditions();
-			conditions.pos_x = line_above_2.center_x;
-			conditions.pos_y = line_above_2.center_y;
-			conditions.size_x = line_above_2.size_x;
-			conditions.size_y = line_above_2.size_y;
-		self.complications_per_min_.add(conditions);
+		var conditions = [
+			new Complication.Condition(new Data.Rain()),
+			new Complication.Condition(new Data.UV()),
+			new Complication.Condition(new Data.Wind()),
+		];
+
+		self.onLayoutConditions_(conditions, line_above_2);
+
+		self.complications_per_min_.addAll(conditions);
 
 		// ---- line above 3 ----
 
@@ -445,11 +449,11 @@ class View extends WatchUi.WatchFace {
 	static hidden function onLayoutGauges_(_gauges as Gauges, _box as Box) as Void {
 		var gauges_size = _gauges.size();
 
-		var spacing = _box.size_x / gauges_size;
-
 		var pos_x = _box.pos_x;
 		var pos_y = _box.pos_y;
+		var size_x = _box.size_x / gauges_size;
 		var size_y = _box.size_y;
+
 		for (var i = 0; i < gauges_size; ++i) {
 			var gauge = _gauges[i];
 
@@ -457,7 +461,27 @@ class View extends WatchUi.WatchFace {
 			gauge.pos_y = pos_y;
 			gauge.size_y = size_y;
 
-			pos_x += spacing;
+			pos_x += size_x;
+		}
+	}
+
+	static hidden function onLayoutConditions_(_conditions as Conditions, _box as Box) as Void {
+		var conditions_size = _conditions.size();
+
+		var pos_x = _box.pos_x;
+		var pos_y = _box.pos_y;
+		var size_x = _box.size_x / conditions_size;
+		var size_y = _box.size_y;
+
+		for (var i = 0; i < conditions_size; ++i) {
+			var condition = _conditions[i];
+
+			condition.pos_x = pos_x;
+			condition.pos_y = pos_y;
+			condition.size_x = size_x;
+			condition.size_y = size_y;
+
+			pos_x += size_x;
 		}
 	}
 }

@@ -11,7 +11,8 @@ class ActiveMinutesDay extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			"Act/D",
-			CATEGORY_MOVEMENT
+			CATEGORY_MOVEMENT,
+			Font.ICON_NONE
 		);
 	}
 

@@ -18,15 +18,18 @@ class Base {
 	var type as Complications.Type;
 	var name as Lang.String;
 	var category as Lang.Number;
+	var icon as Lang.Char;
 
 	function initialize(
 		_type as Complications.Type,
 		_name as Lang.String,
-		_category as Lang.Number
+		_category as Lang.Number,
+		_icon as Lang.Char
 	) {
 		self.type = _type;
 		self.name = _name;
 		self.category = _category;
+		self.icon = _icon;
 	}
 
 	function get() as Lang.Number or Null {

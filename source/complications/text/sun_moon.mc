@@ -51,7 +51,7 @@ class SunMoon extends Text {
 		var pos_y = self.pos_y + Render.textSmallHeight(_dc) / 2;
 
 		if (self.label_.length() != 0) {
-			pos_y += Render.labelHeight(_dc) + self.spacing_;
+			pos_y += (Render.labelHeight(_dc) + self.spacing_) / 2;
 		}
 
 		var is_new_moon = self.moon_phase_ == 0;

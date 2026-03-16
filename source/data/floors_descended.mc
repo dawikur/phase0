@@ -11,7 +11,8 @@ class FloorsDescended extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			"Fl Dn",
-			CATEGORY_VERTICAL
+			CATEGORY_VERTICAL,
+			Font.ICON_NONE
 		);
 	}
 

@@ -12,7 +12,8 @@ class Memory extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			"Mem",
-			CATEGORY_SYSTEM
+			CATEGORY_SYSTEM,
+			Font.ICON_NONE
 		);
 	}
 

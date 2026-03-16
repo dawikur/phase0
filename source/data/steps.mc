@@ -11,7 +11,8 @@ class Steps extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_STEPS,
 			"Steps",
-			CATEGORY_MOVEMENT
+			CATEGORY_MOVEMENT,
+			Font.ICON_NONE
 		);
 	}
 

@@ -13,7 +13,8 @@ class Saturation extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_PULSE_OX,
 			"SPO2",
-			CATEGORY_PHYSIOLOGICAL
+			CATEGORY_PHYSIOLOGICAL,
+			Font.ICON_NONE
 		);
 	}
 

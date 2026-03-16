@@ -11,7 +11,8 @@ class MetersDescended extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			"M Dn",
-			CATEGORY_VERTICAL
+			CATEGORY_VERTICAL,
+			Font.ICON_NONE
 		);
 	}
 

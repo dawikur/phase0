@@ -11,7 +11,8 @@ class Move extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			"Move",
-			CATEGORY_PHYSIOLOGICAL
+			CATEGORY_PHYSIOLOGICAL,
+			Font.ICON_NONE
 		);
 	}
 

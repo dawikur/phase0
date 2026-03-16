@@ -13,7 +13,8 @@ class Pressure extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE,
 			"Press",
-			CATEGORY_SYSTEM
+			CATEGORY_SYSTEM,
+			Font.ICON_NONE
 		);
 	}
 

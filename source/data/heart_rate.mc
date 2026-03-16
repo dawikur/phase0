@@ -13,7 +13,8 @@ class HeartRate extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_HEART_RATE,
 			"HR",
-			CATEGORY_PHYSIOLOGICAL
+			CATEGORY_PHYSIOLOGICAL,
+			Font.ICON_NONE
 		);
 	}
 

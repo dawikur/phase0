@@ -11,7 +11,8 @@ class RecoveryTime extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_RECOVERY_TIME,
 			"Recov",
-			CATEGORY_RECOVERY
+			CATEGORY_RECOVERY,
+			Font.ICON_NONE
 		);
 	}
 

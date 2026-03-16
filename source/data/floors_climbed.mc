@@ -11,7 +11,8 @@ class FloorsClimbed extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_FLOORS_CLIMBED,
 			"Floors",
-			CATEGORY_VERTICAL
+			CATEGORY_VERTICAL,
+			Font.ICON_NONE
 		);
 	}
 

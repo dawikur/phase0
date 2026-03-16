@@ -13,7 +13,8 @@ class Elevation extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_ALTITUDE,
 			"Elev",
-			CATEGORY_VERTICAL
+			CATEGORY_VERTICAL,
+			Font.ICON_NONE
 		);
 	}
 

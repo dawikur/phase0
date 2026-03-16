@@ -11,7 +11,8 @@ class RespirationRate extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_RESPIRATION_RATE,
 			"Resp",
-			CATEGORY_PHYSIOLOGICAL
+			CATEGORY_PHYSIOLOGICAL,
+			Font.ICON_NONE
 		);
 	}
 
