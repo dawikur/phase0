@@ -14,7 +14,7 @@ class Distance extends Base {
 			Complications.COMPLICATION_TYPE_INVALID,
 			"Dist",
 			CATEGORY_MOVEMENT,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

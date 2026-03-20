@@ -8,9 +8,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import fonts_data
 from args_parse import Folders, parse_folders
 from PIL import Image, ImageDraw
+
+import fonts
 
 
 class Atlas:
@@ -29,8 +30,8 @@ class Atlas:
 
     def add(
         self,
-        glyph: fonts_data.Glyph,
-        style: fonts_data.Style,
+        glyph: fonts.Glyph,
+        style: fonts.Style,
         dx: int = 0,
         dy: int = 0,
     ) -> None:
@@ -125,8 +126,8 @@ class Fnt:
 
 
 def parse_typeface_and_style(
-    typefaces: Union[fonts_data.Typeface, List[fonts_data.Typeface]],
-    styles: Union[fonts_data.Style, List[fonts_data.Style]],
+    typefaces: Union[fonts.Typeface, List[fonts.Typeface]],
+    styles: Union[fonts.Style, List[fonts.Style]],
     name: Optional[str] = None,
     *args: Any,
     required_glyphs: Optional[set[str]] = None,
@@ -235,8 +236,8 @@ def parse_typeface_and_style(
 
             # Draw all glyphs centered on top of each other
             for glyph, style, w, h in zip(glyphs_at_idx, styles, widths, heights):
-                dx = (max_width - w) / 2
-                dy = (max_height - h) / 2
+                dx = int((max_width - w) / 2)
+                dy = int((max_height - h) / 2)
                 atlas.add(glyph, style, dx, dy)
 
             atlas.advance(max_width)
@@ -282,16 +283,16 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
         import Toybox.Application;
         import Toybox.WatchUi;
 
-        module Font {"""))
+        module Fonts {"""))
 
     # #########################################################################
     # Digits
 
     fonts_mc.append(f"\n// Digits\n")
     for digits_meta_data in [
-        (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR_BOLD, "dot_large_bold"),
-        (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR, "dot_large"),
-        (fonts_data.TYPEFACE_DIGITS, fonts_data.STYLE_REGULAR_THIN, "dot_large_thin"),
+        (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR_BOLD, "dot_large_bold"),
+        (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR, "dot_large"),
+        (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR_THIN, "dot_large_thin"),
     ]:
         digits_glyphs = set("0123456789:")
         *artefacts, names_comments = parse_typeface_and_style(
@@ -304,10 +305,10 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
 
     fonts_mc.append(f"\n// Dots\n")
     for dot_meta_data in [
-        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_REGULAR),
-        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_REGULAR_THIN),
-        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_SMALL),
-        (fonts_data.TYPEFACE_DOT, fonts_data.STYLE_TINY),
+        (fonts.TYPEFACE_DOT, fonts.STYLE_REGULAR),
+        (fonts.TYPEFACE_DOT, fonts.STYLE_REGULAR_THIN),
+        (fonts.TYPEFACE_DOT, fonts.STYLE_SMALL),
+        (fonts.TYPEFACE_DOT, fonts.STYLE_TINY),
     ]:
         *artefacts, names_comments = parse_typeface_and_style(
             *dot_meta_data, required_glyphs=required_glyphs
@@ -319,7 +320,7 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
 
     fonts_mc.append(f"\n// Icons\n")
     for icon_meta_data in [
-        (fonts_data.TYPEFACE_ICONS, fonts_data.STYLE_SMALL, "icons"),
+        (fonts.TYPEFACE_ICONS, fonts.STYLE_SMALL, "icons"),
     ]:
         *artefacts, names_comments = parse_typeface_and_style(*icon_meta_data)
         store(*artefacts)
@@ -339,9 +340,9 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
 
     fonts_mc.append(f"\n// Styles\n")
     for style in [
-        (fonts_data.STYLE_REGULAR),
-        (fonts_data.STYLE_SMALL),
-        (fonts_data.STYLE_TINY),
+        (fonts.STYLE_REGULAR),
+        (fonts.STYLE_SMALL),
+        (fonts.STYLE_TINY),
     ]:
         fonts_mc.append(f"const SPACING_{style.name.upper()} = {style.size};")
 
@@ -349,7 +350,7 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
     # Footer
 
     fonts_xml.append("</fonts>")
-    fonts_mc.append("\n} // module Font")
+    fonts_mc.append("\n} // module Fonts")
 
     # #########################################################################
     # Write
@@ -359,7 +360,7 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
 
 
 def get_required_glyphs(folders: Folders) -> set[str]:
-    unique_glyphs = {glyph.name for glyph in fonts_data.TYPEFACE_DOT.glyphs}
+    unique_glyphs = {glyph.name for glyph in fonts.TYPEFACE_DOT.glyphs}
     all_unique_chars: set[str] = set()
     all_unique_chars.update(" ")  # whitespace
     all_unique_chars.update(":0123456789")  # numbers

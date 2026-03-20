@@ -12,27 +12,27 @@ class UV extends Base {
 			Complications.COMPLICATION_TYPE_INVALID,
 			"UV",
 			Render.COLOR_YELLOW,
-			Font.ICON_UV_0
+			Fonts.ICON_UV_0
 		);
 	}
 
 	function get() as Lang.Number or Null {
-		self.icon = Font.ICON_UV_0;
+		self.icon = Fonts.ICON_UV_0;
 
 		var weather = Weather.getCurrentConditions();
 		if (weather != null) {
 			if (weather.uvIndex != null) {
 				var uv_index = weather.uvIndex as Lang.Float;
-				if (uv_index == 0) {
-					self.icon = Font.ICON_UV_0;
-				} else if (uv_index <= 2) {
-					self.icon = Font.ICON_UV_1;
-				} else if (uv_index <= 7) {
-					self.icon = Font.ICON_UV_2;
-				} else if (uv_index <= 10) {
-					self.icon = Font.ICON_UV_3;
+				if (uv_index < 1) {
+					self.icon = Fonts.ICON_UV_0;
+				} else if (uv_index < 3) {
+					self.icon = Fonts.ICON_UV_1;
+				} else if (uv_index < 8) {
+					self.icon = Fonts.ICON_UV_2;
+				} else if (uv_index < 11) {
+					self.icon = Fonts.ICON_UV_3;
 				} else {
-					self.icon = Font.ICON_UV_4;
+					self.icon = Fonts.ICON_UV_4;
 				}
 
 				return uv_index.toNumber();

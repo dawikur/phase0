@@ -18,15 +18,15 @@ const COLOR_CYAN as Lang.Number = 0x005555; // Recovery / Balance
 const COLOR_MAGENTA as Lang.Number = 0x550055; // Vertical Dimension
 const COLOR_YELLOW as Lang.Number = 0x555500; // Tension / Metabolic Energy
 
-const FONT_FG as WatchUi.FontResource = Font.DOT_REGULAR;
-const FONT_BG as WatchUi.FontResource = Font.DOT_REGULAR_THIN;
+const FONT_FG as WatchUi.FontResource = Fonts.DOT_REGULAR;
+const FONT_BG as WatchUi.FontResource = Fonts.DOT_REGULAR_THIN;
 
-const FONT_SMALL as WatchUi.FontResource = Font.DOT_SMALL;
-const FONT_TINY as WatchUi.FontResource = Font.DOT_TINY;
+const FONT_SMALL as WatchUi.FontResource = Fonts.DOT_SMALL;
+const FONT_TINY as WatchUi.FontResource = Fonts.DOT_TINY;
 
-const SPACING as Lang.Number = Font.SPACING_SMALL;
+const SPACING as Lang.Number = Fonts.SPACING_SMALL;
 
-const FONT_ICONS as WatchUi.FontResource = Font.ICONS;
+const FONT_ICONS as WatchUi.FontResource = Fonts.ICONS;
 
 // ////////////////////////////////////////////////////////////////////////////
 // Label

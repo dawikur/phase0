@@ -13,7 +13,7 @@ class Memory extends Base {
 			Complications.COMPLICATION_TYPE_INVALID,
 			"Mem",
 			CATEGORY_SYSTEM,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

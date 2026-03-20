@@ -56,7 +56,7 @@ class SunMoon extends Text {
 
 		var is_new_moon = self.moon_phase_ == 0;
 		var is_full_moon = self.moon_phase_ == (SunMoon.MOON_PHASES / 2);
-		var moon_icon = "" + (Font.ICON_MOON_00 + self.moon_phase_);
+		var moon_icon = "" + (Fonts.ICON_MOON_00 + self.moon_phase_);
 
 		if (is_new_moon) {
 			Render.icons(_dc, pos_x, pos_y, "", moon_icon);

@@ -12,7 +12,7 @@ class MetersDescended extends Base {
 			Complications.COMPLICATION_TYPE_INVALID,
 			"M Dn",
 			CATEGORY_VERTICAL,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

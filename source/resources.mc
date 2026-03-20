@@ -1,10 +1,15 @@
 // Copy	ight (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import Toybox.Application;
 import Toybox.Lang;
 import Toybox.Test;
 import Toybox.WatchUi;
 
 module Resources {
+
+function load(_id as Lang.ResourceId) as Lang.String {
+	return Application.loadResource(_id) as Lang.String;
+}
 
 const CONDITIONS as Lang.Array<Lang.ResourceId> = [
 	Rez.Strings.CONDITION_00_CLEAR,
@@ -63,6 +68,10 @@ const CONDITIONS as Lang.Array<Lang.ResourceId> = [
 	Rez.Strings.CONDITION_53_UNKNOWN,
 ];
 
+function loadCondition(_id as Lang.Number) as Lang.String {
+	return load(CONDITIONS[_id]);
+}
+
 const DAYS_OF_WEEK as Lang.Array<Lang.ResourceId> = [
 	new Lang.ResourceId(), // 1-based
 	Rez.Strings.DAY_OF_WEEK_01_SUN,
@@ -73,6 +82,10 @@ const DAYS_OF_WEEK as Lang.Array<Lang.ResourceId> = [
 	Rez.Strings.DAY_OF_WEEK_06_FRI,
 	Rez.Strings.DAY_OF_WEEK_07_SAT,
 ];
+
+function loadDayOfWeek(_id as Lang.Number) as Lang.String {
+	return load(DAYS_OF_WEEK[_id]);
+}
 
 const MONTHS as Lang.Array<Lang.ResourceId> = [
 	new Lang.ResourceId(), // 1-based
@@ -89,5 +102,9 @@ const MONTHS as Lang.Array<Lang.ResourceId> = [
 	Rez.Strings.MONTH_11_NOV,
 	Rez.Strings.MONTH_12_DEC,
 ];
+
+function loadMonth(_id as Lang.Number) as Lang.String {
+	return load(MONTHS[_id]);
+}
 
 } // module Resources

@@ -12,7 +12,7 @@ class ActiveMinutesWeek extends Base {
 			Complications.COMPLICATION_TYPE_INTENSITY_MINUTES,
 			"Act/W",
 			CATEGORY_MOVEMENT,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

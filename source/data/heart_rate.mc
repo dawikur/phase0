@@ -14,7 +14,7 @@ class HeartRate extends Base {
 			Complications.COMPLICATION_TYPE_HEART_RATE,
 			"HR",
 			CATEGORY_PHYSIOLOGICAL,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 
@@ -33,7 +33,8 @@ class HeartRate extends Base {
 
 	function getMax() as Lang.Number or Null {
 		var current_sport = UserProfile.getCurrentSport();
-		var zones = UserProfile.getHeartRateZones(current_sport) as Lang.Array<Lang.Number>;
+		var zones =
+			UserProfile.getHeartRateZones(current_sport) as Lang.Array<Lang.Number>;
 
 		return zones[5] as Lang.Number;
 	}

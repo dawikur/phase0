@@ -14,7 +14,7 @@ class Saturation extends Base {
 			Complications.COMPLICATION_TYPE_PULSE_OX,
 			"SPO2",
 			CATEGORY_PHYSIOLOGICAL,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

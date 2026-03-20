@@ -15,7 +15,7 @@ class BodyBattery extends Base {
 			Complications.COMPLICATION_TYPE_BODY_BATTERY,
 			"Body",
 			CATEGORY_RECOVERY,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

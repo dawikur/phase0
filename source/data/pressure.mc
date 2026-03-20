@@ -14,7 +14,7 @@ class Pressure extends Base {
 			Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE,
 			"Press",
 			CATEGORY_SYSTEM,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

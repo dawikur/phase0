@@ -12,16 +12,13 @@ class SolarIntensity extends Base {
 			Complications.COMPLICATION_TYPE_SOLAR_INPUT,
 			"Solar",
 			CATEGORY_ENERGY,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 
 	function get() as Lang.Number or Null {
 		var value = System.getSystemStats().solarIntensity;
-		if (value != null) {
-			if (value < 0) {
-				return 0;
-			}
+		if (value != null && 0 <= value) {
 			return value;
 		}
 		return null;

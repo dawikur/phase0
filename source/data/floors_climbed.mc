@@ -12,7 +12,7 @@ class FloorsClimbed extends Base {
 			Complications.COMPLICATION_TYPE_FLOORS_CLIMBED,
 			"Floors",
 			CATEGORY_VERTICAL,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

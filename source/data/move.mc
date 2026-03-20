@@ -12,7 +12,7 @@ class Move extends Base {
 			Complications.COMPLICATION_TYPE_INVALID,
 			"Move",
 			CATEGORY_PHYSIOLOGICAL,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

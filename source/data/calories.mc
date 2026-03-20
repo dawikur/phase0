@@ -12,7 +12,7 @@ class Calories extends Base {
 			Complications.COMPLICATION_TYPE_CALORIES,
 			"Cal",
 			CATEGORY_ENERGY,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

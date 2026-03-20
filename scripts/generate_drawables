@@ -5,10 +5,11 @@ import textwrap
 from pathlib import Path
 from typing import Tuple
 
-import fonts_data
 from args_parse import parse_folders
 
-ICON = fonts_data.ICON
+import fonts
+
+ICON = fonts.ICON
 ICON_BLURRED = ICON.blure()
 
 
@@ -22,8 +23,8 @@ def rgba_to_svg(color: Tuple[int, int, int, int]) -> str:
 def main() -> None:
     folders = parse_folders()
 
-    svg_width = ICON_BLURRED.xadvance * fonts_data.STYLE_REGULAR.size
-    svg_height = ICON_BLURRED.yadvance * fonts_data.STYLE_REGULAR.size
+    svg_width = ICON_BLURRED.xadvance * fonts.STYLE_REGULAR.size
+    svg_height = ICON_BLURRED.yadvance * fonts.STYLE_REGULAR.size
 
     icon_svg = []
     icon_svg.append(
@@ -33,9 +34,9 @@ def main() -> None:
     )
 
     for icon, style, color in [
-        (ICON, fonts_data.STYLE_REGULAR, (0xAA, 0x55, 0x00, 0xFF)),
-        (ICON_BLURRED, fonts_data.STYLE_REGULAR_THIN, (0xAA, 0x55, 0x00, 0xFF)),
-        (ICON, fonts_data.STYLE_REGULAR_THIN, (0xFF, 0xAA, 0x00, 0xFF)),
+        (ICON, fonts.STYLE_REGULAR, (0xAA, 0x55, 0x00, 0xFF)),
+        (ICON_BLURRED, fonts.STYLE_REGULAR_THIN, (0xAA, 0x55, 0x00, 0xFF)),
+        (ICON, fonts.STYLE_REGULAR_THIN, (0xFF, 0xAA, 0x00, 0xFF)),
     ]:
         fill = rgba_to_svg(color)
 

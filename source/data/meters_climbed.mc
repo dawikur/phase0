@@ -12,7 +12,7 @@ class MetersClimbed extends Base {
 			Complications.COMPLICATION_TYPE_INVALID,
 			"M Up",
 			CATEGORY_VERTICAL,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

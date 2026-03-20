@@ -124,7 +124,7 @@ class View extends WatchUi.WatchFace {
 		var screen_size_x = _dc.getWidth();
 		var screen_size_y = _dc.getHeight();
 
-		var clock_size = _dc.getTextDimensions("00:00", Font.DOT_LARGE);
+		var clock_size = _dc.getTextDimensions("00:00", Fonts.DOT_LARGE);
 		var clock_size_x = clock_size[0];
 		var clock_size_y = clock_size[1];
 
@@ -164,9 +164,9 @@ class View extends WatchUi.WatchFace {
 
 		self.onLayoutGauges_(gauges, Box.PosSize (
 			(screen_size_x + clock_size_x) / 2 + 2 * spacing_x,
-			(screen_size_y - clock_size_y) / 2 + 2 * Font.SPACING_REGULAR,
+			(screen_size_y - clock_size_y) / 2 + 2 * Fonts.SPACING_REGULAR,
 			side_size_x,
-			clock_size_y - 2 * Font.SPACING_REGULAR
+			clock_size_y - 2 * Fonts.SPACING_REGULAR
 		));
 
 		self.complications_per_min_.addAll(gauges);
@@ -235,7 +235,7 @@ class View extends WatchUi.WatchFace {
 		self.seconds_.size_y = line_below_1.size_y;
 
 		var am_pm_size_x =
-			Render.iconsWidth(_dc, "" + Font.ICON_AM_PM_BEGIN + Font.ICON_BATTERY_END) +
+			Render.iconsWidth(_dc, "" + Fonts.ICON_AM_PM_BEGIN + Fonts.ICON_BATTERY_END) +
 			Render.textSmallWidth(_dc, "am");
 
 		if (!Data.Units.SETTINGS.is_24_hour) {

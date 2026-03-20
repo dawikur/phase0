@@ -27,7 +27,9 @@ class Seconds {
 
 	function render(_dc as Graphics.Dc, _is_high_power as Lang.Boolean) as Void {
 		if (_is_high_power) {
-			Render.text(_dc, self.pos_x, self.pos_y, self.value_, Graphics.TEXT_JUSTIFY_LEFT);
+			Render.text(
+				_dc, self.pos_x, self.pos_y, self.value_, Graphics.TEXT_JUSTIFY_LEFT
+			);
 		} else {
 			Render.number(_dc, self.pos_x, self.pos_y, null, 2);
 		}

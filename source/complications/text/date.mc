@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.Application;
 import Toybox.Complications;
 import Toybox.Lang;
 import Toybox.Time;
@@ -16,9 +15,9 @@ class Date extends Text {
 		var now = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
 
 		return Lang.format("$1$ $2$ $3$", [
-			Application.loadResource(Resources.DAYS_OF_WEEK[now.day_of_week as Lang.Number]) as Lang.String,
+			Resources.loadDayOfWeek(now.day_of_week as Lang.Number),
 			now.day.format("%02d"),
-			Application.loadResource(Resources.MONTHS[now.month as Lang.Number]) as Lang.String,
+			Resources.loadMonth(now.month as Lang.Number)
 		]);
 	}
 }

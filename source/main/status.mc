@@ -17,9 +17,9 @@ class Status {
 
 	function initialize() {
 		self.all_ = Lang.format(self.format_, [
-			Font.ICON_ALARM,
-			Font.ICON_BLUETOOTH,
-			Font.ICON_NOTIFICATION
+			Fonts.ICON_ALARM,
+			Fonts.ICON_BLUETOOTH,
+			Fonts.ICON_NOTIFICATION
 		]);
 	}
 
@@ -28,19 +28,19 @@ class Status {
 
 		var icon_alarm = "";
 		if (0 < device_settings.alarmCount) {
-			icon_alarm = Font.ICON_ALARM;
+			icon_alarm = Fonts.ICON_ALARM;
 		}
 
 		var icon_bluetooth = "";
 		if (device_settings.phoneConnected) {
-			icon_bluetooth = Font.ICON_BLUETOOTH;
+			icon_bluetooth = Fonts.ICON_BLUETOOTH;
 		}
 
 		var icon_notification = "";
 		if (device_settings has :doNotDisturb and device_settings.doNotDisturb) {
-			icon_notification = Font.ICON_DO_NOT_DISTURB;
+			icon_notification = Fonts.ICON_DO_NOT_DISTURB;
 		} else if (0 < device_settings.notificationCount) {
-			icon_notification = Font.ICON_NOTIFICATION;
+			icon_notification = Fonts.ICON_NOTIFICATION;
 		}
 
 		self.enabled_ = Lang.format(self.format_, [

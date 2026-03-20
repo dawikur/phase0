@@ -12,7 +12,7 @@ class Stress extends Base {
 			Complications.COMPLICATION_TYPE_STRESS,
 			"Strs",
 			CATEGORY_ENERGY,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

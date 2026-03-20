@@ -12,7 +12,7 @@ class VO2Run extends Base {
 			Complications.COMPLICATION_TYPE_VO2MAX_RUN,
 			"VO2R",
 			CATEGORY_PHYSIOLOGICAL,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

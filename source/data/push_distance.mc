@@ -12,7 +12,7 @@ class PushDistance extends Base {
 			Complications.COMPLICATION_TYPE_INVALID,
 			"Push D",
 			CATEGORY_MOVEMENT,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

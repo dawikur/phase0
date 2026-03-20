@@ -12,25 +12,25 @@ class Rain extends Base {
 			Complications.COMPLICATION_TYPE_INVALID,
 			"Rain",
 			Render.COLOR_BLUE,
-			Font.ICON_RAIN_0
+			Fonts.ICON_RAIN_0
 		);
 	}
 
 	function get() as Lang.Number or Null {
-		self.icon = Font.ICON_RAIN_0;
+		self.icon = Fonts.ICON_RAIN_0;
 
 		var weather = Weather.getCurrentConditions();
 		if (weather != null) {
 			if (weather.precipitationChance != null) {
 				var precipitation_chance = weather.precipitationChance as Lang.Number;
 				if (precipitation_chance <= 20) {
-					self.icon = Font.ICON_RAIN_0;
+					self.icon = Fonts.ICON_RAIN_0;
 				} else if (precipitation_chance <= 50) {
-					self.icon = Font.ICON_RAIN_1;
+					self.icon = Fonts.ICON_RAIN_1;
 				} else if (precipitation_chance <= 80) {
-					self.icon = Font.ICON_RAIN_2;
+					self.icon = Fonts.ICON_RAIN_2;
 				} else {
-					self.icon = Font.ICON_RAIN_3;
+					self.icon = Fonts.ICON_RAIN_3;
 				}
 
 				return precipitation_chance;

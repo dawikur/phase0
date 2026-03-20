@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.Application;
 import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
@@ -26,7 +25,7 @@ class Weather extends Text {
 			if (weather.condition != null) {
 				var condition = weather.condition as Lang.Number;
 
-				text = Application.loadResource(Resources.CONDITIONS[condition]) as Lang.String;
+				text = Resources.loadCondition(condition);
 			}
 
 			if (weather.temperature != null) {
@@ -143,7 +142,7 @@ class Weather extends Text {
 			var label = labels[i];
 			var expected_short_str = data.get(label) as Lang.String;
 
-			var long_str = Application.loadResource(label as Lang.ResourceId) as Lang.String;
+			var long_str = Resources.load(label as Lang.ResourceId);
 			var short_str = getShorterCondition(long_str);
 
 			_logger.debug(Lang.format(

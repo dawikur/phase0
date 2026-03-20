@@ -12,7 +12,7 @@ class Battery extends Base {
 			Complications.COMPLICATION_TYPE_BATTERY,
 			"Batt",
 			CATEGORY_SYSTEM,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

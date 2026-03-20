@@ -12,7 +12,7 @@ class Steps extends Base {
 			Complications.COMPLICATION_TYPE_STEPS,
 			"Steps",
 			CATEGORY_MOVEMENT,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

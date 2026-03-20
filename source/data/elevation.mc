@@ -14,7 +14,7 @@ class Elevation extends Base {
 			Complications.COMPLICATION_TYPE_ALTITUDE,
 			"Elev",
 			CATEGORY_VERTICAL,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 

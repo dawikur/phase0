@@ -12,7 +12,7 @@ class FloorsDescended extends Base {
 			Complications.COMPLICATION_TYPE_INVALID,
 			"Fl Dn",
 			CATEGORY_VERTICAL,
-			Font.ICON_NONE
+			Fonts.ICON_NONE
 		);
 	}
 
