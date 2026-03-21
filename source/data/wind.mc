@@ -16,7 +16,7 @@ class Wind extends Base {
 		);
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		self.icon = Fonts.ICON_WIND_NONE;
 
 		var weather = Weather.getCurrentConditions();

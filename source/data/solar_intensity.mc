@@ -14,18 +14,16 @@ class SolarIntensity extends Base {
 			CATEGORY_ENERGY,
 			Fonts.ICON_NONE
 		);
+
+		self.value_max = 100;
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		var value = System.getSystemStats().solarIntensity;
-		if (value != null && 0 <= value) {
+		if (value != null and 0 <= value) {
 			return value;
 		}
 		return null;
-	}
-
-	function getMax() as Lang.Number or Null {
-		return 100;
 	}
 }
 

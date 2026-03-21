@@ -14,14 +14,12 @@ class Battery extends Base {
 			CATEGORY_SYSTEM,
 			Fonts.ICON_NONE
 		);
+
+		self.value_max = 100;
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		return System.getSystemStats().battery.toNumber();
-	}
-
-	function getMax() as Lang.Number or Null {
-		return 100;
 	}
 }
 

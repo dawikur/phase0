@@ -9,9 +9,6 @@ module Complication {
 class Metric extends Base {
 	hidden var spacing_ as Lang.Number = Render.SPACING;
 
-	hidden var value_ as Lang.Number or Null = null;
-	hidden var value_max_ as Lang.Number or Null = null;
-
 	hidden var impl_ as Data.Base;
 	hidden var count_ as Lang.Number;
 
@@ -29,14 +26,13 @@ class Metric extends Base {
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		self.value_ = self.impl_.get();
-		self.value_max_ = self.impl_.getMax();
+		self.impl_.refresh();
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
 		// ---- prepare ----
 
-		if (self.value_ == null or self.value_max_ == null) {
+		if (self.impl_.value == null or self.impl_.value_max == null) {
 			self.refresh(_dc);
 		}
 
@@ -52,17 +48,17 @@ class Metric extends Base {
 
 		// ---- value ----
 
-		Render.number(_dc, pos_x, pos_y, self.value_, self.count_);
+		Render.number(_dc, pos_x, pos_y, self.impl_.value, self.count_);
 		pos_x += Render.numberWidth(_dc, self.count_);
 
 		// ---- gauge ----
 
-		if (self.value_ == null or self.value_max_ == null) {
+		if (self.impl_.value == null or self.impl_.value_max == null) {
 			return;
 		}
 
-		var value = self.value_ as Lang.Number;
-		var value_max = self.value_max_ as Lang.Number;
+		var value = self.impl_.value as Lang.Number;
+		var value_max = self.impl_.value_max as Lang.Number;
 
 		if (value_max == 0) {
 			return;

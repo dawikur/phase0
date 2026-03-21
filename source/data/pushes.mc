@@ -14,14 +14,12 @@ class Pushes extends Base {
 			CATEGORY_MOVEMENT,
 			Fonts.ICON_NONE
 		);
+
+		self.value_max = ActivityMonitor.getInfo().pushGoal;
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		return ActivityMonitor.getInfo().pushes;
-	}
-
-	function getMax() as Lang.Number or Null {
-		return ActivityMonitor.getInfo().pushGoal;
 	}
 }
 

@@ -14,14 +14,12 @@ class Move extends Base {
 			CATEGORY_PHYSIOLOGICAL,
 			Fonts.ICON_NONE
 		);
+
+		self.value_max = ActivityMonitor.MOVE_BAR_LEVEL_MAX;
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		return ActivityMonitor.getInfo().moveBarLevel;
-	}
-
-	function getMax() as Lang.Number or Null {
-		return ActivityMonitor.MOVE_BAR_LEVEL_MAX;
 	}
 }
 

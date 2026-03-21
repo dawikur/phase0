@@ -20,6 +20,9 @@ class Base {
 	var category as Lang.Number;
 	var icon as Lang.Char;
 
+	var value as Lang.Number or Null = null;
+	var value_max as Lang.Number or Null = null;
+
 	function initialize(
 		_type as Complications.Type,
 		_name as Lang.String,
@@ -32,8 +35,12 @@ class Base {
 		self.icon = _icon;
 	}
 
-	function get() as Lang.Number or Null {
-		var maybe_value = self.getMaybe();
+	function refresh() as Void {
+		self.value = self.get_();
+	}
+
+	function get_() as Lang.Number or Null {
+		var maybe_value = self.getMaybe_();
 
 		if (self.name.length() != 0) {
 			if (maybe_value != null) {
@@ -46,11 +53,7 @@ class Base {
 		return maybe_value;
 	}
 
-	function getMaybe() as Lang.Number or Null {
-		return null;
-	}
-
-	function getMax() as Lang.Number or Null {
+	function getMaybe_() as Lang.Number or Null {
 		return null;
 	}
 

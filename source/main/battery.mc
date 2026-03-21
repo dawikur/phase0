@@ -21,8 +21,10 @@ class Battery extends Complication.Base {
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		var value = self.impl_.get() as Lang.Number;
-		var value_max = self.impl_.getMax() as Lang.Number;
+		self.impl_.refresh();
+
+		var value = self.impl_.value as Lang.Number;
+		var value_max = self.impl_.value_max as Lang.Number;
 
 		if (value < 10) {
 			self.color_ = Render.COLOR_RED;

@@ -16,7 +16,7 @@ class MetersDescended extends Base {
 		);
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		var meters_descended = ActivityMonitor.getInfo().metersDescended;
 		if (meters_descended != null) {
 			return Units.convertElevation(meters_descended as Lang.Number);

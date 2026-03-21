@@ -16,7 +16,7 @@ class PushDistance extends Base {
 		);
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		var distance_cm = ActivityMonitor.getInfo().pushDistance;
 		if (distance_cm != null) {
 			return Units.convertDistance(distance_cm / 100);

@@ -14,9 +14,11 @@ class Rain extends Base {
 			Render.COLOR_BLUE,
 			Fonts.ICON_RAIN_0
 		);
+
+		self.value_max = 100;
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		self.icon = Fonts.ICON_RAIN_0;
 
 		var weather = Weather.getCurrentConditions();

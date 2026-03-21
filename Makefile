@@ -48,9 +48,9 @@ RESOURCES_DIR      := resources/
 RESOURCES_BASE_DIR := $(RESOURCES_DIR)base/
 BUILD_SOURCE_DIR   := $(BUILD_DIR)source/
 
-DRAWABLES_DEPS := scripts/generate_drawables fonts/dot.py fonts/model.py $(STRINGS)
+DRAWABLES_DEPS := scripts/generate_drawables $(shell find fonts -type f) $(STRINGS)
 DRAWABLES      := $(RESOURCES_BASE_DIR)drawables.xml
-FONTS_DEPS     := scripts/generate_fonts fonts/dot.py fonts/model.py
+FONTS_DEPS     := scripts/generate_fonts $(shell find fonts -type f)
 FONTS          := $(RESOURCES_BASE_DIR)fonts.xml
 
 RESOURCES := $(DRAWABLES) $(FONTS)
@@ -126,6 +126,11 @@ st simulate_test:
 sr simulate_release:
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release simulate
 .PHONY: sr simulate_release
+
+t test:
+	$(Q)echo " [ test ]"
+	pytest
+.PHONY: t test
 
 c clean:
 	$(Q)echo " [ clean ]"

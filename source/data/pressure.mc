@@ -16,16 +16,14 @@ class Pressure extends Base {
 			CATEGORY_SYSTEM,
 			Fonts.ICON_NONE
 		);
+
+		self.value_max = 100;
 	}
 
-	function getMaybe() as Lang.Number or Null {
+	function getMaybe_() as Lang.Number or Null {
 		return self.getSensorHistoryData_(
 			SensorHistory.getPressureHistory({:period => 1})
 		) as Lang.Number or Null;
-	}
-
-	function getMax() as Lang.Number or Null {
-		return 100;
 	}
 }
 

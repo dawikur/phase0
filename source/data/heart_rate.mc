@@ -16,9 +16,14 @@ class HeartRate extends Base {
 			CATEGORY_PHYSIOLOGICAL,
 			Fonts.ICON_NONE
 		);
+
+		var current_sport = UserProfile.getCurrentSport();
+		var zones =
+			UserProfile.getHeartRateZones(current_sport) as Lang.Array<Lang.Number>;
+		self.value_max = zones[5] as Lang.Number;
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		var activity_info = Activity.getActivityInfo();
 		if (activity_info != null) {
 			if (activity_info.currentHeartRate != null) {
@@ -29,14 +34,6 @@ class HeartRate extends Base {
 		return self.getSensorHistoryData_(
 			SensorHistory.getStressHistory({:period => 1})
 		) as Lang.Number or Null;
-	}
-
-	function getMax() as Lang.Number or Null {
-		var current_sport = UserProfile.getCurrentSport();
-		var zones =
-			UserProfile.getHeartRateZones(current_sport) as Lang.Array<Lang.Number>;
-
-		return zones[5] as Lang.Number;
 	}
 }
 

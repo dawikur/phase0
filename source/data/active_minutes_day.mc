@@ -16,7 +16,7 @@ class ActiveMinutesDay extends Base {
 		);
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		var active_minutes = ActivityMonitor.getInfo().activeMinutesDay;
 		if (active_minutes != null) {
 			return active_minutes.total;

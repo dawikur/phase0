@@ -30,8 +30,8 @@ class Base {
 		var end_y = self.pos_y + self.size_y;
 
 		return
-			pos_x <= _x && _x <= end_x &&
-			pos_y <= _y && _y <= end_y;
+			pos_x <= _x and _x <= end_x and
+			pos_y <= _y and _y <= end_y;
 	}
 
 	function open() as Lang.Boolean {

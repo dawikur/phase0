@@ -21,13 +21,20 @@ class Condition extends Base {
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		var value = self.impl_.get();
+		self.impl_.refresh();
+
+		var value = self.impl_.value;
 		if (value != null) {
-			self.icon_ = "" + self.impl_.icon;
 			self.text_ = value.format("%d");
 		} else {
-			self.icon_ = "";
 			self.text_ = "";
+		}
+
+		var icon = self.impl_.icon;
+		if (icon != null) {
+			self.icon_ = "" + icon;
+		} else {
+			self.icon_ = "";
 		}
 	}
 

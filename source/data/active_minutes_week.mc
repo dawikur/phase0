@@ -14,18 +14,16 @@ class ActiveMinutesWeek extends Base {
 			CATEGORY_MOVEMENT,
 			Fonts.ICON_NONE
 		);
+
+		self.value_max = ActivityMonitor.getInfo().activeMinutesWeekGoal;
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		var active_minutes = ActivityMonitor.getInfo().activeMinutesWeek;
 		if (active_minutes != null) {
 			return active_minutes.total;
 		}
 		return null;
-	}
-
-	function getMax() as Lang.Number or Null {
-		return ActivityMonitor.getInfo().activeMinutesWeekGoal;
 	}
 }
 

@@ -14,16 +14,14 @@ class Stress extends Base {
 			CATEGORY_ENERGY,
 			Fonts.ICON_NONE
 		);
+
+		self.value_max = 100;
 	}
 
-	function getMaybe() as Lang.Number or Null {
+	function getMaybe_() as Lang.Number or Null {
 		return self.getSensorHistoryData_(
 			SensorHistory.getHeartRateHistory({:period => 1})
 		) as Lang.Number or Null;
-	}
-
-	function getMax() as Lang.Number or Null {
-		return 100;
 	}
 }
 

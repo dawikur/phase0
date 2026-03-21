@@ -16,7 +16,7 @@ class MetersClimbed extends Base {
 		);
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		var meters_climbed = ActivityMonitor.getInfo().metersClimbed;
 		if (meters_climbed != null) {
 			return Units.convertElevation(meters_climbed as Lang.Number);

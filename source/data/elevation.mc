@@ -18,7 +18,7 @@ class Elevation extends Base {
 		);
 	}
 
-	function getMaybe() as Lang.Number or Null {
+	function getMaybe_() as Lang.Number or Null {
 		return self.getSensorHistoryData_(
 			SensorHistory.getElevationHistory({:period => 1})
 		) as Lang.Number or Null;

@@ -16,7 +16,7 @@ class FloorsDescended extends Base {
 		);
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		return ActivityMonitor.getInfo().floorsDescended;
 	}
 }

@@ -15,14 +15,12 @@ class Memory extends Base {
 			CATEGORY_SYSTEM,
 			Fonts.ICON_NONE
 		);
+
+		self.value_max = System.getSystemStats().totalMemory;
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		return System.getSystemStats().usedMemory;
-	}
-
-	function getMax() as Lang.Number or Null {
-		return System.getSystemStats().totalMemory;
 	}
 }
 

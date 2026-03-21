@@ -16,7 +16,7 @@ class VO2Run extends Base {
 		);
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		return UserProfile.getProfile().vo2maxRunning;
 	}
 }

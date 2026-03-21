@@ -20,7 +20,20 @@ class Gauge extends Base {
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		self.value_ = self.getValue_();
+		self.impl_.refresh();
+
+		if (self.impl_.value == null or
+			self.impl_.value_max == null or
+			self.impl_.value_max == 0
+		) {
+			self.value_ = null;
+			return;
+		}
+
+		var value = self.impl_.value as Lang.Number;
+		var value_max = self.impl_.value_max as Lang.Number;
+
+		self.value_ = value.toFloat() / value_max;
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
@@ -35,23 +48,6 @@ class Gauge extends Base {
 				self.impl_.category
 			);
 		}
-	}
-
-	function getValue_() as Lang.Float or Null {
-		var value = self.impl_.get();
-		if (value == null) {
-			return null;
-		}
-
-		var value_max = self.impl_.getMax();
-		if (value_max == null) {
-			return null;
-		}
-		if (value_max == 0) {
-			return null;
-		}
-
-		return value.toFloat() / value_max;
 	}
 }
 

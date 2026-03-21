@@ -14,14 +14,12 @@ class FloorsClimbed extends Base {
 			CATEGORY_VERTICAL,
 			Fonts.ICON_NONE
 		);
+
+		self.value_max = ActivityMonitor.getInfo().floorsClimbedGoal;
 	}
 
-	function get() as Lang.Number or Null {
+	function get_() as Lang.Number or Null {
 		return ActivityMonitor.getInfo().floorsClimbed;
-	}
-
-	function getMax() as Lang.Number or Null {
-		return ActivityMonitor.getInfo().floorsClimbedGoal;
 	}
 }
 
