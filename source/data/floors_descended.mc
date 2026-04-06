@@ -10,7 +10,7 @@ class FloorsDescended extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Fl Dn",
+			Resources.load(Rez.Strings.LABEL_FLOORS_DESCENDED),
 			CATEGORY_VERTICAL,
 			Fonts.ICON_NONE
 		);

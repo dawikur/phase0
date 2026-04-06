@@ -10,7 +10,7 @@ class Pushes extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_WHEELCHAIR_PUSHES,
-			"Push",
+			Resources.load(Rez.Strings.LABEL_PUSHES),
 			CATEGORY_MOVEMENT,
 			Fonts.ICON_NONE
 		);

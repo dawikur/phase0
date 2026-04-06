@@ -10,7 +10,7 @@ class UV extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"UV",
+			Resources.load(Rez.Strings.LABEL_UV),
 			Render.COLOR_YELLOW,
 			Fonts.ICON_UV_LOW
 		);

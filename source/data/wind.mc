@@ -10,7 +10,7 @@ class Wind extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Wind",
+			Resources.load(Rez.Strings.LABEL_WIND),
 			Render.COLOR_CYAN,
 			Fonts.ICON_WIND_NONE
 		);

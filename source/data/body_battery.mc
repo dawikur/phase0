@@ -13,7 +13,7 @@ class BodyBattery extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_BODY_BATTERY,
-			"Body",
+			Resources.load(Rez.Strings.LABEL_BODY_BATTERY),
 			CATEGORY_RECOVERY,
 			Fonts.ICON_NONE
 		);

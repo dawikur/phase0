@@ -10,7 +10,7 @@ class Battery extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_BATTERY,
-			"Batt",
+			Resources.load(Rez.Strings.LABEL_BATTERY),
 			CATEGORY_SYSTEM,
 			Fonts.ICON_NONE
 		);

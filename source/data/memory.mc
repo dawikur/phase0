@@ -11,7 +11,7 @@ class Memory extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Mem",
+			Resources.load(Rez.Strings.LABEL_MEMORY),
 			CATEGORY_SYSTEM,
 			Fonts.ICON_NONE
 		);

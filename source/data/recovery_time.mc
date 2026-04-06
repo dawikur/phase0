@@ -10,7 +10,7 @@ class RecoveryTime extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_RECOVERY_TIME,
-			"Recov",
+			Resources.load(Rez.Strings.LABEL_RECOVERY_TIME),
 			CATEGORY_RECOVERY,
 			Fonts.ICON_NONE
 		);

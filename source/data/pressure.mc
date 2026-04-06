@@ -12,7 +12,7 @@ class Pressure extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE,
-			"Press",
+			Resources.load(Rez.Strings.LABEL_PRESSURE),
 			CATEGORY_SYSTEM,
 			Fonts.ICON_NONE
 		);

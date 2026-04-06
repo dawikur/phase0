@@ -12,7 +12,7 @@ class Distance extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Dist",
+			Resources.load(Rez.Strings.LABEL_DISTANCE),
 			CATEGORY_MOVEMENT,
 			Fonts.ICON_NONE
 		);

@@ -77,7 +77,35 @@
 	<string id="MONTH_11_NOV">Nov</string>
 	<string id="MONTH_12_DEC">Dec</string>
 
-    <string id="MilitaryFormatTitle">Military Format for 24 Hour Time</string>
+	<string id="LABEL_ACTIVE_MINUTES_DAY">Act/D</string>
+	<string id="LABEL_ACTIVE_MINUTES_WEEK">Act/W</string>
+	<string id="LABEL_BATTERY">Batt</string>
+	<string id="LABEL_BODY_BATTERY">Body</string>
+	<string id="LABEL_CALORIES">Cal</string>
+	<string id="LABEL_DISTANCE">Dist</string>
+	<string id="LABEL_ELEVATION">Elev</string>
+	<string id="LABEL_FLOORS_CLIMBED">Floors</string>
+	<string id="LABEL_FLOORS_DESCENDED">Fl Dn</string>
+	<string id="LABEL_HEART_RATE">HR</string>
+	<string id="LABEL_MEMORY">Mem</string>
+	<string id="LABEL_METERS_CLIMBED">M Up</string>
+	<string id="LABEL_METERS_DESCENDED">M Dn</string>
+	<string id="LABEL_MOVE">Move</string>
+	<string id="LABEL_PRESSURE">Press</string>
+	<string id="LABEL_PUSHES">Push</string>
+	<string id="LABEL_PUSH_DISTANCE">Push D</string>
+	<string id="LABEL_RAIN">Rain</string>
+	<string id="LABEL_RECOVERY_TIME">Recov</string>
+	<string id="LABEL_RESPIRATION_RATE">Resp</string>
+	<string id="LABEL_SATURATION">SPO2</string>
+	<string id="LABEL_SOLAR_INTENSITY">Solar</string>
+	<string id="LABEL_STEPS">Steps</string>
+	<string id="LABEL_STRESS">Strs</string>
+	<string id="LABEL_TEMPERATURE">Temp</string>
+	<string id="LABEL_UV">UV</string>
+	<string id="LABEL_VO2_BIKE">VO2B</string>
+	<string id="LABEL_VO2_RUN">VO2R</string>
+	<string id="LABEL_WIND">Wind</string>
 
-	<!-- TODO: labels -->
+	<string id="MilitaryFormatTitle">Military Format for 24 Hour Time</string>
 </strings>

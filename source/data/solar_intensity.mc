@@ -10,7 +10,7 @@ class SolarIntensity extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_SOLAR_INPUT,
-			"Solar",
+			Resources.load(Rez.Strings.LABEL_SOLAR_INTENSITY),
 			CATEGORY_ENERGY,
 			Fonts.ICON_NONE
 		);

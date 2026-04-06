@@ -10,7 +10,7 @@ class PushDistance extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Push D",
+			Resources.load(Rez.Strings.LABEL_PUSH_DISTANCE),
 			CATEGORY_MOVEMENT,
 			Fonts.ICON_NONE
 		);

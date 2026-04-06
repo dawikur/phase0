@@ -10,7 +10,7 @@ class Rain extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Rain",
+			Resources.load(Rez.Strings.LABEL_RAIN),
 			Render.COLOR_BLUE,
 			Fonts.ICON_RAIN_0
 		);

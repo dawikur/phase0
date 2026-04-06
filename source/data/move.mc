@@ -10,7 +10,7 @@ class Move extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Move",
+			Resources.load(Rez.Strings.LABEL_MOVE),
 			CATEGORY_PHYSIOLOGICAL,
 			Fonts.ICON_NONE
 		);

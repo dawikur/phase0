@@ -10,7 +10,7 @@ class MetersDescended extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"M Dn",
+			Resources.load(Rez.Strings.LABEL_METERS_DESCENDED),
 			CATEGORY_VERTICAL,
 			Fonts.ICON_NONE
 		);

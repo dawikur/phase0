@@ -10,7 +10,7 @@ class VO2Run extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_VO2MAX_RUN,
-			"VO2R",
+			Resources.load(Rez.Strings.LABEL_VO2_RUN),
 			CATEGORY_PHYSIOLOGICAL,
 			Fonts.ICON_NONE
 		);

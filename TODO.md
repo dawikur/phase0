@@ -2,8 +2,10 @@
 
 * Layout
   * SunMoon can be on lane 2
-  * Conditions should be an actual list of conditions
-* Amoled display
+  * Text can be 'small' if there isn't enough space for 'normal'
+  * cache also weather on line above 2
+* display
+  * smaller clock font
   * AOD option
   * burnout prevention
 * Settings
@@ -14,5 +16,7 @@
   * Bars + Colors
   * BG color
   * Battery - bar, %, days remaining
-* Other
+* Strings
   * Languages
+* General
+  * Some test framework?

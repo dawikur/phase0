@@ -10,7 +10,7 @@ class Stress extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_STRESS,
-			"Strs",
+			Resources.load(Rez.Strings.LABEL_STRESS),
 			CATEGORY_ENERGY,
 			Fonts.ICON_NONE
 		);

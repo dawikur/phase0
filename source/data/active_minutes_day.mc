@@ -10,7 +10,7 @@ class ActiveMinutesDay extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			"Act/D",
+			Resources.load(Rez.Strings.LABEL_ACTIVE_MINUTES_DAY),
 			CATEGORY_MOVEMENT,
 			Fonts.ICON_NONE
 		);

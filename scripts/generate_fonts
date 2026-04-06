@@ -378,7 +378,8 @@ def get_required_glyphs(folders: Folders) -> set[str]:
                     root = tree.getroot()
 
                     for elem in root.iter("string"):
-                        if elem.text:
+                        id = elem.attrib.get("id", "")
+                        if id and elem.text:
                             unique_chars.update(elem.text)
                             all_unique_chars.update(elem.text)
 
