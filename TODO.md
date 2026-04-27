@@ -5,7 +5,7 @@
   * Text can be 'small' if there isn't enough space for 'normal'
   * cache also weather on line above 2
 * display
-  * smaller clock font
+  * small clock font
   * AOD option
   * burnout prevention
 * Settings

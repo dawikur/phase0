@@ -272,7 +272,7 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
 
     fonts_xml.append(
         textwrap.dedent(
-            f"""\
+            """\
         <fonts xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">"""
         )
     )
@@ -288,11 +288,14 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
     # #########################################################################
     # Digits
 
-    fonts_mc.append(f"\n// Digits\n")
+    fonts_mc.append("\n// Digits\n")
     for digits_meta_data in [
-        (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR_BOLD, "dot_large_bold"),
-        (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR, "dot_large"),
-        (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR_THIN, "dot_large_thin"),
+        (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR_BOLD, "digits_bold"),
+        (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR, "digits"),
+        (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR_THIN, "digits_thin"),
+        (fonts.TYPEFACE_DIGITS_SMALL, fonts.STYLE_REGULAR_BOLD, "digits_small_bold"),
+        (fonts.TYPEFACE_DIGITS_SMALL, fonts.STYLE_REGULAR, "digits_small"),
+        (fonts.TYPEFACE_DIGITS_SMALL, fonts.STYLE_REGULAR_THIN, "digits_small_thin"),
     ]:
         digits_glyphs = set("0123456789:")
         *artefacts, names_comments = parse_typeface_and_style(
@@ -303,7 +306,7 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
     # #########################################################################
     # Dots
 
-    fonts_mc.append(f"\n// Dots\n")
+    fonts_mc.append("\n// Dots\n")
     for dot_meta_data in [
         (fonts.TYPEFACE_DOT, fonts.STYLE_REGULAR),
         (fonts.TYPEFACE_DOT, fonts.STYLE_REGULAR_THIN),
@@ -318,7 +321,7 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
     # #########################################################################
     # Icons
 
-    fonts_mc.append(f"\n// Icons\n")
+    fonts_mc.append("\n// Icons\n")
     for icon_meta_data in [
         (fonts.TYPEFACE_ICONS, fonts.STYLE_SMALL, "icons"),
     ]:
@@ -338,7 +341,7 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
     # #########################################################################
     # Styles
 
-    fonts_mc.append(f"\n// Styles\n")
+    fonts_mc.append("\n// Styles\n")
     for style in [
         (fonts.STYLE_REGULAR),
         (fonts.STYLE_SMALL),

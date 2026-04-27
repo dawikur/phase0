@@ -89,24 +89,30 @@ class View extends WatchUi.WatchFace {
 			return true;
 		}
 
-		var complications = [];
-		complications.addAll(self.complications_per_min_);
-		complications.addAll(self.complications_per_hour_);
-
-		var complications_size = complications.size();
-		for (var i = 0; i < complications_size; ++i) {
-			var complication = complications[i];
-			if (complication.contains(pos_x, pos_y)) {
-				return complication.open();
-			}
+		if (self.battery_.contains(pos_x, pos_y)) {
+			return self.battery_.open();
 		}
 
-		var metrics = self.getMetrics_();
-		var metrics_size = metrics.size();
-		for (var i = 0; i < metrics_size; ++i) {
-			var metric = metrics[i];
-			if (metric.contains(pos_x, pos_y)) {
-				return metric.open();
+		if (!self.is_night_mode_) {
+			var complications = [];
+			complications.addAll(self.complications_per_min_);
+			complications.addAll(self.complications_per_hour_);
+
+			var complications_size = complications.size();
+			for (var i = 0; i < complications_size; ++i) {
+				var complication = complications[i];
+				if (complication.contains(pos_x, pos_y)) {
+					return complication.open();
+				}
+			}
+
+			var metrics = self.getMetrics_();
+			var metrics_size = metrics.size();
+			for (var i = 0; i < metrics_size; ++i) {
+				var metric = metrics[i];
+				if (metric.contains(pos_x, pos_y)) {
+					return metric.open();
+				}
 			}
 		}
 
@@ -124,7 +130,7 @@ class View extends WatchUi.WatchFace {
 		var screen_size_x = _dc.getWidth();
 		var screen_size_y = _dc.getHeight();
 
-		var clock_size = _dc.getTextDimensions("00:00", Fonts.DOT_LARGE);
+		var clock_size = _dc.getTextDimensions("00:00", Fonts.DIGITS);
 		var clock_size_x = clock_size[0];
 		var clock_size_y = clock_size[1];
 

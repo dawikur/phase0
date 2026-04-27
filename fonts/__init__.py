@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 from .digits import TYPEFACE as TYPEFACE_DIGITS
+from .digits import TYPEFACE_SMALL as TYPEFACE_DIGITS_SMALL
 from .dot import TYPEFACE as TYPEFACE_DOT
 from .icons import ICON
 from .icons import TYPEFACE as TYPEFACE_ICONS
@@ -25,6 +26,7 @@ __all__ = [
     "STYLE_TINY",
     "Style",
     "TYPEFACE_DIGITS",
+    "TYPEFACE_DIGITS_SMALL",
     "TYPEFACE_DOT",
     "TYPEFACE_ICONS",
     "Typeface",

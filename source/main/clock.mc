@@ -54,17 +54,20 @@ class Clock {
 		if (_is_night_mode) {
 			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
-				self.center_x, self.center_y, Fonts.DOT_LARGE, self.label_, justify
+				self.center_x, self.center_y, Fonts.DIGITS, self.label_,
+				justify
 			);
 		} else {
 			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
-				self.center_x, self.center_y, Fonts.DOT_LARGE_BOLD, self.label_, justify
+				self.center_x, self.center_y, Fonts.DIGITS_BOLD,
+				self.label_, justify
 			);
 
 			_dc.setColor(Render.COLOR_BG, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
-				self.center_x, self.center_y, Fonts.DOT_LARGE_THIN, "88:88", justify
+				self.center_x, self.center_y, Fonts.DIGITS_THIN, "88:88",
+				justify
 			);
 		}
 
