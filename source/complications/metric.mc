@@ -7,21 +7,31 @@ import Toybox.Lang;
 module Complication {
 
 class Metric extends Base {
-	hidden var spacing_ as Lang.Number = Render.SPACING;
-
 	hidden var impl_ as Data.Base;
 	hidden var count_ as Lang.Number;
+	hidden var small_ as Lang.Boolean = false;
 
-	function initialize(_dc as Graphics.Dc, _impl as Data.Base, _count as Lang.Number) {
+	function initialize(
+		_dc as Graphics.Dc,
+		_impl as Data.Base,
+		_count as Lang.Number,
+		_small as Lang.Boolean
+	) {
 		Base.initialize(_impl.type);
 
 		self.impl_ = _impl;
 		self.count_ = _count;
+		self.small_ = _small;
 
-		self.size_x = Render.numberWidth(_dc, self.count_) + 3 * self.spacing_;
-		self.size_y = Render.numberHeight(_dc);
+		self.resize(_dc);
+	}
+
+	function resize(_dc as Graphics.Dc) as Void {
+		self.size_x = Render.numberWidth(_dc, self.count_, self.small_) + 3 * Render.SPACING;
+		self.size_y = Render.numberHeight(_dc, self.small_);
+
 		if (self.impl_.name.length() != 0) {
-			self.size_y += Render.labelHeight(_dc) + self.spacing_;
+			self.size_y += Render.labelHeight(_dc) + Render.SPACING;
 		}
 	}
 
@@ -43,13 +53,13 @@ class Metric extends Base {
 
 		if (self.impl_.name.length() != 0) {
 			Render.label(_dc, pos_x, pos_y, self.impl_.name, Graphics.TEXT_JUSTIFY_LEFT);
-			pos_y += Render.labelHeight(_dc) + self.spacing_;
+			pos_y += Render.labelHeight(_dc) + Render.SPACING;
 		}
 
 		// ---- value ----
 
-		Render.number(_dc, pos_x, pos_y, self.impl_.value, self.count_);
-		pos_x += Render.numberWidth(_dc, self.count_);
+		Render.number(_dc, pos_x, pos_y, self.impl_.value, self.count_, self.small_);
+		pos_x += Render.numberWidth(_dc, self.count_, self.small_);
 
 		// ---- gauge ----
 
@@ -64,10 +74,10 @@ class Metric extends Base {
 			return;
 		}
 
-		pos_x += self.spacing_ / 2;
-		pos_y += self.spacing_;
+		pos_x += Render.SPACING / 2;
+		pos_y += Render.SPACING;
 
-		var gauge_max_height = Render.numberHeight(_dc) -2 * self.spacing_;
+		var gauge_max_height = Render.numberHeight(_dc, self.small_) - 2 * Render.SPACING;
 
 		Render.gauge(_dc, pos_x, pos_y, value.toFloat() / value_max, gauge_max_height, Render.GAUGE_BOTTOM);
 	}

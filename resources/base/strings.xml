@@ -82,7 +82,9 @@
 	<string id="LABEL_BATTERY">Batt</string>
 	<string id="LABEL_BODY_BATTERY">Body</string>
 	<string id="LABEL_CALORIES">Cal</string>
+	<string id="LABEL_DAWN">Dawn</string>
 	<string id="LABEL_DISTANCE">Dist</string>
+	<string id="LABEL_DUSK">Dusk</string>
 	<string id="LABEL_ELEVATION">Elev</string>
 	<string id="LABEL_FLOORS_CLIMBED">Floors</string>
 	<string id="LABEL_FLOORS_DESCENDED">Fl Dn</string>

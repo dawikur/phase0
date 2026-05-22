@@ -9,9 +9,11 @@ module Complication {
 class AmPm extends Base {
 	var frame_ as Lang.String = "";
 	var label_ as Lang.String = "";
+	hidden var small_ as Lang.Boolean = false;
 
-	function initialize() {
+	function initialize(_small as Lang.Boolean) {
 		Base.initialize(Complications.COMPLICATION_TYPE_INVALID);
+		self.small_ = _small;
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
@@ -40,9 +42,14 @@ class AmPm extends Base {
 		var pos_x = self.pos_x + self.size_x / 2;
 		var pos_y = self.pos_y + self.size_y / 2;
 
-		Render.icons(_dc, pos_x, pos_y+Render.SPACING, self.frame_, self.frame_);
-		Render.textSmall(
-			_dc, pos_x, pos_y, self.label_, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+		if (!self.small_) {
+			Render.icons(_dc, pos_x, pos_y+Render.SPACING, self.frame_, self.frame_);
+		}
+
+		Render.text(
+			_dc, pos_x, pos_y, self.label_,
+			Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER,
+			true
 		);
 	}
 }

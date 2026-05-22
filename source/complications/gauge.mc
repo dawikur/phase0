@@ -15,8 +15,6 @@ class Gauge extends Base {
 		Base.initialize(_impl.type);
 
 		self.impl_ = _impl;
-
-		self.size_x = Render.SPACING;
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {

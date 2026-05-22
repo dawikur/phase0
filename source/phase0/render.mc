@@ -18,15 +18,23 @@ const COLOR_CYAN as Lang.Number = 0x005555; // Recovery / Balance
 const COLOR_MAGENTA as Lang.Number = 0x550055; // Vertical Dimension
 const COLOR_YELLOW as Lang.Number = 0x555500; // Tension / Metabolic Energy
 
-const FONT_FG as WatchUi.FontResource = Fonts.DOT_REGULAR;
-const FONT_BG as WatchUi.FontResource = Fonts.DOT_REGULAR_THIN;
-
-const FONT_SMALL as WatchUi.FontResource = Fonts.DOT_SMALL;
-const FONT_TINY as WatchUi.FontResource = Fonts.DOT_TINY;
-
 const SPACING as Lang.Number = Fonts.SPACING_SMALL;
 
 const FONT_ICONS as WatchUi.FontResource = Fonts.ICONS;
+
+const SMALL as Lang.Boolean = true;
+const REGULAR as Lang.Boolean = false;
+
+// ////////////////////////////////////////////////////////////////////////////
+// Helpers
+
+function fontFg_(_small as Lang.Boolean) as WatchUi.FontResource {
+	return _small ? Fonts.DOT_SMALL : Fonts.DOT_REGULAR;
+}
+
+function fontBg_(_small as Lang.Boolean) as WatchUi.FontResource {
+	return _small ? Fonts.DOT_SMALL : Fonts.DOT_REGULAR_THIN;
+}
 
 // ////////////////////////////////////////////////////////////////////////////
 // Label
@@ -39,15 +47,15 @@ function label(
 	_justify as Lang.Number
 ) as Void {
 	_dc.setColor(COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_TINY, _label, _justify);
+	_dc.drawText(_pos_x, _pos_y, Fonts.DOT_TINY, _label, _justify);
 }
 
 function labelWidth(_dc as Graphics.Dc, _label as Lang.String) as Lang.Number {
-	return _dc.getTextWidthInPixels(_label, FONT_TINY);
+	return _dc.getTextWidthInPixels(_label, Fonts.DOT_TINY);
 }
 
 function labelHeight(_dc as Graphics.Dc) as Lang.Number {
-	return _dc.getFontHeight(FONT_TINY);
+	return _dc.getFontHeight(Fonts.DOT_TINY);
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -60,15 +68,18 @@ function text(
 	_pos_x as Lang.Number,
 	_pos_y as Lang.Number,
 	_text as Lang.String,
-	_justify as Lang.Number
+	_justify as Lang.Number,
+	_small as Lang.Boolean
 ) as Void {
+	var shade = _small ? 1 : 0;
+
 	// text
 	_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_FG, _text, _justify);
+	_dc.drawText(_pos_x, _pos_y, fontFg_(_small), _text, _justify);
 
 	// shade
 	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_BG, _text, _justify);
+	_dc.drawText(_pos_x + shade, _pos_y + shade, fontBg_(_small), _text, _justify);
 }
 
 function textBg(
@@ -76,57 +87,20 @@ function textBg(
 	_pos_x as Lang.Number,
 	_pos_y as Lang.Number,
 	_text as Lang.String,
-	_justify as Lang.Number
+	_justify as Lang.Number,
+	_small as Lang.Boolean
 ) as Void {
 	// bg
 	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_BG, _text, _justify);
+	_dc.drawText(_pos_x, _pos_y, fontBg_(_small), _text, _justify);
 }
 
-function textWidth(_dc as Graphics.Dc, _label as Lang.String) as Lang.Number {
-	return _dc.getTextWidthInPixels(_label, FONT_FG);
+function textWidth(_dc as Graphics.Dc, _label as Lang.String, _small as Lang.Boolean) as Lang.Number {
+	return _dc.getTextWidthInPixels(_label, fontFg_(_small));
 }
 
-function textHeight(_dc as Graphics.Dc) as Lang.Number {
-	return _dc.getFontHeight(FONT_FG);
-}
-
-// small
-
-function textSmall(
-	_dc as Graphics.Dc,
-	_pos_x as Lang.Number,
-	_pos_y as Lang.Number,
-	_text as Lang.String,
-	_justify as Lang.Number
-) as Void {
-	// text
-	_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_SMALL, _text, _justify);
-
-	// shade
-	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x +1, _pos_y +1, FONT_SMALL, _text, _justify);
-}
-
-function textSmallBg(
-	_dc as Graphics.Dc,
-	_pos_x as Lang.Number,
-	_pos_y as Lang.Number,
-	_text as Lang.String,
-	_justify as Lang.Number
-) as Void {
-	// bg
-	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_SMALL, _text, _justify);
-}
-
-function textSmallWidth(_dc as Graphics.Dc, _label as Lang.String) as Lang.Number {
-	return _dc.getTextWidthInPixels(_label, FONT_SMALL);
-}
-
-function textSmallHeight(_dc as Graphics.Dc) as Lang.Number {
-	return _dc.getFontHeight(FONT_SMALL);
+function textHeight(_dc as Graphics.Dc, _small as Lang.Boolean) as Lang.Number {
+	return _dc.getFontHeight(fontFg_(_small));
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -139,13 +113,17 @@ function number(
 	_pos_x as Lang.Number,
 	_pos_y as Lang.Number,
 	_number as Lang.Number or Null,
-	_size as Lang.Number
+	_size as Lang.Number,
+	_small as Lang.Boolean
 ) as Void {
+	var font_fg = fontFg_(_small);
+	var font_bg = fontBg_(_small);
+
 	if (_number == null) {
 		var bg = numberBg(_size);
 
 		_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_pos_x, _pos_y, FONT_BG, bg, Graphics.TEXT_JUSTIFY_LEFT);
+		_dc.drawText(_pos_x, _pos_y, font_bg, bg, Graphics.TEXT_JUSTIFY_LEFT);
 
 		return;
 	}
@@ -155,63 +133,27 @@ function number(
 
 	// padding
 	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_BG, bg, Graphics.TEXT_JUSTIFY_LEFT);
+	_dc.drawText(_pos_x, _pos_y, font_bg, bg, Graphics.TEXT_JUSTIFY_LEFT);
 
-	_pos_x += _dc.getTextWidthInPixels(bg, FONT_BG);
+	_pos_x += _dc.getTextWidthInPixels(bg, font_bg);
 
 	// number
 	_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_FG, str, Graphics.TEXT_JUSTIFY_LEFT);
+	_dc.drawText(_pos_x, _pos_y, font_fg, str, Graphics.TEXT_JUSTIFY_LEFT);
 
-	// shade
-	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_BG, str, Graphics.TEXT_JUSTIFY_LEFT);
-}
-
-function numberWidth(_dc as Graphics.Dc, _size as Lang.Number) as Lang.Number {
-	return _dc.getTextWidthInPixels(numberBg(_size), FONT_FG);
-}
-
-function numberHeight(_dc as Graphics.Dc) as Lang.Number {
-	return _dc.getFontHeight(FONT_FG);
-}
-
-// small
-
-function numberSmall(
-	_dc as Graphics.Dc,
-	_pos_x as Lang.Number,
-	_pos_y as Lang.Number,
-	_number as Lang.Number or Null,
-	_size as Lang.Number
-) as Void {
-	if (_number == null) {
-		var bg = numberBg(_size);
-
+	if (!_small) {
+		// shade
 		_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_pos_x, _pos_y, FONT_SMALL, bg, Graphics.TEXT_JUSTIFY_LEFT);
-
-		return;
+		_dc.drawText(_pos_x, _pos_y, font_bg, str, Graphics.TEXT_JUSTIFY_LEFT);
 	}
-
-	var str = numberFormat(_size, _number);
-	var bg = numberBg(_size - str.length());
-
-	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_SMALL, bg, Graphics.TEXT_JUSTIFY_LEFT);
-
-	_pos_x += _dc.getTextWidthInPixels(bg, FONT_SMALL);
-
-	_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, FONT_SMALL, str, Graphics.TEXT_JUSTIFY_LEFT);
 }
 
-function numberSmallWidth(_dc as Graphics.Dc, _size as Lang.Number) as Lang.Number {
-	return _dc.getTextWidthInPixels(numberBg(_size), FONT_SMALL);
+function numberWidth(_dc as Graphics.Dc, _size as Lang.Number, _small as Lang.Boolean) as Lang.Number {
+	return _dc.getTextWidthInPixels(numberBg(_size), fontFg_(_small));
 }
 
-function numberSmallHeight(_dc as Graphics.Dc) as Lang.Number {
-	return _dc.getFontHeight(FONT_SMALL);
+function numberHeight(_dc as Graphics.Dc, _small as Lang.Boolean) as Lang.Number {
+	return _dc.getFontHeight(fontFg_(_small));
 }
 
 // common

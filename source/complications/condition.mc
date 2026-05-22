@@ -7,17 +7,17 @@ import Toybox.Lang;
 module Complication {
 
 class Condition extends Base {
-	hidden var spacing_ as Lang.Number = Render.SPACING;
-
 	hidden var impl_ as Data.Base;
+	hidden var small_ as Lang.Boolean = false;
 
 	hidden var icon_ as Lang.String = "";
 	hidden var text_ as Lang.String = "";
 
-	function initialize(_impl as Data.Base) {
+	function initialize(_impl as Data.Base, _small as Lang.Boolean) {
 		Base.initialize(_impl.type);
 
 		self.impl_ = _impl;
+		self.small_ = _small;
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
@@ -52,16 +52,20 @@ class Condition extends Base {
 
 		// ---- label ----
 
-		if (self.impl_.name.length() != 0) {
+		if (!self.small_ and self.impl_.name.length() != 0) {
 			Render.label(_dc, pos_x, pos_y, self.impl_.name, Graphics.TEXT_JUSTIFY_CENTER);
-			pos_y += Render.labelHeight(_dc) + self.spacing_;
+			pos_y += Render.labelHeight(_dc) + Render.SPACING;
 		}
 
 		pos_y += icon_size_2;
 
 		if (self.text_.length() != 0) {
 			// ---- text ----
-			Render.textSmall(_dc, pos_x, pos_y, self.text_, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+			Render.text(
+				_dc, pos_x, pos_y, self.text_,
+				Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER,
+				true
+			);
 
 			// ---- icon ----
 			pos_x -= icon_size_2;

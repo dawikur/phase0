@@ -7,8 +7,8 @@ import Toybox.Time;
 module Complication {
 
 class Date extends Text {
-	function initialize() {
-		Text.initialize(Complications.COMPLICATION_TYPE_DATE);
+	function initialize(_small as Lang.Boolean) {
+		Text.initialize(Complications.COMPLICATION_TYPE_DATE, _small);
 	}
 
 	hidden function getValue() as Lang.String {

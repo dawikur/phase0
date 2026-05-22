@@ -3,20 +3,33 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
+import Toybox.WatchUi;
 
 module Main {
 
 class Clock {
+	hidden var font_ as WatchUi.FontResource = Fonts.DIGITS;
+	hidden var font_bold_ as WatchUi.FontResource = Fonts.DIGITS_BOLD;
+	hidden var font_thin_ as WatchUi.FontResource = Fonts.DIGITS_THIN;
+
 	var center_x as Lang.Number = 0;
 	var center_y as Lang.Number = 0;
 
 	var radius_x as Lang.Number = 0;
 	var radius_y as Lang.Number = 0;
 
-	hidden var ampm_ as Lang.String = "";
 	hidden var label_ as Lang.String = "";
 
-	function initialize() {
+	function initialize(_small as Lang.Boolean) {
+		if (_small) {
+			self.font_ = Fonts.DIGITS_SMALL;
+			self.font_bold_ = Fonts.DIGITS_SMALL_BOLD;
+			self.font_thin_ = Fonts.DIGITS_SMALL_THIN;
+		} else {
+			self.font_ = Fonts.DIGITS;
+			self.font_bold_ = Fonts.DIGITS_BOLD;
+			self.font_thin_ = Fonts.DIGITS_THIN;
+		}
 	}
 
 	function contains(_x as Lang.Number, _y as Lang.Number) as Lang.Boolean {
@@ -54,24 +67,22 @@ class Clock {
 		if (_is_night_mode) {
 			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
-				self.center_x, self.center_y, Fonts.DIGITS, self.label_,
+				self.center_x, self.center_y, self.font_, self.label_,
 				justify
 			);
 		} else {
 			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
-				self.center_x, self.center_y, Fonts.DIGITS_BOLD,
+				self.center_x, self.center_y, self.font_bold_,
 				self.label_, justify
 			);
 
 			_dc.setColor(Render.COLOR_BG, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
-				self.center_x, self.center_y, Fonts.DIGITS_THIN, "88:88",
+				self.center_x, self.center_y, self.font_thin_, "88:88",
 				justify
 			);
 		}
-
-		// TODO: self.ampm_
 	}
 }
 

@@ -10,8 +10,8 @@ import Toybox.Weather;
 module Complication {
 
 class Weather extends Text {
-	function initialize() {
-		Text.initialize(Complications.COMPLICATION_TYPE_CURRENT_WEATHER);
+	function initialize(_small as Lang.Boolean) {
+		Text.initialize(Complications.COMPLICATION_TYPE_CURRENT_WEATHER, _small);
 
 		self.justify_ = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 	}
@@ -36,13 +36,13 @@ class Weather extends Text {
 			}
 
 			var value = text + "  " + temp;
-			if (Render.textWidth(_dc, value) <= self.size_x) {
+			if (Render.textWidth(_dc, value, self.small_) <= self.size_x) {
 				self.value_ = value;
 			} else {
 				text = getShorterCondition(text);
 				value = text + "  " + temp;
 
-				if (Render.textWidth(_dc, value) <= self.size_x) {
+				if (Render.textWidth(_dc, value, self.small_) <= self.size_x) {
 					self.value_ = value;
 				} else {
 					self.value_ = temp;

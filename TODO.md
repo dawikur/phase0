@@ -2,10 +2,8 @@
 
 * Layout
   * SunMoon can be on lane 2
-  * Text can be 'small' if there isn't enough space for 'normal'
   * cache also weather on line above 2
 * display
-  * small clock font
   * AOD option
   * burnout prevention
 * Settings

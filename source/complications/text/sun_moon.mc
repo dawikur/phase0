@@ -15,19 +15,17 @@ class SunMoon extends Text {
 
 	hidden var moon_phase_ as Lang.Number = 0;
 
-	function initialize() {
-		Text.initialize(Complications.COMPLICATION_TYPE_SUNRISE);
+	function initialize(_small as Lang.Boolean) {
+		Text.initialize(Complications.COMPLICATION_TYPE_SUNRISE, true);
 
-		self.label_ = Lang.format("$1$     $2$", [
-			"Dawn",
-			"Dusk",
+		self.label_ = _small ? "" : Lang.format("$1$     $2$", [
+			Resources.load(Rez.Strings.LABEL_DAWN),
+			Resources.load(Rez.Strings.LABEL_DUSK),
 		]);
 
 		self.value_bg_ = "00:00   00:00";
 
 		self.justify_ = Graphics.TEXT_JUSTIFY_CENTER;
-
-		self.small = true;
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
@@ -48,10 +46,10 @@ class SunMoon extends Text {
 		Text.render(_dc);
 
 		var pos_x = self.pos_x;
-		var pos_y = self.pos_y + Render.textSmallHeight(_dc) / 2;
+		var pos_y = self.pos_y + Render.textHeight(_dc, self.small_) / 2;
 
 		if (self.label_.length() != 0) {
-			pos_y += (Render.labelHeight(_dc) + self.spacing_) / 2;
+			pos_y += (Render.labelHeight(_dc) + Render.SPACING) / 2;
 		}
 
 		var is_new_moon = self.moon_phase_ == 0;
