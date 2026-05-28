@@ -65,19 +65,19 @@ class Clock {
 		var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
 		if (_is_night_mode) {
-			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(Render.COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
 				self.center_x, self.center_y, self.font_, self.label_,
 				justify
 			);
 		} else {
-			_dc.setColor(Render.COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(Render.COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
 				self.center_x, self.center_y, self.font_bold_,
 				self.label_, justify
 			);
 
-			_dc.setColor(Render.COLOR_BG, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(Render.COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
 				self.center_x, self.center_y, self.font_thin_, "88:88",
 				justify

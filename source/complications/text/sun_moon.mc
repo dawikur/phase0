@@ -54,13 +54,14 @@ class SunMoon extends Text {
 
 		var is_new_moon = self.moon_phase_ == 0;
 		var is_full_moon = self.moon_phase_ == (SunMoon.MOON_PHASES / 2);
-		var moon_icon = "" + (Fonts.ICON_MOON_00 + self.moon_phase_);
+		var moon_icon =
+			(Fonts.ICON_MOON_00.toCharArray()[0] + self.moon_phase_).toString();
 
 		if (is_new_moon) {
 			Render.icons(_dc, pos_x, pos_y, "", moon_icon);
 		} else if (is_full_moon) {
-			Render.iconsColor(_dc, pos_x, pos_y, moon_icon, Render.COLOR_FG);
-			Render.iconsColor(_dc, pos_x +1, pos_y +1, moon_icon, Render.COLOR_FG);
+			Render.iconsColor(_dc, pos_x, pos_y, moon_icon, Render.COLOR_WHITE);
+			Render.iconsColor(_dc, pos_x +1, pos_y +1, moon_icon, Render.COLOR_WHITE);
 		} else {
 			Render.icons(_dc, pos_x, pos_y, moon_icon, moon_icon);
 		}

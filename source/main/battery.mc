@@ -10,11 +10,10 @@ module Main {
 class Battery extends Complication.Base {
 	var impl_ as Data.Battery = new Data.Battery();
 
-	var color_ as Lang.Number = Render.COLOR_FG;
+	var color_ as Lang.Number = Render.COLOR_WHITE;
 
 	var charge_ as Lang.String = "";
 	var frame_ as Lang.String = "";
-	var charging_ as Lang.String = "";
 
 	function initialize() {
 		Base.initialize(impl_.type);
@@ -31,38 +30,34 @@ class Battery extends Complication.Base {
 		} else if (value < 20) {
 			self.color_ = Render.COLOR_YELLOW;
 		} else {
-			self.color_ = Render.COLOR_FG;
+			self.color_ = Render.COLOR_WHITE;
 		}
 
 		var borders_width = Render.iconsWidth(
-			_dc, "" + Fonts.ICON_BATTERY_BEGIN + Fonts.ICON_BATTERY_END
+			_dc, Fonts.ICON_BATTERY_BEGIN + Fonts.ICON_BATTERY_END
 		);
-		var bar_width = Render.iconsWidth(_dc, "" + Fonts.ICON_BATTERY_EMPTY);
+		var bar_width = Render.iconsWidth(_dc, Fonts.ICON_BATTERY_EMPTY);
 
 		var bar_all_count = (self.size_x - borders_width) / bar_width;
 		var bar_charged_count =
 			Math.round(value.toFloat() / value_max * bar_all_count).toNumber();
 
 		self.charge_ = "";
-		self.frame_ = "";
-		self.charging_ = "";
 
-		self.frame_ += Fonts.ICON_BATTERY_BEGIN;
-		self.charging_ += Fonts.ICON_BATTERY_BEGIN;
+		if (self.frame_.length() == 0) {
+			self.frame_ += Fonts.ICON_BATTERY_BEGIN;
+			for (var i = 0; i < bar_all_count; ++i) {
+				self.frame_ += Fonts.ICON_BATTERY_FRAME;
+			}
+			self.frame_ += Fonts.ICON_BATTERY_END;
+		}
 
 		for (var i = 0; i < bar_charged_count; ++i) {
 			self.charge_ += Fonts.ICON_BATTERY_CHARGE;
-			self.frame_ += Fonts.ICON_BATTERY_FRAME;
-			self.charging_ += Fonts.ICON_BATTERY_CHARGING;
 		}
 		for (var i = bar_charged_count; i < bar_all_count; ++i) {
 			self.charge_ += Fonts.ICON_BATTERY_EMPTY;
-			self.frame_ += Fonts.ICON_BATTERY_FRAME;
-			self.charging_ += Fonts.ICON_BATTERY_FRAME;
 		}
-
-		self.frame_ += Fonts.ICON_BATTERY_END;
-		self.charging_ += Fonts.ICON_BATTERY_END;
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
@@ -72,9 +67,9 @@ class Battery extends Complication.Base {
 		Render.iconsColor(_dc, pos_x, pos_y, self.charge_, self.color_);
 
 		if (System.getSystemStats().charging) {
-			Render.iconsColor(_dc, pos_x, pos_y, self.frame_, Render.COLOR_FG);
+			Render.iconsColor(_dc, pos_x, pos_y, self.frame_, Render.COLOR_WHITE);
 		} else {
-			Render.iconsColor(_dc, pos_x, pos_y, self.frame_, Render.COLOR_BG);
+			Render.iconsColor(_dc, pos_x, pos_y, self.frame_, Render.COLOR_DARK_GRAY);
 		}
 	}
 }

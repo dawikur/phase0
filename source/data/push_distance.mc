@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
 import Toybox.Complications;
+import Toybox.Lang;
 
 module Data {
 
@@ -11,8 +11,7 @@ class PushDistance extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			Resources.load(Rez.Strings.LABEL_PUSH_DISTANCE),
-			CATEGORY_MOVEMENT,
-			Fonts.ICON_NONE
+			CATEGORY_MOVEMENT
 		);
 	}
 

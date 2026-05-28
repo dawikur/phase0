@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
 import Toybox.Complications;
+import Toybox.Lang;
 import Toybox.SensorHistory;
 
 module Data {
@@ -13,26 +13,25 @@ const CATEGORY_PHYSIOLOGICAL = Render.COLOR_RED;
 const CATEGORY_RECOVERY = Render.COLOR_CYAN;
 const CATEGORY_SYSTEM = Render.COLOR_BLUE;
 const CATEGORY_VERTICAL = Render.COLOR_MAGENTA;
+const CATEGORY_WEATHER = Render.COLOR_ORANGE;
 
 class Base {
 	var type as Complications.Type;
 	var name as Lang.String;
 	var category as Lang.Number;
-	var icon as Lang.Char;
 
+	var icon as Lang.String or Null = null;
 	var value as Lang.Number or Null = null;
 	var value_max as Lang.Number or Null = null;
 
 	function initialize(
 		_type as Complications.Type,
 		_name as Lang.String,
-		_category as Lang.Number,
-		_icon as Lang.Char
+		_category as Lang.Number
 	) {
 		self.type = _type;
 		self.name = _name;
 		self.category = _category;
-		self.icon = _icon;
 	}
 
 	function refresh() as Void {
@@ -46,7 +45,7 @@ class Base {
 			if (maybe_value != null) {
 				Cache.setValue(self.name, maybe_value as Lang.Number);
 			} else {
-				maybe_value = Cache.getValue(self.name, 1) as Lang.Number or Null;
+				maybe_value = Cache.getValue(self.name, 2) as Lang.Number or Null;
 			}
 		}
 

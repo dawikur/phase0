@@ -1,9 +1,8 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.Application;
-import Toybox.WatchUi;
-
 import Toybox.System;
+import Toybox.WatchUi;
 
 typedef InitialView as
 	[WatchUi.Views] or
@@ -16,16 +15,18 @@ class App extends Application.AppBase {
 	function initialize() {
 		AppBase.initialize();
 
-		view_ = new Phase0.View();
-		delegate_ = new Phase0.Delegate(view_);
+		self.view_ = new Phase0.View();
+		self.delegate_ = new Phase0.Delegate(view_);
 	}
 
 	function getInitialView() as $.InitialView {
-		return [view_, delegate_];
+		return [self.view_, self.delegate_];
 	}
 
 	function onSettingsChanged() as Void {
-		WatchUi.requestUpdate();
+		Data.Units.refreshSettings();
+
+		self.view_.onSettingsChanged();
 	}
 }
 

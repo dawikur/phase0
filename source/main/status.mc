@@ -53,13 +53,13 @@ class Status {
 	function render(_dc as Graphics.Dc, _is_night_mode as Lang.Boolean) as Void {
 		if (_is_night_mode) {
 			Render.icons(
-				_dc, center_x, center_y,
+				_dc, self.center_x, self.center_y,
 				self.enabled_,
 				""
 			);
 		} else {
 			Render.icons(
-				_dc, center_x, center_y,
+				_dc, self.center_x, self.center_y,
 				self.enabled_,
 				self.all_
 			);

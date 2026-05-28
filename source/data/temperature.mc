@@ -1,8 +1,9 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.Lang;
-import Toybox.UserProfile;
 import Toybox.Complications;
+import Toybox.Lang;
+import Toybox.SensorHistory;
+import Toybox.UserProfile;
 
 module Data {
 
@@ -11,8 +12,7 @@ class Temperature extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE,
 			Resources.load(Rez.Strings.LABEL_TEMPERATURE),
-			CATEGORY_ENERGY,
-			Fonts.ICON_NONE
+			CATEGORY_WEATHER
 		);
 	}
 

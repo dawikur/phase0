@@ -12,9 +12,9 @@ module Phase0 {
 
 class View extends WatchUi.WatchFace {
 	typedef Complications as Lang.Array<Complication.Base>;
-	typedef Metrics as Lang.Array<Complication.Metric>;
-	typedef Gauges as Lang.Array<Complication.Gauge>;
 	typedef Conditions as Lang.Array<Complication.Condition>;
+	typedef Gauges as Lang.Array<Complication.Gauge>;
+	typedef Metrics as Lang.Array<Complication.Metric>;
 
 	// ==== fields ====
 
@@ -92,13 +92,17 @@ class View extends WatchUi.WatchFace {
 		}
 
 		if (!self.is_night_mode_) {
-			var complications = [];
-			complications.addAll(self.complications_per_min_);
-			complications.addAll(self.complications_per_hour_);
+			var complications_per_min_size = complications_per_min_.size();
+			for (var i = 0; i < complications_per_min_size; ++i) {
+				var complication = complications_per_min_[i];
+				if (complication.contains(pos_x, pos_y)) {
+					return complication.open();
+				}
+			}
 
-			var complications_size = complications.size();
-			for (var i = 0; i < complications_size; ++i) {
-				var complication = complications[i];
+			var complications_per_hour_size = complications_per_hour_.size();
+			for (var i = 0; i < complications_per_hour_size; ++i) {
+				var complication = complications_per_hour_[i];
 				if (complication.contains(pos_x, pos_y)) {
 					return complication.open();
 				}
@@ -137,12 +141,11 @@ class View extends WatchUi.WatchFace {
 		// ==== top middle ====
 
 		var conditions = [
-			new Complication.Condition(new Data.Rain(), layout.middle.small),
-			new Complication.Condition(new Data.UV(), layout.middle.small),
-			new Complication.Condition(new Data.Wind(), layout.middle.small),
+			new Complication.Condition(_dc, new Data.Rain(), layout.middle.small),
+			new Complication.Condition(_dc, new Data.Uv(), layout.middle.small),
+			new Complication.Condition(_dc, new Data.Wind(), layout.middle.small),
 		];
-
-		self.onLayoutConditions_(conditions, layout.middle);
+		self.reflowComplications_(conditions, layout.middle);
 
 		self.complications_per_min_.addAll(conditions);
 
@@ -155,7 +158,9 @@ class View extends WatchUi.WatchFace {
 			weather.size_y = layout.inner.size_y;
 		self.complications_per_min_.add(weather);
 
-		// ==== line main ====
+		// ==== main ====
+
+		var main_right = layout.rightBox(layout.left);
 
 		self.status_.center_x = layout.left.center_x;
 		self.status_.center_y = layout.left.center_y;
@@ -167,50 +172,64 @@ class View extends WatchUi.WatchFace {
 		self.clock_.radius_y = layout.clock.radius_y;
 
 		var gauges = [
-			new Complication.Gauge(new Data.BodyBattery()),
-			new Complication.Gauge(new Data.Stress()),
-			new Complication.Gauge(new Data.Move()),
+			new Complication.Gauge(new Data.BodyBattery(), main_right.size_y),
+			new Complication.Gauge(new Data.Stress(), main_right.size_y),
+			new Complication.Gauge(new Data.Move(), main_right.size_y),
 		];
-
-		self.onLayoutGauges_(gauges, layout.rightBox(layout.left));
+		self.reflowComplications_(gauges, layout.rightBox(layout.left));
 
 		self.complications_per_min_.addAll(gauges);
 
 		// ==== bottom inner ====
 
-		self.seconds_ = new Main.Seconds(layout.inner.small);
-		var seconds_size_x = Render.textWidth(_dc, "00", layout.inner.small);
-
 		var bottom_inner = layout.bottomBox(layout.inner);
 
-		self.seconds_.pos_x = bottom_inner.end_x - seconds_size_x;
-		self.seconds_.pos_y = bottom_inner.pos_y;
-		self.seconds_.size_x = seconds_size_x;
-		self.seconds_.size_y = bottom_inner.size_y;
-
-		var am_pm_size_x = 0;
-
-		if (!Data.Units.SETTINGS.is_24_hour) {
-			am_pm_size_x =
-				Render.iconsWidth(_dc, "" + Fonts.ICON_AM_PM_BEGIN + Fonts.ICON_BATTERY_END) +
-				Render.textWidth(_dc, "am", true);
-
-			var am_pm = new Complication.AmPm(layout.inner.small);
-
-			am_pm.pos_x = self.seconds_.pos_x - am_pm_size_x - Render.SPACING;
-			am_pm.pos_y = bottom_inner.pos_y;
-			am_pm.size_x = am_pm_size_x;
-			am_pm.size_y = bottom_inner.size_y;
-
-			self.complications_per_hour_.add(am_pm);
-		}
-
+		var date_size_x = Render.textWidth(_dc, "ABC 00 XYZ", layout.inner.small);
 		var date = new Complication.Date(layout.inner.small);
 			date.pos_x = bottom_inner.pos_x;
 			date.pos_y = bottom_inner.pos_y;
-			date.size_x = bottom_inner.size_x - seconds_size_x - am_pm_size_x - Render.SPACING;
+			date.size_x = date_size_x;
 			date.size_y = bottom_inner.size_y;
 		self.complications_per_hour_.add(date);
+
+		var seconds_size_x = Render.textWidth(_dc, "00", bottom_inner.small);
+		self.seconds_ = new Main.Seconds(layout.inner.small);
+			self.seconds_.pos_x = bottom_inner.end_x - seconds_size_x;
+			self.seconds_.pos_y = bottom_inner.pos_y;
+			self.seconds_.size_x = seconds_size_x;
+			self.seconds_.size_y = bottom_inner.size_y;
+
+		if (!Data.Units.SETTINGS.is_24_hour) {
+			var left_space_x =
+				bottom_inner.size_x - date_size_x - seconds_size_x;
+			var am_pm_size_x =
+				Render.iconsWidth(_dc, Fonts.ICON_AM_PM_BEGIN) +
+				Render.textWidth(_dc, "am", true) +
+				Render.iconsWidth(_dc, Fonts.ICON_AM_PM_END);
+			var am_pm_pos_x = bottom_inner.pos_x + date_size_x +
+				(left_space_x - am_pm_size_x) / 2;
+
+			if (left_space_x < am_pm_size_x) {
+				var am_pm_icon_size_x = Render.iconsWidth(_dc, Fonts.ICON_DAWN);
+
+				bottom_inner.small = true;
+				am_pm_size_x = left_space_x <= 0 ? 0 :
+					(left_space_x < am_pm_icon_size_x ? left_space_x : am_pm_icon_size_x);
+
+				if (date_size_x <= seconds_size_x) {
+					am_pm_pos_x = bottom_inner.pos_x + date_size_x;
+				} else {
+					am_pm_pos_x = bottom_inner.end_x - seconds_size_x - am_pm_size_x;
+				}
+			}
+
+			var am_pm = new Complication.AmPm(bottom_inner.small);
+				am_pm.pos_x = am_pm_pos_x;
+				am_pm.pos_y = bottom_inner.pos_y;
+				am_pm.size_x = am_pm_size_x;
+				am_pm.size_y = bottom_inner.size_y;
+			self.complications_per_hour_.add(am_pm);
+		}
 
 		// ==== bottom middle ====
 
@@ -218,20 +237,29 @@ class View extends WatchUi.WatchFace {
 
 		// ---- metrics base ----
 
+		var metrics_base_size_regular =
+			self.metricWidth_(_dc, 3, Render.SIZE_REGULAR) * 3;
+		var metrics_base_small = bottom_middle.small || (bottom_middle.size_x < metrics_base_size_regular);
+
 		self.metrics_base_= [
-			new Complication.Metric(_dc, new Data.HeartRate(), 3, layout.middle.small),
-			new Complication.Metric(_dc, new Data.Steps(), 3, layout.middle.small),
-			new Complication.Metric(_dc, new Data.FloorsClimbed(), 3, layout.middle.small),
+			new Complication.Metric(_dc, new Data.HeartRate(), 3, metrics_base_small),
+			new Complication.Metric(_dc, new Data.Steps(), 3, metrics_base_small),
+			new Complication.Metric(_dc, new Data.FloorsClimbed(), 3, metrics_base_small),
 		];
-		self.onLayoutMetrics_(self.metrics_base_, bottom_middle);
+		self.reflowComplications_(self.metrics_base_, bottom_middle);
 
 		// ---- metrics alt ----
 
+		var metrics_alt_size_regular =
+			self.metricWidth_(_dc, 5, Render.SIZE_REGULAR) +
+			self.metricWidth_(_dc, 3, Render.SIZE_REGULAR);
+		var metrics_alt_small = bottom_middle.small || (bottom_middle.size_x < metrics_alt_size_regular);
+
 		self.metrics_alt_ = [
-			new Complication.Metric(_dc, new Data.Calories(), 5, layout.middle.small),
-			new Complication.Metric(_dc, new Data.SolarIntensity(), 3, layout.middle.small),
+			new Complication.Metric(_dc, new Data.Calories(), 5, metrics_alt_small),
+			new Complication.Metric(_dc, new Data.SolarIntensity(), 3, metrics_alt_small),
 		];
-		self.onLayoutMetrics_(self.metrics_alt_, bottom_middle);
+		self.reflowComplications_(self.metrics_alt_, bottom_middle);
 
 		// ==== bottom outer ====
 
@@ -249,12 +277,13 @@ class View extends WatchUi.WatchFace {
 		// ==== update ====
 
 		var clock = System.getClockTime();
+		var metrics = self.getMetrics_();
 
 		{
 			self.status_.refresh(_dc);
 			self.seconds_.refresh(_dc);
 
-			self.refresh_(_dc, self.getMetrics_());
+			self.refresh_(_dc, metrics);
 		}
 
 		if (self.last_refresh_min_ != clock.min) {
@@ -292,7 +321,7 @@ class View extends WatchUi.WatchFace {
 
 			self.battery_.render(_dc);
 
-			self.render_(_dc, self.getMetrics_());
+			self.render_(_dc, metrics);
 			self.render_(_dc, self.complications_per_min_);
 			self.render_(_dc, self.complications_per_hour_);
 		}
@@ -373,66 +402,37 @@ class View extends WatchUi.WatchFace {
 			self.metrics_alt_;
 	}
 
-	static hidden function onLayoutMetrics_(_metrics as Metrics, _box as Box) as Void {
-		var metrics_size = _metrics.size();
+	static hidden function reflowComplications_(
+		_complications as Complications,
+		_box as Box
+	) as Void {
+		var complications_size = _complications.size();
 
 		var occupied_size_x = 0;
-		for (var i = 0; i < metrics_size; ++i) {
-			occupied_size_x += _metrics[i].size_x;
+		for (var i = 0; i < complications_size; ++i) {
+			occupied_size_x += _complications[i].size_x;
 		}
 
-		var spacing = (_box.size_x - occupied_size_x) / (2 * metrics_size);
+		var spacing = (_box.size_x - occupied_size_x) / (2 * complications_size);
 
 		var pos_x = _box.pos_x + spacing;
 		var pos_y = _box.pos_y;
-		for (var i = 0; i < metrics_size; ++i) {
-			var metric = _metrics[i];
+		for (var i = 0; i < complications_size; ++i) {
+			var complication = _complications[i];
 
-			metric.pos_x = pos_x;
-			metric.pos_y = pos_y;
+			complication.pos_x = pos_x;
+			complication.pos_y = pos_y;
 
-			pos_x += 2 * spacing + metric.size_x;
+			pos_x += 2 * spacing + complication.size_x;
 		}
 	}
 
-	static hidden function onLayoutGauges_(_gauges as Gauges, _box as Box) as Void {
-		var gauges_size = _gauges.size();
-
-		var pos_x = _box.pos_x;
-		var pos_y = _box.pos_y;
-		var size_x = _box.size_x / gauges_size;
-		var size_y = _box.size_y;
-
-		for (var i = 0; i < gauges_size; ++i) {
-			var gauge = _gauges[i];
-
-			gauge.pos_x = pos_x;
-			gauge.pos_y = pos_y;
-			gauge.size_x = size_x;
-			gauge.size_y = size_y;
-
-			pos_x += size_x;
-		}
-	}
-
-	static hidden function onLayoutConditions_(_conditions as Conditions, _box as Box) as Void {
-		var conditions_size = _conditions.size();
-
-		var pos_x = _box.pos_x;
-		var pos_y = _box.pos_y;
-		var size_x = _box.size_x / conditions_size;
-		var size_y = _box.size_y;
-
-		for (var i = 0; i < conditions_size; ++i) {
-			var condition = _conditions[i];
-
-			condition.pos_x = pos_x;
-			condition.pos_y = pos_y;
-			condition.size_x = size_x;
-			condition.size_y = size_y;
-
-			pos_x += size_x;
-		}
+	hidden function metricWidth_(
+		_dc as Graphics.Dc,
+		_count as Lang.Number,
+		_small as Lang.Boolean
+	) as Lang.Number {
+		return Render.numberWidth(_dc, _count, _small) + 3 * Render.SPACING;
 	}
 }
 

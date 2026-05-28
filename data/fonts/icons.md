@@ -16,6 +16,7 @@
 | ---------------- | ----------------------- | ------------------------------- |
 | battery_charging | Device charging state   | When power is connected         |
 | body_battery     | Body Battery            | Garmin-specific                 |
+| dawn             | AM fallback icon        | Compact replacement for "am"    |
 | date             | Current date            | Often paired with numeric date  |
 | gps              | GPS enabled             | GPS active but not yet locked   |
 | gps_locked       | GPS fix acquired        | Pre-activity confirmation       |
@@ -42,6 +43,7 @@
 | heading   | Current direction             | Alternative to compass icon      |
 | hydration | Hydration tracking            | Requires user input              |
 | moon      | Night / sleep / dark mode     | Often paired with sleep or theme |
+| dusk      | PM fallback icon              | Compact replacement for "pm"     |
 | move      | Inactivity alert              | Garmin move bar context          |
 | rain      | Rain conditions               | Weather-dependent                |
 | seconds   | Seconds / sub-minute progress | Visual motion element            |

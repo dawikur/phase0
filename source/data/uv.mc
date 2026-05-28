@@ -1,22 +1,24 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
 import Toybox.Complications;
+import Toybox.Lang;
+import Toybox.Weather;
 
 module Data {
 
-class UV extends Base {
+class Uv extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			Resources.load(Rez.Strings.LABEL_UV),
-			Render.COLOR_YELLOW,
-			Fonts.ICON_UV_LOW
+			CATEGORY_ENERGY
 		);
+
+		self.icon = Fonts.ICON_UV_LOW;
 	}
 
-	function get_() as Lang.Number or Null {
+	function getMaybe_() as Lang.Number or Null {
 		self.icon = Fonts.ICON_UV_LOW;
 
 		var weather = Weather.getCurrentConditions();

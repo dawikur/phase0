@@ -1,8 +1,9 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
 import Toybox.Complications;
+import Toybox.Lang;
+import Toybox.Weather;
 
 module Data {
 
@@ -11,14 +12,14 @@ class Rain extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			Resources.load(Rez.Strings.LABEL_RAIN),
-			Render.COLOR_BLUE,
-			Fonts.ICON_RAIN_0
+			CATEGORY_WEATHER
 		);
 
+		self.icon = Fonts.ICON_RAIN_0;
 		self.value_max = 100;
 	}
 
-	function get_() as Lang.Number or Null {
+	function getMaybe_() as Lang.Number or Null {
 		self.icon = Fonts.ICON_RAIN_0;
 
 		var weather = Weather.getCurrentConditions();

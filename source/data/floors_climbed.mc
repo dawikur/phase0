@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
 import Toybox.Complications;
+import Toybox.Lang;
 
 module Data {
 
@@ -11,8 +11,7 @@ class FloorsClimbed extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_FLOORS_CLIMBED,
 			Resources.load(Rez.Strings.LABEL_FLOORS_CLIMBED),
-			CATEGORY_VERTICAL,
-			Fonts.ICON_NONE
+			CATEGORY_VERTICAL
 		);
 
 		self.value_max = ActivityMonitor.getInfo().floorsClimbedGoal;

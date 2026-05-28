@@ -11,10 +11,13 @@ class Gauge extends Base {
 
 	hidden var value_ as Lang.Float or Null = null;
 
-	function initialize(_impl as Data.Base) {
+	function initialize(_impl as Data.Base, _size_y as Lang.Number) {
 		Base.initialize(_impl.type);
 
 		self.impl_ = _impl;
+
+		self.size_x = Render.SPACING;
+		self.size_y = _size_y;
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {

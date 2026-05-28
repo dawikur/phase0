@@ -2,9 +2,10 @@
 
 import Toybox.Activity;
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
-import Toybox.UserProfile;
 import Toybox.Complications;
+import Toybox.Lang;
+import Toybox.SensorHistory;
+import Toybox.UserProfile;
 
 module Data {
 
@@ -13,8 +14,7 @@ class Pressure extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE,
 			Resources.load(Rez.Strings.LABEL_PRESSURE),
-			CATEGORY_SYSTEM,
-			Fonts.ICON_NONE
+			CATEGORY_WEATHER
 		);
 
 		self.value_max = 100;

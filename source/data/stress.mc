@@ -1,8 +1,9 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.Lang;
-import Toybox.UserProfile;
 import Toybox.Complications;
+import Toybox.Lang;
+import Toybox.SensorHistory;
+import Toybox.UserProfile;
 
 module Data {
 
@@ -11,8 +12,7 @@ class Stress extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_STRESS,
 			Resources.load(Rez.Strings.LABEL_STRESS),
-			CATEGORY_ENERGY,
-			Fonts.ICON_NONE
+			CATEGORY_ENERGY
 		);
 
 		self.value_max = 100;
@@ -20,7 +20,7 @@ class Stress extends Base {
 
 	function getMaybe_() as Lang.Number or Null {
 		return self.getSensorHistoryData_(
-			SensorHistory.getHeartRateHistory({:period => 1})
+			SensorHistory.getStressHistory({:period => 1})
 		) as Lang.Number or Null;
 	}
 }

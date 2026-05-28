@@ -7,7 +7,7 @@ from typing import Tuple
 
 from args_parse import parse_folders
 
-import fonts
+import data.fonts as fonts
 
 ICON = fonts.ICON
 ICON_BLURRED = ICON.blure()
@@ -25,6 +25,9 @@ def main() -> None:
 
     svg_width = ICON_BLURRED.xadvance * fonts.STYLE_REGULAR.size
     svg_height = ICON_BLURRED.yadvance * fonts.STYLE_REGULAR.size
+
+    # #########################################################################
+    # svg
 
     icon_svg = []
     icon_svg.append(
@@ -54,9 +57,12 @@ def main() -> None:
 
     icon_svg.append("</svg>")
 
+    # #########################################################################
+    # xml
+
     folders.build("resources", "icon.svg").write_text("\n".join(icon_svg))
 
-    folders.resources("base", "drawables.xml").write_text(textwrap.dedent(f"""\
+    folders.resources("base", "icon.xml").write_text(textwrap.dedent(f"""\
         <drawables xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
         \t<bitmap id="ICON" filename="../../{folders.build("resources", "icon.svg")}" dithering="none" />
         </drawables>"""))

@@ -1,20 +1,27 @@
 # TODO
 
 * Layout
-  * SunMoon can be on lane 2
-  * cache also weather on line above 2
-* display
+  * SunMoon content based on size x
+  * Status as a list of icons
+  * Metrics/weather/date/complications can be on any line
+  * SunMoon/Battery can be swapped
+  * Status/Gauge can be swapped
+  * Can mix complications and metrics
+* Display
   * AOD option
-  * burnout prevention
+  * Burnout prevention
 * Settings
-  * Clock Colors
-  * Label Color
-  * Goal Colors
-  * Metrics
-  * Bars + Colors
+  * Clock colors
+  * Label color
+  * Goal colors
+  * Metric colors & content
+  * Complication colors & content
+  * Bar colors & content
   * BG color
-  * Battery - bar, %, days remaining
+  * Battery style: bar, %, days remaining
 * Strings
-  * Languages
+  * More languages
 * General
+  * More supported devices
   * Some test framework?
+  * Weather/Conditions forecash (cached) via `Toybox.Weather.HourlyForecast`

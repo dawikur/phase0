@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import Toybox.Complications;
 import Toybox.Lang;
 import Toybox.UserProfile;
-import Toybox.Complications;
 
 module Data {
 
@@ -11,8 +11,7 @@ class Move extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			Resources.load(Rez.Strings.LABEL_MOVE),
-			CATEGORY_PHYSIOLOGICAL,
-			Fonts.ICON_NONE
+			CATEGORY_PHYSIOLOGICAL
 		);
 
 		self.value_max = ActivityMonitor.MOVE_BAR_LEVEL_MAX;

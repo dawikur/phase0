@@ -41,21 +41,30 @@ OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX.$(MODE))
 PRG       := $(BUILD_DIR)$(OUT).prg
 JUNGLE    := monkey.jungle
 SRCS      := $(shell find source -type f)
+SRCS_DATA := $(shell find source/data -type f)
 RSCS      := $(shell find resources -type f)
-STRINGS   := $(shell find resources -name strings.xml)
 
-RESOURCES_DIR      := resources/
-RESOURCES_BASE_DIR := $(RESOURCES_DIR)base/
-BUILD_SOURCE_DIR   := $(BUILD_DIR)source/
+RESOURCES_DIR          := resources/
+RESOURCES_BASE_DIR     := $(RESOURCES_DIR)base/
+RESOURCES_SETTINGS_DIR := $(RESOURCES_DIR)settings/
 
-DRAWABLES_DEPS := scripts/generate_drawables $(shell find fonts -type f) $(STRINGS)
-DRAWABLES      := $(RESOURCES_BASE_DIR)drawables.xml
-FONTS_DEPS     := scripts/generate_fonts $(shell find fonts -type f)
+SOURCE_DIR       := source/
+BUILD_SOURCE_DIR := $(BUILD_DIR)source/
+
+ICON_DEPS      := scripts/generate_icon                     \
+                  $(shell find data/fonts -type f)          \
+                  $(shell find resources -name strings.xml)
+ICON           := $(RESOURCES_BASE_DIR)icon.xml
+FONTS_DEPS     := scripts/generate_fonts                    \
+                  $(shell find data/fonts -type f)
 FONTS          := $(RESOURCES_BASE_DIR)fonts.xml
+SETTINGS_DEPS  := scripts/generate_settings                 \
+                  $(shell find data/settings -type f)
+SETTINGS       := (RESOURCES_SETTINGS_DIR)settings.xml
 
-RESOURCES := $(DRAWABLES) $(FONTS)
+RESOURCES := $(ICON) $(FONTS)
 
-PRG_DEPS := $(JUNGLE) $(SRCS) $(RSCS) $(RESOURCES)
+PRG_DEPS := $(JUNGLE) $(SRCS) $(RSCS) $(RESOURCES) $(SETTINGS)
 
 # ---- settings ----
 
@@ -77,10 +86,13 @@ $(PRG): $(PRG_DEPS)
 		$(FLAG_MONKEYC.$(MODE))
 
 $(FONTS): $(FONTS_DEPS)
-	$(Q)$< --resources $(RESOURCES_DIR) --build $(BUILD_DIR)
+	$(Q)$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
-$(DRAWABLES): $(DRAWABLES_DEPS)
-	$(Q)$< --resources $(RESOURCES_DIR) --build $(BUILD_DIR)
+$(ICON): $(ICON_DEPS)
+	$(Q)$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+
+$(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA)
+	$(Q)$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
 $(BUILD_SOURCE_DIR):
 	$(Q)mkdir -p $@
@@ -134,18 +146,26 @@ t test:
 
 c clean:
 	$(Q)echo " [ clean ]"
-	$(RM) -r bin $(BUILD_DIR) $(RESOURCES)
+	$(RM) -r bin $(BUILD_DIR) $(RESOURCES) $(RESOURCES_SETTINGS_DIR)
 .PHONY: c clean
 
 # ---- help ----
 
 h help:
 	$(Q)echo " [ help ]"
+
+	N="\033[m"
+	B="\033[1m"
+	I="\033[3m"
+	U="\033[4m"
+
+	echo ""
 	echo " Makefile for ConnectIQ project."
 	echo ""
-	echo " Usage: make [target] [arguments]"
+	echo " $${B}Usage$${N}"
+	echo "     $${B}make$${N} [$${U}target$${N}] [$${U}arguments$${N}]..."
 	echo ""
-	echo " Target:"
+	echo " $${B}Targets$${N}"
 	echo "     b , build          build project"
 	echo "     bt, build_test     build project w/ tests"
 	echo "     br, build_release  build project release"
@@ -155,10 +175,18 @@ h help:
 	echo "     c , clean          remove build directory"
 	echo "     h , help           print help message"
 	echo ""
-	echo " Arguments:"
+	echo " $${B}Arguments$${N}"
 	echo "     NAME               (default: $(NAME))"
 	echo "     DEVICE             (default: $(DEVICE))"
 	echo "     MODE               (default: $(MODE))"
 	echo "     V                  (default: $(V))"
+	echo ""
+	echo " $${B}Devices$${N}"
+	sed -n 's/.*iq:product id="\(.*\)"\/>/     \1/p' ./manifest.xml
+	echo ""
+	echo " $${B}Modes$${N}"
+	echo "     debug"
+	echo "     test"
+	echo "     release"
 	echo ""
 .PHONY: help

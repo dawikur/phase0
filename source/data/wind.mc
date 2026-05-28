@@ -1,8 +1,9 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
 import Toybox.Complications;
+import Toybox.Lang;
+import Toybox.Weather;
 
 module Data {
 
@@ -11,12 +12,13 @@ class Wind extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			Resources.load(Rez.Strings.LABEL_WIND),
-			Render.COLOR_CYAN,
-			Fonts.ICON_WIND_NONE
+			CATEGORY_WEATHER
 		);
+
+		self.icon = Fonts.ICON_WIND_NONE;
 	}
 
-	function get_() as Lang.Number or Null {
+	function getMaybe_() as Lang.Number or Null {
 		self.icon = Fonts.ICON_WIND_NONE;
 
 		var weather = Weather.getCurrentConditions();
@@ -46,11 +48,11 @@ class Wind extends Base {
 				if (weather.windSpeed != null) {
 					var wind_speed = weather.windSpeed as Lang.Float;
 					if (wind_speed <= 2) {
-						self.icon += 0;
+						// pass
 					} else if (wind_speed <= 6) {
-						self.icon += 1;
+						self.icon = (self.icon.toCharArray()[0] + 1).toString();
 					} else {
-						self.icon += 2;
+						self.icon = (self.icon.toCharArray()[0] + 2).toString();
 					}
 
 					return wind_speed.toNumber();

@@ -1,8 +1,9 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
 import Toybox.Complications;
+import Toybox.Lang;
+import Toybox.System;
 
 module Data {
 
@@ -11,8 +12,7 @@ class Battery extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_BATTERY,
 			Resources.load(Rez.Strings.LABEL_BATTERY),
-			CATEGORY_SYSTEM,
-			Fonts.ICON_NONE
+			CATEGORY_SYSTEM
 		);
 
 		self.value_max = 100;

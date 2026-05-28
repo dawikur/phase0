@@ -82,6 +82,7 @@
 	<string id="LABEL_BATTERY">Batt</string>
 	<string id="LABEL_BODY_BATTERY">Body</string>
 	<string id="LABEL_CALORIES">Cal</string>
+	<string id="LABEL_CLOCK">Clock</string>
 	<string id="LABEL_DAWN">Dawn</string>
 	<string id="LABEL_DISTANCE">Dist</string>
 	<string id="LABEL_DUSK">Dusk</string>
@@ -109,5 +110,26 @@
 	<string id="LABEL_VO2_RUN">VO2R</string>
 	<string id="LABEL_WIND">Wind</string>
 
-	<string id="MilitaryFormatTitle">Military Format for 24 Hour Time</string>
+	<string id="LABEL_AUTO">Auto</string>
+	<string id="LABEL_BACKGROUND">Background</string>
+	<string id="LABEL_BLACK">Black</string>
+	<string id="LABEL_BLUE">Blue</string>
+	<string id="LABEL_COLOR">Color</string>
+	<string id="LABEL_CYAN">Cyan</string>
+	<string id="LABEL_DARK_GRAY">Dark Gray</string>
+	<string id="LABEL_GREEN">Green</string>
+	<string id="LABEL_INDIGO">Indigo</string>
+	<string id="LABEL_LIGHT_GRAY">Light Gray</string>
+	<string id="LABEL_LIME">Lime</string>
+	<string id="LABEL_MAGENTA">Magenta</string>
+	<string id="LABEL_ORANGE">Orange</string>
+	<string id="LABEL_PINK">Pink</string>
+	<string id="LABEL_RED">Red</string>
+	<string id="LABEL_REGULAR">Regular</string>
+	<string id="LABEL_SIZE">Size</string>
+	<string id="LABEL_SKY_BLUE">Sky Blue</string>
+	<string id="LABEL_SMALL">Small</string>
+	<string id="LABEL_TEAL">Teal</string>
+	<string id="LABEL_WHITE">White</string>
+	<string id="LABEL_YELLOW">Yellow</string>
 </strings>

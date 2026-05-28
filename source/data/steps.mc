@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
 import Toybox.Complications;
+import Toybox.Lang;
 
 module Data {
 
@@ -11,8 +11,7 @@ class Steps extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_STEPS,
 			Resources.load(Rez.Strings.LABEL_STEPS),
-			CATEGORY_MOVEMENT,
-			Fonts.ICON_NONE
+			CATEGORY_MOVEMENT
 		);
 
 		self.value_max = ActivityMonitor.getInfo().stepGoal;

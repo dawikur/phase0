@@ -2,9 +2,10 @@
 
 import Toybox.Activity;
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
-import Toybox.UserProfile;
 import Toybox.Complications;
+import Toybox.Lang;
+import Toybox.SensorHistory;
+import Toybox.UserProfile;
 
 module Data {
 
@@ -13,8 +14,7 @@ class Elevation extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_ALTITUDE,
 			Resources.load(Rez.Strings.LABEL_ELEVATION),
-			CATEGORY_VERTICAL,
-			Fonts.ICON_NONE
+			CATEGORY_VERTICAL
 		);
 	}
 

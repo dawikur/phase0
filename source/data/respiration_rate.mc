@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import Toybox.Complications;
 import Toybox.Lang;
 import Toybox.UserProfile;
-import Toybox.Complications;
 
 module Data {
 
@@ -11,8 +11,7 @@ class RespirationRate extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_RESPIRATION_RATE,
 			Resources.load(Rez.Strings.LABEL_RESPIRATION_RATE),
-			CATEGORY_PHYSIOLOGICAL,
-			Fonts.ICON_NONE
+			CATEGORY_PHYSIOLOGICAL
 		);
 	}
 

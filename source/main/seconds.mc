@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.Graphics;
 import Toybox.Complications;
+import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
 

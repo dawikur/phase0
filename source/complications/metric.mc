@@ -9,7 +9,7 @@ module Complication {
 class Metric extends Base {
 	hidden var impl_ as Data.Base;
 	hidden var count_ as Lang.Number;
-	hidden var small_ as Lang.Boolean = false;
+	hidden var small_ as Lang.Boolean;
 
 	function initialize(
 		_dc as Graphics.Dc,

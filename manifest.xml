@@ -2,7 +2,9 @@
 <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
     <iq:application id="5c5797bf-915b-480b-a36b-93fd5b07428a" type="watchface" name="@Strings.APP_NAME" entry="App" launcherIcon="@Drawables.ICON" minApiLevel="5.0.0">
         <iq:products>
+            <iq:product id="fenix7pro"/>
             <iq:product id="fenix7s"/>
+            <iq:product id="fenix7xpro"/>
             <iq:product id="fr955"/>
         </iq:products>
         <iq:permissions>

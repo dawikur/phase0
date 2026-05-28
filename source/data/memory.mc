@@ -1,9 +1,9 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.Lang;
-import Toybox.UserProfile;
 import Toybox.Complications;
+import Toybox.Lang;
 import Toybox.System;
+import Toybox.UserProfile;
 
 module Data {
 
@@ -12,8 +12,7 @@ class Memory extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			Resources.load(Rez.Strings.LABEL_MEMORY),
-			CATEGORY_SYSTEM,
-			Fonts.ICON_NONE
+			CATEGORY_SYSTEM
 		);
 
 		self.value_max = System.getSystemStats().totalMemory;

@@ -72,6 +72,67 @@ function loadCondition(_id as Lang.Number) as Lang.String {
 	return load(CONDITIONS[_id]);
 }
 
+const CONDITIONS_SHORT as Lang.Array<Lang.ResourceId> = [
+	Rez.Strings.CONDITION_00_CLEAR,
+	Rez.Strings.CONDITION_20_CLOUDY,
+	Rez.Strings.CONDITION_20_CLOUDY,
+	Rez.Strings.CONDITION_03_RAIN,
+	Rez.Strings.CONDITION_04_SNOW,
+	Rez.Strings.CONDITION_05_WINDY,
+	Rez.Strings.CONDITION_06_THUNDERSTORMS,
+	Rez.Strings.CONDITION_07_WINTRY_MIX,
+	Rez.Strings.CONDITION_08_FOG,
+	Rez.Strings.CONDITION_09_HAZY,
+	Rez.Strings.CONDITION_10_HAIL,
+	Rez.Strings.CONDITION_25_SHOWERS,
+	Rez.Strings.CONDITION_06_THUNDERSTORMS,
+	Rez.Strings.CONDITION_53_UNKNOWN,
+	Rez.Strings.CONDITION_03_RAIN,
+	Rez.Strings.CONDITION_03_RAIN,
+	Rez.Strings.CONDITION_04_SNOW,
+	Rez.Strings.CONDITION_04_SNOW,
+	Rez.Strings.CONDITION_21_RAIN_SNOW,
+	Rez.Strings.CONDITION_21_RAIN_SNOW,
+	Rez.Strings.CONDITION_20_CLOUDY,
+	Rez.Strings.CONDITION_21_RAIN_SNOW,
+	Rez.Strings.CONDITION_00_CLEAR,
+	Rez.Strings.CONDITION_00_CLEAR,
+	Rez.Strings.CONDITION_25_SHOWERS,
+	Rez.Strings.CONDITION_25_SHOWERS,
+	Rez.Strings.CONDITION_25_SHOWERS,
+	Rez.Strings.CONDITION_25_SHOWERS,
+	Rez.Strings.CONDITION_06_THUNDERSTORMS,
+	Rez.Strings.CONDITION_29_MIST,
+	Rez.Strings.CONDITION_30_DUST,
+	Rez.Strings.CONDITION_31_DRIZZLE,
+	Rez.Strings.CONDITION_32_TORNADO,
+	Rez.Strings.CONDITION_33_SMOKE,
+	Rez.Strings.CONDITION_34_ICE,
+	Rez.Strings.CONDITION_35_SAND,
+	Rez.Strings.CONDITION_36_SQUALL,
+	Rez.Strings.CONDITION_37_SANDSTORM,
+	Rez.Strings.CONDITION_38_VOLCANIC_ASH,
+	Rez.Strings.CONDITION_39_HAZE,
+	Rez.Strings.CONDITION_40_FAIR,
+	Rez.Strings.CONDITION_41_HURRICANE,
+	Rez.Strings.CONDITION_06_THUNDERSTORMS,
+	Rez.Strings.CONDITION_04_SNOW,
+	Rez.Strings.CONDITION_21_RAIN_SNOW,
+	Rez.Strings.CONDITION_03_RAIN,
+	Rez.Strings.CONDITION_04_SNOW,
+	Rez.Strings.CONDITION_21_RAIN_SNOW,
+	Rez.Strings.CONDITION_48_FLURRIES,
+	Rez.Strings.CONDITION_03_RAIN,
+	Rez.Strings.CONDITION_50_SLEET,
+	Rez.Strings.CONDITION_51_ICE_SNOW,
+	Rez.Strings.CONDITION_20_CLOUDY,
+	Rez.Strings.CONDITION_53_UNKNOWN,
+];
+
+function loadConditionShort(_id as Lang.Number) as Lang.String {
+	return load(CONDITIONS_SHORT[_id]);
+}
+
 const DAYS_OF_WEEK as Lang.Array<Lang.ResourceId> = [
 	new Lang.ResourceId(), // 1-based
 	Rez.Strings.DAY_OF_WEEK_01_SUN,

@@ -4,26 +4,35 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
+
 module Render {
 
-const COLOR_FG as Lang.Number = 0xFFFFFF;
-const COLOR_BG as Lang.Number = 0x555555;
-const COLOR_ACCENT as Lang.Number = 0xAA5500;
+const COLOR_BLACK      as Lang.Number = 0x000000;
+const COLOR_DARK_GRAY  as Lang.Number = 0x555555; // Background
+const COLOR_LIGHT_GRAY as Lang.Number = 0xAAAAAA;
+const COLOR_WHITE      as Lang.Number = 0xFFFFFF; // Foreground
 
-const COLOR_RED as Lang.Number = 0xAA0000; // Physiological Intensity
-const COLOR_GREEN as Lang.Number = 0x00AA00; // Movement / Activity
-const COLOR_BLUE as Lang.Number = 0x0000AA; // System Resources
+const COLOR_RED        as Lang.Number = 0xAA0000; // Physiological Intensity
+const COLOR_GREEN      as Lang.Number = 0x00AA00; // Movement / Activity
+const COLOR_BLUE       as Lang.Number = 0x0000AA; // System Resources
 
-const COLOR_CYAN as Lang.Number = 0x005555; // Recovery / Balance
-const COLOR_MAGENTA as Lang.Number = 0x550055; // Vertical Dimension
-const COLOR_YELLOW as Lang.Number = 0x555500; // Tension / Metabolic Energy
+const COLOR_CYAN       as Lang.Number = 0x00AAAA; // Recovery / Balance
+const COLOR_MAGENTA    as Lang.Number = 0xAA00AA; // Vertical Dimension
+const COLOR_YELLOW     as Lang.Number = 0xAAAA00; // Tension / Metabolic Energy
+
+const COLOR_ORANGE     as Lang.Number = 0xAA5500; // Weather / UI Accent
+const COLOR_PINK       as Lang.Number = 0xAA0055;
+const COLOR_LIME       as Lang.Number = 0x55AA00;
+const COLOR_TEAL       as Lang.Number = 0x00AA55;
+const COLOR_INDIGO     as Lang.Number = 0x5500AA;
+const COLOR_SKY_BLUE   as Lang.Number = 0x0055AA;
 
 const SPACING as Lang.Number = Fonts.SPACING_SMALL;
 
 const FONT_ICONS as WatchUi.FontResource = Fonts.ICONS;
 
-const SMALL as Lang.Boolean = true;
-const REGULAR as Lang.Boolean = false;
+const SIZE_SMALL as Lang.Boolean = true;
+const SIZE_REGULAR as Lang.Boolean = false;
 
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
@@ -46,7 +55,7 @@ function label(
 	_label as Lang.String,
 	_justify as Lang.Number
 ) as Void {
-	_dc.setColor(COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
+	_dc.setColor(COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
 	_dc.drawText(_pos_x, _pos_y, Fonts.DOT_TINY, _label, _justify);
 }
 
@@ -74,11 +83,11 @@ function text(
 	var shade = _small ? 1 : 0;
 
 	// text
-	_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
+	_dc.setColor(COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
 	_dc.drawText(_pos_x, _pos_y, fontFg_(_small), _text, _justify);
 
 	// shade
-	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+	_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
 	_dc.drawText(_pos_x + shade, _pos_y + shade, fontBg_(_small), _text, _justify);
 }
 
@@ -91,7 +100,7 @@ function textBg(
 	_small as Lang.Boolean
 ) as Void {
 	// bg
-	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+	_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
 	_dc.drawText(_pos_x, _pos_y, fontBg_(_small), _text, _justify);
 }
 
@@ -122,7 +131,7 @@ function number(
 	if (_number == null) {
 		var bg = numberBg(_size);
 
-		_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+		_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
 		_dc.drawText(_pos_x, _pos_y, font_bg, bg, Graphics.TEXT_JUSTIFY_LEFT);
 
 		return;
@@ -132,18 +141,18 @@ function number(
 	var bg = numberBg(_size - str.length());
 
 	// padding
-	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+	_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
 	_dc.drawText(_pos_x, _pos_y, font_bg, bg, Graphics.TEXT_JUSTIFY_LEFT);
 
 	_pos_x += _dc.getTextWidthInPixels(bg, font_bg);
 
 	// number
-	_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
+	_dc.setColor(COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
 	_dc.drawText(_pos_x, _pos_y, font_fg, str, Graphics.TEXT_JUSTIFY_LEFT);
 
 	if (!_small) {
 		// shade
-		_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+		_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
 		_dc.drawText(_pos_x, _pos_y, font_bg, str, Graphics.TEXT_JUSTIFY_LEFT);
 	}
 }
@@ -234,7 +243,7 @@ function gauge(
 
 		var top_spacing = (_from_bottom ? _max_height - height : 0);
 
-		_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
+		_dc.setColor(COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
 		_dc.fillRectangle(
 			_pos_x,
 			_pos_y + top_spacing,
@@ -242,7 +251,7 @@ function gauge(
 			height
 		);
 	} else { // == 1.0
-		_dc.setColor(COLOR_ACCENT, Graphics.COLOR_TRANSPARENT);
+		_dc.setColor(COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
 		_dc.fillRectangle(
 			_pos_x,
 			_pos_y,
@@ -251,7 +260,7 @@ function gauge(
 		);
 	}
 
-	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+	_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
 	for (var i = 0; i < _max_height; i += 2 * SPACING) {
 		_dc.fillRectangle(
 			_pos_x,
@@ -294,7 +303,7 @@ function gaugeColor(
 		);
 	}
 
-	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+	_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
 	for (var i = 0; i < _max_height; i += 2 * SPACING) {
 		_dc.fillRectangle(
 			_pos_x,
@@ -319,7 +328,7 @@ function icons(
 
 	// fg
 	if (_bg.length() == 0) {
-		_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
+		_dc.setColor(COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
 		_dc.drawText(_center_x, _center_y, FONT_ICONS, _fg, justify);
 
 		return;
@@ -327,18 +336,18 @@ function icons(
 
 	// bg
 	if (_fg.length() == 0) {
-		_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+		_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
 		_dc.drawText(_center_x, _center_y, FONT_ICONS, _bg, justify);
 
 		return;
 	}
 
 	// fg
-	_dc.setColor(COLOR_FG, Graphics.COLOR_TRANSPARENT);
+	_dc.setColor(COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
 	_dc.drawText(_center_x, _center_y, FONT_ICONS, _fg, justify);
 
 	// shade
-	_dc.setColor(COLOR_BG, Graphics.COLOR_TRANSPARENT);
+	_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
 	_dc.drawText(_center_x +1, _center_y +1, FONT_ICONS, _bg, justify);
 }
 

@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
 import Toybox.Complications;
+import Toybox.Lang;
 
 module Data {
 
@@ -11,8 +11,7 @@ class ActiveMinutesWeek extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INTENSITY_MINUTES,
 			Resources.load(Rez.Strings.LABEL_ACTIVE_MINUTES_WEEK),
-			CATEGORY_MOVEMENT,
-			Fonts.ICON_NONE
+			CATEGORY_MOVEMENT
 		);
 
 		self.value_max = ActivityMonitor.getInfo().activeMinutesWeekGoal;

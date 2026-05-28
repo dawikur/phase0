@@ -1,9 +1,8 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.WatchUi;
-
-import Toybox.Lang;
 import Toybox.Application;
+import Toybox.Lang;
+import Toybox.WatchUi;
 
 module Phase0 {
 

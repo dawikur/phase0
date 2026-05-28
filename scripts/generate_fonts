@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from args_parse import Folders, parse_folders
 from PIL import Image, ImageDraw
 
-import fonts
+import data.fonts as fonts
 
 
 class Atlas:
@@ -123,6 +123,44 @@ class Fnt:
                 xadvance=xadvance,
             )
         )
+
+
+def get_required_glyphs(folders: Folders) -> set[str]:
+    unique_glyphs = {glyph.name for glyph in fonts.TYPEFACE_DOT.glyphs}
+    all_unique_chars: set[str] = set()
+    all_unique_chars.update(" ")  # whitespace
+    all_unique_chars.update(":0123456789")  # numbers
+    all_unique_chars.update("-CF")  # temperature
+    all_unique_chars.update(".kMGTPEZY")  # value suffixes
+
+    for dirpath, _, filenames in os.walk(folders.resources()):
+        for filename in filenames:
+            if filename == "strings.xml":
+                try:
+                    unique_chars: set[str] = set()
+
+                    file_path = os.path.join(dirpath, filename)
+                    tree = ET.parse(file_path)
+                    root = tree.getroot()
+
+                    for elem in root.iter("string"):
+                        id = elem.attrib.get("id", "")
+                        if id and elem.text:
+                            unique_chars.update(elem.text)
+                            all_unique_chars.update(elem.text)
+
+                    diff = unique_chars - unique_glyphs
+                    if diff:
+                        print(
+                            f"WARNING: Missing glyphs for '{dirpath}': {sorted(list(diff))}"
+                        )
+
+                except ET.ParseError as e:
+                    print(f"XML parse error in {file_path}: {e}")
+                except Exception as e:
+                    print(f"Error reading {file_path}: {e}")
+
+    return all_unique_chars
 
 
 def parse_typeface_and_style(
@@ -333,10 +371,10 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
             ID = id
             NAME = "_".join(comment.split()).upper()
 
-            if ID == "'" or ID == "\\":
+            if ID == '"' or ID == "\\":
                 ID = f"\\{ID}"
 
-            fonts_mc.append(f"const ICON_{NAME} = '{ID}';")
+            fonts_mc.append(f'const ICON_{NAME} = "{ID}";')
 
     # #########################################################################
     # Styles
@@ -360,44 +398,6 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
 
     folders.build("source", "fonts.mc").write_text("\n".join(fonts_mc))
     folders.resources("base", "fonts.xml").write_text("\n".join(fonts_xml))
-
-
-def get_required_glyphs(folders: Folders) -> set[str]:
-    unique_glyphs = {glyph.name for glyph in fonts.TYPEFACE_DOT.glyphs}
-    all_unique_chars: set[str] = set()
-    all_unique_chars.update(" ")  # whitespace
-    all_unique_chars.update(":0123456789")  # numbers
-    all_unique_chars.update("-CF")  # temperature
-    all_unique_chars.update(".kMGTPEZY")  # value suffixes
-
-    for dirpath, _, filenames in os.walk(folders.resources()):
-        for filename in filenames:
-            if filename == "strings.xml":
-                try:
-                    unique_chars: set[str] = set()
-
-                    file_path = os.path.join(dirpath, filename)
-                    tree = ET.parse(file_path)
-                    root = tree.getroot()
-
-                    for elem in root.iter("string"):
-                        id = elem.attrib.get("id", "")
-                        if id and elem.text:
-                            unique_chars.update(elem.text)
-                            all_unique_chars.update(elem.text)
-
-                    diff = unique_chars - unique_glyphs
-                    if diff:
-                        print(
-                            f"WARNING: Missing glyphs for '{dirpath}': {sorted(list(diff))}"
-                        )
-
-                except ET.ParseError as e:
-                    print(f"XML parse error in {file_path}: {e}")
-                except Exception as e:
-                    print(f"Error reading {file_path}: {e}")
-
-    return all_unique_chars
 
 
 def main() -> None:

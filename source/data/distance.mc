@@ -2,9 +2,9 @@
 
 import Toybox.Activity;
 import Toybox.ActivityMonitor;
+import Toybox.Complications;
 import Toybox.Lang;
 import Toybox.UserProfile;
-import Toybox.Complications;
 
 module Data {
 
@@ -13,8 +13,7 @@ class Distance extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
 			Resources.load(Rez.Strings.LABEL_DISTANCE),
-			CATEGORY_MOVEMENT,
-			Fonts.ICON_NONE
+			CATEGORY_MOVEMENT
 		);
 	}
 

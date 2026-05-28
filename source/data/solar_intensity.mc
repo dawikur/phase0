@@ -1,8 +1,9 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.Lang;
-import Toybox.UserProfile;
 import Toybox.Complications;
+import Toybox.Lang;
+import Toybox.System;
+import Toybox.UserProfile;
 
 module Data {
 
@@ -11,8 +12,7 @@ class SolarIntensity extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_SOLAR_INPUT,
 			Resources.load(Rez.Strings.LABEL_SOLAR_INTENSITY),
-			CATEGORY_ENERGY,
-			Fonts.ICON_NONE
+			CATEGORY_ENERGY
 		);
 
 		self.value_max = 100;

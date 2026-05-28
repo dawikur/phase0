@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.System;
 import Toybox.Lang;
+import Toybox.System;
 
 module Data {
 module Units {
@@ -32,7 +32,11 @@ class Settings {
 	}
 }
 
-const SETTINGS as Settings = new Settings();
+var SETTINGS as Settings = new Settings();
+
+function refreshSettings() as Void {
+	SETTINGS = new Settings();
+}
 
 function convertHour(_hour as Lang.Number) as Lang.Number {
 	if (SETTINGS.is_24_hour) {

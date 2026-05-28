@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+import textwrap
+
+from args_parse import parse_folders
+
+from data.settings import SETTINGS, listData
+
+
+def main() -> None:
+    folders = parse_folders()
+
+    # #########################################################################
+    # properties
+
+    properties = []
+    properties.append(
+        '<properties xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">'
+    )
+    for group in SETTINGS.groups:
+        for select in group.selects:
+            properties.append(
+                f'    <property id="{group.id}{select.id}" type="number">0</property>'
+            )
+    properties.append("</properties>")
+
+    folders.resources("settings", "properties.xml").write_text("\n".join(properties))
+
+    # #########################################################################
+    # settings
+
+    settings = []
+    settings.append(
+        '<settings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">'
+    )
+
+    for group in SETTINGS.groups:
+        settings.append(f'    <group id="{group.id}" title="@Strings.{group.label}">')
+
+        for select in group.selects:
+            settings.append(
+                f'        <setting propertyKey="@Properties.{group.id}{select.id}" title="@Strings.{select.label}">'
+            )
+            settings.append(f'            <settingConfig type="list">')
+
+            for index, option in enumerate(select.options, start=1):
+                settings.append(
+                    f'                <listEntry value="{index}">@Strings.{option.label}</listEntry>'
+                )
+
+            settings.append("            </settingConfig>")
+            settings.append("        </setting>")
+
+        settings.append("    </group>")
+
+    settings.append("</settings>")
+
+    folders.resources("settings", "settings.xml").write_text("\n".join(settings))
+
+
+if __name__ == "__main__":
+    main()

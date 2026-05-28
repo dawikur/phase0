@@ -2,9 +2,10 @@
 
 import Toybox.Activity;
 import Toybox.ActivityMonitor;
-import Toybox.Lang;
-import Toybox.UserProfile;
 import Toybox.Complications;
+import Toybox.Lang;
+import Toybox.SensorHistory;
+import Toybox.UserProfile;
 
 module Data {
 
@@ -13,8 +14,7 @@ class HeartRate extends Base {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_HEART_RATE,
 			Resources.load(Rez.Strings.LABEL_HEART_RATE),
-			CATEGORY_PHYSIOLOGICAL,
-			Fonts.ICON_NONE
+			CATEGORY_PHYSIOLOGICAL
 		);
 
 		var current_sport = UserProfile.getCurrentSport();
@@ -32,7 +32,7 @@ class HeartRate extends Base {
 		}
 
 		return self.getSensorHistoryData_(
-			SensorHistory.getStressHistory({:period => 1})
+			SensorHistory.getHeartRateHistory({:period => 1})
 		) as Lang.Number or Null;
 	}
 }

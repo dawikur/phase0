@@ -3,12 +3,14 @@
 import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.System;
 
 module Complication {
 
 class AmPm extends Base {
-	var frame_ as Lang.String = "";
-	var label_ as Lang.String = "";
+	hidden var frame_ as Lang.String = "";
+	hidden var label_ as Lang.String = "";
+	hidden var fallback_ as Lang.String or Null = null;
 	hidden var small_ as Lang.Boolean = false;
 
 	function initialize(_small as Lang.Boolean) {
@@ -17,40 +19,53 @@ class AmPm extends Base {
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
-		var borders_width = Render.iconsWidth(
-			_dc,
-			Lang.format("$1$$2$", [Fonts.ICON_AM_PM_BEGIN, Fonts.ICON_AM_PM_END])
-		);
-		var bar_width = Render.iconsWidth(_dc, "" + Fonts.ICON_AM_PM_FRAME);
+		if (self.frame_.length() == 0) {
+			var borders_width = Render.iconsWidth(
+				_dc,
+				Lang.format("$1$$2$", [Fonts.ICON_AM_PM_BEGIN, Fonts.ICON_AM_PM_END])
+			);
+			var bar_width = Render.iconsWidth(_dc, Fonts.ICON_AM_PM_FRAME);
+			var bar_all_count = (self.size_x - borders_width) / bar_width;
 
-		var bar_all_count = (self.size_x - borders_width) / bar_width;
-
-		self.frame_ = "";
-		self.frame_ += Fonts.ICON_AM_PM_BEGIN;
-		for (var i = 0; i < bar_all_count; ++i) {
-			self.frame_ += Fonts.ICON_AM_PM_FRAME;
+			self.frame_ += Fonts.ICON_AM_PM_BEGIN;
+			for (var i = 0; i < bar_all_count; ++i) {
+				self.frame_ += Fonts.ICON_AM_PM_FRAME;
+			}
+			self.frame_ += Fonts.ICON_AM_PM_END;
 		}
-		self.frame_ += Fonts.ICON_AM_PM_END;
 
 		var clock = System.getClockTime();
 
 		self.label_ = Data.Units.getAmPm(clock.hour);
-
+		if (self.label_ == "am") {
+			self.fallback_ = Fonts.ICON_DAWN;
+		} else if (self.label_ == "pm") {
+			self.fallback_ = Fonts.ICON_DUSK;
+		} else {
+			self.fallback_ = null;
+		}
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
 		var pos_x = self.pos_x + self.size_x / 2;
 		var pos_y = self.pos_y + self.size_y / 2;
 
-		if (!self.small_) {
-			Render.icons(_dc, pos_x, pos_y+Render.SPACING, self.frame_, self.frame_);
-		}
+		var label_width = Render.textWidth(_dc, self.label_, true);
+		if (label_width <= self.size_x or self.fallback_ == null) {
+			var text_pos_x = self.pos_x + self.size_x / 2 - 1;
 
-		Render.text(
-			_dc, pos_x, pos_y, self.label_,
-			Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER,
-			true
-		);
+			if (!self.small_) {
+				Render.icons(_dc, pos_x, pos_y+Render.SPACING, self.frame_, self.frame_);
+			}
+
+			Render.text(
+				_dc, text_pos_x, pos_y, self.label_,
+				Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER,
+				true
+			);
+		} else {
+			Render.iconsColor(_dc, pos_x, pos_y, self.fallback_, Render.COLOR_ORANGE);
+		}
 	}
 }
 
