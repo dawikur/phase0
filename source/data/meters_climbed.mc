@@ -10,7 +10,7 @@ class MetersClimbed extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			Resources.load(Rez.Strings.LABEL_METERS_CLIMBED),
+			Resources.get(Rez.Strings.LABEL_METERS_CLIMBED),
 			CATEGORY_VERTICAL
 		);
 	}

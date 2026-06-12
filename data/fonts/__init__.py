@@ -5,9 +5,7 @@ from .digits import TYPEFACE_SMALL as TYPEFACE_DIGITS_SMALL
 from .dot import TYPEFACE as TYPEFACE_DOT
 from .icons import ICON
 from .icons import TYPEFACE as TYPEFACE_ICONS
-from .model import Glyph as Glyph
-from .model import Style as Style
-from .model import Typeface as Typeface
+from .model import Glyph, Style, Typeface
 from .styles import REGULAR as STYLE_REGULAR
 from .styles import REGULAR_BOLD as STYLE_REGULAR_BOLD
 from .styles import REGULAR_THIN as STYLE_REGULAR_THIN

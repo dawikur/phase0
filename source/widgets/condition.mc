@@ -4,7 +4,7 @@ import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
 
-module Complication {
+module Widget {
 
 class Condition extends Base {
 	hidden var impl_ as Data.Base;
@@ -98,4 +98,4 @@ class Condition extends Base {
 	}
 }
 
-} // module Complication
+} // module Widget

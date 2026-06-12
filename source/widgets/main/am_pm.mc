@@ -5,7 +5,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
 
-module Complication {
+module Widget {
 
 class AmPm extends Base {
 	hidden var frame_ as Lang.String = "";
@@ -69,4 +69,4 @@ class AmPm extends Base {
 	}
 }
 
-} // module Complication
+} // module Widget

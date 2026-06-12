@@ -15,7 +15,7 @@
   * Label color
   * Goal colors
   * Metric colors & content
-  * Complication colors & content
+  * Widget colors & content
   * Bar colors & content
   * BG color
   * Battery style: bar, %, days remaining

@@ -11,7 +11,7 @@ class Uv extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			Resources.load(Rez.Strings.LABEL_UV),
+			Resources.get(Rez.Strings.LABEL_UV),
 			CATEGORY_ENERGY
 		);
 

@@ -13,7 +13,7 @@ class HeartRate extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_HEART_RATE,
-			Resources.load(Rez.Strings.LABEL_HEART_RATE),
+			Resources.get(Rez.Strings.LABEL_HEART_RATE),
 			CATEGORY_PHYSIOLOGICAL
 		);
 

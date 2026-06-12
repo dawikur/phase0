@@ -10,7 +10,7 @@ class ActiveMinutesWeek extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INTENSITY_MINUTES,
-			Resources.load(Rez.Strings.LABEL_ACTIVE_MINUTES_WEEK),
+			Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_WEEK),
 			CATEGORY_MOVEMENT
 		);
 

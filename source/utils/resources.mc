@@ -1,13 +1,12 @@
-// Copy	ight (c) 2026 Dawid Kurek <dawikur@gmail.com>
+// Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import Toybox.Application;
 import Toybox.Lang;
 import Toybox.Test;
-import Toybox.WatchUi;
 
 module Resources {
 
-function load(_id as Lang.ResourceId) as Lang.String {
+function get(_id as Lang.ResourceId) as Lang.String {
 	return Application.loadResource(_id) as Lang.String;
 }
 
@@ -68,8 +67,8 @@ const CONDITIONS as Lang.Array<Lang.ResourceId> = [
 	Rez.Strings.CONDITION_53_UNKNOWN,
 ];
 
-function loadCondition(_id as Lang.Number) as Lang.String {
-	return load(CONDITIONS[_id]);
+function getCondition(_id as Lang.Number) as Lang.String {
+	return get(CONDITIONS[_id]);
 }
 
 const CONDITIONS_SHORT as Lang.Array<Lang.ResourceId> = [
@@ -129,8 +128,8 @@ const CONDITIONS_SHORT as Lang.Array<Lang.ResourceId> = [
 	Rez.Strings.CONDITION_53_UNKNOWN,
 ];
 
-function loadConditionShort(_id as Lang.Number) as Lang.String {
-	return load(CONDITIONS_SHORT[_id]);
+function getConditionShort(_id as Lang.Number) as Lang.String {
+	return get(CONDITIONS_SHORT[_id]);
 }
 
 const DAYS_OF_WEEK as Lang.Array<Lang.ResourceId> = [
@@ -144,8 +143,8 @@ const DAYS_OF_WEEK as Lang.Array<Lang.ResourceId> = [
 	Rez.Strings.DAY_OF_WEEK_07_SAT,
 ];
 
-function loadDayOfWeek(_id as Lang.Number) as Lang.String {
-	return load(DAYS_OF_WEEK[_id]);
+function getDayOfWeek(_id as Lang.Number) as Lang.String {
+	return get(DAYS_OF_WEEK[_id]);
 }
 
 const MONTHS as Lang.Array<Lang.ResourceId> = [
@@ -164,8 +163,8 @@ const MONTHS as Lang.Array<Lang.ResourceId> = [
 	Rez.Strings.MONTH_12_DEC,
 ];
 
-function loadMonth(_id as Lang.Number) as Lang.String {
-	return load(MONTHS[_id]);
+function getMonth(_id as Lang.Number) as Lang.String {
+	return get(MONTHS[_id]);
 }
 
 } // module Resources

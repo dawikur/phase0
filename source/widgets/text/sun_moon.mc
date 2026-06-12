@@ -8,7 +8,7 @@ import Toybox.Test;
 import Toybox.Time;
 import Toybox.Weather;
 
-module Complication {
+module Widget {
 
 class SunMoon extends Text {
 	static const MOON_PHASES = 16;
@@ -19,8 +19,8 @@ class SunMoon extends Text {
 		Text.initialize(Complications.COMPLICATION_TYPE_SUNRISE, true);
 
 		self.label_ = _small ? "" : Lang.format("$1$     $2$", [
-			Resources.load(Rez.Strings.LABEL_DAWN),
-			Resources.load(Rez.Strings.LABEL_DUSK),
+			Resources.get(Rez.Strings.LABEL_DAWN),
+			Resources.get(Rez.Strings.LABEL_DUSK),
 		]);
 
 		self.value_bg_ = "00:00   00:00";
@@ -200,4 +200,4 @@ class SunMoon extends Text {
 	}
 }
 
-} // module Complication
+} // module Widget

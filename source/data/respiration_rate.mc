@@ -10,7 +10,7 @@ class RespirationRate extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_RESPIRATION_RATE,
-			Resources.load(Rez.Strings.LABEL_RESPIRATION_RATE),
+			Resources.get(Rez.Strings.LABEL_RESPIRATION_RATE),
 			CATEGORY_PHYSIOLOGICAL
 		);
 	}

@@ -11,7 +11,7 @@ class Rain extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			Resources.load(Rez.Strings.LABEL_RAIN),
+			Resources.get(Rez.Strings.LABEL_RAIN),
 			CATEGORY_WEATHER
 		);
 

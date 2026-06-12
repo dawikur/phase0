@@ -13,7 +13,7 @@ class Elevation extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_ALTITUDE,
-			Resources.load(Rez.Strings.LABEL_ELEVATION),
+			Resources.get(Rez.Strings.LABEL_ELEVATION),
 			CATEGORY_VERTICAL
 		);
 	}

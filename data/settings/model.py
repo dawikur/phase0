@@ -2,7 +2,8 @@
 
 import textwrap
 from dataclasses import dataclass
-from typing import Iterator, List
+from enum import StrEnum
+from typing import Any, Dict, Iterator, List
 
 
 @dataclass(order=True)
@@ -21,15 +22,27 @@ class Token:
     def label(self) -> str:
         return f"LABEL_{'_'.join(part.upper() for part in self.parts)}"
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Token):
+            return self.name == other.name
+        return False
+
+    def __hash__(self) -> int:
+        return hash(self.name)
+
 
 @dataclass
 class Select:
     name: Token
-    options: List[Token]
+    options: Dict[Token, str]
+    default: str
 
-    def __init__(self, name: str, options: List[str]):
+    def __init__(self, name: str, default: Any, options: Any):
         self.name = Token(name)
-        self.options = [Token(option) for option in options]
+
+        self.options = {Token(option.name): str(option.value) for option in options}
+
+        self.default = self.options[Token(default.name)]
 
     @property
     def id(self) -> str:
@@ -46,11 +59,11 @@ class Select:
 @dataclass
 class Group:
     name: Token
-    selects: List[Select]
+    selections: List[Select]
 
-    def __init__(self, name: str, selects: List[Select]):
+    def __init__(self, name: str, selections: List[Select]):
         self.name = Token(name)
-        self.selects = selects
+        self.selections = selections
 
     @property
     def id(self) -> str:
@@ -61,9 +74,4 @@ class Group:
         return self.name.label
 
     def __iter__(self) -> Iterator[Select]:
-        return self.selects.__iter__()
-
-
-@dataclass
-class Settings:
-    groups: List[Group]
+        return self.selections.__iter__()

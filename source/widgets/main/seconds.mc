@@ -5,7 +5,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
 
-module Main {
+module Widget {
 
 class Seconds {
 	var pos_x as Lang.Number = 0;
@@ -40,4 +40,4 @@ class Seconds {
 	}
 }
 
-} // module Main
+} // module Widget

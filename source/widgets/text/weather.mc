@@ -7,7 +7,7 @@ import Toybox.System;
 import Toybox.Test;
 import Toybox.Weather;
 
-module Complication {
+module Widget {
 
 class Weather extends Text {
 	hidden var original_small_ as Lang.Boolean = false;
@@ -30,7 +30,7 @@ class Weather extends Text {
 			if (weather.condition != null) {
 				var condition = weather.condition as Lang.Number;
 
-				text = Resources.loadCondition(condition);
+				text = Resources.getCondition(condition);
 			}
 
 			if (weather.temperature != null) {
@@ -54,7 +54,7 @@ class Weather extends Text {
 				}
 			}
 
-			// TODO: loadConditionShort
+			// TODO: getConditionShort
 			// if (Render.textWidth(_dc, self.value_, self.small_) <= self.size_x) {
 			// } else {
 			// }
@@ -77,4 +77,4 @@ class Weather extends Text {
 	}
 }
 
-} // module Complication
+} // module Widget

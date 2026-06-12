@@ -10,7 +10,7 @@ class FloorsClimbed extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_FLOORS_CLIMBED,
-			Resources.load(Rez.Strings.LABEL_FLOORS_CLIMBED),
+			Resources.get(Rez.Strings.LABEL_FLOORS_CLIMBED),
 			CATEGORY_VERTICAL
 		);
 

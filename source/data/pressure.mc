@@ -13,7 +13,7 @@ class Pressure extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE,
-			Resources.load(Rez.Strings.LABEL_PRESSURE),
+			Resources.get(Rez.Strings.LABEL_PRESSURE),
 			CATEGORY_WEATHER
 		);
 

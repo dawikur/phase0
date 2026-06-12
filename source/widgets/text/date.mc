@@ -4,7 +4,7 @@ import Toybox.Complications;
 import Toybox.Lang;
 import Toybox.Time;
 
-module Complication {
+module Widget {
 
 class Date extends Text {
 	function initialize(_small as Lang.Boolean) {
@@ -15,11 +15,11 @@ class Date extends Text {
 		var now = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
 
 		return Lang.format("$1$ $2$ $3$", [
-			Resources.loadDayOfWeek(now.day_of_week as Lang.Number),
+			Resources.getDayOfWeek(now.day_of_week as Lang.Number),
 			now.day.format("%02d"),
-			Resources.loadMonth(now.month as Lang.Number)
+			Resources.getMonth(now.month as Lang.Number)
 		]);
 	}
 }
 
-} // module Complication
+} // module Widget

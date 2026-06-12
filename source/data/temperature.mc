@@ -11,7 +11,7 @@ class Temperature extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE,
-			Resources.load(Rez.Strings.LABEL_TEMPERATURE),
+			Resources.get(Rez.Strings.LABEL_TEMPERATURE),
 			CATEGORY_WEATHER
 		);
 	}

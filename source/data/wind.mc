@@ -11,7 +11,7 @@ class Wind extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_INVALID,
-			Resources.load(Rez.Strings.LABEL_WIND),
+			Resources.get(Rez.Strings.LABEL_WIND),
 			CATEGORY_WEATHER
 		);
 

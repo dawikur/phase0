@@ -5,12 +5,15 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.WatchUi;
 
-module Main {
+module Widget {
 
 class Clock {
-	hidden var font_ as WatchUi.FontResource = Fonts.DIGITS;
-	hidden var font_bold_ as WatchUi.FontResource = Fonts.DIGITS_BOLD;
-	hidden var font_thin_ as WatchUi.FontResource = Fonts.DIGITS_THIN;
+	hidden var font_ as WatchUi.FontResource;
+	hidden var font_bold_ as WatchUi.FontResource;
+	hidden var font_thin_ as WatchUi.FontResource;
+
+	hidden var color_ as Lang.Number;
+	hidden var background_ as Lang.Number;
 
 	var center_x as Lang.Number = 0;
 	var center_y as Lang.Number = 0;
@@ -30,6 +33,9 @@ class Clock {
 			self.font_bold_ = Fonts.DIGITS_BOLD;
 			self.font_thin_ = Fonts.DIGITS_THIN;
 		}
+
+		self.color_ = Properties.get("ClockColor");
+		self.background_ = Properties.get("ClockBackground");
 	}
 
 	function contains(_x as Lang.Number, _y as Lang.Number) as Lang.Boolean {
@@ -65,19 +71,19 @@ class Clock {
 		var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
 		if (_is_night_mode) {
-			_dc.setColor(Render.COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(self.color_, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
 				self.center_x, self.center_y, self.font_, self.label_,
 				justify
 			);
 		} else {
-			_dc.setColor(Render.COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(self.color_, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
 				self.center_x, self.center_y, self.font_bold_,
 				self.label_, justify
 			);
 
-			_dc.setColor(Render.COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(self.background_, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
 				self.center_x, self.center_y, self.font_thin_, "88:88",
 				justify
@@ -86,4 +92,4 @@ class Clock {
 	}
 }
 
-} // module Main
+} // module Widget

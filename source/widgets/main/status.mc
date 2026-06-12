@@ -5,7 +5,7 @@ import Toybox.Lang;
 import Toybox.Math;
 import Toybox.System;
 
-module Main {
+module Widget {
 
 class Status {
 	var center_x as Lang.Number = 0;
@@ -67,4 +67,4 @@ class Status {
 	}
 }
 
-} // module Main
+} // module Widget

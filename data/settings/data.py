@@ -1,19 +1,16 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import re
+from enum import StrEnum
 from pathlib import Path
-from typing import List
-
-from .model import Token
 
 
-def listData(source: Path) -> List[Token]:
+def Data(source: Path) -> StrEnum:
     CLASS_RE = re.compile(r"\bclass\s+([A-Za-z_]\w*)\s+extends Base\b")
     CLASS_PARTS_RE = re.compile(r"(?<!^)(?=[A-Z])")
     LABEL_RE = re.compile(r"LABEL_(\w+)")
 
-    result = []
-
+    items = []
     for data in source.iterdir():
         if not data.is_file():
             continue
@@ -34,6 +31,8 @@ def listData(source: Path) -> List[Token]:
 
         assert classParts == labelParts, f"{classParts} vs {labelParts}"
 
-        result.append(Token(" ".join(classParts)))
+        items.append("_".join(classParts).upper())
 
-    return sorted(result)
+    return StrEnum(
+        "Data", {item: str(index) for index, item in enumerate(sorted(items), start=1)}
+    )

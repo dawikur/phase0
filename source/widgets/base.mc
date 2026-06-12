@@ -4,7 +4,7 @@ import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
 
-module Complication {
+module Widget {
 
 class Base {
 	var pos_x as Lang.Number = 0;
@@ -51,4 +51,4 @@ class Base {
 	}
 }
 
-} // module Complication
+} // module Widget

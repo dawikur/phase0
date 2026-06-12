@@ -5,9 +5,9 @@ import Toybox.Lang;
 import Toybox.Math;
 import Toybox.System;
 
-module Main {
+module Widget {
 
-class Battery extends Complication.Base {
+class Battery extends Base {
 	var impl_ as Data.Battery = new Data.Battery();
 
 	var color_ as Lang.Number = Render.COLOR_WHITE;
@@ -74,4 +74,4 @@ class Battery extends Complication.Base {
 	}
 }
 
-} // module Main
+} // module Widget

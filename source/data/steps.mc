@@ -10,7 +10,7 @@ class Steps extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_STEPS,
-			Resources.load(Rez.Strings.LABEL_STEPS),
+			Resources.get(Rez.Strings.LABEL_STEPS),
 			CATEGORY_MOVEMENT
 		);
 

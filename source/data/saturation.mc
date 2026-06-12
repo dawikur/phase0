@@ -13,7 +13,7 @@ class Saturation extends Base {
 	function initialize() {
 		Base.initialize(
 			Complications.COMPLICATION_TYPE_PULSE_OX,
-			Resources.load(Rez.Strings.LABEL_SATURATION),
+			Resources.get(Rez.Strings.LABEL_SATURATION),
 			CATEGORY_PHYSIOLOGICAL
 		);
 
