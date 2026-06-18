@@ -5,7 +5,7 @@ import Toybox.Lang;
 import Toybox.Math;
 import Toybox.System;
 
-module Widget {
+module Widgets {
 
 class Battery extends Base {
 	var impl_ as Data.Battery = new Data.Battery();
@@ -15,7 +15,7 @@ class Battery extends Base {
 	var charge_ as Lang.String = "";
 	var frame_ as Lang.String = "";
 
-	function initialize() {
+	function initialize(_small as Lang.Boolean) {
 		Base.initialize(impl_.type);
 	}
 
@@ -74,4 +74,4 @@ class Battery extends Base {
 	}
 }
 
-} // module Widget
+} // module Widgets

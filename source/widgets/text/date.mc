@@ -4,7 +4,7 @@ import Toybox.Complications;
 import Toybox.Lang;
 import Toybox.Time;
 
-module Widget {
+module Widgets {
 
 class Date extends Text {
 	function initialize(_small as Lang.Boolean) {
@@ -22,4 +22,4 @@ class Date extends Text {
 	}
 }
 
-} // module Widget
+} // module Widgets

@@ -8,7 +8,7 @@ import Toybox.Test;
 import Toybox.Time;
 import Toybox.Weather;
 
-module Widget {
+module Widgets {
 
 class SunMoon extends Text {
 	static const MOON_PHASES = 16;
@@ -200,4 +200,4 @@ class SunMoon extends Text {
 	}
 }
 
-} // module Widget
+} // module Widgets

@@ -4,7 +4,6 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-
 module Render {
 
 const COLOR_BLACK      as Lang.Number = 0x000000;

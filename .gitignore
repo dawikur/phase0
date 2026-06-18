@@ -4,9 +4,7 @@
 build
 bin
 
-resources/base/fonts.xml
-resources/base/icon.xml
-resources/settings/
+resources/build/
 
 .mypy_cache
 .venv

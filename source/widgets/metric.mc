@@ -4,7 +4,7 @@ import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
 
-module Widget {
+module Widgets {
 
 class Metric extends Base {
 	hidden var impl_ as Data.Base;
@@ -83,4 +83,4 @@ class Metric extends Base {
 	}
 }
 
-} // module Widget
+} // module Widgets

@@ -1,123 +1,265 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import textwrap
+from typing import Any
 
 from args_parse import parse_folders
+from mc_document import McDocument
+from xml_document import XmlDocument
 
-from data.settings import Data, Options, Settings, Token
+from data.settings import (
+    Array,
+    Boolean,
+    Data,
+    Group,
+    Number,
+    Options,
+    Select,
+    Settings,
+)
+
+
+def render_data(data: Any) -> str:
+    doc = McDocument.create()
+    doc.line("import Toybox.Lang;")
+    doc.blank()
+    doc.line("module Data {")
+    doc.blank()
+    doc.line("function get(_id as Lang.Number) as Base or Null {")
+    doc.indented()
+    doc.line("switch (_id) {")
+    doc.indented()
+
+    for datum in data:
+        datum_name = "".join(part.capitalize() for part in datum.name.split("_"))
+        doc.line(f"case {datum.value}: return new {datum_name}();")
+
+    doc.blank()
+    doc.line("default: return null;")
+    doc.dedented()
+    doc.line("}")
+    doc.dedented()
+    doc.line("}")
+    doc.blank()
+    doc.line("} // module Data")
+
+    return doc.text()
+
+
+def render_widgets(extra_data: Any) -> str:
+    doc = McDocument.create()
+    doc.line("import Toybox.Lang;")
+    doc.blank()
+    doc.line("module Widgets {")
+    doc.blank()
+    doc.line(
+        "function get(_id as Lang.Number, _small as Lang.Boolean) as Base or Null {"
+    )
+    doc.indented()
+    doc.line("switch (_id) {")
+    doc.indented()
+
+    for datum in extra_data:
+        datum_name = "".join(part.capitalize() for part in datum.name.split("_"))
+        doc.line(f"case {datum.value}: return new {datum_name}(_small);")
+
+    doc.line("default: return null;")
+    doc.dedented()
+    doc.line("}")
+    doc.dedented()
+    doc.line("}")
+    doc.blank()
+    doc.line("} // module Widgets")
+
+    return doc.text()
+
+
+def render_options() -> str:
+    doc = McDocument.create()
+    doc.line("import Toybox.Lang;")
+    doc.blank()
+    doc.line("module Options {")
+    doc.blank()
+
+    for opt in Options:
+        doc.line(f"const {opt.name.upper()} = {opt.value};")
+
+    doc.blank()
+    doc.line("} // module Options")
+
+    return doc.text()
+
+
+def render_properties(settings: list[Group | Array]) -> str:
+    root = XmlDocument.resource("properties")
+
+    for group_or_array in settings:
+        if isinstance(group_or_array, Group):
+            group = group_or_array
+            for select in group.selections:
+                property_ = root.subelement(
+                    root.root,
+                    "property",
+                    id=f"{group.id}{select.id}",
+                    type="number",
+                )
+                property_.text = str(select.default)
+
+        if isinstance(group_or_array, Array):
+            array = group_or_array
+            root.subelement(root.root, "property", id=array.id, type="array")
+
+    return root.render()
+
+
+def render_group(group: Group) -> XmlDocument:
+    group_xml = XmlDocument(
+        XmlDocument.element("group", id=group.id, title=f"@Strings.{group.label}")
+    )
+
+    for select in group.selections:
+        setting = group_xml.subelement(
+            group_xml.root,
+            "setting",
+            propertyKey=f"@Properties.{group.id}{select.id}",
+            title=f"@Strings.{select.label}",
+        )
+        setting_config = group_xml.subelement(
+            setting,
+            "settingConfig",
+            type="list",
+            required="true",
+        )
+
+        for option, value in select.options.items():
+            list_entry = group_xml.subelement(
+                setting_config,
+                "listEntry",
+                value=value,
+            )
+            list_entry.text = f"@Strings.{option.label}"
+
+    return group_xml
+
+
+def render_array(array: Array) -> XmlDocument:  # pylint: disable=too-many-locals
+    assert 0 < len(array.elements)
+
+    setting_xml = XmlDocument(
+        XmlDocument.element(
+            "setting",
+            propertyKey=f"@Properties.{array.id}",
+            title=f"@Strings.{array.label}",
+        )
+    )
+
+    for select_or_number_or_boolean in array.elements[0]:
+        if isinstance(select_or_number_or_boolean, Select):
+            select = select_or_number_or_boolean
+
+            setting = setting_xml.subelement(
+                setting_xml.root,
+                "setting",
+                title=f"@Strings.{select.label}",
+                type="number",
+            )
+            setting_config = setting_xml.subelement(
+                setting,
+                "settingConfig",
+                id=select.id,
+                type="list",
+                required="true",
+            )
+
+            for option, value in select.options.items():
+                list_entry = XmlDocument.subelement(
+                    setting_config,
+                    "listEntry",
+                    value=value,
+                )
+                list_entry.text = f"@Strings.{option.label}"
+            continue
+
+        if isinstance(select_or_number_or_boolean, Number):
+            number = select_or_number_or_boolean
+
+            setting = setting_xml.subelement(
+                setting_xml.root,
+                "setting",
+                title=f"@Strings.{number.label}",
+                type="number",
+            )
+            setting_xml.subelement(
+                setting,
+                "settingConfig",
+                id=number.id,
+                type="numeric",
+                min="0",
+                max="10",
+                required="true",
+            )
+            continue
+
+        if isinstance(select_or_number_or_boolean, Boolean):
+            boolean = select_or_number_or_boolean
+
+            setting = setting_xml.subelement(
+                setting_xml.root,
+                "setting",
+                title=f"@Strings.{boolean.label}",
+                type="boolean",
+            )
+            setting_xml.subelement(
+                setting,
+                "settingConfig",
+                id=boolean.id,
+                type="boolean",
+                required="true",
+            )
+            continue
+
+        assert False, "Unsupported type"
+
+    defaults = setting_xml.subelement(setting_xml.root, "defaults")
+
+    for element in array.elements:
+        entry_xml = setting_xml.subelement(defaults, "entry")
+        entry: Any
+        for entry in element:
+            default_xml = setting_xml.subelement(entry_xml, "default", id=entry.id)
+            default_xml.text = str(entry.default)
+
+    return setting_xml
+
+
+def render_settings(settings: list[Group | Array]) -> str:
+    root = XmlDocument.resource("settings")
+
+    for group_or_array in settings:
+        if isinstance(group_or_array, Group):
+            root.root.append(render_group(group_or_array).root)
+            continue
+
+        if isinstance(group_or_array, Array):
+            root.root.append(render_array(group_or_array).root)
+            continue
+
+        assert False, "Unsupported type"
+
+    return root.render()
 
 
 def main() -> None:
     folders = parse_folders()
 
     data = Data(folders.source("data"))
-    settings = Settings(data)
+    extra_data, settings = Settings(data)
 
-    # #########################################################################
-    # data
-
-    data_mc = []
-    data_mc.append(textwrap.dedent("""\
-        // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
-        // This file is autogenerated
-
-        import Toybox.Lang;
-
-        module Data {
-
-        function get(_id as Lang.Number) as Base or Null {
-        \tswitch (_id) {
-    """))
-
-    for datum in data:
-        datum_name = "".join(part.capitalize() for part in datum.name.split("_"))  # type: ignore[attr-defined]
-        data_mc.append(f"\t\tcase {datum.value}: return new Data.{datum_name}();")  # type: ignore[attr-defined]
-
-    data_mc.append(textwrap.dedent("""\
-
-        \t\tdefault: return null;
-
-        \t}
-        }
-
-        } // module Data"""))
-
-    folders.build("source", "data.mc").write_text("\n".join(data_mc))
-
-    # #########################################################################
-    # options
-
-    options_mc = []
-    options_mc.append(textwrap.dedent("""\
-        // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
-        // This file is autogenerated
-
-        import Toybox.Lang;
-
-        module Options {\n"""))
-
-    for opt in Options:
-        options_mc.append(f"const {opt.name.upper()} = {opt.value};")
-
-    options_mc.append("\n} // module Options")
-
-    folders.build("source", "options.mc").write_text("\n".join(options_mc))
-
-    # #########################################################################
-    # properties
-
-    properties_xml = []
-    properties_xml.append(
-        '<properties xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">'
-    )
-    for group in settings:
-        properties_xml.append("")
-
-        for select in group.selections:
-            properties_xml.append(
-                f'\t<property id="{group.id}{select.id}" type="number">{select.default}</property>'
-            )
-    properties_xml.append("\n</properties>")
-
-    folders.resources("settings", "properties.xml").write_text(
-        "\n".join(properties_xml)
-    )
-
-    # #########################################################################
-    # settings
-
-    settings_xml = []
-    settings_xml.append(
-        '<settings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">'
-    )
-
-    for group in settings:
-        settings_xml.append(
-            f'\n\t<group id="{group.id}" title="@Strings.{group.label}">'
-        )
-
-        for select in group.selections:
-            settings_xml.append("")
-
-            settings_xml.append(
-                f'\t\t<setting propertyKey="@Properties.{group.id}{select.id}" title="@Strings.{select.label}">'
-            )
-            settings_xml.append(f'\t\t\t<settingConfig type="list">')
-
-            for option, value in select.options.items():
-                settings_xml.append(
-                    f'\t\t\t\t<listEntry value="{value}">@Strings.{option.label}</listEntry>'
-                )
-
-            settings_xml.append("\t\t\t</settingConfig>")
-            settings_xml.append("\t\t</setting>")
-
-        settings_xml.append("\n\t</group>")
-
-    settings_xml.append("\n</settings>")
-
-    folders.resources("settings", "settings.xml").write_text("\n".join(settings_xml))
+    folders.build("source", "data.mc").write_text(render_data(data))
+    folders.build("source", "widgets.mc").write_text(render_widgets(extra_data))
+    folders.build("source", "options.mc").write_text(render_options())
+    folders.resources("build", "properties.xml").write_text(render_properties(settings))
+    folders.resources("build", "settings.xml").write_text(render_settings(settings))
 
 
 if __name__ == "__main__":

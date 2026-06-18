@@ -7,7 +7,7 @@ import Toybox.System;
 import Toybox.Test;
 import Toybox.Weather;
 
-module Widget {
+module Widgets {
 
 class Weather extends Text {
 	hidden var original_small_ as Lang.Boolean = false;
@@ -77,4 +77,4 @@ class Weather extends Text {
 	}
 }
 
-} // module Widget
+} // module Widgets

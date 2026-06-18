@@ -1,14 +1,14 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import re
-from enum import StrEnum
+from enum import IntEnum
 from pathlib import Path
 
 
-def Data(source: Path) -> StrEnum:
-    CLASS_RE = re.compile(r"\bclass\s+([A-Za-z_]\w*)\s+extends Base\b")
-    CLASS_PARTS_RE = re.compile(r"(?<!^)(?=[A-Z])")
-    LABEL_RE = re.compile(r"LABEL_(\w+)")
+def Data(source: Path) -> IntEnum:  # pylint: disable=invalid-name
+    class_re = re.compile(r"\bclass\s+([A-Za-z_]\w*)\s+extends Base\b")
+    class_parts_re = re.compile(r"(?<!^)(?=[A-Z])")
+    label_re = re.compile(r"LABEL_(\w+)")
 
     items = []
     for data in source.iterdir():
@@ -17,22 +17,22 @@ def Data(source: Path) -> StrEnum:
 
         data_text = data.read_text()
 
-        classMatch = CLASS_RE.findall(data_text)
-        if not classMatch:
+        class_match = class_re.findall(data_text)
+        if not class_match:
             continue
 
-        assert len(classMatch) == 1
-        classParts = [part.lower() for part in CLASS_PARTS_RE.split(classMatch[0])]
+        assert len(class_match) == 1
+        class_parts = [part.lower() for part in class_parts_re.split(class_match[0])]
 
-        labelMatch = LABEL_RE.findall(data_text)
-        assert labelMatch
-        assert len(labelMatch) == 1
-        labelParts = [part.lower() for part in labelMatch[0].split("_")]
+        label_match = label_re.findall(data_text)
+        assert label_match
+        assert len(label_match) == 1
+        label_parts = [part.lower() for part in label_match[0].split("_")]
 
-        assert classParts == labelParts, f"{classParts} vs {labelParts}"
+        assert class_parts == label_parts, f"{class_parts} vs {label_parts}"
 
-        items.append("_".join(classParts).upper())
+        items.append("_".join(class_parts).upper())
 
-    return StrEnum(
-        "Data", {item: str(index) for index, item in enumerate(sorted(items), start=1)}
+    return IntEnum(
+        "Data", {item: index for index, item in enumerate(sorted(items), start=1)}
     )

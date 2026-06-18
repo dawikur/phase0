@@ -2,7 +2,6 @@
 
 import textwrap
 from dataclasses import dataclass
-from typing import List
 
 
 @dataclass
@@ -27,7 +26,7 @@ class Glyph:
     yempty_: int = 0
 
     def __post_init__(self) -> None:
-        if self.name == "'" or self.name == "\\":
+        if self.name in ("'", "\\"):
             self.name = f"\\{self.name}"
 
         self.height_ = len(self.bitmap)
@@ -126,4 +125,4 @@ class Glyph:
 @dataclass
 class Typeface:
     name: str
-    glyphs: List[Glyph]
+    glyphs: list[Glyph]

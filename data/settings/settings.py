@@ -1,62 +1,237 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-from enum import IntEnum, StrEnum, auto
-from pathlib import Path
-from typing import List
+from enum import IntEnum, auto
+from typing import Any, cast
 
-from .data import Data
-from .model import Group, Select
+from .model import Array, Boolean, Group, Number, Select
+
+
+class Colors(IntEnum):
+    # sorted by lightness
+    BLACK = 0x000000  # 0.00
+    CHARCOAL = 0x555555  # 0.33
+    SILVER = 0xAAAAAA  # 0.67
+    WHITE = 0xFFFFFF  # 1.00
+
+    # sorted by hue
+    RED = 0xAA0000  #   0°
+    ORANGE = 0xAA5500  #  30°
+    YELLOW = 0xAAAA00  #  60°
+
+    GREEN = 0x55AA00  #  90°
+    CYAN = 0x00AAAA  # 180°
+
+    AZURE = 0x0055AA  # 210°
+    BLUE = 0x0000AA  # 240°
+    INDIGO = 0x5500AA  # 270°
+
+    MAGENTA = 0xAA00AA  # 300°
+    PINK = 0xAA0055  # 330°
 
 
 class Options(IntEnum):
+    ALARM = auto()
     AUTO = auto()
+    BLUETOOTH_CONNECTED = auto()
+    BLUETOOTH_DISCONNECTED = auto()
     LARGE = auto()
+    NOTIFICATIONS = auto()
     SMALL = auto()
 
 
-class Colors(StrEnum):
-    BLACK = "0x000000"
-    DARK_GRAY = "0x555555"
-    LIGHT_GRAY = "0xAAAAAA"
-    WHITE = "0xFFFFFF"
-
-    RED = "0xAA0000"
-    GREEN = "0x00AA00"
-    BLUE = "0x0000AA"
-
-    CYAN = "0x00AAAA"
-    MAGENTA = "0xAA00AA"
-    YELLOW = "0xAAAA00"
-
-    ORANGE = "0xAA5500"
-    PINK = "0xAA0055"
-    LIME = "0x55AA00"
-    TEAL = "0x00AA55"
-    INDIGO = "0x5500AA"
-    SKY_BLUE = "0x0055AA"
+class Heights(IntEnum):
+    AUTO = Options.AUTO.value
+    SMALL = Options.SMALL.value
+    LARGE = Options.LARGE.value
 
 
-class Sizes(StrEnum):
-    AUTO = str(Options.AUTO.value)
-    SMALL = str(Options.SMALL.value)
-    LARGE = str(Options.LARGE.value)
+class Status(IntEnum):
+    ALARM = Options.ALARM.value
+    BLUETOOTH_CONNECTED = Options.BLUETOOTH_CONNECTED.value
+    BLUETOOTH_DISCONNECTED = Options.BLUETOOTH_DISCONNECTED.value
+    NOTIFICATIONS = Options.NOTIFICATIONS.value
 
 
-COLOR = Select("color", Colors.ORANGE, Colors)
-BACKGROUD = Select("background", Colors.DARK_GRAY, Colors)
-SIZE = Select("size", Sizes.AUTO, Sizes)
+class ExtraData(IntEnum):
+    BATTERY = auto()
+    DATE = auto()
+    SUN_MOON = auto()
+    WEATHER = auto()
 
 
-def Settings(data: StrEnum) -> List[Group]:
+def Settings(  # pylint: disable=invalid-name
+    data: IntEnum,
+) -> tuple[IntEnum, list[Group | Array]]:
+    Extra = cast(
+        Any,
+        IntEnum("Extra", {datum.name: datum.value + len(data) for datum in ExtraData}),
+    )
 
-    return [
+    Data = cast(
+        Any,
+        IntEnum(
+            "Data",
+            {
+                **{datum.name: datum.value for datum in data},
+                **{datum.name: datum.value for datum in Extra},
+            },
+        ),
+    )
+
+    return Extra, [
         Group(
             "clock",
             [
-                COLOR,
-                BACKGROUD,
-                SIZE,
+                Select("color", Colors.ORANGE),
+                Select("background", Colors.CHARCOAL),
+                Select("height", Heights.AUTO),
             ],
         ),
-        Group("data", [Select("data", data.HEART_RATE, data)]),  # type: ignore[attr-defined]
+        Array(
+            "status",
+            [
+                [
+                    Select("data", Status.ALARM),
+                    Select("color", Colors.WHITE),
+                    Select("background", Colors.CHARCOAL),
+                ],
+                [
+                    Select("data", Status.BLUETOOTH_CONNECTED),
+                    Select("color", Colors.WHITE),
+                    Select("background", Colors.CHARCOAL),
+                ],
+                [
+                    Select("data", Status.NOTIFICATIONS),
+                    Select("color", Colors.WHITE),
+                    Select("background", Colors.CHARCOAL),
+                ],
+            ],
+        ),
+        Array(
+            "gauges",
+            [
+                [
+                    Select("data", Data.BODY_BATTERY),
+                    Select("color", Colors.CYAN),
+                    Select("background", Colors.CHARCOAL),
+                ],
+                [
+                    Select("data", Data.STRESS),
+                    Select("color", Colors.YELLOW),
+                    Select("background", Colors.CHARCOAL),
+                ],
+                [
+                    Select("data", Data.BODY_BATTERY),
+                    Select("color", Colors.RED),
+                    Select("background", Colors.CHARCOAL),
+                ],
+            ],
+        ),
+        Group(
+            "top outer line",
+            [
+                Select("data", Data.SUN_MOON),
+                Select("label", Colors.ORANGE),
+                Select("color", Colors.WHITE),
+                Select("background", Colors.CHARCOAL),
+                Select("height", Heights.AUTO),
+            ],
+        ),
+        Array(
+            "top middle line",
+            [
+                [
+                    Select("data", Data.RAIN),
+                    Select("label", Colors.ORANGE),
+                    Select("color", Colors.WHITE),
+                    Select("background", Colors.CHARCOAL),
+                    Select("height", Heights.AUTO),
+                    Number("width", 2),
+                    Boolean("icon", True),
+                    Boolean("gauge", False),
+                ],
+                [
+                    Select("data", Data.UV),
+                    Select("label", Colors.ORANGE),
+                    Select("color", Colors.WHITE),
+                    Select("background", Colors.CHARCOAL),
+                    Select("height", Heights.AUTO),
+                    Number("width", 2),
+                    Boolean("icon", True),
+                    Boolean("gauge", False),
+                ],
+                [
+                    Select("data", Data.WIND),
+                    Select("label", Colors.ORANGE),
+                    Select("color", Colors.WHITE),
+                    Select("background", Colors.CHARCOAL),
+                    Select("height", Heights.AUTO),
+                    Number("width", 2),
+                    Boolean("icon", True),
+                    Boolean("gauge", False),
+                ],
+            ],
+        ),
+        Group(
+            "top inner line",
+            [
+                Select("data", Data.WEATHER),
+                Select("color", Colors.WHITE),
+                Select("background", Colors.CHARCOAL),
+                Select("height", Heights.AUTO),
+            ],
+        ),
+        Group(
+            "bottom inner line",
+            [
+                Select("data", Data.DATE),
+                Select("color", Colors.WHITE),
+                Select("background", Colors.CHARCOAL),
+                Select("height", Heights.AUTO),
+            ],
+        ),
+        Array(
+            "bottom middle line",
+            [
+                [
+                    Select("data", Data.HEART_RATE),
+                    Select("label", Colors.ORANGE),
+                    Select("color", Colors.WHITE),
+                    Select("background", Colors.CHARCOAL),
+                    Select("height", Heights.AUTO),
+                    Number("width", 3),
+                    Boolean("icon", False),
+                    Boolean("gauge", True),
+                ],
+                [
+                    Select("data", Data.STEPS),
+                    Select("label", Colors.ORANGE),
+                    Select("color", Colors.WHITE),
+                    Select("background", Colors.CHARCOAL),
+                    Select("height", Heights.AUTO),
+                    Number("width", 3),
+                    Boolean("icon", False),
+                    Boolean("gauge", True),
+                ],
+                [
+                    Select("data", Data.FLOORS_CLIMBED),
+                    Select("label", Colors.ORANGE),
+                    Select("color", Colors.WHITE),
+                    Select("background", Colors.CHARCOAL),
+                    Select("height", Heights.AUTO),
+                    Number("width", 3),
+                    Boolean("icon", False),
+                    Boolean("gauge", True),
+                ],
+            ],
+        ),
+        Group(
+            "bottom outer line",
+            [
+                Select("data", Data.BATTERY),
+                Select("color", Colors.WHITE),
+                Select("background", Colors.CHARCOAL),
+                Select("height", Heights.AUTO),
+            ],
+        ),
     ]

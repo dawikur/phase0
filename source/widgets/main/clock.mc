@@ -5,7 +5,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.WatchUi;
 
-module Widget {
+module Widgets {
 
 class Clock {
 	hidden var font_ as WatchUi.FontResource;
@@ -92,4 +92,4 @@ class Clock {
 	}
 }
 
-} // module Widget
+} // module Widgets

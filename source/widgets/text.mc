@@ -4,7 +4,7 @@ import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
 
-module Widget {
+module Widgets {
 
 class Text extends Base {
 	hidden var small_ as Lang.Boolean = false;
@@ -96,4 +96,4 @@ class Text extends Base {
 	}
 }
 
-} // module Widget
+} // module Widgets

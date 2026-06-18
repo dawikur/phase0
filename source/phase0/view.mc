@@ -11,10 +11,10 @@ import Toybox.WatchUi;
 module Phase0 {
 
 class View extends WatchUi.WatchFace {
-	typedef Widgets as Lang.Array<Widget.Base>;
-	typedef Conditions as Lang.Array<Widget.Condition>;
-	typedef Gauges as Lang.Array<Widget.Gauge>;
-	typedef Metrics as Lang.Array<Widget.Metric>;
+	typedef Widgets as Lang.Array<Widgets.Base>;
+	typedef Conditions as Lang.Array<Widgets.Condition>;
+	typedef Gauges as Lang.Array<Widgets.Gauge>;
+	typedef Metrics as Lang.Array<Widgets.Metric>;
 
 	// ==== fields ====
 
@@ -29,12 +29,11 @@ class View extends WatchUi.WatchFace {
 	hidden var last_refresh_hour_ as Lang.Number = -1;
 
 	// ---- widgets ----
+	hidden const status_ = new Widgets.Status();
 
-	hidden const status_ = new Widget.Status();
-
-	hidden var clock_ as Widget.Clock = new Widget.Clock(false);
-	hidden var seconds_ as Widget.Seconds = new Widget.Seconds(false);
-	hidden var battery_ as Widget.Battery = new Widget.Battery();
+	hidden var clock_ as Widgets.Clock = new Widgets.Clock(false);
+	hidden var seconds_ as Widgets.Seconds = new Widgets.Seconds(false);
+	hidden var battery_ as Widgets.Battery = new Widgets.Battery(false);
 
 	hidden var widgets_per_min_ as Widgets = [];
 	hidden var widgets_per_hour_ as Widgets = [];
@@ -58,12 +57,14 @@ class View extends WatchUi.WatchFace {
 
 	function onEnterSleep() as Void {
 		self.is_base_view_ = true;
+
 		WatchUi.requestUpdate();
 	}
 
 	function onExitSleep() as Void {
 		self.is_base_view_ = true;
 		self.is_high_power_ = true;
+
 		WatchUi.requestUpdate();
 	}
 
@@ -131,7 +132,7 @@ class View extends WatchUi.WatchFace {
 
 		// ==== top outer ====
 
-		var sun_moon = new Widget.SunMoon(layout.outer.small);
+		var sun_moon = new Widgets.SunMoon(layout.outer.small);
 			sun_moon.pos_x = layout.outer.center_x;
 			sun_moon.pos_y = layout.outer.pos_y;
 			sun_moon.size_x = layout.outer.size_x;
@@ -141,9 +142,9 @@ class View extends WatchUi.WatchFace {
 		// ==== top middle ====
 
 		var conditions = [
-			new Widget.Condition(_dc, new Data.Rain(), layout.middle.small),
-			new Widget.Condition(_dc, new Data.Uv(), layout.middle.small),
-			new Widget.Condition(_dc, new Data.Wind(), layout.middle.small),
+			new Widgets.Condition(_dc, new Data.Rain(), layout.middle.small),
+			new Widgets.Condition(_dc, new Data.Uv(), layout.middle.small),
+			new Widgets.Condition(_dc, new Data.Wind(), layout.middle.small),
 		];
 		self.reflowWidgets_(conditions, layout.middle);
 
@@ -151,7 +152,7 @@ class View extends WatchUi.WatchFace {
 
 		// ==== top inner ====
 
-		var weather = new Widget.Weather(layout.inner.small);
+		var weather = new Widgets.Weather(layout.inner.small);
 			weather.pos_x = layout.inner.center_x;
 			weather.pos_y = layout.inner.center_y;
 			weather.size_x = layout.inner.size_x;
@@ -165,16 +166,16 @@ class View extends WatchUi.WatchFace {
 		self.status_.center_x = layout.left.center_x;
 		self.status_.center_y = layout.left.center_y;
 
-		self.clock_ = new Widget.Clock(layout.clock.small);
+		self.clock_ = new Widgets.Clock(layout.clock.small);
 		self.clock_.center_x = layout.clock.center_x;
 		self.clock_.center_y = layout.clock.center_y;
 		self.clock_.radius_x = layout.clock.radius_x;
 		self.clock_.radius_y = layout.clock.radius_y;
 
 		var gauges = [
-			new Widget.Gauge(new Data.BodyBattery(), main_right.size_y),
-			new Widget.Gauge(new Data.Stress(), main_right.size_y),
-			new Widget.Gauge(new Data.Move(), main_right.size_y),
+			new Widgets.Gauge(new Data.BodyBattery(), main_right.size_y),
+			new Widgets.Gauge(new Data.Stress(), main_right.size_y),
+			new Widgets.Gauge(new Data.Move(), main_right.size_y),
 		];
 		self.reflowWidgets_(gauges, layout.rightBox(layout.left));
 
@@ -185,7 +186,7 @@ class View extends WatchUi.WatchFace {
 		var bottom_inner = layout.bottomBox(layout.inner);
 
 		var date_size_x = Render.textWidth(_dc, "ABC 00 XYZ", layout.inner.small);
-		var date = new Widget.Date(layout.inner.small);
+		var date = new Widgets.Date(layout.inner.small);
 			date.pos_x = bottom_inner.pos_x;
 			date.pos_y = bottom_inner.pos_y;
 			date.size_x = date_size_x;
@@ -193,7 +194,7 @@ class View extends WatchUi.WatchFace {
 		self.widgets_per_hour_.add(date);
 
 		var seconds_size_x = Render.textWidth(_dc, "00", bottom_inner.small);
-		self.seconds_ = new Widget.Seconds(layout.inner.small);
+		self.seconds_ = new Widgets.Seconds(layout.inner.small);
 			self.seconds_.pos_x = bottom_inner.end_x - seconds_size_x;
 			self.seconds_.pos_y = bottom_inner.pos_y;
 			self.seconds_.size_x = seconds_size_x;
@@ -223,7 +224,7 @@ class View extends WatchUi.WatchFace {
 				}
 			}
 
-			var am_pm = new Widget.AmPm(bottom_inner.small);
+			var am_pm = new Widgets.AmPm(bottom_inner.small);
 				am_pm.pos_x = am_pm_pos_x;
 				am_pm.pos_y = bottom_inner.pos_y;
 				am_pm.size_x = am_pm_size_x;
@@ -242,9 +243,9 @@ class View extends WatchUi.WatchFace {
 		var metrics_base_small = bottom_middle.small || (bottom_middle.size_x < metrics_base_size_regular);
 
 		self.metrics_base_= [
-			new Widget.Metric(_dc, new Data.HeartRate(), 3, metrics_base_small),
-			new Widget.Metric(_dc, new Data.Steps(), 3, metrics_base_small),
-			new Widget.Metric(_dc, new Data.FloorsClimbed(), 3, metrics_base_small),
+			new Widgets.Metric(_dc, new Data.HeartRate(), 3, metrics_base_small),
+			new Widgets.Metric(_dc, new Data.Steps(), 3, metrics_base_small),
+			new Widgets.Metric(_dc, new Data.FloorsClimbed(), 3, metrics_base_small),
 		];
 		self.reflowWidgets_(self.metrics_base_, bottom_middle);
 
@@ -256,8 +257,8 @@ class View extends WatchUi.WatchFace {
 		var metrics_alt_small = bottom_middle.small || (bottom_middle.size_x < metrics_alt_size_regular);
 
 		self.metrics_alt_ = [
-			new Widget.Metric(_dc, new Data.Calories(), 5, metrics_alt_small),
-			new Widget.Metric(_dc, new Data.SolarIntensity(), 3, metrics_alt_small),
+			new Widgets.Metric(_dc, new Data.Calories(), 5, metrics_alt_small),
+			new Widgets.Metric(_dc, new Data.SolarIntensity(), 3, metrics_alt_small),
 		];
 		self.reflowWidgets_(self.metrics_alt_, bottom_middle);
 

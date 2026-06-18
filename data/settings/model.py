@@ -1,9 +1,8 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import textwrap
 from dataclasses import dataclass
-from enum import StrEnum
-from typing import Any, Dict, Iterator, List
+from enum import EnumType
+from typing import Any, Iterator
 
 
 @dataclass(order=True)
@@ -11,7 +10,7 @@ class Token:
     name: str
 
     @property
-    def parts(self) -> List[str]:
+    def parts(self) -> list[str]:
         return self.name.split(" ")
 
     @property
@@ -32,17 +31,13 @@ class Token:
 
 
 @dataclass
-class Select:
+class Number:
     name: Token
-    options: Dict[Token, str]
-    default: str
+    default: int
 
-    def __init__(self, name: str, default: Any, options: Any):
+    def __init__(self, name: str, default: int):
         self.name = Token(name)
-
-        self.options = {Token(option.name): str(option.value) for option in options}
-
-        self.default = self.options[Token(default.name)]
+        self.default = default
 
     @property
     def id(self) -> str:
@@ -52,16 +47,57 @@ class Select:
     def label(self) -> str:
         return self.name.label
 
+
+@dataclass
+class Boolean:
+    name: Token
+    default: bool
+
+    def __init__(self, name: str, default: bool):
+        self.name = Token(name)
+        self.default = default
+
+    @property
+    def id(self) -> str:
+        return self.name.id
+
+    @property
+    def label(self) -> str:
+        return self.name.label
+
+
+@dataclass
+class Select:
+    name: Token
+    default: str
+    options: dict[Token, str]
+
+    def __init__(self, name: str, default: Any, options: EnumType | None = None):
+        self.name = Token(name)
+        self.options: dict[Token, str] = {
+            Token(option.name): str(option.value)
+            for option in (options or type(default))
+        }
+        self.default = self.options[Token(default.name)]
+
     def __iter__(self) -> Iterator[Token]:
         return self.options.__iter__()
+
+    @property
+    def id(self) -> str:
+        return self.name.id
+
+    @property
+    def label(self) -> str:
+        return self.name.label
 
 
 @dataclass
 class Group:
     name: Token
-    selections: List[Select]
+    selections: list[Select]
 
-    def __init__(self, name: str, selections: List[Select]):
+    def __init__(self, name: str, selections: list[Select]):
         self.name = Token(name)
         self.selections = selections
 
@@ -75,3 +111,50 @@ class Group:
 
     def __iter__(self) -> Iterator[Select]:
         return self.selections.__iter__()
+
+
+@dataclass
+class Array:
+    Widget = list[Select | Number | Boolean]
+
+    name: Token
+    elements: list[Widget]
+
+    def __init__(self, name: str, elements: list[Widget]):
+        self.name = Token(name)
+        self.elements = elements
+
+        assert self.elements, "Array elements must not be empty"
+        reference = self.elements[0]
+
+        for row_index, element in enumerate(self.elements[1:], start=1):
+            if len(element) != len(reference):
+                raise AssertionError(
+                    f"Array '{self.name.name}' row {row_index} has length "
+                    f"{len(element)}, expected {len(reference)}"
+                )
+
+            for col_index, (item, expected) in enumerate(zip(element, reference)):
+                if type(item) is not type(expected):
+                    raise AssertionError(
+                        f"Array '{self.name.name}' row {row_index}, column {col_index} "
+                        f"has type {type(item).__name__}, expected "
+                        f"{type(expected).__name__}"
+                    )
+
+                if item.name != expected.name:
+                    raise AssertionError(
+                        f"Array '{self.name.name}' row {row_index}, column {col_index} "
+                        f"has name '{item.name.name}', expected '{expected.name.name}'"
+                    )
+
+    @property
+    def id(self) -> str:
+        return self.name.id
+
+    @property
+    def label(self) -> str:
+        return self.name.label
+
+    def __iter__(self) -> Iterator[Widget]:
+        return self.elements.__iter__()

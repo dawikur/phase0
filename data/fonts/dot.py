@@ -1,4 +1,5 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+# pylint: disable=too-many-lines
 
 from .model import Glyph, Typeface
 

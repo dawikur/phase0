@@ -1,9 +1,7 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 import argparse
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 
 class Folders:
@@ -17,9 +15,7 @@ class Folders:
         self.source_ = source
 
     @staticmethod
-    def get_(
-        path: Path, folder: Optional[str] = None, file: Optional[str] = None
-    ) -> Path:
+    def get_(path: Path, folder: str | None = None, file: str | None = None) -> Path:
         if folder:
             path = path / folder
             path.mkdir(parents=True, exist_ok=True)
@@ -27,15 +23,13 @@ class Folders:
             path = path / file
         return path
 
-    def build(self, folder: Optional[str] = None, file: Optional[str] = None) -> Path:
+    def build(self, folder: str | None = None, file: str | None = None) -> Path:
         return Folders.get_(self.build_, folder, file)
 
-    def resources(
-        self, folder: Optional[str] = None, file: Optional[str] = None
-    ) -> Path:
+    def resources(self, folder: str | None = None, file: str | None = None) -> Path:
         return Folders.get_(self.resources_, folder, file)
 
-    def source(self, folder: Optional[str] = None, file: Optional[str] = None) -> Path:
+    def source(self, folder: str | None = None, file: str | None = None) -> Path:
         return Folders.get_(self.source_, folder, file)
 
 

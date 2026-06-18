@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com> -->
+
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
 	<string id="APP_NAME">phase0</string>
 
@@ -110,27 +112,54 @@
 	<string id="LABEL_VO2_RUN">VO2R</string>
 	<string id="LABEL_WIND">Wind</string>
 
+	<string id="LABEL_ALARM">Alarm</string>
+	<string id="LABEL_BATTERY_DAYS">Battery Days</string>
+	<string id="LABEL_BATTERY_ICON">Battery Icon</string>
 	<string id="LABEL_AUTO">Auto</string>
+	<string id="LABEL_AZURE">Azure</string>
 	<string id="LABEL_BACKGROUND">Background</string>
+	<string id="LABEL_BATTERY_PERCENT">Battery Percentage</string>
 	<string id="LABEL_BLACK">Black</string>
 	<string id="LABEL_BLUE">Blue</string>
+	<string id="LABEL_BLUETOOTH_CONNECTED">Bluetooth Connected</string>
+	<string id="LABEL_BLUETOOTH_DISCONNECTED">Bluetooth Disconnected</string>
+	<string id="LABEL_CHARCOAL">CHARCOAL</string>
 	<string id="LABEL_COLOR">Color</string>
+	<string id="LABEL_CONDITION_TEMP">Condition/Temperature</string>
 	<string id="LABEL_CYAN">Cyan</string>
-	<string id="LABEL_DARK_GRAY">Dark Gray</string>
 	<string id="LABEL_DATA">Data</string>
+	<string id="LABEL_DATE">Date</string>
+	<string id="LABEL_GAUGE">Gauge</string>
+	<string id="LABEL_GAUGES">Gauges</string>
 	<string id="LABEL_GREEN">Green</string>
+	<string id="LABEL_HEIGHT">Height</string>
+	<string id="LABEL_ICON">Icon</string>
 	<string id="LABEL_INDIGO">Indigo</string>
+	<string id="LABEL_LABEL">Label</string>
 	<string id="LABEL_LARGE">Large</string>
-	<string id="LABEL_LIGHT_GRAY">Light Gray</string>
 	<string id="LABEL_LIME">Lime</string>
 	<string id="LABEL_MAGENTA">Magenta</string>
+	<string id="LABEL_NOTIFICATIONS">Notifications</string>
 	<string id="LABEL_ORANGE">Orange</string>
 	<string id="LABEL_PINK">Pink</string>
 	<string id="LABEL_RED">Red</string>
+	<string id="LABEL_SILVER">Silver</string>
 	<string id="LABEL_SIZE">Size</string>
-	<string id="LABEL_SKY_BLUE">Sky Blue</string>
 	<string id="LABEL_SMALL">Small</string>
+	<string id="LABEL_STATUS">Status</string>
+	<string id="LABEL_SUN_MOON">Sun Moon</string>
 	<string id="LABEL_TEAL">Teal</string>
+	<string id="LABEL_WEATHER">Weather</string>
 	<string id="LABEL_WHITE">White</string>
+	<string id="LABEL_WIDTH">Width</string>
 	<string id="LABEL_YELLOW">Yellow</string>
+
+	<string id="LABEL_TOP_MIDDLE_LINE">Top Middle Line</string>
+	<string id="LABEL_TOP_OUTER_LINE">Top Outer Line</string>
+	<string id="LABEL_TOP_INNER_LINE">Top Inner Line</string>
+
+	<string id="LABEL_BOTTOM_INNER_LINE">Bottom Inner Line</string>
+	<string id="LABEL_BOTTOM_OUTER_LINE">Bottom Outer Line</string>
+	<string id="LABEL_BOTTOM_MIDDLE_LINE">Bottom Middle Line</string>
+
 </strings>

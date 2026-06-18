@@ -4,7 +4,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
 
-module Widget {
+module Widgets {
 
 class Gauge extends Base {
 	hidden var impl_ as Data.Base;
@@ -52,4 +52,4 @@ class Gauge extends Base {
 	}
 }
 
-} // module Widget
+} // module Widgets
