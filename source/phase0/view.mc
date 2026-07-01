@@ -12,7 +12,6 @@ module Phase0 {
 
 class View extends WatchUi.WatchFace {
 	typedef Widgets as Lang.Array<Widgets.Base>;
-	typedef Conditions as Lang.Array<Widgets.Condition>;
 	typedef Gauges as Lang.Array<Widgets.Gauge>;
 	typedef Metrics as Lang.Array<Widgets.Metric>;
 
@@ -69,6 +68,8 @@ class View extends WatchUi.WatchFace {
 	}
 
 	function onSettingsChanged() as Void {
+		self.updateProperties_();
+
 		WatchUi.requestUpdate();
 	}
 
@@ -133,19 +134,28 @@ class View extends WatchUi.WatchFace {
 		// ==== top outer ====
 
 		var sun_moon = new Widgets.SunMoon(layout.outer.small);
-			sun_moon.pos_x = layout.outer.center_x;
+			sun_moon.pos_x = layout.outer.pos_x + layout.outer.size_x / 2;
 			sun_moon.pos_y = layout.outer.pos_y;
-			sun_moon.size_x = layout.outer.size_x;
-			sun_moon.size_y = layout.outer.size_y;
+			sun_moon.size_x = layout.outer.size_x / 2;
+			sun_moon.size_y = layout.outer.size_y / 2;
 		self.widgets_per_hour_.add(sun_moon);
 
 		// ==== top middle ====
 
 		var conditions = [
-			new Widgets.Condition(_dc, new Data.Rain(), layout.middle.small),
-			new Widgets.Condition(_dc, new Data.Uv(), layout.middle.small),
-			new Widgets.Condition(_dc, new Data.Wind(), layout.middle.small),
+			new Widgets.Metric(_dc, new Data.Rain(), 2, layout.middle.small),
+			new Widgets.Metric(_dc, new Data.Uv(), 2, layout.middle.small),
+			new Widgets.Metric(_dc, new Data.Wind(), 2, layout.middle.small),
 		];
+		var conditions_size = conditions.size();
+		for (var i = 0; i < conditions_size; ++i) {
+			var metric = conditions[i];
+
+			metric.show_label = true;
+			metric.show_icon = true;
+
+			metric.resize(_dc);
+		}
 		self.reflowWidgets_(conditions, layout.middle);
 
 		self.widgets_per_min_.addAll(conditions);
@@ -153,24 +163,24 @@ class View extends WatchUi.WatchFace {
 		// ==== top inner ====
 
 		var weather = new Widgets.Weather(layout.inner.small);
-			weather.pos_x = layout.inner.center_x;
-			weather.pos_y = layout.inner.center_y;
-			weather.size_x = layout.inner.size_x;
-			weather.size_y = layout.inner.size_y;
+			weather.pos_x = layout.inner.pos_x + layout.inner.size_x / 2;
+			weather.pos_y = layout.inner.pos_y + layout.inner.size_y / 2;
+			weather.size_x = layout.inner.size_x / 2;
+			weather.size_y = layout.inner.size_y / 2;
 		self.widgets_per_min_.add(weather);
 
 		// ==== main ====
 
 		var main_right = layout.rightBox(layout.left);
 
-		self.status_.center_x = layout.left.center_x;
-		self.status_.center_y = layout.left.center_y;
+		self.status_.pos_x = layout.left.pos_x;
+		self.status_.pos_y = layout.left.pos_y;
 
 		self.clock_ = new Widgets.Clock(layout.clock.small);
-		self.clock_.center_x = layout.clock.center_x;
-		self.clock_.center_y = layout.clock.center_y;
-		self.clock_.radius_x = layout.clock.radius_x;
-		self.clock_.radius_y = layout.clock.radius_y;
+		self.clock_.pos_x = layout.clock.pos_x;
+		self.clock_.pos_y = layout.clock.pos_y;
+		self.clock_.size_x = layout.clock.size_x;
+		self.clock_.size_y = layout.clock.size_y;
 
 		var gauges = [
 			new Widgets.Gauge(new Data.BodyBattery(), main_right.size_y),
@@ -225,10 +235,10 @@ class View extends WatchUi.WatchFace {
 			}
 
 			var am_pm = new Widgets.AmPm(bottom_inner.small);
-				am_pm.pos_x = am_pm_pos_x;
-				am_pm.pos_y = bottom_inner.pos_y;
-				am_pm.size_x = am_pm_size_x;
-				am_pm.size_y = bottom_inner.size_y;
+				am_pm.pos_x = am_pm_pos_x + am_pm_size_x / 2;
+				am_pm.pos_y = bottom_inner.pos_y + bottom_inner.size_y / 2;
+				am_pm.size_x = am_pm_size_x / 2;
+				am_pm.size_y = bottom_inner.size_y / 2;
 			self.widgets_per_hour_.add(am_pm);
 		}
 
@@ -239,7 +249,7 @@ class View extends WatchUi.WatchFace {
 		// ---- metrics base ----
 
 		var metrics_base_size_regular =
-			self.metricWidth_(_dc, 3, Render.SIZE_REGULAR) * 3;
+			Widgets.Metric.Width(_dc, 3, Render.SIZE_REGULAR, false, true, true) * 3;
 		var metrics_base_small = bottom_middle.small || (bottom_middle.size_x < metrics_base_size_regular);
 
 		self.metrics_base_= [
@@ -247,19 +257,39 @@ class View extends WatchUi.WatchFace {
 			new Widgets.Metric(_dc, new Data.Steps(), 3, metrics_base_small),
 			new Widgets.Metric(_dc, new Data.FloorsClimbed(), 3, metrics_base_small),
 		];
+		var metrics_base_size = self.metrics_base_.size();
+		for (var i = 0; i < metrics_base_size; ++i) {
+			var metric = self.metrics_base_[i];
+
+			metric.show_label = true;
+			metric.show_padding = true;
+			metric.show_gauge = true;
+
+			metric.resize(_dc);
+		}
 		self.reflowWidgets_(self.metrics_base_, bottom_middle);
 
 		// ---- metrics alt ----
 
 		var metrics_alt_size_regular =
-			self.metricWidth_(_dc, 5, Render.SIZE_REGULAR) +
-			self.metricWidth_(_dc, 3, Render.SIZE_REGULAR);
+			Widgets.Metric.Width(_dc, 5, Render.SIZE_REGULAR, false, true, true) +
+			Widgets.Metric.Width(_dc, 3, Render.SIZE_REGULAR, false, true, true);
 		var metrics_alt_small = bottom_middle.small || (bottom_middle.size_x < metrics_alt_size_regular);
 
 		self.metrics_alt_ = [
 			new Widgets.Metric(_dc, new Data.Calories(), 5, metrics_alt_small),
 			new Widgets.Metric(_dc, new Data.SolarIntensity(), 3, metrics_alt_small),
 		];
+		var metrics_alt_size = self.metrics_alt_.size();
+		for (var i = 0; i < metrics_alt_size; ++i) {
+			var metric = self.metrics_alt_[i];
+
+			metric.show_label = true;
+			metric.show_padding = true;
+			metric.show_gauge = true;
+
+			metric.resize(_dc);
+		}
 		self.reflowWidgets_(self.metrics_alt_, bottom_middle);
 
 		// ==== bottom outer ====
@@ -346,6 +376,9 @@ class View extends WatchUi.WatchFace {
 		self.seconds_.render(_dc, true);
 	}
 
+	hidden function updateProperties_() as Void {
+	}
+
 	hidden function isNightMode_() as Lang.Boolean {
 		var user_profile = UserProfile.getProfile();
 		if (user_profile.sleepTime == null) {
@@ -404,19 +437,22 @@ class View extends WatchUi.WatchFace {
 	}
 
 	static hidden function reflowWidgets_(
-		_widgets as Widgets,
+		_widgets as Widgets or Metrics,
 		_box as Box
 	) as Void {
 		var widgets_size = _widgets.size();
+		if (widgets_size == 0) {
+			return;
+		}
 
 		var occupied_size_x = 0;
 		for (var i = 0; i < widgets_size; ++i) {
 			occupied_size_x += _widgets[i].size_x;
 		}
 
-		var spacing = (_box.size_x - occupied_size_x) / (2 * widgets_size);
+		var spacing = (_box.size_x - occupied_size_x) / widgets_size;
 
-		var pos_x = _box.pos_x + spacing;
+		var pos_x = _box.pos_x + (spacing / 2);
 		var pos_y = _box.pos_y;
 		for (var i = 0; i < widgets_size; ++i) {
 			var widget = _widgets[i];
@@ -424,16 +460,8 @@ class View extends WatchUi.WatchFace {
 			widget.pos_x = pos_x;
 			widget.pos_y = pos_y;
 
-			pos_x += 2 * spacing + widget.size_x;
+			pos_x += spacing + widget.size_x;
 		}
-	}
-
-	hidden function metricWidth_(
-		_dc as Graphics.Dc,
-		_count as Lang.Number,
-		_small as Lang.Boolean
-	) as Lang.Number {
-		return Render.numberWidth(_dc, _count, _small) + 3 * Render.SPACING;
 	}
 }
 

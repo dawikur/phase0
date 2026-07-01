@@ -44,9 +44,11 @@ SRCS      := $(shell find source -type f)
 SRCS_DATA := $(shell find source/data -type f)
 RSCS      := $(shell find resources -type f)
 
-RESOURCES_DIR       := resources/
-RESOURCES_BASE_DIR  := $(RESOURCES_DIR)base/
-RESOURCES_BUILD_DIR := $(RESOURCES_DIR)build/
+SRCS_GENERATED_DIR  := source/generated/
+
+RESOURCES_DIR           := resources/
+RESOURCES_BASE_DIR      := $(RESOURCES_DIR)base/
+RESOURCES_GENERATED_DIR := $(RESOURCES_DIR)generated/
 
 SOURCE_DIR       := source/
 BUILD_SOURCE_DIR := $(BUILD_DIR)source/
@@ -60,15 +62,15 @@ ICON_DEPS      := scripts/generate_icon                      \
                   $(SCRIPT_DEPS)                             \
                   $(shell find data/fonts -type f)           \
                   $(shell find resources -name strings.xml)
-ICON           := $(RESOURCES_BUILD_DIR)icon.xml
+ICON           := $(RESOURCES_GENERATED_DIR)icon.xml
 FONTS_DEPS     := scripts/generate_fonts                     \
                   $(SCRIPT_DEPS)                             \
                   $(shell find data/fonts -type f)
-FONTS          := $(RESOURCES_BUILD_DIR)fonts.xml
+FONTS          := $(RESOURCES_GENERATED_DIR)fonts.xml
 SETTINGS_DEPS  := scripts/generate_settings                  \
                   $(SCRIPT_DEPS)                             \
                   $(shell find data/settings -type f)
-SETTINGS       := $(RESOURCES_BUILD_DIR)settings.xml
+SETTINGS       := $(RESOURCES_GENERATED_DIR)settings.xml
 
 RESOURCES := $(ICON) $(FONTS)
 
@@ -154,7 +156,7 @@ t test:
 
 c clean:
 	$(Q)echo " [ clean ]"
-	$(RM) -r bin $(BUILD_DIR) $(RESOURCES) $(RESOURCES_BUILD_DIR)
+	$(RM) -r bin $(BUILD_DIR) $(SRCS_GENERATED_DIR) $(RESOURCES) $(RESOURCES_GENERATED_DIR)
 .PHONY: c clean
 
 # ---- help ----

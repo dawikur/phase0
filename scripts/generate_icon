@@ -67,10 +67,10 @@ def render_xml(icon_svg: Path) -> str:
 def main() -> None:
     folders = parse_folders()
 
-    icon_svg = folders.build("resources", "icon.svg")
+    icon_svg = folders.resources("generated", "icon.svg")
     icon_svg.write_text(render_svg())
 
-    icon_xml = folders.resources("build", "icon.xml")
+    icon_xml = folders.resources("generated", "icon.xml")
     icon_xml.write_text(render_xml(icon_svg))
 
 

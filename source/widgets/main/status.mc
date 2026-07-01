@@ -8,8 +8,8 @@ import Toybox.System;
 module Widgets {
 
 class Status {
-	var center_x as Lang.Number = 0;
-	var center_y as Lang.Number = 0;
+	var pos_x as Lang.Number = 0;
+	var pos_y as Lang.Number = 0;
 
 	hidden var format_ as Lang.String = "$1$\n$2$\n$3$";
 	hidden var enabled_ as Lang.String = "";
@@ -51,19 +51,17 @@ class Status {
 	}
 
 	function render(_dc as Graphics.Dc, _is_night_mode as Lang.Boolean) as Void {
-		if (_is_night_mode) {
-			Render.icons(
-				_dc, self.center_x, self.center_y,
-				self.enabled_,
-				""
-			);
-		} else {
-			Render.icons(
-				_dc, self.center_x, self.center_y,
-				self.enabled_,
-				self.all_
-			);
-		}
+		Render.icons(
+			_dc,
+			self.pos_x,
+			self.pos_y,
+			self.enabled_,
+			_is_night_mode
+				? ""
+				: self.all_,
+			Render.JUSTIFY_LEFT
+		);
+
 	}
 }
 

@@ -3,10 +3,10 @@
 .build
 build
 bin
-
-resources/build/
+generated
 
 .mypy_cache
 .venv
+.vscode
 
 __pycache__

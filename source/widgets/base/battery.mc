@@ -61,16 +61,29 @@ class Battery extends Base {
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
-		var pos_x = self.pos_x + self.size_x / 2;
-		var pos_y = self.pos_y + self.size_y / 2;
+		var center_x = self.pos_x + self.size_x / 2;
+		var center_y = self.pos_y + self.size_y / 2;
 
-		Render.iconsColor(_dc, pos_x, pos_y, self.charge_, self.color_);
+		Render.iconsColor(
+			_dc,
+			center_x,
+			center_y,
+			self.charge_,
+			Render.JUSTIFY_CENTER,
+			self.color_
+		);
 
-		if (System.getSystemStats().charging) {
-			Render.iconsColor(_dc, pos_x, pos_y, self.frame_, Render.COLOR_WHITE);
-		} else {
-			Render.iconsColor(_dc, pos_x, pos_y, self.frame_, Render.COLOR_DARK_GRAY);
-		}
+		Render.iconsColor(
+			_dc,
+			center_x,
+			center_y,
+			self.frame_,
+			Render.JUSTIFY_CENTER,
+			System.getSystemStats().charging
+				? Render.COLOR_WHITE
+				: Render.COLOR_DARK_GRAY
+		);
+
 	}
 }
 

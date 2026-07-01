@@ -291,10 +291,10 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
     fonts_mc = McDocument.create()
 
     def store(font_name: str, atlas: Image, fnt: str) -> None:
-        font_png = folders.build("resources", f"{font_name}.png")
+        font_png = folders.resources("generated", f"{font_name}.png")
         atlas.save(font_png)
 
-        font_fnt = folders.build("resources", f"{font_name}.fnt")
+        font_fnt = folders.resources("generated", f"{font_name}.fnt")
         font_fnt.write_text(fnt)
 
         font_name = font_name.upper()
@@ -398,8 +398,8 @@ def generate_fonts(folders: Folders, required_glyphs: set[str]) -> None:
     # #########################################################################
     # Write
 
-    folders.build("source", "fonts.mc").write_text(fonts_mc.text())
-    folders.resources("build", "fonts.xml").write_text(fonts_xml.render())
+    folders.source("generated", "fonts.mc").write_text(fonts_mc.text())
+    folders.resources("generated", "fonts.xml").write_text(fonts_xml.render())
 
 
 def main() -> None:

@@ -33,6 +33,10 @@ const FONT_ICONS as WatchUi.FontResource = Fonts.ICONS;
 const SIZE_SMALL as Lang.Boolean = true;
 const SIZE_REGULAR as Lang.Boolean = false;
 
+const JUSTIFY_LEFT as Lang.Number = Graphics.TEXT_JUSTIFY_LEFT;
+const JUSTIFY_CENTER as Lang.Number = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
+const JUSTIFY_RIGHT as Lang.Number = Graphics.TEXT_JUSTIFY_RIGHT;
+
 // ////////////////////////////////////////////////////////////////////////////
 // Helpers
 
@@ -75,9 +79,9 @@ function text(
 	_dc as Graphics.Dc,
 	_pos_x as Lang.Number,
 	_pos_y as Lang.Number,
+	_small as Lang.Boolean,
 	_text as Lang.String,
-	_justify as Lang.Number,
-	_small as Lang.Boolean
+	_justify as Lang.Number
 ) as Void {
 	var shade = _small ? 1 : 0;
 
@@ -94,9 +98,9 @@ function textBg(
 	_dc as Graphics.Dc,
 	_pos_x as Lang.Number,
 	_pos_y as Lang.Number,
+	_small as Lang.Boolean,
 	_text as Lang.String,
-	_justify as Lang.Number,
-	_small as Lang.Boolean
+	_justify as Lang.Number
 ) as Void {
 	// bg
 	_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
@@ -131,7 +135,7 @@ function number(
 		var bg = numberBg(_size);
 
 		_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_pos_x, _pos_y, font_bg, bg, Graphics.TEXT_JUSTIFY_LEFT);
+		_dc.drawText(_pos_x, _pos_y, font_bg, bg, Render.JUSTIFY_LEFT);
 
 		return;
 	}
@@ -141,18 +145,18 @@ function number(
 
 	// padding
 	_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, font_bg, bg, Graphics.TEXT_JUSTIFY_LEFT);
+	_dc.drawText(_pos_x, _pos_y, font_bg, bg, Render.JUSTIFY_LEFT);
 
 	_pos_x += _dc.getTextWidthInPixels(bg, font_bg);
 
 	// number
 	_dc.setColor(COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_pos_x, _pos_y, font_fg, str, Graphics.TEXT_JUSTIFY_LEFT);
+	_dc.drawText(_pos_x, _pos_y, font_fg, str, Render.JUSTIFY_LEFT);
 
 	if (!_small) {
 		// shade
 		_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_pos_x, _pos_y, font_bg, str, Graphics.TEXT_JUSTIFY_LEFT);
+		_dc.drawText(_pos_x, _pos_y, font_bg, str, Render.JUSTIFY_LEFT);
 	}
 }
 
@@ -232,15 +236,15 @@ function gauge(
 	_dc as Graphics.Dc,
 	_pos_x as Lang.Number,
 	_pos_y as Lang.Number,
+	_height as Lang.Number,
 	_value as Lang.Float,
-	_max_height as Lang.Number,
 	_from_bottom as Lang.Boolean
 ) as Void {
 	if (_value <= 0.0) {
 	} else if (_value < 1.0) {
-		var height = (_value * _max_height).toNumber();
+		var height = (_value * _height).toNumber();
 
-		var top_spacing = (_from_bottom ? _max_height - height : 0);
+		var top_spacing = (_from_bottom ? _height - height : 0);
 
 		_dc.setColor(COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
 		_dc.fillRectangle(
@@ -255,12 +259,12 @@ function gauge(
 			_pos_x,
 			_pos_y,
 			SPACING,
-			_max_height
+			_height
 		);
 	}
 
 	_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
-	for (var i = 0; i < _max_height; i += 2 * SPACING) {
+	for (var i = 0; i < _height; i += 2 * SPACING) {
 		_dc.fillRectangle(
 			_pos_x,
 			_pos_y + i,
@@ -274,16 +278,16 @@ function gaugeColor(
 	_dc as Graphics.Dc,
 	_pos_x as Lang.Number,
 	_pos_y as Lang.Number,
+	_height as Lang.Number,
 	_value as Lang.Float,
-	_max_height as Lang.Number,
 	_from_bottom as Lang.Boolean,
 	_color_fg as Lang.Number
 ) as Void {
 	if (_value <= 0.0) {
 	} else if (_value < 1.0) {
-		var height = (_value * _max_height).toNumber();
+		var height = (_value * _height).toNumber();
 
-		var top_spacing = (_from_bottom ? _max_height - height : 0);
+		var top_spacing = (_from_bottom ? _height - height : 0);
 
 		_dc.setColor(_color_fg, Graphics.COLOR_TRANSPARENT);
 		_dc.fillRectangle(
@@ -298,12 +302,12 @@ function gaugeColor(
 			_pos_x,
 			_pos_y,
 			SPACING,
-			_max_height
+			_height
 		);
 	}
 
 	_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
-	for (var i = 0; i < _max_height; i += 2 * SPACING) {
+	for (var i = 0; i < _height; i += 2 * SPACING) {
 		_dc.fillRectangle(
 			_pos_x,
 			_pos_y + i,
@@ -318,17 +322,16 @@ function gaugeColor(
 
 function icons(
 	_dc as Graphics.Dc,
-	_center_x as Lang.Number,
-	_center_y as Lang.Number,
+	_pos_x as Lang.Number,
+	_pos_y as Lang.Number,
 	_fg as Lang.String,
-	_bg as Lang.String
+	_bg as Lang.String,
+	_justify as Lang.Number
 ) as Void {
-	var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
-
 	// fg
 	if (_bg.length() == 0) {
 		_dc.setColor(COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_center_x, _center_y, FONT_ICONS, _fg, justify);
+		_dc.drawText(_pos_x, _pos_y, FONT_ICONS, _fg, _justify);
 
 		return;
 	}
@@ -336,31 +339,30 @@ function icons(
 	// bg
 	if (_fg.length() == 0) {
 		_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_center_x, _center_y, FONT_ICONS, _bg, justify);
+		_dc.drawText(_pos_x, _pos_y, FONT_ICONS, _bg, _justify);
 
 		return;
 	}
 
 	// fg
 	_dc.setColor(COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_center_x, _center_y, FONT_ICONS, _fg, justify);
+	_dc.drawText(_pos_x, _pos_y, FONT_ICONS, _fg, _justify);
 
 	// shade
 	_dc.setColor(COLOR_DARK_GRAY, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_center_x +1, _center_y +1, FONT_ICONS, _bg, justify);
+	_dc.drawText(_pos_x +1, _pos_y +1, FONT_ICONS, _bg, _justify);
 }
 
 function iconsColor(
 	_dc as Graphics.Dc,
-	_center_x as Lang.Number,
-	_center_y as Lang.Number,
+	_pos_x as Lang.Number,
+	_pos_y as Lang.Number,
 	_icons as Lang.String,
+	_justify as Lang.Number,
 	_color as Lang.Number
 ) as Void {
-	var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
-
 	_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
-	_dc.drawText(_center_x, _center_y, FONT_ICONS, _icons, justify);
+	_dc.drawText(_pos_x, _pos_y, FONT_ICONS, _icons, _justify);
 }
 
 function iconsWidth(_dc as Graphics.Dc, _icons as Lang.String) as Lang.Number {

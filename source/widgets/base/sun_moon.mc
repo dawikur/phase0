@@ -10,13 +10,17 @@ import Toybox.Weather;
 
 module Widgets {
 
-class SunMoon extends Text {
+class SunMoon extends Base {
 	static const MOON_PHASES = 16;
 
 	hidden var moon_phase_ as Lang.Number = 0;
 
+	hidden var label_ as Lang.String = "";
+	hidden var value_ as Lang.String = "";
+	hidden var value_bg_ as Lang.String = "";
+
 	function initialize(_small as Lang.Boolean) {
-		Text.initialize(Complications.COMPLICATION_TYPE_SUNRISE, true);
+		Base.initialize(Complications.COMPLICATION_TYPE_SUNRISE);
 
 		self.label_ = _small ? "" : Lang.format("$1$     $2$", [
 			Resources.get(Rez.Strings.LABEL_DAWN),
@@ -24,13 +28,11 @@ class SunMoon extends Text {
 		]);
 
 		self.value_bg_ = "00:00   00:00";
-
-		self.justify_ = Graphics.TEXT_JUSTIFY_CENTER;
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {
 		self.value_ = self.getValue();
-		self.moon_phase_ = getMoonPhase(Time.now());
+		self.moon_phase_ = SunMoon.MoonPhase(Time.now());
 
 		if (self.value_.length() != 0) {
 			Cache.setValue("dawn_dusk", self.value_);
@@ -43,14 +45,48 @@ class SunMoon extends Text {
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
-		Text.render(_dc);
+
+		// ---- prepare ----
 
 		var pos_x = self.pos_x;
-		var pos_y = self.pos_y + Render.textHeight(_dc, self.small_) / 2;
+		var pos_y = self.pos_y;
+
+		// ---- label ----
 
 		if (self.label_.length() != 0) {
-			pos_y += (Render.labelHeight(_dc) + Render.SPACING) / 2;
+			Render.label(
+				_dc,
+				pos_x,
+				pos_y,
+				self.label_,
+				Graphics.TEXT_JUSTIFY_CENTER
+			);
+			pos_y += Render.labelHeight(_dc) + Render.SPACING;
 		}
+
+		// ---- value ----
+
+		if (self.value_.length() != 0) {
+			Render.text(
+				_dc,
+				pos_x,
+				pos_y,
+				true,
+				self.value_,
+				Graphics.TEXT_JUSTIFY_CENTER
+			);
+		} else {
+			Render.textBg(
+				_dc,
+				pos_x,
+				pos_y,
+				true,
+				self.value_bg_,
+				Graphics.TEXT_JUSTIFY_CENTER
+			);
+		}
+
+		// ---- icon ----
 
 		var is_new_moon = self.moon_phase_ == 0;
 		var is_full_moon = self.moon_phase_ == (SunMoon.MOON_PHASES / 2);
@@ -58,12 +94,40 @@ class SunMoon extends Text {
 			(Fonts.ICON_MOON_00.toCharArray()[0] + self.moon_phase_).toString();
 
 		if (is_new_moon) {
-			Render.icons(_dc, pos_x, pos_y, "", moon_icon);
+			Render.icons(
+				_dc,
+				self.pos_x,
+				self.pos_y,
+				"",
+				moon_icon,
+				Graphics.TEXT_JUSTIFY_CENTER
+			);
 		} else if (is_full_moon) {
-			Render.iconsColor(_dc, pos_x, pos_y, moon_icon, Render.COLOR_WHITE);
-			Render.iconsColor(_dc, pos_x +1, pos_y +1, moon_icon, Render.COLOR_WHITE);
+			Render.iconsColor(
+				_dc,
+				self.pos_x,
+				self.pos_y,
+				moon_icon,
+				Graphics.TEXT_JUSTIFY_CENTER,
+				Render.COLOR_WHITE
+			);
+			Render.iconsColor(
+				_dc,
+				self.pos_x + 1,
+				self.pos_y + 1,
+				moon_icon,
+				Graphics.TEXT_JUSTIFY_CENTER,
+				Render.COLOR_WHITE
+			);
 		} else {
-			Render.icons(_dc, pos_x, pos_y, moon_icon, moon_icon);
+			Render.icons(
+				_dc,
+				self.pos_x,
+				self.pos_y,
+				moon_icon,
+				moon_icon,
+				Graphics.TEXT_JUSTIFY_CENTER
+			);
 		}
 	}
 
@@ -105,7 +169,7 @@ class SunMoon extends Text {
 		]);
 	}
 
-	static function getMoonPhase(_moment as Time.Moment) as Lang.Number {
+	static function MoonPhase(_moment as Time.Moment) as Lang.Number {
 		var LUNAR_CYCLE_DAYS = 29.530588853;
 		var SECONDS_PER_DAY = 86400;
 		var NEW_MOON_REF = 947182440; // Jan 6, 2000 18:14 UTC
@@ -129,7 +193,7 @@ class SunMoon extends Text {
 	}
 
 	(:test)
-	static function getMoonPhaseTest(_logger as Test.Logger) as Lang.Boolean {
+	static function MoonPhaseTest(_logger as Test.Logger) as Lang.Boolean {
 		var one_day = new Time.Duration(24 * 60 * 60); // h * min * 60
 
 		var new_moons = [
@@ -190,7 +254,7 @@ class SunMoon extends Text {
 				));
 
 				Test.assertEqual(
-					SunMoon.getMoonPhase(new_moon.add(one_day.multiply(day))),
+					SunMoon.MoonPhase(new_moon.add(one_day.multiply(day))),
 					moon_phase
 				);
 			}

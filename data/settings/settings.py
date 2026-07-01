@@ -34,9 +34,16 @@ class Options(IntEnum):
     AUTO = auto()
     BLUETOOTH_CONNECTED = auto()
     BLUETOOTH_DISCONNECTED = auto()
+    DOTTED = auto()
     LARGE = auto()
     NOTIFICATIONS = auto()
     SMALL = auto()
+    SOLID = auto()
+
+
+class ClockFont(IntEnum):
+    DOTTED = Options.DOTTED.value
+    SOLID = Options.SOLID.value
 
 
 class Heights(IntEnum):
@@ -85,6 +92,7 @@ def Settings(  # pylint: disable=invalid-name
                 Select("color", Colors.ORANGE),
                 Select("background", Colors.CHARCOAL),
                 Select("height", Heights.AUTO),
+                Select("font", ClockFont.DOTTED),
             ],
         ),
         Array(

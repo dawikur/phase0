@@ -15,7 +15,7 @@ class Folders:
         self.source_ = source
 
     @staticmethod
-    def get_(path: Path, folder: str | None = None, file: str | None = None) -> Path:
+    def __get(path: Path, folder: str | None = None, file: str | None = None) -> Path:
         if folder:
             path = path / folder
             path.mkdir(parents=True, exist_ok=True)
@@ -24,13 +24,13 @@ class Folders:
         return path
 
     def build(self, folder: str | None = None, file: str | None = None) -> Path:
-        return Folders.get_(self.build_, folder, file)
+        return Folders.__get(self.build_, folder, file)
 
     def resources(self, folder: str | None = None, file: str | None = None) -> Path:
-        return Folders.get_(self.resources_, folder, file)
+        return Folders.__get(self.resources_, folder, file)
 
     def source(self, folder: str | None = None, file: str | None = None) -> Path:
-        return Folders.get_(self.source_, folder, file)
+        return Folders.__get(self.source_, folder, file)
 
 
 def parse_folders() -> Folders:

@@ -15,11 +15,11 @@ class Clock {
 	hidden var color_ as Lang.Number;
 	hidden var background_ as Lang.Number;
 
-	var center_x as Lang.Number = 0;
-	var center_y as Lang.Number = 0;
+	var pos_x as Lang.Number = 0;
+	var pos_y as Lang.Number = 0;
 
-	var radius_x as Lang.Number = 0;
-	var radius_y as Lang.Number = 0;
+	var size_x as Lang.Number = 0;
+	var size_y as Lang.Number = 0;
 
 	hidden var label_ as Lang.String = "";
 
@@ -34,15 +34,15 @@ class Clock {
 			self.font_thin_ = Fonts.DIGITS_THIN;
 		}
 
-		self.color_ = Properties.get("ClockColor");
-		self.background_ = Properties.get("ClockBackground");
+		self.color_ = Application.Properties.getValue("ClockColor") as Lang.Number;
+		self.background_ = Application.Properties.getValue("ClockBackground") as Lang.Number;
 	}
 
 	function contains(_x as Lang.Number, _y as Lang.Number) as Lang.Boolean {
-		var pos_x = self.center_x - self.radius_x;
-		var pos_y = self.center_y - self.radius_y;
-		var end_x = self.center_x + self.radius_x;
-		var end_y = self.center_y + self.radius_y;
+		var pos_x = self.pos_x;
+		var pos_y = self.pos_y;
+		var end_x = pos_x + self.size_x;
+		var end_y = pos_y + self.size_y;
 
 		return
 			pos_x <= _x and _x <= end_x and
@@ -68,25 +68,23 @@ class Clock {
 			return;
 		}
 
-		var justify = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
-
 		if (_is_night_mode) {
 			_dc.setColor(self.color_, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
-				self.center_x, self.center_y, self.font_, self.label_,
-				justify
+				self.pos_x, self.pos_y, self.font_, self.label_,
+				Render.JUSTIFY_LEFT
 			);
 		} else {
-			_dc.setColor(self.color_, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(
-				self.center_x, self.center_y, self.font_bold_,
-				self.label_, justify
-			);
-
 			_dc.setColor(self.background_, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
-				self.center_x, self.center_y, self.font_thin_, "88:88",
-				justify
+				self.pos_x, self.pos_y, self.font_thin_, "88:88",
+				Render.JUSTIFY_LEFT
+			);
+
+			_dc.setColor(self.color_, Graphics.COLOR_TRANSPARENT);
+			_dc.drawText(
+				self.pos_x, self.pos_y, self.font_,
+				self.label_, Render.JUSTIFY_LEFT
 			);
 		}
 	}

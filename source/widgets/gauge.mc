@@ -43,8 +43,8 @@ class Gauge extends Base {
 				_dc,
 				self.pos_x,
 				self.pos_y,
-				self.value_,
 				self.size_y,
+				self.value_,
 				Render.GAUGE_BOTTOM,
 				self.impl_.category
 			);

@@ -113,22 +113,24 @@
 	<string id="LABEL_WIND">Wind</string>
 
 	<string id="LABEL_ALARM">Alarm</string>
-	<string id="LABEL_BATTERY_DAYS">Battery Days</string>
-	<string id="LABEL_BATTERY_ICON">Battery Icon</string>
 	<string id="LABEL_AUTO">Auto</string>
 	<string id="LABEL_AZURE">Azure</string>
 	<string id="LABEL_BACKGROUND">Background</string>
+	<string id="LABEL_BATTERY_DAYS">Battery Days</string>
+	<string id="LABEL_BATTERY_ICON">Battery Icon</string>
 	<string id="LABEL_BATTERY_PERCENT">Battery Percentage</string>
 	<string id="LABEL_BLACK">Black</string>
 	<string id="LABEL_BLUE">Blue</string>
 	<string id="LABEL_BLUETOOTH_CONNECTED">Bluetooth Connected</string>
 	<string id="LABEL_BLUETOOTH_DISCONNECTED">Bluetooth Disconnected</string>
-	<string id="LABEL_CHARCOAL">CHARCOAL</string>
+	<string id="LABEL_CHARCOAL">Charcoal</string>
 	<string id="LABEL_COLOR">Color</string>
 	<string id="LABEL_CONDITION_TEMP">Condition/Temperature</string>
 	<string id="LABEL_CYAN">Cyan</string>
 	<string id="LABEL_DATA">Data</string>
 	<string id="LABEL_DATE">Date</string>
+	<string id="LABEL_DOTTED">Dotted</string>
+	<string id="LABEL_FONT">Font</string>
 	<string id="LABEL_GAUGE">Gauge</string>
 	<string id="LABEL_GAUGES">Gauges</string>
 	<string id="LABEL_GREEN">Green</string>
@@ -146,6 +148,7 @@
 	<string id="LABEL_SILVER">Silver</string>
 	<string id="LABEL_SIZE">Size</string>
 	<string id="LABEL_SMALL">Small</string>
+	<string id="LABEL_SOLID">Solid</string>
 	<string id="LABEL_STATUS">Status</string>
 	<string id="LABEL_SUN_MOON">Sun Moon</string>
 	<string id="LABEL_TEAL">Teal</string>

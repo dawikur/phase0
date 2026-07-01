@@ -16,7 +16,7 @@ class Weather extends Text {
 		Text.initialize(Complications.COMPLICATION_TYPE_CURRENT_WEATHER, _small);
 		self.original_small_ = _small;
 
-		self.justify_ = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
+		self.justify_ = Render.JUSTIFY_CENTER;
 	}
 
 	function refresh(_dc as Graphics.Dc) as Void {

@@ -11,8 +11,7 @@ class Text extends Base {
 
 	hidden var label_ as Lang.String = "";
 	hidden var value_ as Lang.String = "";
-	hidden var value_bg_ as Lang.String = "";
-	hidden var justify_ as Lang.Number = Graphics.TEXT_JUSTIFY_LEFT;
+	hidden var justify_ as Lang.Number = Render.JUSTIFY_LEFT;
 
 	function initialize(_type as Complications.Type, _small as Lang.Boolean) {
 		Base.initialize(_type);
@@ -41,10 +40,10 @@ class Text extends Base {
 		var pos_x = self.pos_x;
 		var pos_y = self.pos_y;
 
-		if (self.justify_ & Graphics.TEXT_JUSTIFY_LEFT) {
-		} else if (self.justify_ & Graphics.TEXT_JUSTIFY_CENTER) {
+		if (self.justify_ & Render.JUSTIFY_LEFT) {
+		} else if (self.justify_ & Render.JUSTIFY_CENTER) {
 			pos_x -= self.size_x / 2;
-		} else if (self.justify_ & Graphics.TEXT_JUSTIFY_RIGHT) {
+		} else if (self.justify_ & Render.JUSTIFY_RIGHT) {
 			pos_x -= self.size_x;
 		}
 
@@ -66,6 +65,7 @@ class Text extends Base {
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
+
 		// ---- prepare ----
 
 		if (self.value_.length() == 0) {
@@ -85,9 +85,14 @@ class Text extends Base {
 		// ---- value ----
 
 		if (self.value_.length() != 0) {
-			Render.text(_dc, pos_x, pos_y, self.value_, self.justify_, self.small_);
-		} else if (self.value_bg_.length() != 0) {
-			Render.textBg(_dc, pos_x, pos_y, self.value_bg_, self.justify_, self.small_);
+			Render.text(
+				_dc,
+				pos_x,
+				pos_y,
+				self.small_,
+				self.value_,
+				self.justify_
+			);
 		}
 	}
 

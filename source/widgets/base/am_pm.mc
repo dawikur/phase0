@@ -25,7 +25,7 @@ class AmPm extends Base {
 				Lang.format("$1$$2$", [Fonts.ICON_AM_PM_BEGIN, Fonts.ICON_AM_PM_END])
 			);
 			var bar_width = Render.iconsWidth(_dc, Fonts.ICON_AM_PM_FRAME);
-			var bar_all_count = (self.size_x - borders_width) / bar_width;
+			var bar_all_count = (2 * self.size_x - borders_width) / bar_width;
 
 			self.frame_ += Fonts.ICON_AM_PM_BEGIN;
 			for (var i = 0; i < bar_all_count; ++i) {
@@ -47,24 +47,36 @@ class AmPm extends Base {
 	}
 
 	function render(_dc as Graphics.Dc) as Void {
-		var pos_x = self.pos_x + self.size_x / 2;
-		var pos_y = self.pos_y + self.size_y / 2;
-
 		var label_width = Render.textWidth(_dc, self.label_, true);
-		if (label_width <= self.size_x or self.fallback_ == null) {
-			var text_pos_x = self.pos_x + self.size_x / 2 - 1;
-
+		if (label_width <= 2 * self.size_x or self.fallback_ == null) {
 			if (!self.small_) {
-				Render.icons(_dc, pos_x, pos_y+Render.SPACING, self.frame_, self.frame_);
+				Render.icons(
+					_dc,
+					self.pos_x,
+					self.pos_y + Render.SPACING,
+					self.frame_,
+					self.frame_,
+					Render.JUSTIFY_CENTER
+				);
 			}
 
 			Render.text(
-				_dc, text_pos_x, pos_y, self.label_,
-				Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER,
-				true
+				_dc,
+				self.pos_x,
+				self.pos_y - Render.SPACING,
+				Render.SIZE_SMALL,
+				self.label_,
+				Render.JUSTIFY_CENTER
 			);
 		} else {
-			Render.iconsColor(_dc, pos_x, pos_y, self.fallback_, Render.COLOR_ORANGE);
+			Render.icons(
+				_dc,
+				self.pos_x,
+				self.pos_y,
+				self.fallback_,
+				self.fallback_,
+				Render.JUSTIFY_CENTER
+			);
 		}
 	}
 }

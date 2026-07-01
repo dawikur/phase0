@@ -227,7 +227,7 @@ def render_array(array: Array) -> XmlDocument:  # pylint: disable=too-many-local
         entry: Any
         for entry in element:
             default_xml = setting_xml.subelement(entry_xml, "default", id=entry.id)
-            default_xml.text = str(entry.default)
+            default_xml.text = str(entry.default).lower()
 
     return setting_xml
 
@@ -255,11 +255,13 @@ def main() -> None:
     data = Data(folders.source("data"))
     extra_data, settings = Settings(data)
 
-    folders.build("source", "data.mc").write_text(render_data(data))
-    folders.build("source", "widgets.mc").write_text(render_widgets(extra_data))
-    folders.build("source", "options.mc").write_text(render_options())
-    folders.resources("build", "properties.xml").write_text(render_properties(settings))
-    folders.resources("build", "settings.xml").write_text(render_settings(settings))
+    folders.source("generated", "data.mc").write_text(render_data(data))
+    folders.source("generated", "widgets.mc").write_text(render_widgets(extra_data))
+    folders.source("generated", "options.mc").write_text(render_options())
+    folders.resources("generated", "properties.xml").write_text(
+        render_properties(settings)
+    )
+    folders.resources("generated", "settings.xml").write_text(render_settings(settings))
 
 
 if __name__ == "__main__":
