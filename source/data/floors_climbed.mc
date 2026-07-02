@@ -5,21 +5,19 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 module Data {
+	class FloorsClimbed extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_FLOORS_CLIMBED,
+				Resources.get(Rez.Strings.LABEL_FLOORS_CLIMBED),
+				CATEGORY_VERTICAL
+			);
 
-class FloorsClimbed extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_FLOORS_CLIMBED,
-			Resources.get(Rez.Strings.LABEL_FLOORS_CLIMBED),
-			CATEGORY_VERTICAL
-		);
+			self.value_max = ActivityMonitor.getInfo().floorsClimbedGoal;
+		}
 
-		self.value_max = ActivityMonitor.getInfo().floorsClimbedGoal;
+		function get_() as Lang.Number? {
+			return ActivityMonitor.getInfo().floorsClimbed;
+		}
 	}
-
-	function get_() as Lang.Number or Null {
-		return ActivityMonitor.getInfo().floorsClimbed;
-	}
-}
-
 } // module Data

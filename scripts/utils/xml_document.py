@@ -2,7 +2,7 @@
 
 import xml.etree.ElementTree as ET
 
-from utils import copyright_lines
+from .common import copyright_lines
 
 XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance"
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"

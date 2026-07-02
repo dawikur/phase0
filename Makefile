@@ -9,17 +9,14 @@ V      ?= 0
 
 # ---- options ----
 
-TAG.debug             :=
 NAME_SUFFIX.debug     :=
 FLAG_MONKEYC.debug    :=
 FLAG_SIMULATE.debug   :=
 
-TAG.test              := " \(test\)"
 NAME_SUFFIX.test      := _test
 FLAG_MONKEYC.test     := --unit-test
 FLAG_SIMULATE.test    := -t
 
-TAG.release           := " \(release\)"
 NAME_SUFFIX.release   := _release
 FLAG_MONKEYC.release  := --release
 FLAG_SIMULATE.release :=
@@ -32,9 +29,14 @@ Q   := $(Q.$(V))
 
 SDK_DIR   := $(shell cat "${HOME}/.Garmin/ConnectIQ/current-sdk.cfg")
 SDK_DIR   := $(patsubst %/,%,$(SDK_DIR))/
-MONKEYC   := $(SDK_DIR)bin/monkeyc
 MONKEYDO  := $(SDK_DIR)bin/monkeydo
 CONNECTIQ := $(SDK_DIR)bin/connectiq
+
+ifneq ($(MODE),release)
+MONKEYC   := $(SDK_DIR)bin/monkeyc
+else
+MONKEYC   := node scripts/optimizedc.mjs
+endif
 
 BUILD_DIR := build/
 OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX.$(MODE))
@@ -51,12 +53,8 @@ RESOURCES_BASE_DIR      := $(RESOURCES_DIR)base/
 RESOURCES_GENERATED_DIR := $(RESOURCES_DIR)generated/
 
 SOURCE_DIR       := source/
-BUILD_SOURCE_DIR := $(BUILD_DIR)source/
 
-SCRIPT_DEPS := scripts/args_parse.py \
-               scripts/mc_document.py \
-               scripts/utils.py \
-               scripts/xml_document.py
+SCRIPT_DEPS    := $(shell find scripts/utils -type f)
 
 ICON_DEPS      := scripts/generate_icon                      \
                   $(SCRIPT_DEPS)                             \
@@ -87,7 +85,8 @@ MAKEFLAGS += --no-print-directory
 # ---- targets ----
 
 $(PRG): $(PRG_DEPS)
-	$(Q)$(MONKEYC) \
+	$(Q)echo " [ $(@F) ]"
+	$(MONKEYC) \
 		--jungles $< \
 		--device $(DEVICE) \
 		--output $@ \
@@ -96,23 +95,25 @@ $(PRG): $(PRG_DEPS)
 		$(FLAG_MONKEYC.$(MODE))
 
 $(FONTS): $(FONTS_DEPS)
-	$(Q)$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	$(Q)echo " [ $(@F) ]"
+	$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
 $(ICON): $(ICON_DEPS)
-	$(Q)$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	$(Q)echo " [ $(@F) ]"
+	$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
 $(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA)
-	$(Q)$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	$(Q)echo " [ $(@F) ]"
+	$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
 $(BUILD_SOURCE_DIR):
-	$(Q)mkdir -p $@
+	$(Q)echo " [ $(@F) ]"
+	mkdir -p $@
 
 # ---- aliases ----
 
-build_tag:
-	$(Q)echo " [ build$(TAG.$(MODE)) ]"
-b build: resources build_tag $(PRG)
-.PHONY: b build build_tag
+b build: $(PRG)
+.PHONY: b build
 
 bt build_test:
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test build
@@ -122,13 +123,11 @@ br build_release:
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release build
 .PHONY: br build_release
 
-resources_tag:
-	$(Q)echo " [ resources ]"
-r resources: resources_tag $(RESOURCES)
-.PHONY: r resources resources_tag
+r resources: $(RESOURCES)
+.PHONY: r resources
 
 s simulate: build
-	$(Q)echo " [ simulate$(TAG.$(MODE)) ]"
+	$(Q)echo " [ simulate ] $(MODE)"
 	$(CONNECTIQ)&
 	SIM_PID=$$!
 	sleep 3
@@ -145,14 +144,31 @@ st simulate_test:
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test simulate
 .PHONY: st simulate_test
 
-sr simulate_release:
-	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release simulate
-.PHONY: sr simulate_release
-
 t test:
 	$(Q)echo " [ test ]"
 	pytest
 .PHONY: t test
+
+ifneq ($(MODE),release)
+w watch:
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release watch
+else
+w watch: build
+	$(Q)i=0; while ! gio mount -l | grep -q "mtp://091e_"; do
+		set -- ⠋ ⠙ ⠸ ⠴ ⠦ ⠇
+		shift $$((i % 6))
+		printf "\r [ watch ] %s" "$$1"
+		i=$$((i+1))
+		sleep .1
+	done; printf "\r\033[K"
+
+	echo " [ watch ]"
+	GVFS="/run/user/$$(id -u)/gvfs"
+	MOUNT="$$(ls "$$GVFS" | grep 'mtp:host=' | head -n1)"
+	TARGET="$$GVFS/$$MOUNT/Internal Storage/GARMIN/Apps"
+	gio copy $(PRG) "$$TARGET/"
+endif
+.PHONY: w watch
 
 c clean:
 	$(Q)echo " [ clean ]"
@@ -178,10 +194,11 @@ h help:
 	echo " $${B}Targets$${N}"
 	echo "     b , build          build project"
 	echo "     bt, build_test     build project w/ tests"
-	echo "     br, build_release  build project release"
+	echo "     br, build_release  build project in release"
 	echo "     r , resources      generate resources"
 	echo "     s , simulate       run simulator"
 	echo "     st, simulate_test  run simulator w/ tests"
+	echo "     w , watch          deploy release binary to watch"
 	echo "     c , clean          remove build directory"
 	echo "     h , help           print help message"
 	echo ""

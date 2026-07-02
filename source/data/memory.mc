@@ -6,21 +6,19 @@ import Toybox.System;
 import Toybox.UserProfile;
 
 module Data {
+	class Memory extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_INVALID,
+				Resources.get(Rez.Strings.LABEL_MEMORY),
+				CATEGORY_SYSTEM
+			);
 
-class Memory extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_INVALID,
-			Resources.get(Rez.Strings.LABEL_MEMORY),
-			CATEGORY_SYSTEM
-		);
+			self.value_max = System.getSystemStats().totalMemory;
+		}
 
-		self.value_max = System.getSystemStats().totalMemory;
+		function get_() as Lang.Number? {
+			return System.getSystemStats().usedMemory;
+		}
 	}
-
-	function get_() as Lang.Number or Null {
-		return System.getSystemStats().usedMemory;
-	}
-}
-
 } // module Data

@@ -3,10 +3,6 @@
 
 from typing import Any
 
-from args_parse import parse_folders
-from mc_document import McDocument
-from xml_document import XmlDocument
-
 from data.settings import (
     Array,
     Boolean,
@@ -17,31 +13,25 @@ from data.settings import (
     Select,
     Settings,
 )
+from scripts.utils.args_parse import parse_folders
+from scripts.utils.mc_document import McDocument, McScope
+from scripts.utils.xml_document import XmlDocument
 
 
 def render_data(data: Any) -> str:
     doc = McDocument.create()
     doc.line("import Toybox.Lang;")
-    doc.blank()
-    doc.line("module Data {")
-    doc.blank()
-    doc.line("function get(_id as Lang.Number) as Base or Null {")
-    doc.indented()
-    doc.line("switch (_id) {")
-    doc.indented()
+    with McScope(doc, "module Data") as _module:
+        with McScope(doc, "function get(_id as Lang.Number) as Base or Null") as _get:
+            with McScope(doc, "switch (_id)") as _switch:
+                for datum in data:
+                    datum_name = "".join(
+                        part.capitalize() for part in datum.name.split("_")
+                    )
+                    doc.line(f"case {datum.value}: return new {datum_name}();")
 
-    for datum in data:
-        datum_name = "".join(part.capitalize() for part in datum.name.split("_"))
-        doc.line(f"case {datum.value}: return new {datum_name}();")
-
-    doc.blank()
-    doc.line("default: return null;")
-    doc.dedented()
-    doc.line("}")
-    doc.dedented()
-    doc.line("}")
-    doc.blank()
-    doc.line("} // module Data")
+                doc.line()
+                doc.line("default: return null;")
 
     return doc.text()
 
@@ -49,48 +39,60 @@ def render_data(data: Any) -> str:
 def render_widgets(extra_data: Any) -> str:
     doc = McDocument.create()
     doc.line("import Toybox.Lang;")
-    doc.blank()
-    doc.line("module Widgets {")
-    doc.blank()
-    doc.line(
-        "function get(_id as Lang.Number, _small as Lang.Boolean) as Base or Null {"
-    )
-    doc.indented()
-    doc.line("switch (_id) {")
-    doc.indented()
+    with McScope(doc, "module Widgets") as _module:
+        with McScope(
+            doc,
+            "function get(_id as Lang.Number, _small as Lang.Boolean) as Base or Null",
+        ) as _get:
+            with McScope(doc, "switch (_id)") as _switch:
+                for datum in extra_data:
+                    datum_name = "".join(
+                        part.capitalize() for part in datum.name.split("_")
+                    )
+                    doc.line(f"case {datum.value}: return new {datum_name}(_small);")
 
-    for datum in extra_data:
-        datum_name = "".join(part.capitalize() for part in datum.name.split("_"))
-        doc.line(f"case {datum.value}: return new {datum_name}(_small);")
-
-    doc.line("default: return null;")
-    doc.dedented()
-    doc.line("}")
-    doc.dedented()
-    doc.line("}")
-    doc.blank()
-    doc.line("} // module Widgets")
+                doc.line()
+                doc.line("default: return null;")
 
     return doc.text()
 
 
-def render_options() -> str:
+def render_properteis_mc(settings: list[Group | Array]) -> str:
     doc = McDocument.create()
+    doc.line("import Toybox.Application;")
     doc.line("import Toybox.Lang;")
-    doc.blank()
-    doc.line("module Options {")
-    doc.blank()
+    with McScope(doc, "module Properties") as _module:
+        for opt in Options:
+            doc.line(f"const {opt.name.upper()} = {opt.value};")
 
-    for opt in Options:
-        doc.line(f"const {opt.name.upper()} = {opt.value};")
+        doc.line()
 
-    doc.blank()
-    doc.line("} // module Options")
+        for group_or_array in settings:
+            if isinstance(group_or_array, Group):
+                group = group_or_array
+                for select in group.selections:
+                    doc.line(
+                        f"var {group.id.lower()}_{select.id.lower()} "
+                        f"as Lang.Number = {select.default};"
+                    )
+
+        doc.line()
+
+        with McScope(doc, "function refresh() as Void") as _refresh:
+            for group_or_array in settings:
+                if isinstance(group_or_array, Group):
+                    group = group_or_array
+                    for select in group.selections:
+                        doc.line(
+                            f"{group.id.lower()}_{select.id.lower()} = "
+                            f"Application.Properties.getValue("
+                            f'"{group.id}{select.id}") as Lang.Number;'
+                        )
 
     return doc.text()
 
 
-def render_properties(settings: list[Group | Array]) -> str:
+def render_properties_xml(settings: list[Group | Array]) -> str:
     root = XmlDocument.resource("properties")
 
     for group_or_array in settings:
@@ -257,9 +259,11 @@ def main() -> None:
 
     folders.source("generated", "data.mc").write_text(render_data(data))
     folders.source("generated", "widgets.mc").write_text(render_widgets(extra_data))
-    folders.source("generated", "options.mc").write_text(render_options())
+    folders.source("generated", "properties.mc").write_text(
+        render_properteis_mc(settings)
+    )
     folders.resources("generated", "properties.xml").write_text(
-        render_properties(settings)
+        render_properties_xml(settings)
     )
     folders.resources("generated", "settings.xml").write_text(render_settings(settings))
 

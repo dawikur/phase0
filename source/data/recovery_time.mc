@@ -6,19 +6,17 @@ import Toybox.Lang;
 import Toybox.UserProfile;
 
 module Data {
+	class RecoveryTime extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_RECOVERY_TIME,
+				Resources.get(Rez.Strings.LABEL_RECOVERY_TIME),
+				CATEGORY_RECOVERY
+			);
+		}
 
-class RecoveryTime extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_RECOVERY_TIME,
-			Resources.get(Rez.Strings.LABEL_RECOVERY_TIME),
-			CATEGORY_RECOVERY
-		);
+		function get_() as Lang.Number? {
+			return ActivityMonitor.getInfo().timeToRecovery;
+		}
 	}
-
-	function get_() as Lang.Number or Null {
-		return ActivityMonitor.getInfo().timeToRecovery;
-	}
-}
-
 } // module Data

@@ -5,8 +5,7 @@ import Toybox.System;
 import Toybox.WatchUi;
 
 typedef InitialView as
-	[WatchUi.Views] or
-	[WatchUi.Views, WatchUi.InputDelegates];
+	[WatchUi.Views] or [WatchUi.Views, WatchUi.InputDelegates];
 
 class App extends Application.AppBase {
 	var view_ as Phase0.View;
@@ -14,6 +13,9 @@ class App extends Application.AppBase {
 
 	function initialize() {
 		AppBase.initialize();
+
+		Data.Units.refresh();
+		Properties.refresh();
 
 		self.view_ = new Phase0.View();
 		self.delegate_ = new Phase0.Delegate(view_);
@@ -24,7 +26,8 @@ class App extends Application.AppBase {
 	}
 
 	function onSettingsChanged() as Void {
-		Data.Units.refreshSettings();
+		Data.Units.refresh();
+		Properties.refresh();
 
 		self.view_.onSettingsChanged();
 	}

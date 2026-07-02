@@ -6,67 +6,65 @@ import Toybox.Lang;
 import Toybox.SensorHistory;
 
 module Data {
+	const CATEGORY_ENERGY = Render.COLOR_YELLOW;
+	const CATEGORY_MOVEMENT = Render.COLOR_GREEN;
+	const CATEGORY_PHYSIOLOGICAL = Render.COLOR_RED;
+	const CATEGORY_RECOVERY = Render.COLOR_CYAN;
+	const CATEGORY_SYSTEM = Render.COLOR_BLUE;
+	const CATEGORY_VERTICAL = Render.COLOR_MAGENTA;
+	const CATEGORY_WEATHER = Render.COLOR_ORANGE;
 
-const CATEGORY_ENERGY = Render.COLOR_YELLOW;
-const CATEGORY_MOVEMENT = Render.COLOR_GREEN;
-const CATEGORY_PHYSIOLOGICAL = Render.COLOR_RED;
-const CATEGORY_RECOVERY = Render.COLOR_CYAN;
-const CATEGORY_SYSTEM = Render.COLOR_BLUE;
-const CATEGORY_VERTICAL = Render.COLOR_MAGENTA;
-const CATEGORY_WEATHER = Render.COLOR_ORANGE;
+	class Base {
+		var type as Complications.Type;
+		var name as Lang.String;
+		var category as Lang.Number;
 
-class Base {
-	var type as Complications.Type;
-	var name as Lang.String;
-	var category as Lang.Number;
+		var icon as Lang.String? = null;
+		var value as Lang.Number? = null;
+		var value_max as Lang.Number? = null;
 
-	var icon as Lang.String or Null = null;
-	var value as Lang.Number or Null = null;
-	var value_max as Lang.Number or Null = null;
-
-	function initialize(
-		_type as Complications.Type,
-		_name as Lang.String,
-		_category as Lang.Number
-	) {
-		self.type = _type;
-		self.name = _name;
-		self.category = _category;
-	}
-
-	function refresh() as Void {
-		self.value = self.get_();
-	}
-
-	function get_() as Lang.Number or Null {
-		var maybe_value = self.getMaybe_();
-
-		if (self.name.length() != 0) {
-			if (maybe_value != null) {
-				Cache.setValue(self.name, maybe_value as Lang.Number);
-			} else {
-				maybe_value = Cache.getValue(self.name, 2) as Lang.Number or Null;
-			}
+		function initialize(
+			_type as Complications.Type,
+			_name as Lang.String,
+			_category as Lang.Number
+		) {
+			self.type = _type;
+			self.name = _name;
+			self.category = _category;
 		}
 
-		return maybe_value;
-	}
-
-	function getMaybe_() as Lang.Number or Null {
-		return null;
-	}
-
-	static protected function getSensorHistoryData_(
-		_iterator as SensorHistory.SensorHistoryIterator
-	) as Lang.Number or Lang.Float or Null {
-		if (_iterator != null) {
-			var data_maybe = _iterator.next();
-			if (data_maybe != null) {
-				return data_maybe.data;
-			}
+		function refresh() as Void {
+			self.value = self.get_();
 		}
-		return null;
-	}
-}
 
+		function get_() as Lang.Number? {
+			var maybe_value = self.getMaybe_();
+
+			if (self.name.length() != 0) {
+				if (maybe_value != null) {
+					Cache.setValue(self.name, maybe_value as Lang.Number);
+				} else {
+					maybe_value = Cache.getValue(self.name, 2) as Lang.Number?;
+				}
+			}
+
+			return maybe_value;
+		}
+
+		function getMaybe_() as Lang.Number? {
+			return null;
+		}
+
+		protected static function getSensorHistoryData_(
+			_iterator as SensorHistory.SensorHistoryIterator
+		) as Lang.Number or Lang.Float or Null {
+			if (_iterator != null) {
+				var data_maybe = _iterator.next();
+				if (data_maybe != null) {
+					return data_maybe.data;
+				}
+			}
+			return null;
+		}
+	}
 } // module Data

@@ -5,19 +5,17 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 module Data {
+	class FloorsDescended extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_INVALID,
+				Resources.get(Rez.Strings.LABEL_FLOORS_DESCENDED),
+				CATEGORY_VERTICAL
+			);
+		}
 
-class FloorsDescended extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_INVALID,
-			Resources.get(Rez.Strings.LABEL_FLOORS_DESCENDED),
-			CATEGORY_VERTICAL
-		);
+		function get_() as Lang.Number? {
+			return ActivityMonitor.getInfo().floorsDescended;
+		}
 	}
-
-	function get_() as Lang.Number or Null {
-		return ActivityMonitor.getInfo().floorsDescended;
-	}
-}
-
 } // module Data

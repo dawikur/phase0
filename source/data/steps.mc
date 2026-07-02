@@ -5,21 +5,19 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 module Data {
+	class Steps extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_STEPS,
+				Resources.get(Rez.Strings.LABEL_STEPS),
+				CATEGORY_MOVEMENT
+			);
 
-class Steps extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_STEPS,
-			Resources.get(Rez.Strings.LABEL_STEPS),
-			CATEGORY_MOVEMENT
-		);
+			self.value_max = ActivityMonitor.getInfo().stepGoal;
+		}
 
-		self.value_max = ActivityMonitor.getInfo().stepGoal;
+		function get_() as Lang.Number? {
+			return ActivityMonitor.getInfo().steps;
+		}
 	}
-
-	function get_() as Lang.Number or Null {
-		return ActivityMonitor.getInfo().steps;
-	}
-}
-
 } // module Data

@@ -3,30 +3,8 @@
 from enum import IntEnum, auto
 from typing import Any, cast
 
+from .colors import Colors
 from .model import Array, Boolean, Group, Number, Select
-
-
-class Colors(IntEnum):
-    # sorted by lightness
-    BLACK = 0x000000  # 0.00
-    CHARCOAL = 0x555555  # 0.33
-    SILVER = 0xAAAAAA  # 0.67
-    WHITE = 0xFFFFFF  # 1.00
-
-    # sorted by hue
-    RED = 0xAA0000  #   0°
-    ORANGE = 0xAA5500  #  30°
-    YELLOW = 0xAAAA00  #  60°
-
-    GREEN = 0x55AA00  #  90°
-    CYAN = 0x00AAAA  # 180°
-
-    AZURE = 0x0055AA  # 210°
-    BLUE = 0x0000AA  # 240°
-    INDIGO = 0x5500AA  # 270°
-
-    MAGENTA = 0xAA00AA  # 300°
-    PINK = 0xAA0055  # 330°
 
 
 class Options(IntEnum):
@@ -34,16 +12,9 @@ class Options(IntEnum):
     AUTO = auto()
     BLUETOOTH_CONNECTED = auto()
     BLUETOOTH_DISCONNECTED = auto()
-    DOTTED = auto()
     LARGE = auto()
     NOTIFICATIONS = auto()
     SMALL = auto()
-    SOLID = auto()
-
-
-class ClockFont(IntEnum):
-    DOTTED = Options.DOTTED.value
-    SOLID = Options.SOLID.value
 
 
 class Heights(IntEnum):
@@ -89,10 +60,9 @@ def Settings(  # pylint: disable=invalid-name
         Group(
             "clock",
             [
-                Select("color", Colors.ORANGE),
+                Select("color", Colors.LIGHT_ORANGE),
                 Select("background", Colors.CHARCOAL),
                 Select("height", Heights.AUTO),
-                Select("font", ClockFont.DOTTED),
             ],
         ),
         Array(

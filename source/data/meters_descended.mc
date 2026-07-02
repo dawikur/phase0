@@ -5,23 +5,21 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 module Data {
-
-class MetersDescended extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_INVALID,
-			Resources.get(Rez.Strings.LABEL_METERS_DESCENDED),
-			CATEGORY_VERTICAL
-		);
-	}
-
-	function get_() as Lang.Number or Null {
-		var meters_descended = ActivityMonitor.getInfo().metersDescended;
-		if (meters_descended != null) {
-			return Units.convertElevation(meters_descended as Lang.Number);
+	class MetersDescended extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_INVALID,
+				Resources.get(Rez.Strings.LABEL_METERS_DESCENDED),
+				CATEGORY_VERTICAL
+			);
 		}
-		return null;
-	}
-}
 
+		function get_() as Lang.Number? {
+			var meters_descended = ActivityMonitor.getInfo().metersDescended;
+			if (meters_descended != null) {
+				return Units.convertElevation(meters_descended as Lang.Number);
+			}
+			return null;
+		}
+	}
 } // module Data

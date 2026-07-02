@@ -1,274 +1,283 @@
 <!-- Copyright (c) 2025 Dawid Kurek <dawikur@gmail.com> -->
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<title>MIP64 Palette</title>
-<style>
-	body {
-		font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-		background: #f5f5f5;
-		padding: 20px;
-	}
+  <head>
+    <meta charset="UTF-8" />
+    <title>MIP64 Palette</title>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
 
-	.palette {
-		display: grid;
-		grid-template-columns: repeat(8, 1fr);
-		gap: 16px;
-		max-width: 1000px;
-		margin: auto;
-	}
+      .palette {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 16px;
+        max-width: 1000px;
+        margin: auto;
+      }
 
-	.color-card {
-		text-align: center;
-		font-size: 12px;
-	}
+      .color-card {
+        text-align: center;
+        font-size: 12px;
+      }
 
-	.swatch {
-		width: 100%;
-		aspect-ratio: 1 / 1;
-		border-radius: 6px;
-		border: 1px solid rgba(0,0,0,0.15);
-		margin-bottom: 6px;
-		position: relative;
-		overflow: hidden;
-		cursor: pointer;
+      .swatch {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        margin-bottom: 6px;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
 
-		transform: translateZ(0);
-		will-change: transform;
+        transform: translateZ(0);
+        will-change: transform;
 
-		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
-		transition: box-shadow 0.15s ease, transform 0.15s ease;
-	}
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+        transition:
+          box-shadow 0.15s ease,
+          transform 0.15s ease;
+      }
 
-	.swatch:hover {
-		transform: translateY(-2px);
-		box-shadow:
-			0 4px 8px rgba(0, 0, 0, 0.22),
-			0 10px 20px rgba(0, 0, 0, 0.18);
-	}
+      .swatch:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 4px 8px rgba(0, 0, 0, 0.22),
+          0 10px 20px rgba(0, 0, 0, 0.18);
+      }
 
-	.copied-label {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+      .copied-label {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-		font-size: 12px;
-		font-weight: 600;
-		color: white;
-		background: rgba(0, 0, 0, 0.45);
-		border-radius: 0px;
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+        background: rgba(0, 0, 0, 0.45);
+        border-radius: 0px;
 
-		pointer-events: none;
+        pointer-events: none;
 
-		animation: copiedFade 900ms ease-out forwards;
-	}
+        animation: copiedFade 900ms ease-out forwards;
+      }
 
-	@keyframes copiedFade {
-		0% {
-			opacity: 0;
-		}
-		15% {
-			opacity: 1;
-		}
-		100% {
-			opacity: 0;
-		}
-	}
+      @keyframes copiedFade {
+        0% {
+          opacity: 0;
+        }
+        15% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
 
-	.hex {
-		font-family: monospace;
-		font-weight: 600;
-	}
+      .hex {
+        font-family: monospace;
+        font-weight: 600;
+      }
 
-	.name {
-		color: #555;
-		font-size: 11px;
-	}
-</style>
-</head>
-<body>
+      .name {
+        color: #555;
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2 style="text-align: center">MIP64 Palette</h2>
 
-<h2 style="text-align:center">MIP64 Palette</h2>
+    <div class="palette" id="palette"></div>
 
-<div class="palette" id="palette"></div>
+    <script>
+      const STEPS = [0x00, 0x55, 0xaa, 0xff];
 
-<script>
-const STEPS = [0x00, 0x55, 0xAA, 0xFF];
+      // from https://www.colorhexa.com
+      COLOR_NAMES = {
+        "#000000": "Black",
+        "#000055": "Very Dark Blue",
+        "#0000AA": "Dark Blue",
+        "#0000FF": "Pure Blue",
+        "#005500": "Very Dark Lime Green",
+        "#005555": "Very Dark Cyan",
+        "#0055AA": "Dark Blue",
+        "#0055FF": "Pure Blue",
+        "#00AA00": "Dark Lime Green",
+        "#00AA55": "Dark Cyan - Lime Green",
+        "#00AAAA": "Dark Cyan",
+        "#00AAFF": "Pure Blue",
+        "#00FF00": "Pure Lime Green",
+        "#00FF55": "Pure Cyan - Lime Green",
+        "#00FFAA": "Pure Cyan - Lime Green",
+        "#00FFFF": "Pure Cyan",
+        "#550000": "Very Dark Red",
+        "#550055": "Very Dark Magenta",
+        "#5500AA": "Dark Violet",
+        "#5500FF": "Pure Violet",
+        "#555500": "Very Dark Yellow",
+        "#555555": "Very Dark Gray",
+        "#5555AA": "Dark Moderate Blue",
+        "#5555FF": "Light Blue",
+        "#55AA00": "Dark Green",
+        "#55AA55": "Dark Moderate Lime Green",
+        "#55AAAA": "Dark Moderate Cyan",
+        "#55AAFF": "Light Blue",
+        "#55FF00": "Pure Green",
+        "#55FF55": "Light Lime Green",
+        "#55FFAA": "Light Cyan - Lime Green",
+        "#55FFFF": "Light Cyan",
+        "#AA0000": "Dark Red",
+        "#AA0055": "Dark Pink",
+        "#AA00AA": "Dark Magenta",
+        "#AA00FF": "Pure Violet",
+        "#AA5500": "Dark Orange",
+        "#AA5555": "Dark Moderate Red",
+        "#AA55AA": "Dark Moderate Magenta",
+        "#AA55FF": "Light Violet",
+        "#AAAA00": "Dark Yellow",
+        "#AAAA55": "Dark Moderate Yellow",
+        "#AAAAAA": "Gray",
+        "#AAAAFF": "Pale Blue",
+        "#AAFF00": "Pure Green",
+        "#AAFF55": "Light Green",
+        "#AAFFAA": "Pale Lime Green",
+        "#AAFFFF": "Pale Cyan",
+        "#FF0000": "Pure Red",
+        "#FF0055": "Pure Pink",
+        "#FF00AA": "Pure Pink",
+        "#FF00FF": "Pure Magenta",
+        "#FF5500": "Pure Orange",
+        "#FF5555": "Light Red",
+        "#FF55AA": "Light Pink",
+        "#FF55FF": "Light Magenta",
+        "#FFAA00": "Pure Orange",
+        "#FFAA55": "Light Orange",
+        "#FFAAAA": "Pale Red",
+        "#FFAAFF": "Pale Magenta",
+        "#FFFF00": "Pure Yellow",
+        "#FFFF55": "Light Yellow",
+        "#FFFFAA": "Pale Yellow",
+        "#FFFFFF": "White",
+      };
 
-// from https://www.colorhexa.com
-COLOR_NAMES = {
-	"#000000": "Black",
-	"#000055": "Very Dark Blue",
-	"#0000AA": "Dark Blue",
-	"#0000FF": "Pure Blue",
-	"#005500": "Very Dark Lime Green",
-	"#005555": "Very Dark Cyan",
-	"#0055AA": "Dark Blue",
-	"#0055FF": "Pure Blue",
-	"#00AA00": "Dark Lime Green",
-	"#00AA55": "Dark Cyan - Lime Green",
-	"#00AAAA": "Dark Cyan",
-	"#00AAFF": "Pure Blue",
-	"#00FF00": "Pure Lime Green",
-	"#00FF55": "Pure Cyan - Lime Green",
-	"#00FFAA": "Pure Cyan - Lime Green",
-	"#00FFFF": "Pure Cyan",
-	"#550000": "Very Dark Red",
-	"#550055": "Very Dark Magenta",
-	"#5500AA": "Dark Violet",
-	"#5500FF": "Pure Violet",
-	"#555500": "Very Dark Yellow",
-	"#555555": "Very Dark Gray",
-	"#5555AA": "Dark Moderate Blue",
-	"#5555FF": "Light Blue",
-	"#55AA00": "Dark Green",
-	"#55AA55": "Dark Moderate Lime Green",
-	"#55AAAA": "Dark Moderate Cyan",
-	"#55AAFF": "Light Blue",
-	"#55FF00": "Pure Green",
-	"#55FF55": "Light Lime Green",
-	"#55FFAA": "Light Cyan - Lime Green",
-	"#55FFFF": "Light Cyan",
-	"#AA0000": "Dark Red",
-	"#AA0055": "Dark Pink",
-	"#AA00AA": "Dark Magenta",
-	"#AA00FF": "Pure Violet",
-	"#AA5500": "Dark Orange",
-	"#AA5555": "Dark Moderate Red",
-	"#AA55AA": "Dark Moderate Magenta",
-	"#AA55FF": "Light Violet",
-	"#AAAA00": "Dark Yellow",
-	"#AAAA55": "Dark Moderate Yellow",
-	"#AAAAAA": "Gray",
-	"#AAAAFF": "Pale Blue",
-	"#AAFF00": "Pure Green",
-	"#AAFF55": "Light Green",
-	"#AAFFAA": "Pale Lime Green",
-	"#AAFFFF": "Pale Cyan",
-	"#FF0000": "Pure Red",
-	"#FF0055": "Pure Pink",
-	"#FF00AA": "Pure Pink",
-	"#FF00FF": "Pure Magenta",
-	"#FF5500": "Pure Orange",
-	"#FF5555": "Light Red",
-	"#FF55AA": "Light Pink",
-	"#FF55FF": "Light Magenta",
-	"#FFAA00": "Pure Orange",
-	"#FFAA55": "Light Orange",
-	"#FFAAAA": "Pale Red",
-	"#FFAAFF": "Pale Magenta",
-	"#FFFF00": "Pure Yellow",
-	"#FFFF55": "Light Yellow",
-	"#FFFFAA": "Pale Yellow",
-	"#FFFFFF": "White",
-};
+      // Convert RGB to HSL for nice gradient sorting
+      function rgbToHsl(r, g, b) {
+        r /= 255;
+        g /= 255;
+        b /= 255;
+        const max = Math.max(r, g, b),
+          min = Math.min(r, g, b);
+        let h,
+          s,
+          l = (max + min) / 2;
 
+        if (max === min) {
+          h = s = 0;
+        } else {
+          const d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          switch (max) {
+            case r:
+              h = (g - b) / d + (g < b ? 6 : 0);
+              break;
+            case g:
+              h = (b - r) / d + 2;
+              break;
+            case b:
+              h = (r - g) / d + 4;
+              break;
+          }
+          h /= 6;
+        }
+        return [h, s, l];
+      }
 
-// Convert RGB to HSL for nice gradient sorting
-function rgbToHsl(r, g, b) {
-	r /= 255; g /= 255; b /= 255;
-	const max = Math.max(r, g, b), min = Math.min(r, g, b);
-	let h, s, l = (max + min) / 2;
+      function toHex(v) {
+        return v.toString(16).padStart(2, "0").toUpperCase();
+      }
 
-	if (max === min) {
-		h = s = 0;
-	} else {
-		const d = max - min;
-		s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-		switch (max) {
-			case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-			case g: h = (b - r) / d + 2; break;
-			case b: h = (r - g) / d + 4; break;
-		}
-		h /= 6;
-	}
-	return [h, s, l];
-}
+      // Generate colors
+      let colors = [];
+      for (let r of STEPS) {
+        for (let g of STEPS) {
+          for (let b of STEPS) {
+            const [h, s, l] = rgbToHsl(r, g, b);
+            y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            colors.push({ r, g, b, h, s, l, y });
+          }
+        }
+      }
 
-function toHex(v) {
-	return v.toString(16).padStart(2, "0").toUpperCase();
-}
+      // Sort by Hue → Saturation → Lightness
+      colors.sort((a, b) => a.h - b.h || a.s - b.s || a.l - b.l || 0);
 
-// Generate colors
-let colors = [];
-for (let r of STEPS) {
-	for (let g of STEPS) {
-		for (let b of STEPS) {
-			const [h, s, l] = rgbToHsl(r, g, b);
-			y=0.2126*r+0.7152*g+0.0722*b
-			colors.push({ r, g, b, h, s, l, y });
-		}
-	}
-}
+      const palette = document.getElementById("palette");
 
-// Sort by Hue → Saturation → Lightness
-colors.sort((a, b) =>
-	a.h - b.h ||
-	a.s - b.s ||
-	a.l - b.l ||
-	0
-);
+      // Render
+      colors.forEach((c) => {
+        const hex = `#${toHex(c.r)}${toHex(c.g)}${toHex(c.b)}`;
 
-const palette = document.getElementById("palette");
+        const card = document.createElement("div");
+        card.className = "color-card";
+        card.draggable = true;
 
-// Render
-colors.forEach(c => {
-	const hex = `#${toHex(c.r)}${toHex(c.g)}${toHex(c.b)}`;
+        const swatch = document.createElement("div");
+        swatch.className = "swatch";
+        swatch.style.background = hex;
+        swatch.addEventListener("click", async (ev) => {
+          const xhex = `0x${toHex(c.r)}${toHex(c.g)}${toHex(c.b)}`;
 
-	const card = document.createElement("div");
-	card.className = "color-card";
-	card.draggable = true;
+          requestAnimationFrame(() => {
+            showCopied(swatch);
+          });
 
-	const swatch = document.createElement("div");
-	swatch.className = "swatch";
-	swatch.style.background = hex;
-	swatch.addEventListener("click", async (ev) => {
-		const xhex = `0x${toHex(c.r)}${toHex(c.g)}${toHex(c.b)}`;
+          setTimeout(async () => {
+            try {
+              await navigator.clipboard.writeText(xhex);
+            } catch (err) {
+              console.error("Clipboard error:", err);
+            }
+          }, 0);
+        });
 
-		requestAnimationFrame(() => {
-			showCopied(swatch);
-		});
+        const hexLabel = document.createElement("div");
+        hexLabel.className = "hex";
+        hexLabel.textContent = hex;
 
-		setTimeout(async () => {
-			try {
-				await navigator.clipboard.writeText(xhex);
-			} catch (err) {
-				console.error("Clipboard error:", err);
-			}
-		}, 0);
-	});
+        const nameLabel = document.createElement("div");
+        nameLabel.className = "name";
+        nameLabel.textContent = COLOR_NAMES[hex];
 
-	const hexLabel = document.createElement("div");
-	hexLabel.className = "hex";
-	hexLabel.textContent = hex;
+        card.appendChild(swatch);
+        card.appendChild(hexLabel);
+        card.appendChild(nameLabel);
+        palette.appendChild(card);
+      });
 
-	const nameLabel = document.createElement("div");
-	nameLabel.className = "name";
-	nameLabel.textContent = COLOR_NAMES[hex];
+      function showCopied(swatch) {
+        const existing = swatch.querySelector(".copied-label");
+        if (existing) existing.remove();
 
-	card.appendChild(swatch);
-	card.appendChild(hexLabel);
-	card.appendChild(nameLabel);
-	palette.appendChild(card);
-});
+        const label = document.createElement("div");
+        label.className = "copied-label";
+        label.textContent = "Copied!";
 
-function showCopied(swatch) {
-	const existing = swatch.querySelector(".copied-label");
-	if (existing) existing.remove();
+        swatch.appendChild(label);
 
-	const label = document.createElement("div");
-	label.className = "copied-label";
-	label.textContent = "Copied!";
-
-	swatch.appendChild(label);
-
-	label.addEventListener("animationend", () => label.remove());
-}
-</script>
-
-</body>
+        label.addEventListener("animationend", () => label.remove());
+      }
+    </script>
+  </body>
 </html>

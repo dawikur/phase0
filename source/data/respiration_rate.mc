@@ -5,19 +5,17 @@ import Toybox.Lang;
 import Toybox.UserProfile;
 
 module Data {
+	class RespirationRate extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_RESPIRATION_RATE,
+				Resources.get(Rez.Strings.LABEL_RESPIRATION_RATE),
+				CATEGORY_PHYSIOLOGICAL
+			);
+		}
 
-class RespirationRate extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_RESPIRATION_RATE,
-			Resources.get(Rez.Strings.LABEL_RESPIRATION_RATE),
-			CATEGORY_PHYSIOLOGICAL
-		);
+		function get_() as Lang.Number? {
+			return ActivityMonitor.getInfo().respirationRate;
+		}
 	}
-
-	function get_() as Lang.Number or Null {
-		return ActivityMonitor.getInfo().respirationRate;
-	}
-}
-
 } // module Data

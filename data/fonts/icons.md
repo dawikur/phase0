@@ -2,30 +2,30 @@
 
 ## MUST
 
-| Icon name | Metric / Source         | Comment                                |
-| --------- | ----------------------- | -------------------------------------- |
-| alarm     | Alarm enabled           | Shows if at least one alarm is active  |
-| battery   | Device battery %        | Primary device health indicator        |
-| bluetooth | Phone connection status | Indicates connectivity to phone        |
-| heart     | Heart rate (BPM)        | Core health metric                     |
-| steps     | Daily step count        | One of Garmin’s most common metrics    |
+| Icon name | Metric / Source         | Comment                               |
+| --------- | ----------------------- | ------------------------------------- |
+| alarm     | Alarm enabled           | Shows if at least one alarm is active |
+| battery   | Device battery %        | Primary device health indicator       |
+| bluetooth | Phone connection status | Indicates connectivity to phone       |
+| heart     | Heart rate (BPM)        | Core health metric                    |
+| steps     | Daily step count        | One of Garmin’s most common metrics   |
 
 ## SHOULD
 
-| Icon name        | Metric / Source         | Comment                         |
-| ---------------- | ----------------------- | ------------------------------- |
-| battery_charging | Device charging state   | When power is connected         |
-| body_battery     | Body Battery            | Garmin-specific                 |
-| dawn             | AM fallback icon        | Compact replacement for "am"    |
-| date             | Current date            | Often paired with numeric date  |
-| gps              | GPS enabled             | GPS active but not yet locked   |
-| gps_locked       | GPS fix acquired        | Pre-activity confirmation       |
-| heart_rate       | Live HR measurement     | Used during active sampling     |
-| notification     | Pending notifications   | Indicates unread notifications  |
-| sun              | Daytime / clear weather | Weather or time-of-day context  |
-| sunrise          | Sunrise time            | Popular outdoor metric          |
-| sunset           | Sunset time             | Companion to sunrise            |
-| temperature      | Ambient temperature     | Common secondary stat           |
+| Icon name        | Metric / Source         | Comment                        |
+| ---------------- | ----------------------- | ------------------------------ |
+| battery_charging | Device charging state   | When power is connected        |
+| body_battery     | Body Battery            | Garmin-specific                |
+| dawn             | AM fallback icon        | Compact replacement for "am"   |
+| date             | Current date            | Often paired with numeric date |
+| gps              | GPS enabled             | GPS active but not yet locked  |
+| gps_locked       | GPS fix acquired        | Pre-activity confirmation      |
+| heart_rate       | Live HR measurement     | Used during active sampling    |
+| notification     | Pending notifications   | Indicates unread notifications |
+| sun              | Daytime / clear weather | Weather or time-of-day context |
+| sunrise          | Sunrise time            | Popular outdoor metric         |
+| sunset           | Sunset time             | Companion to sunrise           |
+| temperature      | Ambient temperature     | Common secondary stat          |
 
 ## MAY
 

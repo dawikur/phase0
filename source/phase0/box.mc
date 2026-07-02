@@ -4,86 +4,91 @@ import Toybox.Lang;
 import Toybox.Math;
 
 module Phase0 {
+	class Box {
+		var size_x as Lang.Number;
+		var size_y as Lang.Number;
 
-class Box {
-	var size_x as Lang.Number;
-	var size_y as Lang.Number;
+		var pos_x as Lang.Number;
+		var pos_y as Lang.Number;
 
-	var pos_x as Lang.Number;
-	var pos_y as Lang.Number;
+		var end_x as Lang.Number;
+		var end_y as Lang.Number;
 
-	var end_x as Lang.Number;
-	var end_y as Lang.Number;
+		var small as Lang.Boolean;
 
-	var small as Lang.Boolean;
-
-	function initialize(
-		_pos_x as Lang.Number,
-		_pos_y as Lang.Number,
-		_end_x as Lang.Number,
-		_end_y as Lang.Number,
-		_small as Lang.Boolean
-	) {
-		self.size_x = _end_x - _pos_x;
-		self.size_y = _end_y - _pos_y;
-		self.pos_x = _pos_x;
-		self.pos_y = _pos_y;
-		self.end_x = _end_x;
-		self.end_y = _end_y;
-		self.small = _small;
-	}
-
-	static function PosSize(
-		_pos_x as Lang.Number,
-		_pos_y as Lang.Number,
-		_size_x as Lang.Number,
-		_size_y as Lang.Number,
-		_small as Lang.Boolean) as Box {
-		return new Box(_pos_x, _pos_y, _pos_x + _size_x, _pos_y + _size_y, _small);
-	}
-
-	static function ForY(
-		_screen_size_y as Lang.Number,
-		_y as Lang.Number,
-		_dy as Lang.Number,
-		_small as Lang.Boolean
-	) as Box {
-		var pos_y = 0;
-		var end_y = 0;
-
-		if (_dy < 0) { // above
-			pos_y = _y + _dy;
-			end_y = _y;
-		} else { // below
-			pos_y = _y;
-			end_y = _y + _dy;
+		function initialize(
+			_pos_x as Lang.Number,
+			_pos_y as Lang.Number,
+			_end_x as Lang.Number,
+			_end_y as Lang.Number,
+			_small as Lang.Boolean
+		) {
+			self.size_x = _end_x - _pos_x;
+			self.size_y = _end_y - _pos_y;
+			self.pos_x = _pos_x;
+			self.pos_y = _pos_y;
+			self.end_x = _end_x;
+			self.end_y = _end_y;
+			self.small = _small;
 		}
 
-		var size_pos = Math.floor(Box.SecondLeg_(_screen_size_y, pos_y) * 2).toNumber();
-		var size_end = Math.floor(Box.SecondLeg_(_screen_size_y, end_y) * 2).toNumber();
+		static function PosSize(
+			_pos_x as Lang.Number,
+			_pos_y as Lang.Number,
+			_size_x as Lang.Number,
+			_size_y as Lang.Number,
+			_small as Lang.Boolean
+		) as Box {
+			return new Box(
+				_pos_x,
+				_pos_y,
+				_pos_x + _size_x,
+				_pos_y + _size_y,
+				_small
+			);
+		}
 
-		var size_x = size_pos < size_end ? size_pos : size_end;
-		var pos_x = (_screen_size_y - size_x) / 2;
-		var end_x = pos_x + size_x;
+		static function ForY(
+			_screen_size_y as Lang.Number,
+			_y as Lang.Number,
+			_dy as Lang.Number,
+			_small as Lang.Boolean
+		) as Box {
+			var pos_y = 0;
+			var end_y = 0;
 
-		return new Box(
-			pos_x,
-			pos_y,
-			end_x,
-			end_y,
-			_small
-		);
+			if (_dy < 0) {
+				// above
+				pos_y = _y + _dy;
+				end_y = _y;
+			} else {
+				// below
+				pos_y = _y;
+				end_y = _y + _dy;
+			}
+
+			var size_pos = Math.floor(
+				Box.SecondLeg_(_screen_size_y, pos_y) * 2
+			).toNumber();
+			var size_end = Math.floor(
+				Box.SecondLeg_(_screen_size_y, end_y) * 2
+			).toNumber();
+
+			var size_x = size_pos < size_end ? size_pos : size_end;
+			var pos_x = (_screen_size_y - size_x) / 2;
+			var end_x = pos_x + size_x;
+
+			return new Box(pos_x, pos_y, end_x, end_y, _small);
+		}
+
+		static function SecondLeg_(
+			_screen_size as Lang.Number,
+			_leg as Lang.Number
+		) as Lang.Numeric {
+			var hypotenuse = _screen_size / 2;
+			var leg = hypotenuse - _leg; // center of triangle is in the center of screen
+
+			return Math.sqrt(hypotenuse * hypotenuse - leg * leg).toNumber();
+		}
 	}
-
-	static function SecondLeg_(
-		_screen_size as Lang.Number,
-		_leg as Lang.Number
-	) as Lang.Numeric {
-		var hypotenuse = _screen_size / 2;
-		var leg = hypotenuse - _leg; // center of triangle is in the center of screen
-
-		return Math.sqrt((hypotenuse * hypotenuse) - (leg * leg)).toNumber();
-	}
-}
-
 } // module Phase0

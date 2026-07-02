@@ -6,25 +6,23 @@ import Toybox.System;
 import Toybox.UserProfile;
 
 module Data {
+	class SolarIntensity extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_SOLAR_INPUT,
+				Resources.get(Rez.Strings.LABEL_SOLAR_INTENSITY),
+				CATEGORY_ENERGY
+			);
 
-class SolarIntensity extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_SOLAR_INPUT,
-			Resources.get(Rez.Strings.LABEL_SOLAR_INTENSITY),
-			CATEGORY_ENERGY
-		);
-
-		self.value_max = 100;
-	}
-
-	function get_() as Lang.Number or Null {
-		var value = System.getSystemStats().solarIntensity;
-		if (value != null and 0 <= value) {
-			return value;
+			self.value_max = 100;
 		}
-		return null;
-	}
-}
 
+		function get_() as Lang.Number? {
+			var value = System.getSystemStats().solarIntensity;
+			if (value != null and 0 <= value) {
+				return value;
+			}
+			return null;
+		}
+	}
 } // module Data

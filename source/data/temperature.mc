@@ -6,21 +6,21 @@ import Toybox.SensorHistory;
 import Toybox.UserProfile;
 
 module Data {
+	class Temperature extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE,
+				Resources.get(Rez.Strings.LABEL_TEMPERATURE),
+				CATEGORY_WEATHER
+			);
+		}
 
-class Temperature extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE,
-			Resources.get(Rez.Strings.LABEL_TEMPERATURE),
-			CATEGORY_WEATHER
-		);
+		function getMaybe_() as Lang.Number? {
+			return (
+				self.getSensorHistoryData_(
+					SensorHistory.getTemperatureHistory({ :period => 1 })
+				) as Lang.Number?
+			);
+		}
 	}
-
-	function getMaybe_() as Lang.Number or Null {
-		return self.getSensorHistoryData_(
-			SensorHistory.getTemperatureHistory({:period => 1})
-		) as Lang.Number or Null;
-	}
-}
-
 } // module Data

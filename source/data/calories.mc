@@ -5,19 +5,17 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 module Data {
+	class Calories extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_CALORIES,
+				Resources.get(Rez.Strings.LABEL_CALORIES),
+				CATEGORY_ENERGY
+			);
+		}
 
-class Calories extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_CALORIES,
-			Resources.get(Rez.Strings.LABEL_CALORIES),
-			CATEGORY_ENERGY
-		);
+		function get_() as Lang.Number? {
+			return ActivityMonitor.getInfo().calories;
+		}
 	}
-
-	function get_() as Lang.Number or Null {
-		return ActivityMonitor.getInfo().calories;
-	}
-}
-
 } // module Data

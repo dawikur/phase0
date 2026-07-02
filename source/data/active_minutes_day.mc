@@ -5,23 +5,21 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 module Data {
-
-class ActiveMinutesDay extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_INVALID,
-			Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_DAY),
-			CATEGORY_MOVEMENT
-		);
-	}
-
-	function get_() as Lang.Number or Null {
-		var active_minutes = ActivityMonitor.getInfo().activeMinutesDay;
-		if (active_minutes != null) {
-			return active_minutes.total;
+	class ActiveMinutesDay extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_INVALID,
+				Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_DAY),
+				CATEGORY_MOVEMENT
+			);
 		}
-		return null;
-	}
-}
 
+		function get_() as Lang.Number? {
+			var active_minutes = ActivityMonitor.getInfo().activeMinutesDay;
+			if (active_minutes != null) {
+				return active_minutes.total;
+			}
+			return null;
+		}
+	}
 } // module Data

@@ -6,21 +6,19 @@ import Toybox.Lang;
 import Toybox.System;
 
 module Data {
+	class Battery extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_BATTERY,
+				Resources.get(Rez.Strings.LABEL_BATTERY),
+				CATEGORY_SYSTEM
+			);
 
-class Battery extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_BATTERY,
-			Resources.get(Rez.Strings.LABEL_BATTERY),
-			CATEGORY_SYSTEM
-		);
+			self.value_max = 100;
+		}
 
-		self.value_max = 100;
+		function get_() as Lang.Number? {
+			return System.getSystemStats().battery.toNumber();
+		}
 	}
-
-	function get_() as Lang.Number or Null {
-		return System.getSystemStats().battery.toNumber();
-	}
-}
-
 } // module Data

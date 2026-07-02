@@ -3,10 +3,9 @@
 
 from pathlib import Path
 
-from args_parse import parse_folders
-from xml_document import XmlDocument
-
 from data import fonts
+from scripts.utils.args_parse import parse_folders
+from scripts.utils.xml_document import XmlDocument
 
 ICON = fonts.ICON
 ICON_BLURRED = ICON.blure()

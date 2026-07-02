@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-from utils import copyright_lines
+from .common import copyright_lines
 
 
 class McDocument:
@@ -17,17 +17,13 @@ class McDocument:
         lines.append("")
         return cls(lines=lines)
 
-    def blank(self) -> None:
-        if self.lines and self.lines[-1] != "":
-            self.lines.append("")
-
-    def line(self, text: str = "") -> None:
+    def line(self, text: str | None = None) -> "McDocument":
         if text:
             indent = "\t" * self.indent_
             self.lines.append(f"{indent}{text}")
-            return
-
-        self.lines.append("")
+        else:
+            self.lines.append("")
+        return self
 
     def raw(self, text: str) -> None:
         self.lines.extend(text.splitlines())
@@ -41,11 +37,22 @@ class McDocument:
         self.indent_ -= 1
         return self
 
-    def block(self, header: str, footer: str) -> None:
-        self.line(header)
-        self.indented()
-        self.line(footer)
-        self.dedented()
-
     def text(self) -> str:
         return "\n".join(self.lines)
+
+
+class McScope:
+    def __init__(self, doc: McDocument, line: str):
+        self.__doc = doc
+        self.__line = line
+
+    def __enter__(self) -> "McScope":
+        self.__doc.line()
+        self.__doc.line(f"{self.__line} {{")
+        self.__doc.indented()
+        return self
+
+    def __exit__(self, exc_type: int, exc_value: int, traceback: int) -> None:
+        self.__doc.dedented()
+        self.__doc.line(f"}} // {self.__line}")
+        self.__doc.line()

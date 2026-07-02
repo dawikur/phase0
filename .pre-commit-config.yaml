@@ -2,12 +2,18 @@
 default_stages: [pre-commit]
 exclude: ^3rd_party/
 repos:
-    ###########################################################################
-    # general
+    - repo: local
+      hooks:
+          - id: prettier-monkeyc
+            name: prettier_monkeyc
+            language: system
+            entry: prettier --plugin @markw65/prettier-plugin-monkeyc --parser monkeyc --write
+            files: \.mc$
+
     - repo: https://github.com/pre-commit/pre-commit-hooks
       rev: v6.0.0
       hooks:
-          #- id: check-added-large-files
+      #- id: check-added-large-files
           - id: check-ast
           - id: check-builtin-literals
           - id: check-case-conflict
@@ -44,15 +50,6 @@ repos:
           - id: script-must-not-have-extension
           - id: shellcheck
 
-    ###########################################################################
-    # c++
-    - repo: https://github.com/pre-commit/mirrors-clang-format
-      rev: v21.1.8
-      hooks:
-          - id: clang-format
-
-    ###########################################################################
-    #  python
     - repo: https://github.com/psf/black
       rev: 26.1.0
       hooks:
@@ -80,8 +77,6 @@ repos:
       hooks:
           - id: isort
 
-    ###########################################################################
-    # yaml
     - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
       rev: 0.2.3
       hooks:
@@ -92,8 +87,6 @@ repos:
                   .github/
                 )
 
-    ###########################################################################
-    # shell
     - repo: https://github.com/detailyang/pre-commit-shell
       rev: 1.0.5
       hooks:
@@ -109,27 +102,3 @@ repos:
       rev: v0.11.0.1
       hooks:
           - id: shellcheck
-
-    ###########################################################################
-    # vim
-    - repo: https://github.com/Vimjas/vint
-      rev: v0.4a3
-      hooks:
-          - id: vint
-
-    ###########################################################################
-    # cmake
-    - repo: https://github.com/cheshirekow/cmake-format-precommit
-      rev: v0.6.13
-      hooks:
-          - id: cmake-format
-            additional_dependencies: [pyyaml==5.3.1]
-          - id: cmake-lint
-            additional_dependencies: [pyyaml==5.3.1]
-
-    ###########################################################################
-    # bazel
-    - repo: https://github.com/Slowki/bazel-hooks
-      rev: e7f35cf63c3d5ee41c100d2fc501ecd6e2694727
-      hooks:
-          - id: buildifier

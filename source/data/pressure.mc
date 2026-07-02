@@ -8,23 +8,23 @@ import Toybox.SensorHistory;
 import Toybox.UserProfile;
 
 module Data {
+	class Pressure extends Base {
+		function initialize() {
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE,
+				Resources.get(Rez.Strings.LABEL_PRESSURE),
+				CATEGORY_WEATHER
+			);
 
-class Pressure extends Base {
-	function initialize() {
-		Base.initialize(
-			Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE,
-			Resources.get(Rez.Strings.LABEL_PRESSURE),
-			CATEGORY_WEATHER
-		);
+			self.value_max = 100;
+		}
 
-		self.value_max = 100;
+		function getMaybe_() as Lang.Number? {
+			return (
+				self.getSensorHistoryData_(
+					SensorHistory.getPressureHistory({ :period => 1 })
+				) as Lang.Number?
+			);
+		}
 	}
-
-	function getMaybe_() as Lang.Number or Null {
-		return self.getSensorHistoryData_(
-			SensorHistory.getPressureHistory({:period => 1})
-		) as Lang.Number or Null;
-	}
-}
-
 } // module Data

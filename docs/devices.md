@@ -1,7 +1,7 @@
 [Device list](https://developer.garmin.com/connect-iq/compatible-devices/)
 
 | product_id                                 | resolution | screen_type |
-|--------------------------------------------|------------|-------------|
+| ------------------------------------------ | ---------- | ----------- |
 | Forerunner 255s                            | 218x218    | MIP         |
 | Forerunner 255s Music                      | 218x218    | MIP         |
 | Forerunner 745                             | 240x240    | MIP         |
