@@ -35,6 +35,8 @@ class Number:
     name: Token
     default: int
 
+    type: str = "number"
+
     def __init__(self, name: str, default: int):
         self.name = Token(name)
         self.default = default
@@ -52,6 +54,8 @@ class Number:
 class Boolean:
     name: Token
     default: bool
+
+    type: str = "boolean"
 
     def __init__(self, name: str, default: bool):
         self.name = Token(name)
@@ -71,6 +75,8 @@ class Select:
     name: Token
     default: str
     options: dict[Token, str]
+
+    type: str = "number"
 
     def __init__(self, name: str, default: Any, options: EnumType | None = None):
         self.name = Token(name)
@@ -92,14 +98,17 @@ class Select:
         return self.name.label
 
 
-@dataclass
-class Group:
-    name: Token
-    selections: list[Select]
+Entry = Select | Number | Boolean
 
-    def __init__(self, name: str, selections: list[Select]):
+
+@dataclass
+class Single:
+    name: Token
+    entries: list[Entry]
+
+    def __init__(self, name: str, entries: list[Entry]):
         self.name = Token(name)
-        self.selections = selections
+        self.entries = entries
 
     @property
     def id(self) -> str:
@@ -109,44 +118,26 @@ class Group:
     def label(self) -> str:
         return self.name.label
 
-    def __iter__(self) -> Iterator[Select]:
-        return self.selections.__iter__()
+    def __iter__(self) -> Iterator[Entry]:
+        return self.entries.__iter__()
+
+    def __len__(self) -> int:
+        return len(self.entries)
+
+    def __getitem__(self, idx: int) -> Entry:
+        return self.entries[idx]
 
 
 @dataclass
 class Array:
-    Widget = list[Select | Number | Boolean]
-
     name: Token
-    elements: list[Widget]
+    entries: list[list[Entry]]
 
-    def __init__(self, name: str, elements: list[Widget]):
+    def __init__(self, name: str, entries: list[list[Entry]]):
         self.name = Token(name)
-        self.elements = elements
+        self.entries = entries
 
-        assert self.elements, "Array elements must not be empty"
-        reference = self.elements[0]
-
-        for row_index, element in enumerate(self.elements[1:], start=1):
-            if len(element) != len(reference):
-                raise AssertionError(
-                    f"Array '{self.name.name}' row {row_index} has length "
-                    f"{len(element)}, expected {len(reference)}"
-                )
-
-            for col_index, (item, expected) in enumerate(zip(element, reference)):
-                if type(item) is not type(expected):
-                    raise AssertionError(
-                        f"Array '{self.name.name}' row {row_index}, column {col_index} "
-                        f"has type {type(item).__name__}, expected "
-                        f"{type(expected).__name__}"
-                    )
-
-                if item.name != expected.name:
-                    raise AssertionError(
-                        f"Array '{self.name.name}' row {row_index}, column {col_index} "
-                        f"has name '{item.name.name}', expected '{expected.name.name}'"
-                    )
+        assert self.entries, "Array elements must not be empty"
 
     @property
     def id(self) -> str:
@@ -156,5 +147,11 @@ class Array:
     def label(self) -> str:
         return self.name.label
 
-    def __iter__(self) -> Iterator[Widget]:
-        return self.elements.__iter__()
+    def __iter__(self) -> Iterator[list[Entry]]:
+        return self.entries.__iter__()
+
+    def __len__(self) -> int:
+        return len(self.entries)
+
+    def __getitem__(self, idx: int) -> list[Entry]:
+        return self.entries[idx]

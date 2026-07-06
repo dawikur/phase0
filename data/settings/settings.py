@@ -4,7 +4,7 @@ from enum import IntEnum, auto
 from typing import Any, cast
 
 from .colors import Colors
-from .model import Array, Boolean, Group, Number, Select
+from .model import Array, Boolean, Number, Select, Single
 
 
 class Options(IntEnum):
@@ -39,7 +39,7 @@ class ExtraData(IntEnum):
 
 def Settings(  # pylint: disable=invalid-name
     data: IntEnum,
-) -> tuple[IntEnum, list[Group | Array]]:
+) -> tuple[IntEnum, list[Single | Array]]:
     Extra = cast(
         Any,
         IntEnum("Extra", {datum.name: datum.value + len(data) for datum in ExtraData}),
@@ -57,7 +57,7 @@ def Settings(  # pylint: disable=invalid-name
     )
 
     return Extra, [
-        Group(
+        Single(
             "clock",
             [
                 Select("color", Colors.LIGHT_ORANGE),
@@ -105,7 +105,7 @@ def Settings(  # pylint: disable=invalid-name
                 ],
             ],
         ),
-        Group(
+        Single(
             "top outer line",
             [
                 Select("data", Data.SUN_MOON),
@@ -150,7 +150,7 @@ def Settings(  # pylint: disable=invalid-name
                 ],
             ],
         ),
-        Group(
+        Single(
             "top inner line",
             [
                 Select("data", Data.WEATHER),
@@ -159,7 +159,7 @@ def Settings(  # pylint: disable=invalid-name
                 Select("height", Heights.AUTO),
             ],
         ),
-        Group(
+        Single(
             "bottom inner line",
             [
                 Select("data", Data.DATE),
@@ -203,7 +203,7 @@ def Settings(  # pylint: disable=invalid-name
                 ],
             ],
         ),
-        Group(
+        Single(
             "bottom outer line",
             [
                 Select("data", Data.BATTERY),

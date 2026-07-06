@@ -56,13 +56,13 @@ module Widgets {
 
 			Render.Clock(
 				_dc,
-				Properties.clock_color,
-				Properties.clock_background,
+				Properties.clock.color,
+				Properties.clock.background,
 				self.pos_x + self.size_x / 2,
 				self.pos_y + self.size_y / 2,
-				Properties.clock_height == Properties.AUTO
+				Properties.clock.height == Properties.AUTO
 					? self.small_
-					: Properties.clock_height == Properties.SMALL,
+					: Properties.clock.height == Properties.SMALL,
 				self.time_,
 				_is_night_mode ? "" : "88:88"
 			);

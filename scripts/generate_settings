@@ -7,23 +7,27 @@ from data.settings import (
     Array,
     Boolean,
     Data,
-    Group,
+    Entry,
     Number,
     Options,
     Select,
     Settings,
+    Single,
 )
 from scripts.utils.args_parse import parse_folders
 from scripts.utils.mc_document import McDocument, McScope
 from scripts.utils.xml_document import XmlDocument
 
+Top = Single | Array
+Widget = Single | list[Entry]
 
-def render_data(data: Any) -> str:
+
+def render_data_mc(data: Any) -> str:
     doc = McDocument.create()
     doc.line("import Toybox.Lang;")
-    with McScope(doc, "module Data") as _module:
-        with McScope(doc, "function get(_id as Lang.Number) as Base or Null") as _get:
-            with McScope(doc, "switch (_id)") as _switch:
+    with McScope(doc, "module Data {") as _module:
+        with McScope(doc, "function get(_id as Lang.Number) as Base or Null {") as _get:
+            with McScope(doc, "switch (_id) {") as _switch:
                 for datum in data:
                     datum_name = "".join(
                         part.capitalize() for part in datum.name.split("_")
@@ -33,18 +37,18 @@ def render_data(data: Any) -> str:
                 doc.line()
                 doc.line("default: return null;")
 
-    return doc.text()
+    return doc.render()
 
 
-def render_widgets(extra_data: Any) -> str:
+def render_widgets_mc(extra_data: Any) -> str:
     doc = McDocument.create()
     doc.line("import Toybox.Lang;")
-    with McScope(doc, "module Widgets") as _module:
+    with McScope(doc, "module Widgets {") as _module:
         with McScope(
             doc,
-            "function get(_id as Lang.Number, _small as Lang.Boolean) as Base or Null",
+            "function get(_id as Lang.Number, _small as Lang.Boolean) as Base or Null {",
         ) as _get:
-            with McScope(doc, "switch (_id)") as _switch:
+            with McScope(doc, "switch (_id) {") as _switch:
                 for datum in extra_data:
                     datum_name = "".join(
                         part.capitalize() for part in datum.name.split("_")
@@ -54,199 +58,235 @@ def render_widgets(extra_data: Any) -> str:
                 doc.line()
                 doc.line("default: return null;")
 
-    return doc.text()
+    return doc.render()
 
 
-def render_properteis_mc(settings: list[Group | Array]) -> str:
+def render_properties_mc(  # pylint: disable=too-many-locals,too-many-branches
+    settings: list[Single | Array],
+) -> str:
     doc = McDocument.create()
     doc.line("import Toybox.Application;")
     doc.line("import Toybox.Lang;")
-    with McScope(doc, "module Properties") as _module:
+    with McScope(doc, "module Properties {") as _module:
         for opt in Options:
             doc.line(f"const {opt.name.upper()} = {opt.value};")
 
-        doc.line()
+        doc.line("// fields")
 
-        for group_or_array in settings:
-            if isinstance(group_or_array, Group):
-                group = group_or_array
-                for select in group.selections:
+        for single_or_array in settings:
+            entries = []
+            if isinstance(single_or_array, Single):
+                entries = single_or_array.entries
+            if isinstance(single_or_array, Array):
+                entries = single_or_array[0]
+
+            with McScope(doc, f"class {single_or_array.id} {{") as _class:
+                for entry in entries:
                     doc.line(
-                        f"var {group.id.lower()}_{select.id.lower()} "
-                        f"as Lang.Number = {select.default};"
+                        f"var {entry.id.lower()} as Lang.{entry.type.capitalize()};"
                     )
 
-        doc.line()
-
-        with McScope(doc, "function refresh() as Void") as _refresh:
-            for group_or_array in settings:
-                if isinstance(group_or_array, Group):
-                    group = group_or_array
-                    for select in group.selections:
+                with McScope(doc, "function initialize(") as _args:
+                    for idx, entry in enumerate(entries):
+                        comma = "," if idx != len(entries) - 1 else ""
                         doc.line(
-                            f"{group.id.lower()}_{select.id.lower()} = "
-                            f"Application.Properties.getValue("
-                            f'"{group.id}{select.id}") as Lang.Number;'
+                            f"_{entry.id.lower()} as Lang.{entry.type.capitalize()}{comma}"
                         )
 
-    return doc.text()
+                with McScope(doc, "{") as _body:
+                    for entry in entries:
+                        doc.line(f"self.{entry.id.lower()} = _{entry.id.lower()};")
+
+            if isinstance(single_or_array, Single):
+                with McScope(
+                    doc,
+                    f"var {single_or_array.id.lower()} as {single_or_array.id} = "
+                    f"new {single_or_array.id}(",
+                    ";",
+                ) as _field:
+                    for idx, entry in enumerate(single_or_array):
+                        comma = "," if idx != len(single_or_array) - 1 else ""
+                        doc.line(f"{str(entry.default).lower()}{comma}")
+                continue
+
+            if isinstance(single_or_array, Array):
+                with McScope(
+                    doc,
+                    f"var {single_or_array.id.lower()} as Lang.Array<{single_or_array.id}> = [",
+                    ";",
+                ) as _field:
+                    for idx, widget in enumerate(single_or_array):
+                        with McScope(
+                            doc,
+                            f"new {single_or_array.id}(",
+                            "," if idx != len(single_or_array) - 1 else "",
+                        ) as _entry:
+                            for idy, entry in enumerate(widget):
+                                comma = "," if idy != len(widget) - 1 else ""
+                                doc.line(f"{str(entry.default).lower()}{comma}")
+                continue
+
+            assert False, f"Unsupported type {type(single_or_array)}"
+
+        doc.line("// refresh")
+
+        with McScope(doc, "function refresh() as Void {") as _refresh:
+            for single_or_array in settings:
+
+                def render_widget(
+                    top: Top, widget: Widget, idx: int | None = None
+                ) -> None:
+                    sub_id = f"{idx}" if idx is not None else ""
+
+                    for idy, entry in enumerate(widget):
+                        comma = "," if idy != len(widget) - 1 else ""
+                        doc.line(
+                            "Application.Properties.getValue("
+                            f'"{top.id}{entry.id}{sub_id}") '
+                            f"as Lang.{entry.type.capitalize()}{comma}"
+                        )
+
+                if isinstance(single_or_array, Single):
+                    with McScope(
+                        doc,
+                        f"self.{single_or_array.id.lower()} = new {single_or_array.id}(",
+                        ";",
+                    ) as _field:
+                        render_widget(single_or_array, single_or_array)
+                    continue
+
+                if isinstance(single_or_array, Array):
+                    with McScope(
+                        doc, f"self.{single_or_array.id.lower()} = [", ";"
+                    ) as _field:
+                        for idx, widget in enumerate(single_or_array):
+                            with McScope(
+                                doc,
+                                f"new {single_or_array.id}(",
+                                "," if idx != len(single_or_array) - 1 else "",
+                            ) as _entry:
+                                render_widget(single_or_array, widget, idx)
+                    continue
+
+                assert False, f"Unsupported type {type(single_or_array)}"
+
+    return doc.render()
 
 
-def render_properties_xml(settings: list[Group | Array]) -> str:
+def render_properties_xml(settings: list[Single | Array]) -> str:
     root = XmlDocument.resource("properties")
 
-    for group_or_array in settings:
-        if isinstance(group_or_array, Group):
-            group = group_or_array
-            for select in group.selections:
+    for single_or_array in settings:
+
+        def render_widget(top: Top, widget: Widget, idx: int | None = None) -> None:
+            sub_id = f"{idx}" if idx is not None else ""
+
+            for entry in widget:
                 property_ = root.subelement(
                     root.root,
                     "property",
-                    id=f"{group.id}{select.id}",
-                    type="number",
+                    id=f"{top.id}{entry.id}{sub_id}",
+                    type=entry.type,
                 )
-                property_.text = str(select.default)
+                property_.text = str(entry.default)
 
-        if isinstance(group_or_array, Array):
-            array = group_or_array
-            root.subelement(root.root, "property", id=array.id, type="array")
+        if isinstance(single_or_array, Single):
+            render_widget(single_or_array, single_or_array)
+            continue
+
+        if isinstance(single_or_array, Array):
+            for idx, widget in enumerate(single_or_array):
+                render_widget(single_or_array, widget, idx)
+            continue
+
+        assert False, f"Unsupported type {type(single_or_array)}"
 
     return root.render()
 
 
-def render_group(group: Group) -> XmlDocument:
-    group_xml = XmlDocument(
-        XmlDocument.element("group", id=group.id, title=f"@Strings.{group.label}")
-    )
-
-    for select in group.selections:
-        setting = group_xml.subelement(
-            group_xml.root,
-            "setting",
-            propertyKey=f"@Properties.{group.id}{select.id}",
-            title=f"@Strings.{select.label}",
-        )
-        setting_config = group_xml.subelement(
-            setting,
-            "settingConfig",
-            type="list",
-            required="true",
-        )
-
-        for option, value in select.options.items():
-            list_entry = group_xml.subelement(
-                setting_config,
-                "listEntry",
-                value=value,
-            )
-            list_entry.text = f"@Strings.{option.label}"
-
-    return group_xml
-
-
-def render_array(array: Array) -> XmlDocument:  # pylint: disable=too-many-locals
-    assert 0 < len(array.elements)
-
-    setting_xml = XmlDocument(
-        XmlDocument.element(
-            "setting",
-            propertyKey=f"@Properties.{array.id}",
-            title=f"@Strings.{array.label}",
-        )
-    )
-
-    for select_or_number_or_boolean in array.elements[0]:
-        if isinstance(select_or_number_or_boolean, Select):
-            select = select_or_number_or_boolean
-
-            setting = setting_xml.subelement(
-                setting_xml.root,
-                "setting",
-                title=f"@Strings.{select.label}",
-                type="number",
-            )
-            setting_config = setting_xml.subelement(
-                setting,
-                "settingConfig",
-                id=select.id,
-                type="list",
-                required="true",
-            )
-
-            for option, value in select.options.items():
-                list_entry = XmlDocument.subelement(
-                    setting_config,
-                    "listEntry",
-                    value=value,
-                )
-                list_entry.text = f"@Strings.{option.label}"
-            continue
-
-        if isinstance(select_or_number_or_boolean, Number):
-            number = select_or_number_or_boolean
-
-            setting = setting_xml.subelement(
-                setting_xml.root,
-                "setting",
-                title=f"@Strings.{number.label}",
-                type="number",
-            )
-            setting_xml.subelement(
-                setting,
-                "settingConfig",
-                id=number.id,
-                type="numeric",
-                min="0",
-                max="10",
-                required="true",
-            )
-            continue
-
-        if isinstance(select_or_number_or_boolean, Boolean):
-            boolean = select_or_number_or_boolean
-
-            setting = setting_xml.subelement(
-                setting_xml.root,
-                "setting",
-                title=f"@Strings.{boolean.label}",
-                type="boolean",
-            )
-            setting_xml.subelement(
-                setting,
-                "settingConfig",
-                id=boolean.id,
-                type="boolean",
-                required="true",
-            )
-            continue
-
-        assert False, "Unsupported type"
-
-    defaults = setting_xml.subelement(setting_xml.root, "defaults")
-
-    for element in array.elements:
-        entry_xml = setting_xml.subelement(defaults, "entry")
-        entry: Any
-        for entry in element:
-            default_xml = setting_xml.subelement(entry_xml, "default", id=entry.id)
-            default_xml.text = str(entry.default).lower()
-
-    return setting_xml
-
-
-def render_settings(settings: list[Group | Array]) -> str:
+def render_settings_xml(settings: list[Single | Array]) -> str:
     root = XmlDocument.resource("settings")
 
-    for group_or_array in settings:
-        if isinstance(group_or_array, Group):
-            root.root.append(render_group(group_or_array).root)
+    for single_or_array in settings:
+
+        def render_widget(top: Top, widget: Widget, idx: int | None = None) -> None:
+            sub_id = f"{idx}" if idx is not None else ""
+
+            group_xml = root.subelement(
+                root.root,
+                "group",
+                id=f"{top.id}{sub_id}",
+                title=f"@Strings.{top.label}",
+            )
+
+            for entry in widget:
+                if isinstance(entry, Select):
+                    setting = root.subelement(
+                        group_xml,
+                        "setting",
+                        propertyKey=f"@Properties.{top.id}{entry.id}{sub_id}",
+                        title=f"@Strings.{entry.label}",
+                    )
+                    setting_config = root.subelement(
+                        setting,
+                        "settingConfig",
+                        type="list",
+                        required="true",
+                    )
+
+                    for option, value in entry.options.items():
+                        list_entry = root.subelement(
+                            setting_config,
+                            "listEntry",
+                            value=value,
+                        )
+                        list_entry.text = f"@Strings.{option.label}"
+                    continue
+
+                if isinstance(entry, Number):
+                    setting = root.subelement(
+                        group_xml,
+                        "setting",
+                        propertyKey=f"@Properties.{top.id}{entry.id}{sub_id}",
+                        title=f"@Strings.{entry.label}",
+                    )
+                    setting_config = root.subelement(
+                        setting,
+                        "settingConfig",
+                        type="numeric",
+                        min="0",
+                        max="10",
+                        required="true",
+                    )
+                    continue
+
+                if isinstance(entry, Boolean):
+                    setting = root.subelement(
+                        group_xml,
+                        "setting",
+                        propertyKey=f"@Properties.{top.id}{entry.id}{sub_id}",
+                        title=f"@Strings.{entry.label}",
+                    )
+                    setting_config = root.subelement(
+                        setting,
+                        "settingConfig",
+                        type="boolean",
+                        required="true",
+                    )
+                    continue
+
+                assert False, f"Unsupported type {type(entry)}"
+
+        if isinstance(single_or_array, Single):
+            render_widget(single_or_array, single_or_array)
             continue
 
-        if isinstance(group_or_array, Array):
-            root.root.append(render_array(group_or_array).root)
+        if isinstance(single_or_array, Array):
+            for sub_id, widget in enumerate(single_or_array):
+                render_widget(single_or_array, widget, sub_id)
             continue
 
-        assert False, "Unsupported type"
+        assert False, f"Unsupported type {type(single_or_array)}"
 
     return root.render()
 
@@ -257,15 +297,17 @@ def main() -> None:
     data = Data(folders.source("data"))
     extra_data, settings = Settings(data)
 
-    folders.source("generated", "data.mc").write_text(render_data(data))
-    folders.source("generated", "widgets.mc").write_text(render_widgets(extra_data))
+    folders.source("generated", "data.mc").write_text(render_data_mc(data))
+    folders.source("generated", "widgets.mc").write_text(render_widgets_mc(extra_data))
     folders.source("generated", "properties.mc").write_text(
-        render_properteis_mc(settings)
+        render_properties_mc(settings)
     )
     folders.resources("generated", "properties.xml").write_text(
         render_properties_xml(settings)
     )
-    folders.resources("generated", "settings.xml").write_text(render_settings(settings))
+    folders.resources("generated", "settings.xml").write_text(
+        render_settings_xml(settings)
+    )
 
 
 if __name__ == "__main__":

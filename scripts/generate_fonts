@@ -319,7 +319,7 @@ def generate_fonts(  # pylint: disable=too-many-locals
     fonts_mc.line("import Toybox.Application;")
     fonts_mc.line("import Toybox.WatchUi;")
 
-    with McScope(fonts_mc, "module Fonts") as _module:
+    with McScope(fonts_mc, "module Fonts {") as _module:
         # #########################################################################
         # Digits
 
@@ -327,14 +327,8 @@ def generate_fonts(  # pylint: disable=too-many-locals
         fonts_mc.line("// Digits")
         fonts_mc.line()
         for digits_meta_data in [
-            (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR_BOLD, "digits_solid"),
             (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR, "digits_regular"),
             (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR_THIN, "digits_regular_thin"),
-            (
-                fonts.TYPEFACE_DIGITS_SMALL,
-                fonts.STYLE_REGULAR_BOLD,
-                "digits_small_bold",
-            ),
             (fonts.TYPEFACE_DIGITS_SMALL, fonts.STYLE_REGULAR, "digits_small"),
             (
                 fonts.TYPEFACE_DIGITS_SMALL,
@@ -401,7 +395,7 @@ def generate_fonts(  # pylint: disable=too-many-locals
     # #########################################################################
     # Write
 
-    folders.source("generated", "fonts.mc").write_text(fonts_mc.text())
+    folders.source("generated", "fonts.mc").write_text(fonts_mc.render())
     folders.resources("generated", "fonts.xml").write_text(fonts_xml.render())
 
 
