@@ -8,13 +8,13 @@ from .model import Array, Boolean, Number, Select, Single
 
 
 class Options(IntEnum):
-    ALARM = auto()
     AUTO = auto()
+    LARGE = auto()
+    SMALL = auto()
+    ALARM = auto()
     BLUETOOTH_CONNECTED = auto()
     BLUETOOTH_DISCONNECTED = auto()
-    LARGE = auto()
     NOTIFICATIONS = auto()
-    SMALL = auto()
 
 
 class Heights(IntEnum):
@@ -86,7 +86,7 @@ def Settings(  # pylint: disable=invalid-name
             ],
         ),
         Array(
-            "gauges",
+            "gauge",
             [
                 [
                     Select("data", Data.BODY_BATTERY),
@@ -126,6 +126,7 @@ def Settings(  # pylint: disable=invalid-name
                     Select("height", Heights.AUTO),
                     Number("width", 2),
                     Boolean("icon", True),
+                    Boolean("padding", False),
                     Boolean("gauge", False),
                 ],
                 [
@@ -136,6 +137,7 @@ def Settings(  # pylint: disable=invalid-name
                     Select("height", Heights.AUTO),
                     Number("width", 2),
                     Boolean("icon", True),
+                    Boolean("padding", False),
                     Boolean("gauge", False),
                 ],
                 [
@@ -146,6 +148,7 @@ def Settings(  # pylint: disable=invalid-name
                     Select("height", Heights.AUTO),
                     Number("width", 2),
                     Boolean("icon", True),
+                    Boolean("padding", False),
                     Boolean("gauge", False),
                 ],
             ],
@@ -179,6 +182,7 @@ def Settings(  # pylint: disable=invalid-name
                     Select("height", Heights.AUTO),
                     Number("width", 3),
                     Boolean("icon", False),
+                    Boolean("padding", True),
                     Boolean("gauge", True),
                 ],
                 [
@@ -189,6 +193,7 @@ def Settings(  # pylint: disable=invalid-name
                     Select("height", Heights.AUTO),
                     Number("width", 3),
                     Boolean("icon", False),
+                    Boolean("padding", True),
                     Boolean("gauge", True),
                 ],
                 [
@@ -199,6 +204,7 @@ def Settings(  # pylint: disable=invalid-name
                     Select("height", Heights.AUTO),
                     Number("width", 3),
                     Boolean("icon", False),
+                    Boolean("padding", True),
                     Boolean("gauge", True),
                 ],
             ],

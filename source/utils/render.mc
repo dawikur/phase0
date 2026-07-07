@@ -5,6 +5,8 @@ import Toybox.Lang;
 import Toybox.WatchUi;
 
 module Render {
+	const COLOR_NONE as Lang.Number = -1;
+
 	const COLOR_BLACK as Lang.Number = 0x000000;
 	const COLOR_CHARCOAL as Lang.Number = 0x555555; // Background
 	const COLOR_SILVER as Lang.Number = 0xaaaaaa;
@@ -68,28 +70,6 @@ module Render {
 		return _small ? Fonts.DOT_SMALL : Fonts.DOT_REGULAR_THIN;
 	}
 
-	function Label(
-		_dc as Graphics.Dc,
-		_pos_x as Lang.Number,
-		_pos_y as Lang.Number,
-		_label as Lang.String,
-		_justify as Lang.Number
-	) as Void {
-		_dc.setColor(COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_pos_x, _pos_y, Fonts.DOT_TINY, _label, _justify);
-	}
-
-	function LabelWidth(
-		_dc as Graphics.Dc,
-		_label as Lang.String
-	) as Lang.Number {
-		return _dc.getTextWidthInPixels(_label, Fonts.DOT_TINY);
-	}
-
-	function LabelHeight(_dc as Graphics.Dc) as Lang.Number {
-		return _dc.getFontHeight(Fonts.DOT_TINY);
-	}
-
 	function Clock(
 		_dc as Graphics.Dc,
 		_color as Lang.Number,
@@ -136,6 +116,29 @@ module Render {
 		_small as Lang.Boolean
 	) as Lang.Number {
 		return _dc.getFontHeight(fontClockFg_(_small));
+	}
+
+	function Label(
+		_dc as Graphics.Dc,
+		_color as Lang.Number,
+		_pos_x as Lang.Number,
+		_pos_y as Lang.Number,
+		_label as Lang.String,
+		_justify as Lang.Number
+	) as Void {
+		_dc.setColor(COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
+		_dc.drawText(_pos_x, _pos_y, Fonts.DOT_TINY, _label, _justify);
+	}
+
+	function LabelWidth(
+		_dc as Graphics.Dc,
+		_label as Lang.String
+	) as Lang.Number {
+		return _dc.getTextWidthInPixels(_label, Fonts.DOT_TINY);
+	}
+
+	function LabelHeight(_dc as Graphics.Dc) as Lang.Number {
+		return _dc.getFontHeight(Fonts.DOT_TINY);
 	}
 
 	function Text(

@@ -22,7 +22,7 @@ module Widgets {
 			]);
 		}
 
-		function refresh(_dc as Graphics.Dc) as Void {
+		function refresh() as Void {
 			var device_settings = System.getDeviceSettings();
 
 			var icon_alarm = "";

@@ -31,7 +31,7 @@ module Widgets {
 			self.value_bg_ = "00:00   00:00";
 		}
 
-		function refresh(_dc as Graphics.Dc) as Void {
+		function refresh() as Void {
 			self.value_ = self.getValue();
 			self.moon_phase_ = SunMoon.MoonPhase(Time.now());
 
@@ -56,6 +56,7 @@ module Widgets {
 			if (self.label_.length() != 0) {
 				Render.Label(
 					_dc,
+					Render.COLOR_ORANGE,
 					pos_x,
 					pos_y,
 					self.label_,

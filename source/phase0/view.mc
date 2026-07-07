@@ -29,7 +29,9 @@ module Phase0 {
 		// -- widgets --
 		hidden const status_ = new Widgets.Status();
 
-		hidden var clock_ as Widgets.Clock = new Widgets.Clock(false);
+		hidden var clock_ as Widgets.Clock = new Widgets.Clock(
+			Properties.clock
+		);
 		hidden var seconds_ as Widgets.Seconds = new Widgets.Seconds(false);
 		hidden var battery_ as Widgets.Battery = new Widgets.Battery(false);
 
@@ -67,7 +69,7 @@ module Phase0 {
 		}
 
 		function onSettingsChanged() as Void {
-			self.updateProperties_();
+			self.refreshProperties_();
 
 			WatchUi.requestUpdate();
 		}
@@ -125,10 +127,9 @@ module Phase0 {
 		function onLayout(_dc as Graphics.Dc) as Void {
 			// ---- layout ----
 
-			self.widgets_per_min_ = [];
-			self.widgets_per_hour_ = [];
-
 			var layout = new Layout(_dc);
+
+			self.refreshProperties_();
 
 			// ---- top outer ----
 
@@ -185,7 +186,7 @@ module Phase0 {
 			self.status_.pos_x = layout.left.pos_x;
 			self.status_.pos_y = layout.left.pos_y;
 
-			self.clock_ = new Widgets.Clock(layout.clock.small);
+			self.clock_.small = layout.clock.small;
 			self.clock_.pos_x = layout.clock.pos_x;
 			self.clock_.pos_y = layout.clock.pos_y;
 			self.clock_.size_x = layout.clock.size_x;
@@ -390,25 +391,25 @@ module Phase0 {
 			var metrics = self.getMetrics_();
 
 			{
-				self.status_.refresh(_dc);
-				self.seconds_.refresh(_dc);
+				self.status_.refresh();
+				self.seconds_.refresh();
 
-				self.refresh_(_dc, metrics);
+				self.refresh_(metrics);
 			}
 
 			if (self.last_refresh_min_ != clock.min) {
 				self.last_refresh_min_ = clock.min;
 				self.is_night_mode_ = self.isNightMode_();
 
-				self.clock_.refresh(_dc);
-				self.battery_.refresh(_dc);
+				self.clock_.refresh();
+				self.battery_.refresh();
 
-				self.refresh_(_dc, self.widgets_per_min_);
+				self.refresh_(self.widgets_per_min_);
 			}
 			if (self.last_refresh_hour_ != clock.hour) {
 				self.last_refresh_hour_ = clock.hour;
 
-				self.refresh_(_dc, self.widgets_per_hour_);
+				self.refresh_(self.widgets_per_hour_);
 			}
 
 			// ---- render ----
@@ -448,7 +449,7 @@ module Phase0 {
 				return;
 			}
 
-			self.seconds_.refresh(_dc);
+			self.seconds_.refresh();
 
 			_dc.setClip(
 				self.seconds_.pos_x,
@@ -463,7 +464,7 @@ module Phase0 {
 			self.seconds_.render(_dc, true);
 		}
 
-		hidden function updateProperties_() as Void {}
+		hidden function refreshProperties_() as Void {}
 
 		hidden function isNightMode_() as Lang.Boolean {
 			var user_profile = UserProfile.getProfile();
@@ -493,13 +494,10 @@ module Phase0 {
 			);
 		}
 
-		hidden function refresh_(
-			_dc as Graphics.Dc,
-			_widgets as Bases or Metrics
-		) as Void {
+		hidden function refresh_(_widgets as Bases or Metrics) as Void {
 			var widgets_size = _widgets.size();
 			for (var i = 0; i < widgets_size; ++i) {
-				_widgets[i].refresh(_dc);
+				_widgets[i].refresh();
 			}
 		}
 

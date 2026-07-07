@@ -70,7 +70,7 @@ module Widgets {
 			return pos_x <= _x and _x <= end_x and pos_y <= _y and _y <= end_y;
 		}
 
-		function refresh(_dc as Graphics.Dc) as Void {
+		function refresh() as Void {
 			self.value_ = self.getValue();
 		}
 
@@ -78,7 +78,7 @@ module Widgets {
 			// ---- prepare ----
 
 			if (self.value_.length() == 0) {
-				self.refresh(_dc);
+				self.refresh();
 			}
 
 			var pos_x = self.pos_x;
@@ -87,7 +87,14 @@ module Widgets {
 			// ---- label ----
 
 			if (self.label_.length() != 0) {
-				Render.Label(_dc, pos_x, pos_y, self.label_, self.justify_);
+				Render.Label(
+					_dc,
+					Render.COLOR_ORANGE,
+					pos_x,
+					pos_y,
+					self.label_,
+					self.justify_
+				);
 				pos_y += Render.LabelHeight(_dc) + Render.SPACING;
 			}
 

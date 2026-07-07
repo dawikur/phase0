@@ -18,6 +18,10 @@ class Token:
         return "".join(part.capitalize() for part in self.parts)
 
     @property
+    def variable(self) -> str:
+        return "_".join(part.lower() for part in self.parts)
+
+    @property
     def label(self) -> str:
         return f"LABEL_{'_'.join(part.upper() for part in self.parts)}"
 
@@ -31,55 +35,36 @@ class Token:
 
 
 @dataclass
-class Number:
-    name: Token
+class Number(Token):
     default: int
 
-    type: str = "number"
+    type: str = "Number"
 
     def __init__(self, name: str, default: int):
-        self.name = Token(name)
+        super().__init__(name)
         self.default = default
-
-    @property
-    def id(self) -> str:
-        return self.name.id
-
-    @property
-    def label(self) -> str:
-        return self.name.label
 
 
 @dataclass
-class Boolean:
-    name: Token
+class Boolean(Token):
     default: bool
 
-    type: str = "boolean"
+    type: str = "Boolean"
 
     def __init__(self, name: str, default: bool):
-        self.name = Token(name)
+        super().__init__(name)
         self.default = default
-
-    @property
-    def id(self) -> str:
-        return self.name.id
-
-    @property
-    def label(self) -> str:
-        return self.name.label
 
 
 @dataclass
-class Select:
-    name: Token
+class Select(Token):
     default: str
     options: dict[Token, str]
 
-    type: str = "number"
+    type: str = "Number"
 
     def __init__(self, name: str, default: Any, options: EnumType | None = None):
-        self.name = Token(name)
+        super().__init__(name)
         self.options: dict[Token, str] = {
             Token(option.name): str(option.value)
             for option in (options or type(default))
@@ -89,34 +74,17 @@ class Select:
     def __iter__(self) -> Iterator[Token]:
         return self.options.__iter__()
 
-    @property
-    def id(self) -> str:
-        return self.name.id
-
-    @property
-    def label(self) -> str:
-        return self.name.label
-
 
 Entry = Select | Number | Boolean
 
 
 @dataclass
-class Single:
-    name: Token
+class Single(Token):
     entries: list[Entry]
 
     def __init__(self, name: str, entries: list[Entry]):
-        self.name = Token(name)
+        super().__init__(name)
         self.entries = entries
-
-    @property
-    def id(self) -> str:
-        return self.name.id
-
-    @property
-    def label(self) -> str:
-        return self.name.label
 
     def __iter__(self) -> Iterator[Entry]:
         return self.entries.__iter__()
@@ -129,23 +97,14 @@ class Single:
 
 
 @dataclass
-class Array:
-    name: Token
+class Array(Token):
     entries: list[list[Entry]]
 
     def __init__(self, name: str, entries: list[list[Entry]]):
-        self.name = Token(name)
+        super().__init__(name)
         self.entries = entries
 
         assert self.entries, "Array elements must not be empty"
-
-    @property
-    def id(self) -> str:
-        return self.name.id
-
-    @property
-    def label(self) -> str:
-        return self.name.label
 
     def __iter__(self) -> Iterator[list[Entry]]:
         return self.entries.__iter__()

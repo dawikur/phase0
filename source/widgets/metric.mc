@@ -93,7 +93,7 @@ module Widgets {
 			);
 		}
 
-		function refresh(_dc as Graphics.Dc) as Void {
+		function refresh() as Void {
 			self.impl_.refresh();
 
 			self.label_ = self.impl_.name;
@@ -121,7 +121,7 @@ module Widgets {
 			// ---- prepare ----
 
 			if (self.value_ == null) {
-				self.refresh(_dc);
+				self.refresh();
 			}
 
 			var icon_width = self.show_icon
@@ -206,6 +206,7 @@ module Widgets {
 			if (self.show_label) {
 				Render.Label(
 					_dc,
+					Render.COLOR_ORANGE,
 					self.pos_x + (pos_x - self.pos_x) / 2,
 					self.pos_y,
 					self.label_,

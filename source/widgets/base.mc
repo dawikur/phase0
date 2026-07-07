@@ -44,7 +44,7 @@ module Widgets {
 			return false;
 		}
 
-		function refresh(_dc as Graphics.Dc) as Void {}
+		function refresh() as Void {}
 
 		function render(_dc as Graphics.Dc) as Void {}
 	}

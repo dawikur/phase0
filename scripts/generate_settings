@@ -71,7 +71,9 @@ def render_properties_mc(  # pylint: disable=too-many-locals,too-many-branches
         for opt in Options:
             doc.line(f"const {opt.name.upper()} = {opt.value};")
 
+        doc.line()
         doc.line("// fields")
+        doc.line()
 
         for single_or_array in settings:
             entries = []
@@ -82,25 +84,21 @@ def render_properties_mc(  # pylint: disable=too-many-locals,too-many-branches
 
             with McScope(doc, f"class {single_or_array.id} {{") as _class:
                 for entry in entries:
-                    doc.line(
-                        f"var {entry.id.lower()} as Lang.{entry.type.capitalize()};"
-                    )
+                    doc.line(f"var {entry.variable} as Lang.{entry.type};")
 
                 with McScope(doc, "function initialize(") as _args:
                     for idx, entry in enumerate(entries):
                         comma = "," if idx != len(entries) - 1 else ""
-                        doc.line(
-                            f"_{entry.id.lower()} as Lang.{entry.type.capitalize()}{comma}"
-                        )
+                        doc.line(f"_{entry.variable} as Lang.{entry.type}{comma}")
 
                 with McScope(doc, "{") as _body:
                     for entry in entries:
-                        doc.line(f"self.{entry.id.lower()} = _{entry.id.lower()};")
+                        doc.line(f"self.{entry.variable} = _{entry.variable};")
 
             if isinstance(single_or_array, Single):
                 with McScope(
                     doc,
-                    f"var {single_or_array.id.lower()} as {single_or_array.id} = "
+                    f"var {single_or_array.variable} as {single_or_array.id} = "
                     f"new {single_or_array.id}(",
                     ";",
                 ) as _field:
@@ -112,7 +110,7 @@ def render_properties_mc(  # pylint: disable=too-many-locals,too-many-branches
             if isinstance(single_or_array, Array):
                 with McScope(
                     doc,
-                    f"var {single_or_array.id.lower()} as Lang.Array<{single_or_array.id}> = [",
+                    f"var {single_or_array.variable} as Lang.Array<{single_or_array.id}> = [",
                     ";",
                 ) as _field:
                     for idx, widget in enumerate(single_or_array):
@@ -121,8 +119,8 @@ def render_properties_mc(  # pylint: disable=too-many-locals,too-many-branches
                             f"new {single_or_array.id}(",
                             "," if idx != len(single_or_array) - 1 else "",
                         ) as _entry:
-                            for idy, entry in enumerate(widget):
-                                comma = "," if idy != len(widget) - 1 else ""
+                            for idx, entry in enumerate(widget):
+                                comma = "," if idx != len(widget) - 1 else ""
                                 doc.line(f"{str(entry.default).lower()}{comma}")
                 continue
 
@@ -136,36 +134,24 @@ def render_properties_mc(  # pylint: disable=too-many-locals,too-many-branches
                 def render_widget(
                     top: Top, widget: Widget, idx: int | None = None
                 ) -> None:
-                    sub_id = f"{idx}" if idx is not None else ""
+                    arr_id = f"[{idx}]" if idx is not None else ""
+                    prop_id = f"{idx}" if idx is not None else ""
 
-                    for idy, entry in enumerate(widget):
-                        comma = "," if idy != len(widget) - 1 else ""
+                    for entry in widget:
                         doc.line(
+                            f"self.{top.variable}{arr_id}.{entry.variable} = "
                             "Application.Properties.getValue("
-                            f'"{top.id}{entry.id}{sub_id}") '
-                            f"as Lang.{entry.type.capitalize()}{comma}"
+                            f'"{top.id}{entry.id}{prop_id}") '
+                            f"as Lang.{entry.type};"
                         )
 
                 if isinstance(single_or_array, Single):
-                    with McScope(
-                        doc,
-                        f"self.{single_or_array.id.lower()} = new {single_or_array.id}(",
-                        ";",
-                    ) as _field:
-                        render_widget(single_or_array, single_or_array)
+                    render_widget(single_or_array, single_or_array)
                     continue
 
                 if isinstance(single_or_array, Array):
-                    with McScope(
-                        doc, f"self.{single_or_array.id.lower()} = [", ";"
-                    ) as _field:
-                        for idx, widget in enumerate(single_or_array):
-                            with McScope(
-                                doc,
-                                f"new {single_or_array.id}(",
-                                "," if idx != len(single_or_array) - 1 else "",
-                            ) as _entry:
-                                render_widget(single_or_array, widget, idx)
+                    for idx, widget in enumerate(single_or_array):
+                        render_widget(single_or_array, widget, idx)
                     continue
 
                 assert False, f"Unsupported type {type(single_or_array)}"
@@ -179,13 +165,13 @@ def render_properties_xml(settings: list[Single | Array]) -> str:
     for single_or_array in settings:
 
         def render_widget(top: Top, widget: Widget, idx: int | None = None) -> None:
-            sub_id = f"{idx}" if idx is not None else ""
+            prop_id = f"{idx}" if idx is not None else ""
 
             for entry in widget:
                 property_ = root.subelement(
                     root.root,
                     "property",
-                    id=f"{top.id}{entry.id}{sub_id}",
+                    id=f"{top.id}{entry.id}{prop_id}",
                     type=entry.type,
                 )
                 property_.text = str(entry.default)
@@ -210,23 +196,24 @@ def render_settings_xml(settings: list[Single | Array]) -> str:
     for single_or_array in settings:
 
         def render_widget(top: Top, widget: Widget, idx: int | None = None) -> None:
-            sub_id = f"{idx}" if idx is not None else ""
+            prop_id = f"{idx}" if idx is not None else ""
 
             group_xml = root.subelement(
                 root.root,
                 "group",
-                id=f"{top.id}{sub_id}",
+                id=f"{top.id}{prop_id}",
                 title=f"@Strings.{top.label}",
             )
 
             for entry in widget:
+                setting = root.subelement(
+                    group_xml,
+                    "setting",
+                    propertyKey=f"@Properties.{top.id}{entry.id}{prop_id}",
+                    title=f"@Strings.{entry.label}",
+                )
+
                 if isinstance(entry, Select):
-                    setting = root.subelement(
-                        group_xml,
-                        "setting",
-                        propertyKey=f"@Properties.{top.id}{entry.id}{sub_id}",
-                        title=f"@Strings.{entry.label}",
-                    )
                     setting_config = root.subelement(
                         setting,
                         "settingConfig",
@@ -244,12 +231,6 @@ def render_settings_xml(settings: list[Single | Array]) -> str:
                     continue
 
                 if isinstance(entry, Number):
-                    setting = root.subelement(
-                        group_xml,
-                        "setting",
-                        propertyKey=f"@Properties.{top.id}{entry.id}{sub_id}",
-                        title=f"@Strings.{entry.label}",
-                    )
                     setting_config = root.subelement(
                         setting,
                         "settingConfig",
@@ -261,12 +242,6 @@ def render_settings_xml(settings: list[Single | Array]) -> str:
                     continue
 
                 if isinstance(entry, Boolean):
-                    setting = root.subelement(
-                        group_xml,
-                        "setting",
-                        propertyKey=f"@Properties.{top.id}{entry.id}{sub_id}",
-                        title=f"@Strings.{entry.label}",
-                    )
                     setting_config = root.subelement(
                         setting,
                         "settingConfig",
@@ -282,8 +257,8 @@ def render_settings_xml(settings: list[Single | Array]) -> str:
             continue
 
         if isinstance(single_or_array, Array):
-            for sub_id, widget in enumerate(single_or_array):
-                render_widget(single_or_array, widget, sub_id)
+            for idx, widget in enumerate(single_or_array):
+                render_widget(single_or_array, widget, idx)
             continue
 
         assert False, f"Unsupported type {type(single_or_array)}"

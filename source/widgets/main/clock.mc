@@ -8,7 +8,8 @@ import Toybox.WatchUi;
 module Widgets {
 	class Clock {
 		hidden var time_ as Lang.String = "";
-		hidden var small_ as Lang.Boolean;
+
+		var small as Lang.Boolean = false;
 
 		var pos_x as Lang.Number = 0;
 		var pos_y as Lang.Number = 0;
@@ -16,8 +17,10 @@ module Widgets {
 		var size_x as Lang.Number = 0;
 		var size_y as Lang.Number = 0;
 
-		function initialize(_small as Lang.Boolean) {
-			self.small_ = _small;
+		hidden var properties_ as Properties.Clock;
+
+		function initialize(_properties as Properties.Clock) {
+			self.properties_ = _properties;
 		}
 
 		function contains(
@@ -32,7 +35,7 @@ module Widgets {
 			return pos_x <= _x and _x <= end_x and pos_y <= _y and _y <= end_y;
 		}
 
-		function refresh(_dc as Graphics.Dc) as Void {
+		function refresh() as Void {
 			var clock = System.getClockTime();
 
 			var hour = Data.Units.convertHour(clock.hour);
@@ -47,7 +50,7 @@ module Widgets {
 			_is_night_mode as Lang.Boolean
 		) as Void {
 			if (self.time_.length() == 0) {
-				self.refresh(_dc);
+				self.refresh();
 			}
 
 			if (self.time_.length() == 0) {
@@ -56,13 +59,13 @@ module Widgets {
 
 			Render.Clock(
 				_dc,
-				Properties.clock.color,
-				Properties.clock.background,
+				self.properties_.color,
+				self.properties_.background,
 				self.pos_x + self.size_x / 2,
 				self.pos_y + self.size_y / 2,
-				Properties.clock.height == Properties.AUTO
-					? self.small_
-					: Properties.clock.height == Properties.SMALL,
+				self.properties_.height == Properties.AUTO
+					? self.small
+					: self.properties_.height == Properties.SMALL,
 				self.time_,
 				_is_night_mode ? "" : "88:88"
 			);

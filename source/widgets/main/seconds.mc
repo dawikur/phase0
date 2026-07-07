@@ -21,7 +21,7 @@ module Widgets {
 			self.small_ = _small;
 		}
 
-		function refresh(_dc as Graphics.Dc) as Void {
+		function refresh() as Void {
 			var clock = System.getClockTime();
 
 			self.value_ = clock.sec.format("%02d");

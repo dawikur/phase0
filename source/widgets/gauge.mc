@@ -19,7 +19,7 @@ module Widgets {
 			self.size_y = _size_y;
 		}
 
-		function refresh(_dc as Graphics.Dc) as Void {
+		function refresh() as Void {
 			self.impl_.refresh();
 
 			if (
