@@ -17,10 +17,10 @@ module Widgets {
 		var size_x as Lang.Number = 0;
 		var size_y as Lang.Number = 0;
 
-		hidden var properties_ as Properties.Clock;
+		var properties as Properties.Clock;
 
 		function initialize(_properties as Properties.Clock) {
-			self.properties_ = _properties;
+			self.properties = _properties;
 		}
 
 		function contains(
@@ -51,13 +51,13 @@ module Widgets {
 		) as Void {
 			Render.Clock(
 				_dc,
-				self.properties_.color,
-				self.properties_.background,
+				self.properties.color,
+				self.properties.background,
 				self.pos_x + self.size_x / 2,
 				self.pos_y + self.size_y / 2,
-				self.properties_.height == Properties.AUTO
+				self.properties.height == Properties.AUTO
 					? self.small
-					: self.properties_.height == Properties.SMALL,
+					: self.properties.height == Properties.SMALL,
 				self.time_,
 				_is_night_mode ? "" : "88:88"
 			);

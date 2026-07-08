@@ -8,6 +8,11 @@ from typing import Any, Iterator
 @dataclass(order=True)
 class Token:
     name: str
+    klass: str
+
+    def __init__(self, name: str, klass: str | None = None):
+        self.name = name
+        self.klass = klass or self.id
 
     @property
     def parts(self) -> list[str]:
@@ -38,10 +43,8 @@ class Token:
 class Number(Token):
     default: int
 
-    type: str = "Number"
-
     def __init__(self, name: str, default: int):
-        super().__init__(name)
+        super().__init__(name, "Number")
         self.default = default
 
 
@@ -49,10 +52,8 @@ class Number(Token):
 class Boolean(Token):
     default: bool
 
-    type: str = "Boolean"
-
     def __init__(self, name: str, default: bool):
-        super().__init__(name)
+        super().__init__(name, "Boolean")
         self.default = default
 
 
@@ -61,10 +62,8 @@ class Select(Token):
     default: str
     options: dict[Token, str]
 
-    type: str = "Number"
-
     def __init__(self, name: str, default: Any, options: EnumType | None = None):
-        super().__init__(name)
+        super().__init__(name, "Number")
         self.options: dict[Token, str] = {
             Token(option.name): str(option.value)
             for option in (options or type(default))
@@ -82,8 +81,8 @@ Entry = Select | Number | Boolean
 class Single(Token):
     entries: list[Entry]
 
-    def __init__(self, name: str, entries: list[Entry]):
-        super().__init__(name)
+    def __init__(self, name: str, entries: list[Entry], klass: str | None = None):
+        super().__init__(name, klass)
         self.entries = entries
 
     def __iter__(self) -> Iterator[Entry]:
@@ -100,11 +99,51 @@ class Single(Token):
 class Array(Token):
     entries: list[list[Entry]]
 
-    def __init__(self, name: str, entries: list[list[Entry]]):
-        super().__init__(name)
+    def __init__(
+        self,
+        name: str,
+        arg0: list[list[Entry]] | str,
+        arg1: list[list[Entry]] | str | None = None,
+    ):
+        entries = []
+        klass = None
+        if isinstance(arg0, str):
+            klass = arg0
+        elif arg0 is not None:
+            entries = arg0
+
+        if isinstance(arg1, str):
+            klass = arg1
+        elif arg1 is not None:
+            entries = arg1
+
+        super().__init__(name, klass)
         self.entries = entries
 
         assert self.entries, "Array elements must not be empty"
+
+        reference = self.entries[0]
+
+        for row_index, element in enumerate(self.entries[1:], start=1):
+            if len(element) != len(reference):
+                raise AssertionError(
+                    f"Array '{self.name}' row {row_index} has length "
+                    f"{len(element)}, expected {len(reference)}"
+                )
+
+            for col_index, (item, expected) in enumerate(zip(element, reference)):
+                if type(item) is not type(expected):
+                    raise AssertionError(
+                        f"Array '{self.name}' row {row_index}, column {col_index} "
+                        f"has type {type(item).__name__}, expected "
+                        f"{type(expected).__name__}"
+                    )
+
+                if item.name != expected.name:
+                    raise AssertionError(
+                        f"Array '{self.name}' row {row_index}, column {col_index} "
+                        f"has name '{item.name}', expected '{expected.name}'"
+                    )
 
     def __iter__(self) -> Iterator[list[Entry]]:
         return self.entries.__iter__()

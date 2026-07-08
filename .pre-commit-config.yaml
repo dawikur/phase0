@@ -4,24 +4,28 @@ exclude: ^3rd_party/
 repos:
     - repo: local
       hooks:
+          - id: make-resource
+            name: Generate resources
+            entry: make resources
+            language: system
+            pass_filenames: false
+            always_run: true
+
           - id: prettier-monkeyc
             name: prettier_monkeyc
             language: system
             entry: prettier --plugin @markw65/prettier-plugin-monkeyc --parser monkeyc --write
             files: \.mc$
+
           - id: pytest
             name: Run pytest
             entry: pytest
             language: system
             pass_filenames: false
 
-
-
-
     - repo: https://github.com/pre-commit/pre-commit-hooks
       rev: v6.0.0
       hooks:
-      #- id: check-added-large-files
           - id: check-ast
           - id: check-builtin-literals
           - id: check-case-conflict
@@ -99,6 +103,7 @@ repos:
       rev: 1.0.5
       hooks:
           - id: shell-lint
+
     - repo: https://github.com/lovesegfault/beautysh
       rev: v6.4.2
       hooks:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import textwrap
 from typing import Any
 
 from data.settings import (
@@ -61,7 +62,7 @@ def render_widgets_mc(extra_data: Any) -> str:
     return doc.render()
 
 
-def render_properties_mc(  # pylint: disable=too-many-locals,too-many-branches
+def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     settings: list[Single | Array],
 ) -> str:
     doc = McDocument.create()
@@ -75,6 +76,8 @@ def render_properties_mc(  # pylint: disable=too-many-locals,too-many-branches
         doc.line("// fields")
         doc.line()
 
+        generated_klasses: dict[str, list[str]] = {}
+
         for single_or_array in settings:
             entries = []
             if isinstance(single_or_array, Single):
@@ -82,18 +85,35 @@ def render_properties_mc(  # pylint: disable=too-many-locals,too-many-branches
             if isinstance(single_or_array, Array):
                 entries = single_or_array[0]
 
-            with McScope(doc, f"class {single_or_array.id} {{") as _class:
-                for entry in entries:
-                    doc.line(f"var {entry.variable} as Lang.{entry.type};")
+            klass_entries = list(
+                f"{entry.variable}: {entry.klass}" for entry in entries
+            )
 
-                with McScope(doc, "function initialize(") as _args:
-                    for idx, entry in enumerate(entries):
-                        comma = "," if idx != len(entries) - 1 else ""
-                        doc.line(f"_{entry.variable} as Lang.{entry.type}{comma}")
+            if single_or_array.klass in generated_klasses:
+                assert (
+                    generated_klasses[single_or_array.klass] == klass_entries
+                ), textwrap.dedent(
+                    f"""\
+                        Klass mismatch
+                        Expected: {generated_klasses[single_or_array.klass]}
+                             Got: {klass_entries}
+                        """
+                )
+            else:
+                generated_klasses[single_or_array.klass] = klass_entries
 
-                with McScope(doc, "{") as _body:
+                with McScope(doc, f"class {single_or_array.klass} {{") as _class:
                     for entry in entries:
-                        doc.line(f"self.{entry.variable} = _{entry.variable};")
+                        doc.line(f"var {entry.variable} as Lang.{entry.klass};")
+
+                    with McScope(doc, "function initialize(") as _args:
+                        for idx, entry in enumerate(entries):
+                            comma = "," if idx != len(entries) - 1 else ""
+                            doc.line(f"_{entry.variable} as Lang.{entry.klass}{comma}")
+
+                    with McScope(doc, "{") as _body:
+                        for entry in entries:
+                            doc.line(f"self.{entry.variable} = _{entry.variable};")
 
             if isinstance(single_or_array, Single):
                 with McScope(
@@ -110,13 +130,13 @@ def render_properties_mc(  # pylint: disable=too-many-locals,too-many-branches
             if isinstance(single_or_array, Array):
                 with McScope(
                     doc,
-                    f"var {single_or_array.variable} as Lang.Array<{single_or_array.id}> = [",
+                    f"var {single_or_array.variable} as Lang.Array<{single_or_array.klass}> = [",
                     ";",
                 ) as _field:
                     for idx, widget in enumerate(single_or_array):
                         with McScope(
                             doc,
-                            f"new {single_or_array.id}(",
+                            f"new {single_or_array.klass}(",
                             "," if idx != len(single_or_array) - 1 else "",
                         ) as _entry:
                             for idx, entry in enumerate(widget):
@@ -142,7 +162,7 @@ def render_properties_mc(  # pylint: disable=too-many-locals,too-many-branches
                             f"self.{top.variable}{arr_id}.{entry.variable} = "
                             "Application.Properties.getValue("
                             f'"{top.id}{entry.id}{prop_id}") '
-                            f"as Lang.{entry.type};"
+                            f"as Lang.{entry.klass};"
                         )
 
                 if isinstance(single_or_array, Single):
@@ -172,7 +192,7 @@ def render_properties_xml(settings: list[Single | Array]) -> str:
                     root.root,
                     "property",
                     id=f"{top.id}{entry.id}{prop_id}",
-                    type=entry.type,
+                    type=entry.klass,
                 )
                 property_.text = str(entry.default)
 

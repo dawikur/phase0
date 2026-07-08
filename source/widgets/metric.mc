@@ -7,30 +7,26 @@ import Toybox.Lang;
 module Widgets {
 	class Metric extends Base {
 		hidden var impl_ as Data.Base;
-		hidden var count_ as Lang.Number;
-		hidden var small_ as Lang.Boolean;
-		hidden var label_ as Lang.String = "";
 		hidden var value_ as Lang.Number? = null;
 		hidden var value_max_ as Lang.Number? = null;
 		hidden var value_text_ as Lang.String = "";
 		hidden var icon_ as Lang.String = "";
 
-		var show_icon as Lang.Boolean = false;
-		var show_label as Lang.Boolean = false;
-		var show_gauge as Lang.Boolean = false;
-		var show_padding as Lang.Boolean = false;
+		var small as Lang.Boolean = false;
+
+		var properties as Properties.Metric;
 
 		static function Width(
 			_dc as Graphics.Dc,
-			_count as Lang.Number,
+			_width as Lang.Number,
 			_small as Lang.Boolean,
 			_show_icon as Lang.Boolean,
 			_show_gauge as Lang.Boolean,
 			_show_padding as Lang.Boolean
 		) as Lang.Number {
 			var size_x = _show_padding
-				? Render.NumberWidth(_dc, _count, _small)
-				: Render.TextWidth(_dc, Render.NumberFormat(_count, 0), _small);
+				? Render.NumberWidth(_dc, _width, _small)
+				: Render.TextWidth(_dc, Render.NumberFormat(_width, 0), _small);
 
 			if (_show_icon) {
 				size_x +=
@@ -60,55 +56,48 @@ module Widgets {
 		}
 
 		function initialize(
-			_dc as Graphics.Dc,
-			_impl as Data.Base,
-			_count as Lang.Number,
-			_small as Lang.Boolean
+			_properties as Properties.Metric,
+			_impl as Data.Base
 		) {
 			Base.initialize(_impl.type);
 
 			self.impl_ = _impl;
-			self.count_ = _count;
-			self.small_ = _small;
-			self.label_ = _impl.name;
-
-			self.resize(_dc);
+			self.properties = _properties;
 		}
 
 		function resize(_dc as Graphics.Dc) as Void {
 			self.size_x = Metric.Width(
 				_dc,
-				self.count_,
-				self.small_,
-				self.show_icon,
-				self.show_gauge,
-				self.show_padding
+				self.properties.width,
+				self.small,
+				self.properties.icon,
+				self.properties.gauge,
+				self.properties.padding
 			);
 
 			self.size_y = Metric.Height(
 				_dc,
-				self.small_,
-				self.show_label,
-				self.label_.length() != 0
+				self.small,
+				self.properties.label != Render.COLOR_NONE,
+				self.impl_.name.length() != 0
 			);
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			self.impl_.refresh();
 
-			self.label_ = self.impl_.name;
 			self.value_ = self.impl_.value;
 			self.value_max_ = self.impl_.value_max;
 
 			if (self.value_ != null) {
-				self.value_text_ = self.show_padding
+				self.value_text_ = self.properties.padding
 					? ""
 					: self.value_.format("%d");
 			} else {
 				self.value_text_ = "";
 			}
 
-			if (self.show_icon) {
+			if (self.properties.icon) {
 				var icon = self.impl_.icon;
 				if (icon != null) {
 					self.icon_ = icon;
@@ -121,20 +110,20 @@ module Widgets {
 		function render(_dc as Graphics.Dc) as Void {
 			// ---- prepare ----
 
-			var icon_width = self.show_icon
+			var icon_width = self.properties.icon
 				? Render.IconsWidth(_dc, self.icon_) + Render.SPACING
 				: 0;
 
 			var pos_x = self.pos_x;
 			var pos_y =
 				self.pos_y +
-				(self.show_label
+				(self.properties.label != Render.COLOR_NONE
 					? Render.LabelHeight(_dc) + Render.SPACING
 					: 0);
 
 			// ---- icon ----
 
-			if (self.show_icon) {
+			if (self.properties.icon) {
 				Render.Icons(
 					_dc,
 					pos_x,
@@ -148,37 +137,41 @@ module Widgets {
 
 			// ---- value ----
 
-			if (self.show_padding) {
+			if (self.properties.padding) {
 				Render.Number(
 					_dc,
 					pos_x,
 					pos_y,
 					self.value_,
-					self.count_,
-					self.small_
+					self.properties.width,
+					self.small
 				);
-				pos_x += Render.NumberWidth(_dc, self.count_, self.small_);
+				pos_x += Render.NumberWidth(
+					_dc,
+					self.properties.width,
+					self.small
+				);
 			} else if (self.value_text_.length() != 0) {
 				Render.Text(
 					_dc,
 					pos_x,
 					pos_y,
-					self.small_,
+					self.small,
 					self.value_text_,
 					Render.JUSTIFY_LEFT
 				);
-				pos_x += Render.TextWidth(_dc, self.value_text_, self.small_);
+				pos_x += Render.TextWidth(_dc, self.value_text_, self.small);
 			}
 
 			// ---- gauge ----
 
-			if (self.show_gauge) {
+			if (self.properties.gauge) {
 				if (self.value_ != null and self.value_max_ != null) {
 					var value_max = self.value_max_ as Lang.Number;
 					if (value_max != 0) {
 						var value = self.value_.toFloat() / value_max;
 						var max_height =
-							Render.NumberHeight(_dc, self.small_) -
+							Render.NumberHeight(_dc, self.small) -
 							2 * Render.SPACING;
 
 						if (0 < max_height) {
@@ -200,13 +193,13 @@ module Widgets {
 
 			// ---- label ----
 
-			if (self.show_label) {
+			if (self.properties.label != Render.COLOR_NONE) {
 				Render.Label(
 					_dc,
-					Render.COLOR_ORANGE,
+					self.properties.label,
 					self.pos_x + (pos_x - self.pos_x) / 2,
 					self.pos_y,
-					self.label_,
+					self.impl_.name,
 					Graphics.TEXT_JUSTIFY_CENTER
 				);
 			}

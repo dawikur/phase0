@@ -9,15 +9,10 @@ import Toybox.Weather;
 
 module Widgets {
 	class Weather extends Text {
-		hidden var original_small_ as Lang.Boolean = false;
+		hidden var small_text_ as Lang.Boolean = false;
 
-		function initialize(_small as Lang.Boolean) {
-			Text.initialize(
-				Complications.COMPLICATION_TYPE_CURRENT_WEATHER,
-				_small
-			);
-			self.original_small_ = _small;
-
+		function initialize() {
+			Text.initialize(Complications.COMPLICATION_TYPE_CURRENT_WEATHER);
 			self.justify_ = Render.JUSTIFY_CENTER;
 		}
 
@@ -47,24 +42,20 @@ module Widgets {
 				self.value_ = text + "  " + temp;
 
 				if (self.value_.length() != 0) {
-					if (!self.original_small_) {
-						if (
-							Render.TextWidth(_dc, self.value_, false) <=
-							self.size_x * 2
-						) {
-							self.small_ = false;
-						} else {
-							self.small_ = true;
-						}
+					if (
+						Render.TextWidth(_dc, self.value_, false) <=
+						self.size_x * 2
+					) {
+						self.small = false;
 					} else {
-						self.small_ = true;
+						self.small = true;
 					}
 				}
 			}
 
 			if (self.value_.length() != 0) {
 				Cache.setValue("weather", self.value_);
-				Cache.setValue("weather_small", self.small_);
+				Cache.setValue("weather_small", self.small);
 			} else {
 				var data = Cache.getValue("weather", 8); // 8 hours
 				if (data != null) {
@@ -73,7 +64,7 @@ module Widgets {
 
 				var data_small = Cache.getValue("weather_small", 8); // 8 hours
 				if (data_small != null) {
-					self.small_ = data_small as Lang.Boolean;
+					self.small = data_small as Lang.Boolean;
 				}
 			}
 		}

@@ -6,26 +6,22 @@ import Toybox.Lang;
 
 module Widgets {
 	class Text extends Base {
-		hidden var small_ as Lang.Boolean = false;
+		var small as Lang.Boolean = false;
 
 		hidden var label_ as Lang.String = "";
 		hidden var value_ as Lang.String = "";
 		hidden var justify_ as Lang.Number = Render.JUSTIFY_LEFT;
 
-		function initialize(
-			_type as Complications.Type,
-			_small as Lang.Boolean
-		) {
+		function initialize(_type as Complications.Type) {
 			Base.initialize(_type);
-			self.small_ = _small;
 		}
 
 		function width(_dc as Graphics.Dc) as Lang.Number {
-			return Render.TextWidth(_dc, self.value_, self.small_);
+			return Render.TextWidth(_dc, self.value_, self.small);
 		}
 
 		function height(_dc as Graphics.Dc) as Lang.Number {
-			if (self.small_) {
+			if (self.small) {
 				if (self.label_.length() == 0) {
 					return Render.TextHeight(_dc, true);
 				}
@@ -101,7 +97,7 @@ module Widgets {
 					_dc,
 					pos_x,
 					pos_y,
-					self.small_,
+					self.small,
 					self.value_,
 					self.justify_
 				);

@@ -126,7 +126,7 @@ module Render {
 		_label as Lang.String,
 		_justify as Lang.Number
 	) as Void {
-		_dc.setColor(COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
+		_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
 		_dc.drawText(_pos_x, _pos_y, Fonts.DOT_TINY, _label, _justify);
 	}
 

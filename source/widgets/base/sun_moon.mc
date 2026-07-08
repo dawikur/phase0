@@ -18,16 +18,15 @@ module Widgets {
 		hidden var value_ as Lang.String = "";
 		hidden var value_bg_ as Lang.String = "";
 
-		function initialize(_small as Lang.Boolean) {
+		var small as Lang.Boolean = false;
+
+		function initialize() {
 			Base.initialize(Complications.COMPLICATION_TYPE_SUNRISE);
 
-			self.label_ = _small
-				? ""
-				: Lang.format("$1$     $2$", [
-						Resources.get(Rez.Strings.LABEL_DAWN),
-						Resources.get(Rez.Strings.LABEL_DUSK),
-					]);
-
+			self.label_ = Lang.format("$1$     $2$", [
+				Resources.get(Rez.Strings.LABEL_DAWN),
+				Resources.get(Rez.Strings.LABEL_DUSK),
+			]);
 			self.value_bg_ = "00:00   00:00";
 		}
 
@@ -53,7 +52,7 @@ module Widgets {
 
 			// ---- label ----
 
-			if (self.label_.length() != 0) {
+			if (!self.small) {
 				Render.Label(
 					_dc,
 					Render.COLOR_ORANGE,

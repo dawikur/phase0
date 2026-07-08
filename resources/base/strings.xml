@@ -146,5 +146,18 @@
 	<string id="LABEL_SMALL">Small</string>
 	<string id="LABEL_WHITE">White</string>
 	<string id="LABEL_YELLOW">Yellow</string>
+	<string id="LABEL_YELLOW">Yellow</string>
+	<string id="LABEL_DATE">Date</string>
+	<string id="LABEL_SUN_MOON">Sun/Moon</string>
+	<string id="LABEL_WEATHER">Weather</string>
+	<string id="LABEL_WIDTH">Width</string>
+	<string id="LABEL_PADDING">Padding</string>
+	<string id="LABEL_LABEL">Label</string>
+	<string id="LABEL_GAUGE">Gauge</string>
+	<string id="LABEL_NONE">None</string>
 
+	<string id="LABEL_TOP_MIDDLE">Top Middle</string>
+	<string id="LABEL_TOP_MIDDLE_ALT">Top Middle Alternative</string>
+	<string id="LABEL_BOTTOM_MIDDLE">Bottom Middle</string>
+	<string id="LABEL_BOTTOM_MIDDLE_ALT">Bottom Middle Alternative</string>
 </strings>

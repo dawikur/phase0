@@ -70,7 +70,7 @@ SETTINGS_DEPS  := scripts/generate_settings                  \
                   $(shell find data/settings -type f)
 SETTINGS       := $(RESOURCES_GENERATED_DIR)settings.xml
 
-RESOURCES := $(ICON) $(FONTS)
+RESOURCES := $(ICON) $(FONTS) $(SETTINGS)
 
 PRG_DEPS := $(JUNGLE) $(SRCS) $(RSCS) $(RESOURCES) $(SETTINGS)
 
@@ -140,11 +140,15 @@ s simulate: build
 	wait $$SIM_PID
 .PHONY: s simulate
 
+sr simulate_release:
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release simulate
+.PHONY: st simulate_test
+
 st simulate_test:
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test simulate
 .PHONY: st simulate_test
 
-t test:
+t test: $(RESOURCES)
 	$(Q)echo " [ test ]"
 	pytest
 .PHONY: t test

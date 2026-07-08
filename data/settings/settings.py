@@ -4,7 +4,7 @@ from enum import IntEnum, auto
 from typing import Any, cast
 
 from .colors import Colors
-from .model import Array, Select, Single  # , Boolean, Number
+from .model import Array, Boolean, Number, Select, Single
 
 
 class Options(IntEnum):
@@ -40,6 +40,7 @@ class Battery(IntEnum):
 class ExtraData(IntEnum):
     BATTERY = auto()
     DATE = auto()
+    NONE = auto()
     SUN_MOON = auto()
     WEATHER = auto()
 
@@ -52,16 +53,16 @@ def Settings(  # pylint: disable=invalid-name
         IntEnum("Extra", {datum.name: datum.value + len(data) for datum in ExtraData}),
     )
 
-    # Data = cast(
-    #    Any,
-    #    IntEnum(
-    #        "Data",
-    #        {
-    #            **{datum.name: datum.value for datum in data},
-    #            **{datum.name: datum.value for datum in Extra},
-    #        },
-    #    ),
-    # )
+    Data = cast(
+        Any,
+        IntEnum(
+            "Data",
+            {
+                **{datum.name: datum.value for datum in data},
+                **{datum.name: datum.value for datum in Extra},
+            },
+        ),
+    )
 
     return Extra, [
         Single(
@@ -77,7 +78,159 @@ def Settings(  # pylint: disable=invalid-name
             [
                 Select("data", Battery.ICON),
                 Select("color", Colors.WHITE),
-                Select("charging", Colors.CHARCOAL),
+                Select("charging", Colors.ORANGE),
+            ],
+        ),
+        Array(
+            "top middle",
+            "Metric",
+            [
+                [
+                    Select("data", Data.RAIN),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True),
+                    Boolean("padding", False),
+                    Boolean("gauge", False),
+                ],
+                [
+                    Select("data", Data.UV),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True),
+                    Boolean("padding", False),
+                    Boolean("gauge", False),
+                ],
+                [
+                    Select("data", Data.WIND),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True),
+                    Boolean("padding", False),
+                    Boolean("gauge", False),
+                ],
+                [
+                    Select("data", Data.NONE),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True),
+                    Boolean("padding", False),
+                    Boolean("gauge", False),
+                ],
+            ],
+        ),
+        Array(
+            "top middle alt",
+            "Metric",
+            [
+                [
+                    Select("data", Data.NONE),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True),
+                    Boolean("padding", False),
+                    Boolean("gauge", False),
+                ],
+                [
+                    Select("data", Data.NONE),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True),
+                    Boolean("padding", False),
+                    Boolean("gauge", False),
+                ],
+                [
+                    Select("data", Data.NONE),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True),
+                    Boolean("padding", False),
+                    Boolean("gauge", False),
+                ],
+                [
+                    Select("data", Data.NONE),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True),
+                    Boolean("padding", False),
+                    Boolean("gauge", False),
+                ],
+            ],
+        ),
+        Array(
+            "bottom middle",
+            "Metric",
+            [
+                [
+                    Select("data", Data.HEART_RATE),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 3),
+                    Boolean("icon", False),
+                    Boolean("padding", True),
+                    Boolean("gauge", True),
+                ],
+                [
+                    Select("data", Data.STEPS),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 3),
+                    Boolean("icon", False),
+                    Boolean("padding", True),
+                    Boolean("gauge", True),
+                ],
+                [
+                    Select("data", Data.FLOORS_CLIMBED),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 3),
+                    Boolean("icon", False),
+                    Boolean("padding", True),
+                    Boolean("gauge", True),
+                ],
+                [
+                    Select("data", Data.NONE),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 3),
+                    Boolean("icon", False),
+                    Boolean("padding", True),
+                    Boolean("gauge", True),
+                ],
+            ],
+        ),
+        Array(
+            "bottom middle alt",
+            "Metric",
+            [
+                [
+                    Select("data", Data.CALORIES),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 5),
+                    Boolean("icon", False),
+                    Boolean("padding", True),
+                    Boolean("gauge", True),
+                ],
+                [
+                    Select("data", Data.SOLAR_INTENSITY),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 3),
+                    Boolean("icon", False),
+                    Boolean("padding", True),
+                    Boolean("gauge", True),
+                ],
+                [
+                    Select("data", Data.NONE),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 3),
+                    Boolean("icon", False),
+                    Boolean("padding", True),
+                    Boolean("gauge", True),
+                ],
+                [
+                    Select("data", Data.NONE),
+                    Select("label", Colors.ORANGE),
+                    Number("width", 3),
+                    Boolean("icon", False),
+                    Boolean("padding", True),
+                    Boolean("gauge", True),
+                ],
             ],
         ),
     ]

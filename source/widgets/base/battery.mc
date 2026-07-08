@@ -15,12 +15,12 @@ module Widgets {
 		var charge_ as Lang.String = "";
 		var frame_ as Lang.String = "";
 
-		hidden var properties_ as Properties.Battery;
+		var properties as Properties.Battery;
 
 		function initialize(_properties as Properties.Battery) {
 			Base.initialize(impl_.type);
 
-			self.properties_ = _properties;
+			self.properties = _properties;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
@@ -36,9 +36,9 @@ module Widgets {
 			} else if (value < 20) {
 				self.color_ = Render.COLOR_YELLOW;
 			} else if (100 <= value) {
-				self.color_ = Render.COLOR_ORANGE;
+				self.color_ = self.properties.charging;
 			} else {
-				self.color_ = self.properties_.color;
+				self.color_ = self.properties.color;
 			}
 
 			var borders_width = Render.IconsWidth(
@@ -73,7 +73,7 @@ module Widgets {
 			var center_x = self.pos_x + self.size_x / 2;
 			var center_y = self.pos_y + self.size_y / 2;
 
-			if (self.properties_.data == Properties.ICON) {
+			if (self.properties.data == Properties.ICON) {
 				Render.IconsColor(
 					_dc,
 					self.color_,
@@ -96,7 +96,7 @@ module Widgets {
 
 			Render.IconsColor(
 				_dc,
-				self.properties_.charging,
+				self.properties.charging,
 				center_x,
 				center_y,
 				System.getSystemStats().charging ? self.frame_ : "",
