@@ -31,7 +31,7 @@ module Widgets {
 			self.value_bg_ = "00:00   00:00";
 		}
 
-		function refresh() as Void {
+		function refresh(_dc as Graphics.Dc) as Void {
 			self.value_ = self.getValue();
 			self.moon_phase_ = SunMoon.MoonPhase(Time.now());
 

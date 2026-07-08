@@ -4,17 +4,19 @@ from enum import IntEnum, auto
 from typing import Any, cast
 
 from .colors import Colors
-from .model import Array, Boolean, Number, Select, Single
+from .model import Array, Select, Single  # , Boolean, Number
 
 
 class Options(IntEnum):
-    AUTO = auto()
-    LARGE = auto()
-    SMALL = auto()
     ALARM = auto()
+    AUTO = auto()
     BLUETOOTH_CONNECTED = auto()
     BLUETOOTH_DISCONNECTED = auto()
+    ICON = auto()
+    LARGE = auto()
     NOTIFICATIONS = auto()
+    PERCENTAGE = auto()
+    SMALL = auto()
 
 
 class Heights(IntEnum):
@@ -28,6 +30,11 @@ class Status(IntEnum):
     BLUETOOTH_CONNECTED = Options.BLUETOOTH_CONNECTED.value
     BLUETOOTH_DISCONNECTED = Options.BLUETOOTH_DISCONNECTED.value
     NOTIFICATIONS = Options.NOTIFICATIONS.value
+
+
+class Battery(IntEnum):
+    ICON = Options.ICON.value
+    PERCENTAGE = Options.PERCENTAGE.value
 
 
 class ExtraData(IntEnum):
@@ -45,16 +52,16 @@ def Settings(  # pylint: disable=invalid-name
         IntEnum("Extra", {datum.name: datum.value + len(data) for datum in ExtraData}),
     )
 
-    Data = cast(
-        Any,
-        IntEnum(
-            "Data",
-            {
-                **{datum.name: datum.value for datum in data},
-                **{datum.name: datum.value for datum in Extra},
-            },
-        ),
-    )
+    # Data = cast(
+    #    Any,
+    #    IntEnum(
+    #        "Data",
+    #        {
+    #            **{datum.name: datum.value for datum in data},
+    #            **{datum.name: datum.value for datum in Extra},
+    #        },
+    #    ),
+    # )
 
     return Extra, [
         Single(
@@ -65,157 +72,12 @@ def Settings(  # pylint: disable=invalid-name
                 Select("height", Heights.AUTO),
             ],
         ),
-        Array(
-            "status",
-            [
-                [
-                    Select("data", Status.ALARM),
-                    Select("color", Colors.WHITE),
-                    Select("background", Colors.CHARCOAL),
-                ],
-                [
-                    Select("data", Status.BLUETOOTH_CONNECTED),
-                    Select("color", Colors.WHITE),
-                    Select("background", Colors.CHARCOAL),
-                ],
-                [
-                    Select("data", Status.NOTIFICATIONS),
-                    Select("color", Colors.WHITE),
-                    Select("background", Colors.CHARCOAL),
-                ],
-            ],
-        ),
-        Array(
-            "gauge",
-            [
-                [
-                    Select("data", Data.BODY_BATTERY),
-                    Select("color", Colors.CYAN),
-                    Select("background", Colors.CHARCOAL),
-                ],
-                [
-                    Select("data", Data.STRESS),
-                    Select("color", Colors.YELLOW),
-                    Select("background", Colors.CHARCOAL),
-                ],
-                [
-                    Select("data", Data.BODY_BATTERY),
-                    Select("color", Colors.RED),
-                    Select("background", Colors.CHARCOAL),
-                ],
-            ],
-        ),
         Single(
-            "top outer line",
+            "battery",
             [
-                Select("data", Data.SUN_MOON),
-                Select("label", Colors.ORANGE),
+                Select("data", Battery.ICON),
                 Select("color", Colors.WHITE),
-                Select("background", Colors.CHARCOAL),
-                Select("height", Heights.AUTO),
-            ],
-        ),
-        Array(
-            "top middle line",
-            [
-                [
-                    Select("data", Data.RAIN),
-                    Select("label", Colors.ORANGE),
-                    Select("color", Colors.WHITE),
-                    Select("background", Colors.CHARCOAL),
-                    Select("height", Heights.AUTO),
-                    Number("width", 2),
-                    Boolean("icon", True),
-                    Boolean("padding", False),
-                    Boolean("gauge", False),
-                ],
-                [
-                    Select("data", Data.UV),
-                    Select("label", Colors.ORANGE),
-                    Select("color", Colors.WHITE),
-                    Select("background", Colors.CHARCOAL),
-                    Select("height", Heights.AUTO),
-                    Number("width", 2),
-                    Boolean("icon", True),
-                    Boolean("padding", False),
-                    Boolean("gauge", False),
-                ],
-                [
-                    Select("data", Data.WIND),
-                    Select("label", Colors.ORANGE),
-                    Select("color", Colors.WHITE),
-                    Select("background", Colors.CHARCOAL),
-                    Select("height", Heights.AUTO),
-                    Number("width", 2),
-                    Boolean("icon", True),
-                    Boolean("padding", False),
-                    Boolean("gauge", False),
-                ],
-            ],
-        ),
-        Single(
-            "top inner line",
-            [
-                Select("data", Data.WEATHER),
-                Select("color", Colors.WHITE),
-                Select("background", Colors.CHARCOAL),
-                Select("height", Heights.AUTO),
-            ],
-        ),
-        Single(
-            "bottom inner line",
-            [
-                Select("data", Data.DATE),
-                Select("color", Colors.WHITE),
-                Select("background", Colors.CHARCOAL),
-                Select("height", Heights.AUTO),
-            ],
-        ),
-        Array(
-            "bottom middle line",
-            [
-                [
-                    Select("data", Data.HEART_RATE),
-                    Select("label", Colors.ORANGE),
-                    Select("color", Colors.WHITE),
-                    Select("background", Colors.CHARCOAL),
-                    Select("height", Heights.AUTO),
-                    Number("width", 3),
-                    Boolean("icon", False),
-                    Boolean("padding", True),
-                    Boolean("gauge", True),
-                ],
-                [
-                    Select("data", Data.STEPS),
-                    Select("label", Colors.ORANGE),
-                    Select("color", Colors.WHITE),
-                    Select("background", Colors.CHARCOAL),
-                    Select("height", Heights.AUTO),
-                    Number("width", 3),
-                    Boolean("icon", False),
-                    Boolean("padding", True),
-                    Boolean("gauge", True),
-                ],
-                [
-                    Select("data", Data.FLOORS_CLIMBED),
-                    Select("label", Colors.ORANGE),
-                    Select("color", Colors.WHITE),
-                    Select("background", Colors.CHARCOAL),
-                    Select("height", Heights.AUTO),
-                    Number("width", 3),
-                    Boolean("icon", False),
-                    Boolean("padding", True),
-                    Boolean("gauge", True),
-                ],
-            ],
-        ),
-        Single(
-            "bottom outer line",
-            [
-                Select("data", Data.BATTERY),
-                Select("color", Colors.WHITE),
-                Select("background", Colors.CHARCOAL),
-                Select("height", Heights.AUTO),
+                Select("charging", Colors.CHARCOAL),
             ],
         ),
     ]

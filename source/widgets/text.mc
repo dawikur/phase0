@@ -70,16 +70,12 @@ module Widgets {
 			return pos_x <= _x and _x <= end_x and pos_y <= _y and _y <= end_y;
 		}
 
-		function refresh() as Void {
+		function refresh(_dc as Graphics.Dc) as Void {
 			self.value_ = self.getValue();
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
 			// ---- prepare ----
-
-			if (self.value_.length() == 0) {
-				self.refresh();
-			}
 
 			var pos_x = self.pos_x;
 			var pos_y = self.pos_y;

@@ -93,12 +93,13 @@ module Widgets {
 			);
 		}
 
-		function refresh() as Void {
+		function refresh(_dc as Graphics.Dc) as Void {
 			self.impl_.refresh();
 
 			self.label_ = self.impl_.name;
 			self.value_ = self.impl_.value;
 			self.value_max_ = self.impl_.value_max;
+
 			if (self.value_ != null) {
 				self.value_text_ = self.show_padding
 					? ""
@@ -119,10 +120,6 @@ module Widgets {
 
 		function render(_dc as Graphics.Dc) as Void {
 			// ---- prepare ----
-
-			if (self.value_ == null) {
-				self.refresh();
-			}
 
 			var icon_width = self.show_icon
 				? Render.IconsWidth(_dc, self.icon_) + Render.SPACING

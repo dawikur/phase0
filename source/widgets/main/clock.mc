@@ -35,7 +35,7 @@ module Widgets {
 			return pos_x <= _x and _x <= end_x and pos_y <= _y and _y <= end_y;
 		}
 
-		function refresh() as Void {
+		function refresh(_dc as Graphics.Dc) as Void {
 			var clock = System.getClockTime();
 
 			var hour = Data.Units.convertHour(clock.hour);
@@ -49,14 +49,6 @@ module Widgets {
 			_dc as Graphics.Dc,
 			_is_night_mode as Lang.Boolean
 		) as Void {
-			if (self.time_.length() == 0) {
-				self.refresh();
-			}
-
-			if (self.time_.length() == 0) {
-				return;
-			}
-
 			Render.Clock(
 				_dc,
 				self.properties_.color,

@@ -26,7 +26,7 @@ def render_data_mc(data: Any) -> str:
     doc = McDocument.create()
     doc.line("import Toybox.Lang;")
     with McScope(doc, "module Data {") as _module:
-        with McScope(doc, "function get(_id as Lang.Number) as Base or Null {") as _get:
+        with McScope(doc, "function get(_id as Lang.Number) as Base? {") as _get:
             with McScope(doc, "switch (_id) {") as _switch:
                 for datum in data:
                     datum_name = "".join(
@@ -46,14 +46,14 @@ def render_widgets_mc(extra_data: Any) -> str:
     with McScope(doc, "module Widgets {") as _module:
         with McScope(
             doc,
-            "function get(_id as Lang.Number, _small as Lang.Boolean) as Base or Null {",
+            "function get(_id as Lang.Number, _small as Lang.Boolean) as Base? {",
         ) as _get:
             with McScope(doc, "switch (_id) {") as _switch:
                 for datum in extra_data:
                     datum_name = "".join(
                         part.capitalize() for part in datum.name.split("_")
                     )
-                    doc.line(f"case {datum.value}: return new {datum_name}(_small);")
+                    doc.line(f"// case {datum.value}: return new {datum_name}(_small);")
 
                 doc.line()
                 doc.line("default: return null;")

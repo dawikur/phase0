@@ -22,6 +22,8 @@ module Phase0 {
 		hidden var is_night_mode_ as Lang.Boolean = false;
 		hidden var is_visible_ as Lang.Boolean = false;
 
+		hidden var needs_reposition_ as Lang.Boolean = false;
+
 		// -- refresh --
 		hidden var last_refresh_min_ as Lang.Number = -1;
 		hidden var last_refresh_hour_ as Lang.Number = -1;
@@ -33,7 +35,9 @@ module Phase0 {
 			Properties.clock
 		);
 		hidden var seconds_ as Widgets.Seconds = new Widgets.Seconds(false);
-		hidden var battery_ as Widgets.Battery = new Widgets.Battery(false);
+		hidden var battery_ as Widgets.Battery = new Widgets.Battery(
+			Properties.battery
+		);
 
 		hidden var widgets_per_min_ as Bases = [];
 		hidden var widgets_per_hour_ as Bases = [];
@@ -45,6 +49,8 @@ module Phase0 {
 
 		function initialize() {
 			WatchFace.initialize();
+
+			self.refreshProperties_();
 		}
 
 		function onShow() as Void {
@@ -128,8 +134,6 @@ module Phase0 {
 			// ---- layout ----
 
 			var layout = new Layout(_dc);
-
-			self.refreshProperties_();
 
 			// ---- top outer ----
 
@@ -378,11 +382,19 @@ module Phase0 {
 			self.battery_.pos_y = bottom_outer.pos_y;
 			self.battery_.size_x = bottom_outer.size_x;
 			self.battery_.size_y = bottom_outer.size_y;
+
+			// ---- footer ----
+
+			self.needs_reposition_ = false;
 		}
 
 		function onUpdate(_dc as Graphics.Dc) as Void {
 			if (!self.is_visible_) {
 				return;
+			}
+
+			if (self.needs_reposition_) {
+				self.onLayout(_dc);
 			}
 
 			// ---- update ----
@@ -391,25 +403,25 @@ module Phase0 {
 			var metrics = self.getMetrics_();
 
 			{
-				self.status_.refresh();
-				self.seconds_.refresh();
+				self.status_.refresh(_dc);
+				self.seconds_.refresh(_dc);
 
-				self.refresh_(metrics);
+				self.refresh_(_dc, metrics);
 			}
 
 			if (self.last_refresh_min_ != clock.min) {
 				self.last_refresh_min_ = clock.min;
 				self.is_night_mode_ = self.isNightMode_();
 
-				self.clock_.refresh();
-				self.battery_.refresh();
+				self.clock_.refresh(_dc);
+				self.battery_.refresh(_dc);
 
-				self.refresh_(self.widgets_per_min_);
+				self.refresh_(_dc, self.widgets_per_min_);
 			}
 			if (self.last_refresh_hour_ != clock.hour) {
 				self.last_refresh_hour_ = clock.hour;
 
-				self.refresh_(self.widgets_per_hour_);
+				self.refresh_(_dc, self.widgets_per_hour_);
 			}
 
 			// ---- render ----
@@ -449,7 +461,7 @@ module Phase0 {
 				return;
 			}
 
-			self.seconds_.refresh();
+			self.seconds_.refresh(_dc);
 
 			_dc.setClip(
 				self.seconds_.pos_x,
@@ -464,7 +476,12 @@ module Phase0 {
 			self.seconds_.render(_dc, true);
 		}
 
-		hidden function refreshProperties_() as Void {}
+		hidden function refreshProperties_() as Void {
+			self.last_refresh_min_ = -1;
+			self.last_refresh_hour_ = -1;
+
+			self.needs_reposition_ = true;
+		}
 
 		hidden function isNightMode_() as Lang.Boolean {
 			var user_profile = UserProfile.getProfile();
@@ -494,10 +511,13 @@ module Phase0 {
 			);
 		}
 
-		hidden function refresh_(_widgets as Bases or Metrics) as Void {
+		hidden function refresh_(
+			_dc as Graphics.Dc,
+			_widgets as Bases or Metrics
+		) as Void {
 			var widgets_size = _widgets.size();
 			for (var i = 0; i < widgets_size; ++i) {
-				_widgets[i].refresh();
+				_widgets[i].refresh(_dc);
 			}
 		}
 

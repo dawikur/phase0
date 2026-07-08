@@ -9,15 +9,19 @@ import Toybox.Weather;
 
 module Widgets {
 	class Weather extends Text {
+		hidden var original_small_ as Lang.Boolean = false;
+
 		function initialize(_small as Lang.Boolean) {
 			Text.initialize(
 				Complications.COMPLICATION_TYPE_CURRENT_WEATHER,
 				_small
 			);
+			self.original_small_ = _small;
+
 			self.justify_ = Render.JUSTIFY_CENTER;
 		}
 
-		function refresh() as Void {
+		function refresh(_dc as Graphics.Dc) as Void {
 			self.value_ = "";
 
 			var weather = Weather.getCurrentConditions();
@@ -41,14 +45,35 @@ module Widgets {
 				}
 
 				self.value_ = text + "  " + temp;
+
+				if (self.value_.length() != 0) {
+					if (!self.original_small_) {
+						if (
+							Render.TextWidth(_dc, self.value_, false) <=
+							self.size_x * 2
+						) {
+							self.small_ = false;
+						} else {
+							self.small_ = true;
+						}
+					} else {
+						self.small_ = true;
+					}
+				}
 			}
 
 			if (self.value_.length() != 0) {
 				Cache.setValue("weather", self.value_);
+				Cache.setValue("weather_small", self.small_);
 			} else {
 				var data = Cache.getValue("weather", 8); // 8 hours
 				if (data != null) {
 					self.value_ = data as Lang.String;
+				}
+
+				var data_small = Cache.getValue("weather_small", 8); // 8 hours
+				if (data_small != null) {
+					self.small_ = data_small as Lang.Boolean;
 				}
 			}
 		}

@@ -11,17 +11,26 @@ module Widgets {
 
 		var color_ as Lang.Number = Render.COLOR_WHITE;
 
+		var value_ as Lang.String = "";
 		var charge_ as Lang.String = "";
 		var frame_ as Lang.String = "";
 
-		function initialize(_small as Lang.Boolean) {
+		hidden var properties_ as Properties.Battery;
+
+		function initialize(_properties as Properties.Battery) {
 			Base.initialize(impl_.type);
+
+			self.properties_ = _properties;
 		}
 
-		function refresh() as Void {
+		function refresh(_dc as Graphics.Dc) as Void {
 			self.impl_.refresh();
 
 			var value = self.impl_.value as Lang.Number;
+			var value_max = self.impl_.value_max as Lang.Number;
+
+			self.value_ = value.toString();
+
 			if (value < 10) {
 				self.color_ = Render.COLOR_RED;
 			} else if (value < 20) {
@@ -29,62 +38,65 @@ module Widgets {
 			} else if (100 <= value) {
 				self.color_ = Render.COLOR_ORANGE;
 			} else {
-				self.color_ = Render.COLOR_WHITE;
+				self.color_ = self.properties_.color;
 			}
 
-			self.charge_ = "";
-			self.frame_ = "";
-		}
+			var borders_width = Render.IconsWidth(
+				_dc,
+				Fonts.ICON_BATTERY_BEGIN + Fonts.ICON_BATTERY_END
+			);
+			var bar_width = Render.IconsWidth(_dc, Fonts.ICON_BATTERY_EMPTY);
 
-		function render(_dc as Graphics.Dc) as Void {
-			if (self.charge_.length() == 0 or self.frame_.length() == 0) {
-				var value = self.impl_.value as Lang.Number;
-				var value_max = self.impl_.value_max as Lang.Number;
+			var bar_all_count = (self.size_x - borders_width) / bar_width;
+			var bar_charged_count = Math.round(
+				(value.toFloat() / value_max) * bar_all_count
+			).toNumber();
 
-				var borders_width = Render.IconsWidth(
-					_dc,
-					Fonts.ICON_BATTERY_BEGIN + Fonts.ICON_BATTERY_END
-				);
-				var bar_width = Render.IconsWidth(
-					_dc,
-					Fonts.ICON_BATTERY_EMPTY
-				);
-
-				var bar_all_count = (self.size_x - borders_width) / bar_width;
-				var bar_charged_count = Math.round(
-					(value.toFloat() / value_max) * bar_all_count
-				).toNumber();
-
-				self.frame_ = Fonts.ICON_BATTERY_BEGIN;
+			if (self.frame_.length() == 0) {
+				self.frame_ += Fonts.ICON_BATTERY_BEGIN;
 				for (var i = 0; i < bar_all_count; ++i) {
 					self.frame_ += Fonts.ICON_BATTERY_FRAME;
 				}
 				self.frame_ += Fonts.ICON_BATTERY_END;
-
-				self.charge_ = Fonts.ICON_BATTERY_EMPTY;
-				for (var i = 0; i <= bar_charged_count; ++i) {
-					self.charge_ += Fonts.ICON_BATTERY_CHARGE;
-				}
-				for (var i = bar_charged_count; i <= bar_all_count; ++i) {
-					self.charge_ += Fonts.ICON_BATTERY_EMPTY;
-				}
 			}
 
+			self.charge_ = Fonts.ICON_BATTERY_EMPTY;
+			for (var i = 0; i <= bar_charged_count; ++i) {
+				self.charge_ += Fonts.ICON_BATTERY_CHARGE;
+			}
+			for (var i = bar_charged_count; i <= bar_all_count; ++i) {
+				self.charge_ += Fonts.ICON_BATTERY_EMPTY;
+			}
+		}
+
+		function render(_dc as Graphics.Dc) as Void {
 			var center_x = self.pos_x + self.size_x / 2;
 			var center_y = self.pos_y + self.size_y / 2;
 
+			if (self.properties_.data == Properties.ICON) {
+				Render.IconsColor(
+					_dc,
+					self.color_,
+					center_x,
+					center_y,
+					self.charge_,
+					self.charge_,
+					Render.JUSTIFY_CENTER
+				);
+			} else {
+				Render.Text(
+					_dc,
+					center_x,
+					center_y,
+					Render.SIZE_SMALL,
+					self.value_,
+					Render.JUSTIFY_CENTER
+				);
+			}
+
 			Render.IconsColor(
 				_dc,
-				self.color_,
-				center_x,
-				center_y,
-				self.charge_,
-				self.charge_,
-				Render.JUSTIFY_CENTER
-			);
-
-			Render.Icons(
-				_dc,
+				self.properties_.charging,
 				center_x,
 				center_y,
 				System.getSystemStats().charging ? self.frame_ : "",

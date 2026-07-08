@@ -17,22 +17,7 @@ module Widgets {
 			self.small_ = _small;
 		}
 
-		function refresh() as Void {
-			var clock = System.getClockTime();
-
-			self.label_ = Data.Units.getAmPm(clock.hour);
-			if (self.label_ == "am") {
-				self.fallback_ = Fonts.ICON_DAWN;
-			} else if (self.label_ == "pm") {
-				self.fallback_ = Fonts.ICON_DUSK;
-			} else {
-				self.fallback_ = null;
-			}
-
-			self.frame_ = "";
-		}
-
-		function render(_dc as Graphics.Dc) as Void {
+		function refresh(_dc as Graphics.Dc) as Void {
 			if (self.frame_.length() == 0) {
 				var borders_width = Render.IconsWidth(
 					_dc,
@@ -52,6 +37,19 @@ module Widgets {
 				self.frame_ += Fonts.ICON_AM_PM_END;
 			}
 
+			var clock = System.getClockTime();
+
+			self.label_ = Data.Units.getAmPm(clock.hour);
+			if (self.label_ == "am") {
+				self.fallback_ = Fonts.ICON_DAWN;
+			} else if (self.label_ == "pm") {
+				self.fallback_ = Fonts.ICON_DUSK;
+			} else {
+				self.fallback_ = null;
+			}
+		}
+
+		function render(_dc as Graphics.Dc) as Void {
 			var label_width = Render.TextWidth(_dc, self.label_, true);
 			if (label_width <= 2 * self.size_x or self.fallback_ == null) {
 				if (!self.small_) {
