@@ -43,21 +43,36 @@ def render_data_mc(data: Any) -> str:
 
 def render_widgets_mc(extra_data: Any) -> str:
     doc = McDocument.create()
+    doc.line("import Toybox.Complications;")
     doc.line("import Toybox.Lang;")
     with McScope(doc, "module Widgets {") as _module:
         with McScope(
             doc,
-            "function get(_id as Lang.Number, _small as Lang.Boolean) as Base? {",
+            "function get("
+            "_properties as Properties.Widget, _on_top as Lang.Boolean"
+            ") as Base {",
         ) as _get:
-            with McScope(doc, "switch (_id) {") as _switch:
+            with McScope(doc, "switch (_properties.data) {") as _switch:
                 for datum in extra_data:
                     datum_name = "".join(
                         part.capitalize() for part in datum.name.split("_")
                     )
-                    doc.line(f"// case {datum.value}: return new {datum_name}(_small);")
+
+                    if datum_name == "None":
+                        continue
+
+                    doc.line(
+                        f"case {datum.value}: return new {datum_name}("
+                        f"_properties, _on_top"
+                        ");"
+                    )
 
                 doc.line()
-                doc.line("default: return null;")
+                doc.line(
+                    "default: return new Widgets.Base("
+                    "Complications.COMPLICATION_TYPE_INVALID"
+                    ");"
+                )
 
     return doc.render()
 
@@ -118,8 +133,8 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
             if isinstance(single_or_array, Single):
                 with McScope(
                     doc,
-                    f"var {single_or_array.variable} as {single_or_array.id} = "
-                    f"new {single_or_array.id}(",
+                    f"var {single_or_array.variable} as {single_or_array.klass} = "
+                    f"new {single_or_array.klass}(",
                     ";",
                 ) as _field:
                     for idx, entry in enumerate(single_or_array):

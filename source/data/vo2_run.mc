@@ -9,8 +9,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_VO2MAX_RUN,
-				Resources.get(Rez.Strings.LABEL_VO2_RUN),
-				CATEGORY_PHYSIOLOGICAL
+				Resources.get(Rez.Strings.LABEL_VO2_RUN)
 			);
 		}
 

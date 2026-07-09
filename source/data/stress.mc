@@ -10,8 +10,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_STRESS,
-				Resources.get(Rez.Strings.LABEL_STRESS),
-				CATEGORY_ENERGY
+				Resources.get(Rez.Strings.LABEL_STRESS)
 			);
 
 			self.value_max = 100;

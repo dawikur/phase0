@@ -9,8 +9,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_FLOORS_CLIMBED,
-				Resources.get(Rez.Strings.LABEL_FLOORS_CLIMBED),
-				CATEGORY_VERTICAL
+				Resources.get(Rez.Strings.LABEL_FLOORS_CLIMBED)
 			);
 
 			self.value_max = ActivityMonitor.getInfo().floorsClimbedGoal;

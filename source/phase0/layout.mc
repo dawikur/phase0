@@ -37,7 +37,7 @@ module Phase0 {
 				self.screen_size_y - _box.end_y + Render.SPACING,
 				_box.size_x,
 				_box.size_y,
-				_box.small
+				_box.is_small
 			);
 		}
 
@@ -47,30 +47,30 @@ module Phase0 {
 				_box.pos_y,
 				_box.size_x,
 				_box.size_y,
-				_box.small
+				_box.is_small
 			);
 		}
 
 		hidden function configure(
 			_dc as Graphics.Dc,
-			_clock_small as Lang.Boolean,
-			_inner_small as Lang.Boolean,
-			_middle_small as Lang.Boolean,
-			_outer_small as Lang.Boolean
+			_clock_is_small as Lang.Boolean,
+			_inner_is_small as Lang.Boolean,
+			_middle_is_small as Lang.Boolean,
+			_outer_is_small as Lang.Boolean
 		) as Lang.Boolean {
 			self.screen_size_x = _dc.getWidth();
 			self.screen_size_y = _dc.getHeight();
 
-			var clock_size_x = Render.ClockWidth(_dc, "00:00", _clock_small);
-			var clock_size_y = Render.ClockHeight(_dc, _clock_small);
+			var clock_size_x = Render.ClockWidth(_dc, "00:00", _clock_is_small);
+			var clock_size_y = Render.ClockHeight(_dc, _clock_is_small);
 
-			var line_inner_height = Render.TextHeight(_dc, _inner_small);
-			var line_middle_height = _middle_small
+			var line_inner_height = Render.TextHeight(_dc, _inner_is_small);
+			var line_middle_height = _middle_is_small
 				? Render.TextHeight(_dc, false)
 				: Render.LabelHeight(_dc) +
 					Render.SPACING +
 					Render.TextHeight(_dc, false);
-			var line_outer_height = _outer_small
+			var line_outer_height = _outer_is_small
 				? Render.TextHeight(_dc, true)
 				: Render.LabelHeight(_dc) +
 					Render.SPACING +
@@ -99,7 +99,7 @@ module Phase0 {
 				self.screen_size_y,
 				pos_y,
 				line_outer_height,
-				_outer_small
+				_outer_is_small
 			);
 			pos_y = self.outer.end_y + gap_y;
 
@@ -107,7 +107,7 @@ module Phase0 {
 				self.screen_size_y,
 				pos_y,
 				line_middle_height,
-				_middle_small
+				_middle_is_small
 			);
 			pos_y = self.middle.end_y + gap_y;
 
@@ -115,7 +115,7 @@ module Phase0 {
 				self.screen_size_y,
 				pos_y,
 				line_inner_height,
-				_inner_small
+				_inner_is_small
 			);
 			pos_y = self.inner.end_y + gap_y;
 
@@ -124,7 +124,7 @@ module Phase0 {
 				pos_y,
 				clock_size_x,
 				clock_size_y,
-				_clock_small
+				_clock_is_small
 			);
 
 			self.left = Box.PosSize(

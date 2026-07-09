@@ -10,8 +10,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_MEMORY),
-				CATEGORY_SYSTEM
+				Resources.get(Rez.Strings.LABEL_MEMORY)
 			);
 
 			self.value_max = System.getSystemStats().totalMemory;

@@ -29,14 +29,17 @@ module Phase0 {
 		hidden var last_refresh_hour_ as Lang.Number = -1;
 
 		// -- widgets --
-		hidden const status_ = new Widgets.Status();
+		hidden var status_ as Widgets.Status = new Widgets.Status(
+			Properties.status
+		);
+		hidden var gauges_ as Gauges = [];
 
 		hidden var clock_ as Widgets.Clock = new Widgets.Clock(
 			Properties.clock
 		);
-		hidden var seconds_ as Widgets.Seconds = new Widgets.Seconds(false);
-		hidden var battery_ as Widgets.Battery = new Widgets.Battery(
-			Properties.battery
+		hidden var seconds_ as Widgets.Seconds = new Widgets.Seconds();
+		hidden var battery_ as Widgets.Base = new Widgets.Base(
+			Complications.COMPLICATION_TYPE_INVALID
 		);
 
 		hidden var top_outer_ as Widgets.Base = new Widgets.Base(
@@ -50,6 +53,9 @@ module Phase0 {
 
 		hidden var bottom_middle_base_ as Metrics = [];
 		hidden var bottom_middle_alt_ as Metrics = [];
+		hidden var bottom_outer_ as Widgets.Base = new Widgets.Base(
+			Complications.COMPLICATION_TYPE_INVALID
+		);
 
 		hidden var widgets_per_min_ as Bases = [];
 		hidden var widgets_per_hour_ as Bases = [];
@@ -149,53 +155,50 @@ module Phase0 {
 		}
 
 		function onLayout(_dc as Graphics.Dc) as Void {
-			// ---- layout ----
-
 			var layout = new Layout(_dc);
 
 			// ---- top outer ----
 
-			self.top_outer_.pos_x =
-				layout.outer.pos_x + layout.outer.size_x / 2;
+			self.top_outer_.pos_x = layout.outer.pos_x;
 			self.top_outer_.pos_y = layout.outer.pos_y;
-			self.top_outer_.size_x = layout.outer.size_x / 2;
-			self.top_outer_.size_y = layout.outer.size_y / 2;
+			self.top_outer_.size_x = layout.outer.size_x;
+			self.top_outer_.size_y = layout.outer.size_y;
 
 			// ---- top middle ----
 
-			self.reflowMetrics_(_dc, self.top_middle_base_, layout.middle);
-			self.reflowMetrics_(_dc, self.top_middle_alt_, layout.middle);
+			self.repositionMetrics_(_dc, self.top_middle_base_, layout.middle);
+			self.repositionMetrics_(_dc, self.top_middle_alt_, layout.middle);
 
 			// ---- top inner ----
 
-			self.top_inner_.pos_x =
-				layout.inner.pos_x + layout.inner.size_x / 2;
-			self.top_inner_.pos_y =
-				layout.inner.pos_y + layout.inner.size_y / 2;
-			self.top_inner_.size_x = layout.inner.size_x / 2;
-			self.top_inner_.size_y = layout.inner.size_y / 2;
+			self.top_inner_.pos_x = layout.inner.center_x;
+			self.top_inner_.pos_y = layout.inner.center_y;
+			self.top_inner_.size_x = layout.inner.radius_x;
+			self.top_inner_.size_y = layout.inner.radius_y;
 
 			// ---- main ----
 
-			var main_right = layout.rightBox(layout.left);
+			// -- left --
 
-			self.status_.pos_x = layout.left.pos_x;
-			self.status_.pos_y = layout.left.pos_y;
+			self.status_.pos_x = layout.left.center_x;
+			self.status_.pos_y = layout.left.center_y;
 
-			self.clock_.small = layout.clock.small;
+			// -- clock --
+
+			self.clock_.is_small = layout.clock.is_small;
 			self.clock_.pos_x = layout.clock.pos_x;
 			self.clock_.pos_y = layout.clock.pos_y;
 			self.clock_.size_x = layout.clock.size_x;
 			self.clock_.size_y = layout.clock.size_y;
 
-			var gauges = [
-				new Widgets.Gauge(new Data.BodyBattery(), main_right.size_y),
-				new Widgets.Gauge(new Data.Stress(), main_right.size_y),
-				new Widgets.Gauge(new Data.Move(), main_right.size_y),
-			];
-			self.reflowWidgets_(gauges, layout.rightBox(layout.left));
+			// -- right --
 
-			self.widgets_per_min_.addAll(gauges);
+			var layout_right = layout.rightBox(layout.left);
+			var gauges_size = self.gauges_.size();
+			for (var i = 0; i < gauges_size; ++i) {
+				self.gauges_[i].size_y = layout_right.size_y;
+			}
+			self.repositionWidgets_(self.gauges_ as Bases, layout_right);
 
 			// ---- bottom inner ----
 
@@ -204,10 +207,10 @@ module Phase0 {
 			var date_size_x = Render.TextWidth(
 				_dc,
 				"ABC 00 XYZ",
-				layout.inner.small
+				layout.inner.is_small
 			);
 			var date = new Widgets.Date();
-			date.small = layout.inner.small;
+			date.is_small = layout.inner.is_small;
 			date.pos_x = bottom_inner.pos_x;
 			date.pos_y = bottom_inner.pos_y;
 			date.size_x = date_size_x;
@@ -217,9 +220,9 @@ module Phase0 {
 			var seconds_size_x = Render.TextWidth(
 				_dc,
 				"00",
-				bottom_inner.small
+				bottom_inner.is_small
 			);
-			self.seconds_ = new Widgets.Seconds(layout.inner.small);
+			self.seconds_.is_small = layout.inner.is_small;
 			self.seconds_.pos_x = bottom_inner.end_x - seconds_size_x;
 			self.seconds_.pos_y = bottom_inner.pos_y;
 			self.seconds_.size_x = seconds_size_x;
@@ -243,7 +246,7 @@ module Phase0 {
 						Fonts.ICON_DAWN
 					);
 
-					bottom_inner.small = true;
+					bottom_inner.is_small = true;
 					am_pm_size_x =
 						left_space_x <= 0
 							? 0
@@ -259,29 +262,35 @@ module Phase0 {
 					}
 				}
 
-				var am_pm = new Widgets.AmPm(bottom_inner.small);
+				var am_pm = new Widgets.AmPm(bottom_inner.is_small);
 				am_pm.pos_x = am_pm_pos_x + am_pm_size_x / 2;
-				am_pm.pos_y = bottom_inner.pos_y + bottom_inner.size_y / 2;
+				am_pm.pos_y = bottom_inner.center_y;
 				am_pm.size_x = am_pm_size_x / 2;
-				am_pm.size_y = bottom_inner.size_y / 2;
+				am_pm.size_y = bottom_inner.radius_y;
 				self.widgets_per_hour_.add(am_pm);
 			}
 
 			// ---- bottom middle ----
 
 			var bottom_middle = layout.bottomBox(layout.middle);
-
-			self.reflowMetrics_(_dc, self.bottom_middle_base_, bottom_middle);
-			self.reflowMetrics_(_dc, self.bottom_middle_alt_, bottom_middle);
+			self.repositionMetrics_(
+				_dc,
+				self.bottom_middle_base_,
+				bottom_middle
+			);
+			self.repositionMetrics_(
+				_dc,
+				self.bottom_middle_alt_,
+				bottom_middle
+			);
 
 			// ---- bottom outer ----
 
 			var bottom_outer = layout.bottomBox(layout.outer);
-
-			self.battery_.pos_x = bottom_outer.pos_x;
-			self.battery_.pos_y = bottom_outer.pos_y;
-			self.battery_.size_x = bottom_outer.size_x;
-			self.battery_.size_y = bottom_outer.size_y;
+			self.bottom_outer_.pos_x = bottom_outer.pos_x;
+			self.bottom_outer_.pos_y = bottom_outer.pos_y;
+			self.bottom_outer_.size_x = bottom_outer.size_x;
+			self.bottom_outer_.size_y = bottom_outer.size_y;
 
 			// ---- footer ----
 
@@ -309,8 +318,8 @@ module Phase0 {
 				self.status_.refresh(_dc);
 				self.seconds_.refresh(_dc);
 
-				self.refreshWidgets_(_dc, top_metrics);
-				self.refreshWidgets_(_dc, bottom_metrics);
+				self.refreshWidgets_(_dc, top_metrics as Bases);
+				self.refreshWidgets_(_dc, bottom_metrics as Bases);
 			}
 
 			if (self.last_refresh_min_ != clock.min) {
@@ -332,7 +341,10 @@ module Phase0 {
 
 			_dc.clearClip();
 
-			_dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+			_dc.setColor(
+				Properties.general.background,
+				Properties.general.background
+			);
 			_dc.clear();
 
 			if (self.is_night_mode_) {
@@ -346,10 +358,8 @@ module Phase0 {
 
 				self.seconds_.render(_dc, self.is_high_power_);
 
-				self.battery_.render(_dc);
-
-				self.renderWidgets_(_dc, top_metrics);
-				self.renderWidgets_(_dc, bottom_metrics);
+				self.renderWidgets_(_dc, top_metrics as Bases);
+				self.renderWidgets_(_dc, bottom_metrics as Bases);
 				self.renderWidgets_(_dc, self.widgets_per_min_);
 				self.renderWidgets_(_dc, self.widgets_per_hour_);
 			}
@@ -381,7 +391,10 @@ module Phase0 {
 				self.seconds_.size_y
 			);
 
-			_dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+			_dc.setColor(
+				Properties.general.background,
+				Properties.general.background
+			);
 			_dc.clear();
 
 			self.seconds_.render(_dc, true);
@@ -400,8 +413,14 @@ module Phase0 {
 
 			// ---- top outer ----
 
-			self.top_outer_ = new Widgets.SunMoon();
+			self.top_outer_ = Widgets.get(Properties.top_outer, Render.TOP);
 			self.widgets_per_hour_.add(self.top_outer_);
+			if (
+				Properties.top_outer.data == Properties.BATTERY_ICON or
+				Properties.top_outer.data == Properties.BATTERY_PERCENTAGE
+			) {
+				self.battery_ = self.top_outer_;
+			}
 
 			// ---- top middle ----
 
@@ -419,6 +438,22 @@ module Phase0 {
 
 			// ---- main ----
 
+			self.status_ = new Widgets.Status(Properties.status);
+
+			self.gauges_ = [];
+			var gauges_size = Properties.gauges.size();
+			for (var i = 0; i < gauges_size; ++i) {
+				var properties = Properties.gauges[i];
+
+				var data = Data.get(properties.data);
+				if (data == null) {
+					continue;
+				}
+
+				self.gauges_.add(new Widgets.Gauge(properties, data));
+			}
+			self.widgets_per_min_.addAll(self.gauges_ as Bases);
+
 			// ---- bottom inner ----
 
 			// ---- bottom middle ----
@@ -431,6 +466,18 @@ module Phase0 {
 			);
 
 			// ---- bottom outer ----
+
+			self.bottom_outer_ = Widgets.get(
+				Properties.bottom_outer,
+				Render.BOTTOM
+			);
+			self.widgets_per_hour_.add(self.bottom_outer_);
+			if (
+				Properties.bottom_outer.data == Properties.BATTERY_ICON or
+				Properties.bottom_outer.data == Properties.BATTERY_PERCENTAGE
+			) {
+				self.battery_ = self.bottom_outer_;
+			}
 		}
 
 		hidden function isNightMode_() as Lang.Boolean {
@@ -499,60 +546,44 @@ module Phase0 {
 			return metrics;
 		}
 
-		hidden static function reflowMetrics_(
+		hidden static function repositionMetrics_(
 			_dc as Graphics.Dc,
-			_widgets as Metrics,
+			_metrics as Metrics,
 			_box as Box
 		) as Void {
-			var widgets_size = _widgets.size();
-			if (widgets_size == 0) {
+			var metrics_size = _metrics.size();
+			if (metrics_size == 0) {
 				return;
 			}
 
-			var widgets_size_regular = 0;
-			for (var i = 0; i < widgets_size; ++i) {
-				var widget = _widgets[i];
+			var metrics_size_regular = 0;
+			for (var i = 0; i < metrics_size; ++i) {
+				var metric = _metrics[i];
 
-				widgets_size_regular += Widgets.Metric.Width(
+				metrics_size_regular += Widgets.Metric.Width(
 					_dc,
-					widget.properties.width,
+					metric.properties.width,
 					Render.SIZE_REGULAR,
-					widget.properties.icon,
-					widget.properties.gauge,
-					widget.properties.padding
+					metric.properties.icon,
+					metric.properties.gauge,
+					metric.properties.padding
 				);
 			}
-			var widgets_small =
-				_box.small || _box.size_x < widgets_size_regular;
+			var metric_is_small =
+				_box.is_small || _box.size_x < metrics_size_regular;
 
-			for (var i = 0; i < widgets_size; ++i) {
-				var widget = _widgets[i];
-				widget.small = widgets_small;
-				widget.resize(_dc);
+			for (var i = 0; i < metrics_size; ++i) {
+				var metric = _metrics[i];
+				metric.is_small = metric_is_small;
+				metric.resize(_dc);
 			}
 
-			var occupied_size_x = 0;
-			for (var i = 0; i < widgets_size; ++i) {
-				occupied_size_x += _widgets[i].size_x;
-			}
-
-			var spacing = (_box.size_x - occupied_size_x) / widgets_size;
-
-			var pos_x = _box.pos_x + spacing / 2;
-			var pos_y = _box.pos_y;
-			for (var i = 0; i < widgets_size; ++i) {
-				var widget = _widgets[i];
-
-				widget.pos_x = pos_x;
-				widget.pos_y = pos_y;
-
-				pos_x += spacing + widget.size_x;
-			}
+			self.repositionWidgets_(_metrics as Bases, _box);
 		}
 
 		hidden function refreshWidgets_(
 			_dc as Graphics.Dc,
-			_widgets as Bases or Metrics
+			_widgets as Bases
 		) as Void {
 			var widgets_size = _widgets.size();
 			for (var i = 0; i < widgets_size; ++i) {
@@ -562,7 +593,7 @@ module Phase0 {
 
 		hidden function renderWidgets_(
 			_dc as Graphics.Dc,
-			_widgets as Bases or Metrics
+			_widgets as Bases
 		) as Void {
 			var widgets_size = _widgets.size();
 			for (var i = 0; i < widgets_size; ++i) {
@@ -570,7 +601,7 @@ module Phase0 {
 			}
 		}
 
-		hidden static function reflowWidgets_(
+		hidden static function repositionWidgets_(
 			_widgets as Bases,
 			_box as Box
 		) as Void {

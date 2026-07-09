@@ -10,8 +10,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_WIND),
-				CATEGORY_WEATHER
+				Resources.get(Rez.Strings.LABEL_WIND)
 			);
 
 			self.icon = Fonts.ICON_WIND_NONE;

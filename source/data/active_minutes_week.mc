@@ -9,8 +9,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_INTENSITY_MINUTES,
-				Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_WEEK),
-				CATEGORY_MOVEMENT
+				Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_WEEK)
 			);
 
 			self.value_max = ActivityMonitor.getInfo().activeMinutesWeekGoal;

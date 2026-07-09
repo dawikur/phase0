@@ -12,8 +12,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_ALTITUDE,
-				Resources.get(Rez.Strings.LABEL_ELEVATION),
-				CATEGORY_VERTICAL
+				Resources.get(Rez.Strings.LABEL_ELEVATION)
 			);
 		}
 

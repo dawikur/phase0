@@ -10,8 +10,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_UV),
-				CATEGORY_ENERGY
+				Resources.get(Rez.Strings.LABEL_UV)
 			);
 
 			self.icon = Fonts.ICON_UV_LOW;

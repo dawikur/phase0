@@ -6,31 +6,17 @@ import Toybox.Lang;
 import Toybox.SensorHistory;
 
 module Data {
-	const CATEGORY_ENERGY = Render.COLOR_YELLOW;
-	const CATEGORY_MOVEMENT = Render.COLOR_GREEN;
-	const CATEGORY_PHYSIOLOGICAL = Render.COLOR_RED;
-	const CATEGORY_RECOVERY = Render.COLOR_CYAN;
-	const CATEGORY_SYSTEM = Render.COLOR_BLUE;
-	const CATEGORY_VERTICAL = Render.COLOR_MAGENTA;
-	const CATEGORY_WEATHER = Render.COLOR_ORANGE;
-
 	class Base {
 		var type as Complications.Type;
 		var name as Lang.String;
-		var category as Lang.Number;
 
 		var icon as Lang.String? = null;
 		var value as Lang.Number? = null;
 		var value_max as Lang.Number? = null;
 
-		function initialize(
-			_type as Complications.Type,
-			_name as Lang.String,
-			_category as Lang.Number
-		) {
+		function initialize(_type as Complications.Type, _name as Lang.String) {
 			self.type = _type;
 			self.name = _name;
-			self.category = _category;
 		}
 
 		function refresh() as Void {

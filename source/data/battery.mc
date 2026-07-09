@@ -10,8 +10,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_BATTERY,
-				Resources.get(Rez.Strings.LABEL_BATTERY),
-				CATEGORY_SYSTEM
+				Resources.get(Rez.Strings.LABEL_BATTERY)
 			);
 
 			self.value_max = 100;

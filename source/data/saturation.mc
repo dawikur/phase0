@@ -12,8 +12,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_PULSE_OX,
-				Resources.get(Rez.Strings.LABEL_SATURATION),
-				CATEGORY_PHYSIOLOGICAL
+				Resources.get(Rez.Strings.LABEL_SATURATION)
 			);
 
 			self.value_max = 100;

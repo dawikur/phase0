@@ -12,21 +12,25 @@ module Widgets {
 		hidden var value_text_ as Lang.String = "";
 		hidden var icon_ as Lang.String = "";
 
-		var small as Lang.Boolean = false;
+		var is_small as Lang.Boolean = false;
 
 		var properties as Properties.Metric;
 
 		static function Width(
 			_dc as Graphics.Dc,
 			_width as Lang.Number,
-			_small as Lang.Boolean,
+			_is_small as Lang.Boolean,
 			_show_icon as Lang.Boolean,
 			_show_gauge as Lang.Boolean,
 			_show_padding as Lang.Boolean
 		) as Lang.Number {
 			var size_x = _show_padding
-				? Render.NumberWidth(_dc, _width, _small)
-				: Render.TextWidth(_dc, Render.NumberFormat(_width, 0), _small);
+				? Render.NumberWidth(_dc, _width, _is_small)
+				: Render.TextWidth(
+						_dc,
+						Render.NumberFormat(_width, 0),
+						_is_small
+					);
 
 			if (_show_icon) {
 				size_x +=
@@ -42,11 +46,11 @@ module Widgets {
 
 		static function Height(
 			_dc as Graphics.Dc,
-			_small as Lang.Boolean,
+			_is_small as Lang.Boolean,
 			_show_label as Lang.Boolean,
 			_has_label as Lang.Boolean
 		) as Lang.Number {
-			var size_y = Render.NumberHeight(_dc, _small);
+			var size_y = Render.NumberHeight(_dc, _is_small);
 
 			if (_show_label and _has_label) {
 				size_y += Render.LabelHeight(_dc) + Render.SPACING;
@@ -69,7 +73,7 @@ module Widgets {
 			self.size_x = Metric.Width(
 				_dc,
 				self.properties.width,
-				self.small,
+				self.is_small,
 				self.properties.icon,
 				self.properties.gauge,
 				self.properties.padding
@@ -77,8 +81,8 @@ module Widgets {
 
 			self.size_y = Metric.Height(
 				_dc,
-				self.small,
-				self.properties.label != Render.COLOR_NONE,
+				self.is_small,
+				self.properties.accent != Render.COLOR_NONE,
 				self.impl_.name.length() != 0
 			);
 		}
@@ -108,7 +112,7 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
-			// ---- prepare ----
+			// ---- header ----
 
 			var icon_width = self.properties.icon
 				? Render.IconsWidth(_dc, self.icon_) + Render.SPACING
@@ -117,7 +121,7 @@ module Widgets {
 			var pos_x = self.pos_x;
 			var pos_y =
 				self.pos_y +
-				(self.properties.label != Render.COLOR_NONE
+				(self.properties.accent != Render.COLOR_NONE
 					? Render.LabelHeight(_dc) + Render.SPACING
 					: 0);
 
@@ -126,6 +130,7 @@ module Widgets {
 			if (self.properties.icon) {
 				Render.Icons(
 					_dc,
+					Properties.general.foreground,
 					pos_x,
 					pos_y,
 					self.icon_,
@@ -144,23 +149,24 @@ module Widgets {
 					pos_y,
 					self.value_,
 					self.properties.width,
-					self.small
+					self.is_small
 				);
 				pos_x += Render.NumberWidth(
 					_dc,
 					self.properties.width,
-					self.small
+					self.is_small
 				);
 			} else if (self.value_text_.length() != 0) {
 				Render.Text(
 					_dc,
+					Properties.general.foreground,
 					pos_x,
 					pos_y,
-					self.small,
+					self.is_small,
 					self.value_text_,
 					Render.JUSTIFY_LEFT
 				);
-				pos_x += Render.TextWidth(_dc, self.value_text_, self.small);
+				pos_x += Render.TextWidth(_dc, self.value_text_, self.is_small);
 			}
 
 			// ---- gauge ----
@@ -171,7 +177,7 @@ module Widgets {
 					if (value_max != 0) {
 						var value = self.value_.toFloat() / value_max;
 						var max_height =
-							Render.NumberHeight(_dc, self.small) -
+							Render.NumberHeight(_dc, self.is_small) -
 							2 * Render.SPACING;
 
 						if (0 < max_height) {
@@ -179,6 +185,9 @@ module Widgets {
 
 							Render.Gauge(
 								_dc,
+								value == 1.0
+									? self.properties.accent
+									: Properties.general.foreground,
 								pos_x,
 								pos_y + Render.SPACING,
 								max_height,
@@ -193,10 +202,10 @@ module Widgets {
 
 			// ---- label ----
 
-			if (self.properties.label != Render.COLOR_NONE) {
+			if (self.properties.accent != Render.COLOR_NONE) {
 				Render.Label(
 					_dc,
-					self.properties.label,
+					self.properties.accent,
 					self.pos_x + (pos_x - self.pos_x) / 2,
 					self.pos_y,
 					self.impl_.name,

@@ -9,8 +9,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_WHEELCHAIR_PUSHES,
-				Resources.get(Rez.Strings.LABEL_PUSHES),
-				CATEGORY_MOVEMENT
+				Resources.get(Rez.Strings.LABEL_PUSHES)
 			);
 
 			self.value_max = ActivityMonitor.getInfo().pushGoal;

@@ -18,11 +18,21 @@ module Widgets {
 		hidden var value_ as Lang.String = "";
 		hidden var value_bg_ as Lang.String = "";
 
-		var small as Lang.Boolean = false;
+		hidden var on_top_ as Lang.Boolean;
 
-		function initialize() {
+		var is_small as Lang.Boolean = false;
+
+		var properties as Properties.Widget;
+
+		function initialize(
+			_properties as Properties.Widget,
+			_on_top as Lang.Boolean
+		) {
 			Base.initialize(Complications.COMPLICATION_TYPE_SUNRISE);
 
+			self.properties = _properties;
+
+			self.on_top_ = _on_top;
 			self.label_ = Lang.format("$1$     $2$", [
 				Resources.get(Rez.Strings.LABEL_DAWN),
 				Resources.get(Rez.Strings.LABEL_DUSK),
@@ -45,47 +55,10 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
-			// ---- prepare ----
+			// ---- header ----
 
-			var pos_x = self.pos_x;
+			var pos_x = self.pos_x + self.size_x / 2;
 			var pos_y = self.pos_y;
-
-			// ---- label ----
-
-			if (!self.small) {
-				Render.Label(
-					_dc,
-					Render.COLOR_ORANGE,
-					pos_x,
-					pos_y,
-					self.label_,
-					Graphics.TEXT_JUSTIFY_CENTER
-				);
-				pos_y += Render.LabelHeight(_dc) + Render.SPACING;
-			}
-
-			// ---- value ----
-
-			if (self.value_.length() != 0) {
-				Render.Text(
-					_dc,
-					pos_x,
-					pos_y,
-					true,
-					self.value_,
-					Graphics.TEXT_JUSTIFY_CENTER
-				);
-			} else {
-				Render.TextColor(
-					_dc,
-					Render.COLOR_CHARCOAL,
-					pos_x,
-					pos_y,
-					true,
-					self.value_bg_,
-					Graphics.TEXT_JUSTIFY_CENTER
-				);
-			}
 
 			// ---- icon ----
 
@@ -98,8 +71,9 @@ module Widgets {
 			if (is_new_moon) {
 				Render.Icons(
 					_dc,
-					self.pos_x,
-					self.pos_y,
+					Properties.general.foreground,
+					pos_x,
+					pos_y,
 					"",
 					moon_icon,
 					Graphics.TEXT_JUSTIFY_CENTER
@@ -107,16 +81,18 @@ module Widgets {
 			} else if (is_full_moon) {
 				Render.Icons(
 					_dc,
-					self.pos_x,
-					self.pos_y,
+					Properties.general.foreground,
+					pos_x,
+					pos_y,
 					"",
 					moon_icon,
 					Graphics.TEXT_JUSTIFY_CENTER
 				);
 				Render.Icons(
 					_dc,
-					self.pos_x + 1,
-					self.pos_y + 1,
+					Properties.general.foreground,
+					pos_x + 1,
+					pos_y + 1,
 					moon_icon,
 					"",
 					Graphics.TEXT_JUSTIFY_CENTER
@@ -124,12 +100,70 @@ module Widgets {
 			} else {
 				Render.Icons(
 					_dc,
-					self.pos_x,
-					self.pos_y,
+					Properties.general.foreground,
+					pos_x,
+					pos_y,
 					moon_icon,
 					moon_icon,
 					Graphics.TEXT_JUSTIFY_CENTER
 				);
+			}
+
+			// ---- label on top ----
+
+			if (self.on_top_) {
+				if (!self.is_small) {
+					Render.Label(
+						_dc,
+						self.properties.accent,
+						pos_x,
+						pos_y,
+						self.label_,
+						Graphics.TEXT_JUSTIFY_CENTER
+					);
+					pos_y += Render.LabelHeight(_dc) + Render.SPACING;
+				}
+			}
+
+			// ---- value ----
+
+			if (self.value_.length() != 0) {
+				Render.Text(
+					_dc,
+					Properties.general.foreground,
+					pos_x,
+					pos_y,
+					true,
+					self.value_,
+					Graphics.TEXT_JUSTIFY_CENTER
+				);
+			} else {
+				Render.Text(
+					_dc,
+					Properties.general.shade,
+					pos_x,
+					pos_y,
+					true,
+					self.value_bg_,
+					Graphics.TEXT_JUSTIFY_CENTER
+				);
+			}
+			pos_y += Render.TextHeight(_dc, true);
+
+			// ---- label on bottom ----
+
+			if (!self.on_top_) {
+				if (!self.is_small) {
+					Render.Label(
+						_dc,
+						self.properties.accent,
+						pos_x,
+						pos_y,
+						self.label_,
+						Graphics.TEXT_JUSTIFY_CENTER
+					);
+					pos_y += Render.LabelHeight(_dc) + Render.SPACING;
+				}
 			}
 		}
 

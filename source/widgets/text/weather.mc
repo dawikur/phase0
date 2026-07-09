@@ -46,16 +46,16 @@ module Widgets {
 						Render.TextWidth(_dc, self.value_, false) <=
 						self.size_x * 2
 					) {
-						self.small = false;
+						self.is_small = false;
 					} else {
-						self.small = true;
+						self.is_small = true;
 					}
 				}
 			}
 
 			if (self.value_.length() != 0) {
 				Cache.setValue("weather", self.value_);
-				Cache.setValue("weather_small", self.small);
+				Cache.setValue("weather_small", self.is_small);
 			} else {
 				var data = Cache.getValue("weather", 8); // 8 hours
 				if (data != null) {
@@ -64,7 +64,7 @@ module Widgets {
 
 				var data_small = Cache.getValue("weather_small", 8); // 8 hours
 				if (data_small != null) {
-					self.small = data_small as Lang.Boolean;
+					self.is_small = data_small as Lang.Boolean;
 				}
 			}
 		}

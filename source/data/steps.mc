@@ -9,8 +9,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_STEPS,
-				Resources.get(Rez.Strings.LABEL_STEPS),
-				CATEGORY_MOVEMENT
+				Resources.get(Rez.Strings.LABEL_STEPS)
 			);
 
 			self.value_max = ActivityMonitor.getInfo().stepGoal;

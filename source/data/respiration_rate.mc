@@ -9,8 +9,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_RESPIRATION_RATE,
-				Resources.get(Rez.Strings.LABEL_RESPIRATION_RATE),
-				CATEGORY_PHYSIOLOGICAL
+				Resources.get(Rez.Strings.LABEL_RESPIRATION_RATE)
 			);
 		}
 

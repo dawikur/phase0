@@ -9,7 +9,7 @@ module Widgets {
 	class Clock {
 		hidden var time_ as Lang.String = "";
 
-		var small as Lang.Boolean = false;
+		var is_small as Lang.Boolean = false;
 
 		var pos_x as Lang.Number = 0;
 		var pos_y as Lang.Number = 0;
@@ -51,12 +51,12 @@ module Widgets {
 		) as Void {
 			Render.Clock(
 				_dc,
-				self.properties.color,
+				self.properties.foreground,
 				self.properties.background,
 				self.pos_x + self.size_x / 2,
 				self.pos_y + self.size_y / 2,
 				self.properties.height == Properties.AUTO
-					? self.small
+					? self.is_small
 					: self.properties.height == Properties.SMALL,
 				self.time_,
 				_is_night_mode ? "" : "88:88"

@@ -13,13 +13,11 @@ module Widgets {
 		var size_x as Lang.Number = 0;
 		var size_y as Lang.Number = 0;
 
-		hidden var small_ as Lang.Boolean = false;
+		var is_small as Lang.Boolean = false;
 
 		hidden var value_ as Lang.String = "";
 
-		function initialize(_small as Lang.Boolean) {
-			self.small_ = _small;
-		}
+		function initialize() {}
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			var clock = System.getClockTime();
@@ -34,9 +32,10 @@ module Widgets {
 			if (_is_high_power) {
 				Render.Text(
 					_dc,
+					Properties.general.foreground,
 					self.pos_x,
 					self.pos_y,
-					self.small_,
+					self.is_small,
 					self.value_,
 					Render.JUSTIFY_LEFT
 				);
@@ -47,7 +46,7 @@ module Widgets {
 					self.pos_y,
 					null,
 					2,
-					self.small_
+					self.is_small
 				);
 			}
 		}

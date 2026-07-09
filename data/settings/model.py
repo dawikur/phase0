@@ -81,7 +81,7 @@ Entry = Select | Number | Boolean
 class Single(Token):
     entries: list[Entry]
 
-    def __init__(self, name: str, entries: list[Entry], klass: str | None = None):
+    def __init__(self, name: str, klass: str, entries: list[Entry]):
         super().__init__(name, klass)
         self.entries = entries
 
@@ -102,21 +102,9 @@ class Array(Token):
     def __init__(
         self,
         name: str,
-        arg0: list[list[Entry]] | str,
-        arg1: list[list[Entry]] | str | None = None,
+        klass: str,
+        entries: list[list[Entry]],
     ):
-        entries = []
-        klass = None
-        if isinstance(arg0, str):
-            klass = arg0
-        elif arg0 is not None:
-            entries = arg0
-
-        if isinstance(arg1, str):
-            klass = arg1
-        elif arg1 is not None:
-            entries = arg1
-
         super().__init__(name, klass)
         self.entries = entries
 

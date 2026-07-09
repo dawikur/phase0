@@ -9,8 +9,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_MOVE),
-				CATEGORY_PHYSIOLOGICAL
+				Resources.get(Rez.Strings.LABEL_MOVE)
 			);
 
 			self.value_max = ActivityMonitor.MOVE_BAR_LEVEL_MAX;

@@ -9,15 +9,15 @@ module Widgets {
 	class Battery extends Base {
 		var impl_ as Data.Battery = new Data.Battery();
 
-		var color_ as Lang.Number = Render.COLOR_WHITE;
+		var color_ as Lang.Number = 0;
 
 		var value_ as Lang.String = "";
 		var charge_ as Lang.String = "";
 		var frame_ as Lang.String = "";
 
-		var properties as Properties.Battery;
+		var properties as Properties.Widget;
 
-		function initialize(_properties as Properties.Battery) {
+		function initialize(_properties as Properties.Widget) {
 			Base.initialize(impl_.type);
 
 			self.properties = _properties;
@@ -32,13 +32,11 @@ module Widgets {
 			self.value_ = value.toString();
 
 			if (value < 10) {
-				self.color_ = Render.COLOR_RED;
-			} else if (value < 20) {
-				self.color_ = Render.COLOR_YELLOW;
+				self.color_ = self.properties.accent;
 			} else if (100 <= value) {
-				self.color_ = self.properties.charging;
+				self.color_ = self.properties.accent;
 			} else {
-				self.color_ = self.properties.color;
+				self.color_ = Properties.general.foreground;
 			}
 
 			var borders_width = Render.IconsWidth(
@@ -73,8 +71,8 @@ module Widgets {
 			var center_x = self.pos_x + self.size_x / 2;
 			var center_y = self.pos_y + self.size_y / 2;
 
-			if (self.properties.data == Properties.ICON) {
-				Render.IconsColor(
+			if (self.properties.data == Properties.BATTERY_ICON) {
+				Render.Icons(
 					_dc,
 					self.color_,
 					center_x,
@@ -86,6 +84,7 @@ module Widgets {
 			} else {
 				Render.Text(
 					_dc,
+					Properties.general.foreground,
 					center_x,
 					center_y,
 					Render.SIZE_SMALL,
@@ -94,15 +93,37 @@ module Widgets {
 				);
 			}
 
-			Render.IconsColor(
+			Render.Icons(
 				_dc,
-				self.properties.charging,
+				self.properties.accent,
 				center_x,
 				center_y,
 				System.getSystemStats().charging ? self.frame_ : "",
 				self.frame_,
 				Render.JUSTIFY_CENTER
 			);
+		}
+	}
+
+	class BatteryIcon extends Battery {
+		function initialize(
+			_properties as Properties.Widget,
+			_on_top as Lang.Boolean
+		) {
+			Battery.initialize(_properties);
+
+			_properties.data = Properties.BATTERY_ICON;
+		}
+	}
+
+	class BatteryPercentage extends Battery {
+		function initialize(
+			_properties as Properties.Widget,
+			_on_top as Lang.Boolean
+		) {
+			Battery.initialize(_properties);
+
+			_properties.data = Properties.BATTERY_PERCENTAGE;
 		}
 	}
 } // module Widgets

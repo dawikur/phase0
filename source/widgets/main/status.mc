@@ -10,46 +10,41 @@ module Widgets {
 		var pos_x as Lang.Number = 0;
 		var pos_y as Lang.Number = 0;
 
-		hidden var format_ as Lang.String = "$1$\n$2$\n$3$";
 		hidden var enabled_ as Lang.String = "";
 		hidden var all_ as Lang.String;
 
-		function initialize() {
-			self.all_ = Lang.format(self.format_, [
-				Fonts.ICON_ALARM,
-				Fonts.ICON_BLUETOOTH,
-				Fonts.ICON_NOTIFICATION,
-			]);
+		var properties as Lang.Array<Properties.Status>;
+
+		function initialize(_properties as Lang.Array<Properties.Status>) {
+			self.properties = _properties;
+
+			self.all_ = "";
+			var properties_size = self.properties.size();
+			for (var i = 0; i < properties_size; ++i) {
+				var property = self.properties[i];
+
+				var icon = self.getIcon_(property.data);
+				if (icon.length() != 0) {
+					self.all_ += i == 0 ? "" : "\n";
+					self.all_ += icon;
+				}
+			}
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			var device_settings = System.getDeviceSettings();
 
-			var icon_alarm = "";
-			if (0 < device_settings.alarmCount) {
-				icon_alarm = Fonts.ICON_ALARM;
-			}
+			self.enabled_ = "";
+			var properties_size = self.properties.size();
+			for (var i = 0; i < properties_size; ++i) {
+				var property = self.properties[i];
 
-			var icon_bluetooth = "";
-			if (device_settings.phoneConnected) {
-				icon_bluetooth = Fonts.ICON_BLUETOOTH;
+				var icon = self.getStatus_(property.data, device_settings);
+				if (icon.length() != 0) {
+					self.enabled_ += i == 0 ? "" : "\n";
+					self.enabled_ += icon;
+				}
 			}
-
-			var icon_notification = "";
-			if (
-				device_settings has :doNotDisturb and
-				device_settings.doNotDisturb
-			) {
-				icon_notification = Fonts.ICON_DO_NOT_DISTURB;
-			} else if (0 < device_settings.notificationCount) {
-				icon_notification = Fonts.ICON_NOTIFICATION;
-			}
-
-			self.enabled_ = Lang.format(self.format_, [
-				icon_alarm,
-				icon_bluetooth,
-				icon_notification,
-			]);
 		}
 
 		function render(
@@ -58,12 +53,73 @@ module Widgets {
 		) as Void {
 			Render.Icons(
 				_dc,
+				Properties.general.foreground,
 				self.pos_x,
 				self.pos_y,
 				self.enabled_,
 				_is_night_mode ? "" : self.all_,
-				Render.JUSTIFY_LEFT
+				Render.JUSTIFY_CENTER
 			);
+		}
+
+		static function getIcon_(_id as Lang.Number) as Lang.String {
+			switch (_id) {
+				case Properties.ALARM:
+					return Fonts.ICON_ALARM;
+				case Properties.BLUETOOTH_CONNECTED:
+					return Fonts.ICON_BLUETOOTH;
+				case Properties.BLUETOOTH_DISCONNECTED:
+					return Fonts.ICON_BLUETOOTH;
+				case Properties.NOTIFICATIONS:
+					return Fonts.ICON_NOTIFICATION;
+
+				default:
+					break;
+			}
+
+			return "";
+		}
+
+		static function getStatus_(
+			_id as Lang.Number,
+			_device_settings as System.DeviceSettings
+		) as Lang.String {
+			switch (_id) {
+				case Properties.ALARM:
+					if (0 < _device_settings.alarmCount) {
+						return Fonts.ICON_ALARM;
+					}
+					return Fonts.ICON_EMPTY;
+
+				case Properties.BLUETOOTH_CONNECTED:
+					if (_device_settings.phoneConnected) {
+						return Fonts.ICON_BLUETOOTH;
+					}
+					return Fonts.ICON_EMPTY;
+
+				case Properties.BLUETOOTH_DISCONNECTED:
+					if (!_device_settings.phoneConnected) {
+						return Fonts.ICON_BLUETOOTH_OFF;
+					}
+					return Fonts.ICON_EMPTY;
+
+				case Properties.NOTIFICATIONS:
+					if (
+						_device_settings has :doNotDisturb and
+						_device_settings.doNotDisturb
+					) {
+						return Fonts.ICON_DO_NOT_DISTURB;
+					}
+					if (0 < _device_settings.notificationCount) {
+						return Fonts.ICON_NOTIFICATION;
+					}
+					return Fonts.ICON_EMPTY;
+
+				default:
+					break;
+			}
+
+			return "";
 		}
 	}
 } // module Widgets

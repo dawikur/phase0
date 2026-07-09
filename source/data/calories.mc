@@ -9,8 +9,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_CALORIES,
-				Resources.get(Rez.Strings.LABEL_CALORIES),
-				CATEGORY_ENERGY
+				Resources.get(Rez.Strings.LABEL_CALORIES)
 			);
 		}
 

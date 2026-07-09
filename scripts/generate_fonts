@@ -371,6 +371,10 @@ def generate_fonts(  # pylint: disable=too-many-locals
             *artefacts, names_comments = parse_typeface_and_style(*icon_meta_data)
             __store_font(*artefacts)
 
+            fonts_mc.line()
+            fonts_mc.line('const ICON_NONE = "";')
+            fonts_mc.line()
+
             for elem_id, comment in names_comments.items():
                 name = "_".join(comment.split()).upper()
 

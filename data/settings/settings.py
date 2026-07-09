@@ -4,81 +4,124 @@ from enum import IntEnum, auto
 from typing import Any, cast
 
 from .colors import Colors
+from .data import Data
 from .model import Array, Boolean, Number, Select, Single
 
 
 class Options(IntEnum):
+    NONE = auto()
     ALARM = auto()
     AUTO = auto()
     BLUETOOTH_CONNECTED = auto()
     BLUETOOTH_DISCONNECTED = auto()
-    ICON = auto()
+    BATTERY_ICON = auto()
     LARGE = auto()
     NOTIFICATIONS = auto()
-    PERCENTAGE = auto()
+    BATTERY_PERCENTAGE = auto()
     SMALL = auto()
+    SUN_MOON = auto()
 
 
 class Heights(IntEnum):
     AUTO = Options.AUTO.value
-    SMALL = Options.SMALL.value
     LARGE = Options.LARGE.value
+    SMALL = Options.SMALL.value
 
 
 class Status(IntEnum):
+    NONE = Options.NONE.value
     ALARM = Options.ALARM.value
     BLUETOOTH_CONNECTED = Options.BLUETOOTH_CONNECTED.value
     BLUETOOTH_DISCONNECTED = Options.BLUETOOTH_DISCONNECTED.value
     NOTIFICATIONS = Options.NOTIFICATIONS.value
 
 
-class Battery(IntEnum):
-    ICON = Options.ICON.value
-    PERCENTAGE = Options.PERCENTAGE.value
-
-
-class ExtraData(IntEnum):
-    BATTERY = auto()
-    DATE = auto()
-    NONE = auto()
-    SUN_MOON = auto()
-    WEATHER = auto()
+class DataExtra(IntEnum):
+    NONE = Options.NONE.value
+    BATTERY_ICON = Options.BATTERY_ICON.value
+    BATTERY_PERCENTAGE = Options.BATTERY_PERCENTAGE.value
+    SUN_MOON = Options.SUN_MOON.value
 
 
 def Settings(  # pylint: disable=invalid-name
-    data: IntEnum,
+    data: Data,
 ) -> tuple[IntEnum, list[Single | Array]]:
-    Extra = cast(
-        Any,
-        IntEnum("Extra", {datum.name: datum.value + len(data) for datum in ExtraData}),
-    )
-
-    Data = cast(
+    DataWidget = cast(
         Any,
         IntEnum(
-            "Data",
-            {
-                **{datum.name: datum.value for datum in data},
-                **{datum.name: datum.value for datum in Extra},
-            },
+            "DataWidget", {datum.name: datum.value + len(data) for datum in DataExtra}
         ),
     )
 
-    return Extra, [
+    DataAll = data.all
+    DataWithValueMax = data.with_value_max
+
+    return DataWidget, [
+        Single(
+            "general",
+            "General",
+            [
+                Select("accent", Colors.ORANGE),
+                Select("foreground", Colors.WHITE),
+                Select("shade", Colors.CHARCOAL),
+                Select("background", Colors.BLACK),
+            ],
+        ),
         Single(
             "clock",
+            "Clock",
             [
-                Select("color", Colors.LIGHT_ORANGE),
+                Select("foreground", Colors.LIGHT_ORANGE),
                 Select("background", Colors.CHARCOAL),
                 Select("height", Heights.AUTO),
             ],
         ),
-        Single(
-            "battery",
+        Array(
+            "status",
+            "Status",
             [
-                Select("data", Battery.ICON),
-                Select("color", Colors.WHITE),
-                Select("charging", Colors.ORANGE),
+                [
+                    Select("data", Status.ALARM),
+                ],
+                [
+                    Select("data", Status.BLUETOOTH_CONNECTED),
+                ],
+                [
+                    Select("data", Status.NOTIFICATIONS),
+                ],
+                [
+                    Select("data", Status.NONE),
+                ],
+            ],
+        ),
+        Array(
+            "gauges",
+            "Widget",
+            [
+                [
+                    Select("data", DataWithValueMax.BODY_BATTERY),
+                    Select("accent", Colors.CYAN),
+                ],
+                [
+                    Select("data", DataWithValueMax.STRESS),
+                    Select("accent", Colors.YELLOW),
+                ],
+                [
+                    Select("data", DataWithValueMax.MOVE),
+                    Select("accent", Colors.RED),
+                ],
+                [
+                    Select("data", DataWithValueMax.NONE),
+                    Select("accent", Colors.MAGENTA),
+                ],
+            ],
+        ),
+        Single(
+            "top outer",
+            "Widget",
+            [
+                Select("data", DataWidget.SUN_MOON),
+                Select("accent", Colors.ORANGE),
             ],
         ),
         Array(
@@ -86,32 +129,32 @@ def Settings(  # pylint: disable=invalid-name
             "Metric",
             [
                 [
-                    Select("data", Data.RAIN),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.RAIN),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 2),
                     Boolean("icon", True),
                     Boolean("padding", False),
                     Boolean("gauge", False),
                 ],
                 [
-                    Select("data", Data.UV),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.UV),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 2),
                     Boolean("icon", True),
                     Boolean("padding", False),
                     Boolean("gauge", False),
                 ],
                 [
-                    Select("data", Data.WIND),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.WIND),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 2),
                     Boolean("icon", True),
                     Boolean("padding", False),
                     Boolean("gauge", False),
                 ],
                 [
-                    Select("data", Data.NONE),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.NONE),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 2),
                     Boolean("icon", True),
                     Boolean("padding", False),
@@ -124,32 +167,32 @@ def Settings(  # pylint: disable=invalid-name
             "Metric",
             [
                 [
-                    Select("data", Data.NONE),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.NONE),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 2),
                     Boolean("icon", True),
                     Boolean("padding", False),
                     Boolean("gauge", False),
                 ],
                 [
-                    Select("data", Data.NONE),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.NONE),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 2),
                     Boolean("icon", True),
                     Boolean("padding", False),
                     Boolean("gauge", False),
                 ],
                 [
-                    Select("data", Data.NONE),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.NONE),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 2),
                     Boolean("icon", True),
                     Boolean("padding", False),
                     Boolean("gauge", False),
                 ],
                 [
-                    Select("data", Data.NONE),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.NONE),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 2),
                     Boolean("icon", True),
                     Boolean("padding", False),
@@ -162,32 +205,32 @@ def Settings(  # pylint: disable=invalid-name
             "Metric",
             [
                 [
-                    Select("data", Data.HEART_RATE),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.HEART_RATE),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 3),
                     Boolean("icon", False),
                     Boolean("padding", True),
                     Boolean("gauge", True),
                 ],
                 [
-                    Select("data", Data.STEPS),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.STEPS),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 3),
                     Boolean("icon", False),
                     Boolean("padding", True),
                     Boolean("gauge", True),
                 ],
                 [
-                    Select("data", Data.FLOORS_CLIMBED),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.FLOORS_CLIMBED),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 3),
                     Boolean("icon", False),
                     Boolean("padding", True),
                     Boolean("gauge", True),
                 ],
                 [
-                    Select("data", Data.NONE),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.NONE),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 3),
                     Boolean("icon", False),
                     Boolean("padding", True),
@@ -200,37 +243,45 @@ def Settings(  # pylint: disable=invalid-name
             "Metric",
             [
                 [
-                    Select("data", Data.CALORIES),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.CALORIES),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 5),
                     Boolean("icon", False),
                     Boolean("padding", True),
                     Boolean("gauge", True),
                 ],
                 [
-                    Select("data", Data.SOLAR_INTENSITY),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.SOLAR_INTENSITY),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 3),
                     Boolean("icon", False),
                     Boolean("padding", True),
                     Boolean("gauge", True),
                 ],
                 [
-                    Select("data", Data.NONE),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.NONE),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 3),
                     Boolean("icon", False),
                     Boolean("padding", True),
                     Boolean("gauge", True),
                 ],
                 [
-                    Select("data", Data.NONE),
-                    Select("label", Colors.ORANGE),
+                    Select("data", DataAll.NONE),
+                    Select("accent", Colors.ORANGE),
                     Number("width", 3),
                     Boolean("icon", False),
                     Boolean("padding", True),
                     Boolean("gauge", True),
                 ],
+            ],
+        ),
+        Single(
+            "bottom outer",
+            "Widget",
+            [
+                Select("data", DataWidget.BATTERY_ICON),
+                Select("accent", Colors.ORANGE),
             ],
         ),
     ]

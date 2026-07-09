@@ -12,8 +12,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_HEART_RATE,
-				Resources.get(Rez.Strings.LABEL_HEART_RATE),
-				CATEGORY_PHYSIOLOGICAL
+				Resources.get(Rez.Strings.LABEL_HEART_RATE)
 			);
 
 			var current_sport = UserProfile.getCurrentSport();

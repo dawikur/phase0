@@ -10,8 +10,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_SOLAR_INPUT,
-				Resources.get(Rez.Strings.LABEL_SOLAR_INTENSITY),
-				CATEGORY_ENERGY
+				Resources.get(Rez.Strings.LABEL_SOLAR_INTENSITY)
 			);
 
 			self.value_max = 100;

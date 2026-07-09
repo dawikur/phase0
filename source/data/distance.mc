@@ -11,8 +11,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_DISTANCE),
-				CATEGORY_MOVEMENT
+				Resources.get(Rez.Strings.LABEL_DISTANCE)
 			);
 		}
 

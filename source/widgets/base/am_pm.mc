@@ -10,11 +10,12 @@ module Widgets {
 		hidden var frame_ as Lang.String = "";
 		hidden var label_ as Lang.String = "";
 		hidden var fallback_ as Lang.String? = null;
-		hidden var small_ as Lang.Boolean = false;
 
-		function initialize(_small as Lang.Boolean) {
+		var is_small as Lang.Boolean = false;
+
+		function initialize(_is_small as Lang.Boolean) {
 			Base.initialize(Complications.COMPLICATION_TYPE_INVALID);
-			self.small_ = _small;
+			self.is_small = _is_small;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
@@ -52,9 +53,10 @@ module Widgets {
 		function render(_dc as Graphics.Dc) as Void {
 			var label_width = Render.TextWidth(_dc, self.label_, true);
 			if (label_width <= 2 * self.size_x or self.fallback_ == null) {
-				if (!self.small_) {
+				if (!self.is_small) {
 					Render.Icons(
 						_dc,
+						Properties.general.foreground,
 						self.pos_x,
 						self.pos_y + Render.SPACING,
 						self.frame_,
@@ -65,6 +67,7 @@ module Widgets {
 
 				Render.Text(
 					_dc,
+					Properties.general.foreground,
 					self.pos_x,
 					self.pos_y - Render.SPACING,
 					Render.SIZE_SMALL,
@@ -74,6 +77,7 @@ module Widgets {
 			} else {
 				Render.Icons(
 					_dc,
+					Properties.general.foreground,
 					self.pos_x,
 					self.pos_y,
 					self.fallback_,

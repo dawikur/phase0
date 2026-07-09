@@ -10,8 +10,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE,
-				Resources.get(Rez.Strings.LABEL_TEMPERATURE),
-				CATEGORY_WEATHER
+				Resources.get(Rez.Strings.LABEL_TEMPERATURE)
 			);
 		}
 

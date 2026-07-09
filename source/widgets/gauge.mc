@@ -10,13 +10,18 @@ module Widgets {
 
 		hidden var value_ as Lang.Float? = null;
 
-		function initialize(_impl as Data.Base, _size_y as Lang.Number) {
+		var properties as Properties.Widget;
+
+		function initialize(
+			_properties as Properties.Widget,
+			_impl as Data.Base
+		) {
 			Base.initialize(_impl.type);
 
 			self.impl_ = _impl;
+			self.properties = _properties;
 
 			self.size_x = Render.SPACING;
-			self.size_y = _size_y;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
@@ -39,9 +44,9 @@ module Widgets {
 
 		function render(_dc as Graphics.Dc) as Void {
 			if (self.value_ != null) {
-				Render.GaugeColor(
+				Render.Gauge(
 					_dc,
-					self.impl_.category,
+					self.properties.accent,
 					self.pos_x,
 					self.pos_y,
 					self.size_y,

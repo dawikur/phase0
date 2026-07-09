@@ -9,8 +9,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_METERS_DESCENDED),
-				CATEGORY_VERTICAL
+				Resources.get(Rez.Strings.LABEL_METERS_DESCENDED)
 			);
 		}
 

@@ -12,8 +12,7 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE,
-				Resources.get(Rez.Strings.LABEL_PRESSURE),
-				CATEGORY_WEATHER
+				Resources.get(Rez.Strings.LABEL_PRESSURE)
 			);
 
 			self.value_max = 100;
