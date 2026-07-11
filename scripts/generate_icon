@@ -19,8 +19,8 @@ def rgba_to_svg(color: tuple[int, int, int, int]) -> str:
 
 
 def render_svg() -> str:
-    svg_width = ICON_BLURRED.xadvance * fonts.STYLE_REGULAR.size
-    svg_height = ICON_BLURRED.yadvance * fonts.STYLE_REGULAR.size
+    svg_width = ICON_BLURRED.xadvance * fonts.STYLE_REGULAR.size + 1
+    svg_height = ICON_BLURRED.yadvance * fonts.STYLE_REGULAR.size + 1
 
     svg = XmlDocument.svg(svg_width, svg_height)
 

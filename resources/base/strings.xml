@@ -163,8 +163,6 @@
 
 	<string id="LABEL_TOP_OUTER">Top Outer</string>
 	<string id="LABEL_TOP_MIDDLE">Top Middle</string>
-	<string id="LABEL_TOP_MIDDLE_ALT">Top Middle Alternative</string>
 	<string id="LABEL_BOTTOM_MIDDLE">Bottom Middle</string>
-	<string id="LABEL_BOTTOM_MIDDLE_ALT">Bottom Middle Alternative</string>
 	<string id="LABEL_BOTTOM_OUTER">Bottom Outer</string>
 </strings>

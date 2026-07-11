@@ -204,6 +204,7 @@ module Phase0 {
 
 			var bottom_inner = layout.bottomBox(layout.inner);
 
+			// TODO: can we move some logic to refreshProperties ?
 			var date_size_x = Render.TextWidth(
 				_dc,
 				"ABC 00 XYZ",
@@ -228,6 +229,7 @@ module Phase0 {
 			self.seconds_.size_x = seconds_size_x;
 			self.seconds_.size_y = bottom_inner.size_y;
 
+			// TODO: can we move some logic to refreshProperties ?
 			if (!Data.Units.is_24_hour) {
 				var left_space_x =
 					bottom_inner.size_x - date_size_x - seconds_size_x;
@@ -262,7 +264,8 @@ module Phase0 {
 					}
 				}
 
-				var am_pm = new Widgets.AmPm(bottom_inner.is_small);
+				var am_pm = new Widgets.AmPm();
+				am_pm.is_small = bottom_inner.is_small;
 				am_pm.pos_x = am_pm_pos_x + am_pm_size_x / 2;
 				am_pm.pos_y = bottom_inner.center_y;
 				am_pm.size_x = am_pm_size_x / 2;
@@ -427,9 +430,10 @@ module Phase0 {
 			self.top_middle_base_ = self.propertiesToMetrics_(
 				Properties.top_middle
 			);
-			self.top_middle_alt_ = self.propertiesToMetrics_(
-				Properties.top_middle_alt
-			);
+			// TODO
+			// self.top_middle_alt_ = self.propertiesToMetrics_(
+			// 	Properties.top_middle_alt
+			// );
 
 			// ---- top inner ----
 
@@ -461,9 +465,10 @@ module Phase0 {
 			self.bottom_middle_base_ = self.propertiesToMetrics_(
 				Properties.bottom_middle
 			);
-			self.bottom_middle_alt_ = self.propertiesToMetrics_(
-				Properties.bottom_middle_alt
-			);
+			// TODO
+			// self.bottom_middle_alt_ = self.propertiesToMetrics_(
+			// 	Properties.bottom_middle_alt
+			// );
 
 			// ---- bottom outer ----
 

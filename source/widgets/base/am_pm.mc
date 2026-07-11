@@ -13,9 +13,8 @@ module Widgets {
 
 		var is_small as Lang.Boolean = false;
 
-		function initialize(_is_small as Lang.Boolean) {
+		function initialize() {
 			Base.initialize(Complications.COMPLICATION_TYPE_INVALID);
-			self.is_small = _is_small;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {

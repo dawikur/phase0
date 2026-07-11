@@ -41,6 +41,7 @@ endif
 BUILD_DIR := build/
 OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX.$(MODE))
 PRG       := $(BUILD_DIR)$(OUT).prg
+IQ        := $(BUILD_DIR)$(NAME).iq
 JUNGLE    := monkey.jungle
 SRCS      := $(shell find source -type f)
 SRCS_DATA := $(shell find source/data -type f)
@@ -94,6 +95,15 @@ $(PRG): $(PRG_DEPS)
 		--private-key $(HOME)/Documents/developer_key \
 		$(FLAG_MONKEYC.$(MODE))
 
+$(IQ): $(PRG_DEPS)
+	$(Q)echo " [ $(@F) ]"
+	$(MONKEYC) \
+		--jungles $< \
+		--output $@ \
+		--warn \
+		--private-key $(HOME)/Documents/developer_key \
+		$(FLAG_MONKEYC.$(MODE))
+
 $(FONTS): $(FONTS_DEPS)
 	$(Q)echo " [ $(@F) ]"
 	$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
@@ -112,21 +122,26 @@ $(BUILD_SOURCE_DIR):
 
 # ---- aliases ----
 
-b build: $(PRG)
+ifneq ($(MODE),release)
+iq:
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release iq
+else
+iq: $(IQ) # build iq project
+endif
+.PHONY: iq
+
+b build: $(PRG) # build project for device
 .PHONY: b build
 
-bt build_test:
+bt build_test: # build project for device w/ tests
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test build
 .PHONY: bt build_test
 
-br build_release:
+br build_release: # build project for device in release
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release build
 .PHONY: br build_release
 
-r resources: $(RESOURCES)
-.PHONY: r resources
-
-s simulate: build
+s simulate: build # run simulator
 	$(Q)echo " [ simulate ] $(MODE)"
 	$(CONNECTIQ)&
 	SIM_PID=$$!
@@ -140,15 +155,18 @@ s simulate: build
 	wait $$SIM_PID
 .PHONY: s simulate
 
-sr simulate_release:
-	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release simulate
-.PHONY: st simulate_test
-
-st simulate_test:
+st simulate_test: # run simulator w/ tests
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test simulate
 .PHONY: st simulate_test
 
-t test: $(RESOURCES)
+sr simulate_release: # run simulator in release
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release simulate
+.PHONY: st simulate_test
+
+r resources: $(RESOURCES) # generate resources
+.PHONY: r resources
+
+t test: $(RESOURCES) # run test
 	$(Q)echo " [ test ]"
 	pytest
 .PHONY: t test
@@ -157,16 +175,17 @@ ifneq ($(MODE),release)
 w watch:
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release watch
 else
-w watch: build
+w watch: build # deploy release binary to watch
 	$(Q)i=0; while ! gio mount -l | grep -q "mtp://091e_"; do
-		set -- ⠋ ⠙ ⠸ ⠴ ⠦ ⠇
-		shift $$((i % 6))
+		set -- ⠋ ⠙ ⠸ ⢰ ⣠ ⣄ ⡆  ⠇
+		shift $$((i % 8))
 		printf "\r [ watch ] %s" "$$1"
+		printf "\033[D"
 		i=$$((i+1))
 		sleep .1
 	done; printf "\r\033[K"
 
-	echo " [ watch ]"
+	$(Q)echo " [ watch ]"
 	GVFS="/run/user/$$(id -u)/gvfs"
 	MOUNT="$$(ls "$$GVFS" | grep 'mtp:host=' | head -n1)"
 	TARGET="$$GVFS/$$MOUNT/Internal Storage/GARMIN/Apps"
@@ -174,14 +193,14 @@ w watch: build
 endif
 .PHONY: w watch
 
-c clean:
+c clean: # remove build directory and files
 	$(Q)echo " [ clean ]"
 	$(RM) -r bin $(BUILD_DIR) $(SRCS_GENERATED_DIR) $(RESOURCES) $(RESOURCES_GENERATED_DIR)
 .PHONY: c clean
 
 # ---- help ----
 
-h help:
+h help: # print help message
 	$(Q)echo " [ help ]"
 
 	N="\033[m"
@@ -196,21 +215,36 @@ h help:
 	echo "     $${B}make$${N} [$${U}target$${N}] [$${U}arguments$${N}]..."
 	echo ""
 	echo " $${B}Targets$${N}"
-	echo "     b , build          build project"
-	echo "     bt, build_test     build project w/ tests"
-	echo "     br, build_release  build project in release"
-	echo "     r , resources      generate resources"
-	echo "     s , simulate       run simulator"
-	echo "     st, simulate_test  run simulator w/ tests"
-	echo "     w , watch          deploy release binary to watch"
-	echo "     c , clean          remove build directory"
-	echo "     h , help           print help message"
+	awk -F'#' '\
+	/^[[:alnum:]_-]+([[:space:]][[:alnum:]_-]+)*:.*#/ { \
+		target_part = $$1; \
+		sub(/:.*/, "", target_part); \
+		split(target_part, a, " "); \
+		short = a[1]; \
+		long = ""; \
+		for (j = 2; j <= length(a); j++) { \
+			if (long != "") \
+				long = long ", "; \
+			long = long a[j]; \
+		} \
+		++n; \
+		shorts[n] = short; \
+		longs[n] = long; \
+		desc[n] = $$2; \
+		if (length(short) > max_short) max_short = length(short); \
+		if (length(long) > max_long) max_long = length(long); \
+		padding = 3 - max_short; \
+	} \
+	END { \
+		for (i = 1; i <= n; i++) \
+			printf "%" padding "s %" max_short "s %-" max_long "s %s\n", "", shorts[i], longs[i], desc[i]; \
+	}' $(MAKEFILE_LIST)
 	echo ""
 	echo " $${B}Arguments$${N}"
-	echo "     NAME               (default: $(NAME))"
-	echo "     DEVICE             (default: $(DEVICE))"
-	echo "     MODE               (default: $(MODE))"
-	echo "     V                  (default: $(V))"
+	echo "     NAME              (default: $(NAME))"
+	echo "     DEVICE            (default: $(DEVICE))"
+	echo "     MODE              (default: $(MODE))"
+	echo "     V                 (default: $(V))"
 	echo ""
 	echo " $${B}Devices$${N}"
 	sed -n 's/.*iq:product id="\(.*\)"\/>/     \1/p' ./manifest.xml

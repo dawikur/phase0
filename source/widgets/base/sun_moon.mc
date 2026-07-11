@@ -20,9 +20,8 @@ module Widgets {
 
 		hidden var on_top_ as Lang.Boolean;
 
-		var is_small as Lang.Boolean = false;
-
 		var properties as Properties.Widget;
+		var is_small as Lang.Boolean = false;
 
 		function initialize(
 			_properties as Properties.Widget,

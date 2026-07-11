@@ -10,6 +10,7 @@ from .model import Array, Boolean, Number, Select, Single
 
 class Options(IntEnum):
     NONE = auto()
+
     ALARM = auto()
     AUTO = auto()
     BLUETOOTH_CONNECTED = auto()
@@ -20,6 +21,11 @@ class Options(IntEnum):
     BATTERY_PERCENTAGE = auto()
     SMALL = auto()
     SUN_MOON = auto()
+    # TODO
+    # AM_PM = auto()
+    # DATE = auto()
+    # SECONDS = auto()
+    # WEATHER = auto()
 
 
 class Heights(IntEnum):
@@ -30,6 +36,7 @@ class Heights(IntEnum):
 
 class Status(IntEnum):
     NONE = Options.NONE.value
+
     ALARM = Options.ALARM.value
     BLUETOOTH_CONNECTED = Options.BLUETOOTH_CONNECTED.value
     BLUETOOTH_DISCONNECTED = Options.BLUETOOTH_DISCONNECTED.value
@@ -38,9 +45,14 @@ class Status(IntEnum):
 
 class DataExtra(IntEnum):
     NONE = Options.NONE.value
+
+    # AM_PM = Options.AM_PM.value
     BATTERY_ICON = Options.BATTERY_ICON.value
     BATTERY_PERCENTAGE = Options.BATTERY_PERCENTAGE.value
+    # DATE = Options.DATE.value
+    # SECONDS = Options.SECONDS.value
     SUN_MOON = Options.SUN_MOON.value
+    # WEATHER = Options.WEATHER.value
 
 
 def Settings(  # pylint: disable=invalid-name
@@ -162,44 +174,45 @@ def Settings(  # pylint: disable=invalid-name
                 ],
             ],
         ),
-        Array(
-            "top middle alt",
-            "Metric",
-            [
-                [
-                    Select("data", DataAll.NONE),
-                    Select("accent", Colors.ORANGE),
-                    Number("width", 2),
-                    Boolean("icon", True),
-                    Boolean("padding", False),
-                    Boolean("gauge", False),
-                ],
-                [
-                    Select("data", DataAll.NONE),
-                    Select("accent", Colors.ORANGE),
-                    Number("width", 2),
-                    Boolean("icon", True),
-                    Boolean("padding", False),
-                    Boolean("gauge", False),
-                ],
-                [
-                    Select("data", DataAll.NONE),
-                    Select("accent", Colors.ORANGE),
-                    Number("width", 2),
-                    Boolean("icon", True),
-                    Boolean("padding", False),
-                    Boolean("gauge", False),
-                ],
-                [
-                    Select("data", DataAll.NONE),
-                    Select("accent", Colors.ORANGE),
-                    Number("width", 2),
-                    Boolean("icon", True),
-                    Boolean("padding", False),
-                    Boolean("gauge", False),
-                ],
-            ],
-        ),
+        # TODO
+        # Array(
+        #     "top middle alt",
+        #     "Metric",
+        #     [
+        #         [
+        #             Select("data", DataAll.NONE),
+        #             Select("accent", Colors.ORANGE),
+        #             Number("width", 2),
+        #             Boolean("icon", True),
+        #             Boolean("padding", False),
+        #             Boolean("gauge", False),
+        #         ],
+        #         [
+        #             Select("data", DataAll.NONE),
+        #             Select("accent", Colors.ORANGE),
+        #             Number("width", 2),
+        #             Boolean("icon", True),
+        #             Boolean("padding", False),
+        #             Boolean("gauge", False),
+        #         ],
+        #         [
+        #             Select("data", DataAll.NONE),
+        #             Select("accent", Colors.ORANGE),
+        #             Number("width", 2),
+        #             Boolean("icon", True),
+        #             Boolean("padding", False),
+        #             Boolean("gauge", False),
+        #         ],
+        #         [
+        #             Select("data", DataAll.NONE),
+        #             Select("accent", Colors.ORANGE),
+        #             Number("width", 2),
+        #             Boolean("icon", True),
+        #             Boolean("padding", False),
+        #             Boolean("gauge", False),
+        #         ],
+        #     ],
+        # ),
         Array(
             "bottom middle",
             "Metric",
@@ -238,44 +251,45 @@ def Settings(  # pylint: disable=invalid-name
                 ],
             ],
         ),
-        Array(
-            "bottom middle alt",
-            "Metric",
-            [
-                [
-                    Select("data", DataAll.CALORIES),
-                    Select("accent", Colors.ORANGE),
-                    Number("width", 5),
-                    Boolean("icon", False),
-                    Boolean("padding", True),
-                    Boolean("gauge", True),
-                ],
-                [
-                    Select("data", DataAll.SOLAR_INTENSITY),
-                    Select("accent", Colors.ORANGE),
-                    Number("width", 3),
-                    Boolean("icon", False),
-                    Boolean("padding", True),
-                    Boolean("gauge", True),
-                ],
-                [
-                    Select("data", DataAll.NONE),
-                    Select("accent", Colors.ORANGE),
-                    Number("width", 3),
-                    Boolean("icon", False),
-                    Boolean("padding", True),
-                    Boolean("gauge", True),
-                ],
-                [
-                    Select("data", DataAll.NONE),
-                    Select("accent", Colors.ORANGE),
-                    Number("width", 3),
-                    Boolean("icon", False),
-                    Boolean("padding", True),
-                    Boolean("gauge", True),
-                ],
-            ],
-        ),
+        # TODO
+        # Array(
+        #     "bottom middle alt",
+        #     "Metric",
+        #     [
+        #         [
+        #             Select("data", DataAll.CALORIES),
+        #             Select("accent", Colors.ORANGE),
+        #             Number("width", 5),
+        #             Boolean("icon", False),
+        #             Boolean("padding", True),
+        #             Boolean("gauge", True),
+        #         ],
+        #         [
+        #             Select("data", DataAll.SOLAR_INTENSITY),
+        #             Select("accent", Colors.ORANGE),
+        #             Number("width", 3),
+        #             Boolean("icon", False),
+        #             Boolean("padding", True),
+        #             Boolean("gauge", True),
+        #         ],
+        #         [
+        #             Select("data", DataAll.NONE),
+        #             Select("accent", Colors.ORANGE),
+        #             Number("width", 3),
+        #             Boolean("icon", False),
+        #             Boolean("padding", True),
+        #             Boolean("gauge", True),
+        #         ],
+        #         [
+        #             Select("data", DataAll.NONE),
+        #             Select("accent", Colors.ORANGE),
+        #             Number("width", 3),
+        #             Boolean("icon", False),
+        #             Boolean("padding", True),
+        #             Boolean("gauge", True),
+        #         ],
+        #     ],
+        # ),
         Single(
             "bottom outer",
             "Widget",
