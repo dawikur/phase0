@@ -6,33 +6,17 @@ import Toybox.System;
 import Toybox.WatchUi;
 
 module Widgets {
-	class Clock {
+	class Clock extends Main {
 		hidden var time_ as Lang.String = "";
 
 		var is_small as Lang.Boolean = false;
 
-		var pos_x as Lang.Number = 0;
-		var pos_y as Lang.Number = 0;
-
-		var size_x as Lang.Number = 0;
-		var size_y as Lang.Number = 0;
-
 		var properties as Properties.Clock;
 
 		function initialize(_properties as Properties.Clock) {
+			Main.initialize(Complications.COMPLICATION_TYPE_INVALID);
+
 			self.properties = _properties;
-		}
-
-		function contains(
-			_x as Lang.Number,
-			_y as Lang.Number
-		) as Lang.Boolean {
-			var pos_x = self.pos_x;
-			var pos_y = self.pos_y;
-			var end_x = pos_x + self.size_x;
-			var end_y = pos_y + self.size_y;
-
-			return pos_x <= _x and _x <= end_x and pos_y <= _y and _y <= end_y;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
@@ -45,10 +29,7 @@ module Widgets {
 			]);
 		}
 
-		function render(
-			_dc as Graphics.Dc,
-			_is_night_mode as Lang.Boolean
-		) as Void {
+		function render(_dc as Graphics.Dc) as Void {
 			Render.Clock(
 				_dc,
 				self.properties.foreground,
@@ -59,7 +40,22 @@ module Widgets {
 					? self.is_small
 					: self.properties.height == Properties.SMALL,
 				self.time_,
-				_is_night_mode ? "" : "88:88"
+				"88:88"
+			);
+		}
+
+		function renderMinimal(_dc as Graphics.Dc) as Void {
+			Render.Clock(
+				_dc,
+				self.properties.foreground,
+				self.properties.background,
+				self.pos_x + self.size_x / 2,
+				self.pos_y + self.size_y / 2,
+				self.properties.height == Properties.AUTO
+					? self.is_small
+					: self.properties.height == Properties.SMALL,
+				self.time_,
+				""
 			);
 		}
 	}

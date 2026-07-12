@@ -5,18 +5,16 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 module Data {
-	class ActiveMinutesWeek extends Base {
+	class ActiveMinutesPerDay extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_INTENSITY_MINUTES,
-				Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_WEEK)
+				Complications.COMPLICATION_TYPE_INVALID,
+				Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_PER_DAY)
 			);
-
-			self.value_max = ActivityMonitor.getInfo().activeMinutesWeekGoal;
 		}
 
 		function get_() as Lang.Number? {
-			var active_minutes = ActivityMonitor.getInfo().activeMinutesWeek;
+			var active_minutes = ActivityMonitor.getInfo().activeMinutesDay;
 			if (active_minutes != null) {
 				return active_minutes.total;
 			}

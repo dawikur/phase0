@@ -1,0 +1,144 @@
+# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+import re
+from html.parser import HTMLParser
+from pathlib import Path
+
+
+class DocsParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.tags: list[tuple[str, dict[str, str | None]]] = []
+
+    def handle_starttag(
+        self,
+        tag: str,
+        attrs: list[tuple[str, str | None]],
+    ) -> None:
+        self.tags.append((tag, dict(attrs)))
+
+
+def parse_docs_page() -> DocsParser:
+    parser = DocsParser()
+    parser.feed(Path("docs/index.html").read_text(encoding="utf-8"))
+    return parser
+
+
+def attrs_for(
+    parser: DocsParser,
+    tag: str,
+    attr: str,
+    value: str,
+) -> dict[str, str | None]:
+    matches = [
+        attrs
+        for item_tag, attrs in parser.tags
+        if item_tag == tag and attrs.get(attr) == value
+    ]
+
+    assert matches, f"Missing <{tag} {attr}={value!r}>"
+    return matches[0]
+
+
+def values_for(
+    parser: DocsParser,
+    tag: str,
+    attr: str,
+) -> list[str]:
+    return [
+        value
+        for item_tag, attrs in parser.tags
+        if item_tag == tag
+        for value in [attrs.get(attr)]
+        if value is not None
+    ]
+
+
+def test_docs_page_loads_assets_in_expected_order() -> None:
+    parser = parse_docs_page()
+
+    assert values_for(parser, "script", "src") == [
+        "settings-data.js",
+        "theme-init.js",
+        "app.js",
+    ]
+    assert "styles.css" in values_for(parser, "link", "href")
+
+    assert Path("docs/theme-init.js").is_file()
+    assert Path("docs/styles.css").is_file()
+    assert Path("docs/app.js").is_file()
+
+
+def test_docs_page_exposes_theme_view_and_accessible_regions() -> None:
+    parser = parse_docs_page()
+
+    assert values_for(parser, "button", "data-theme-mode") == [
+        "auto",
+        "light",
+        "dark",
+    ]
+    assert values_for(parser, "button", "data-watch-view") == ["normal", "aod"]
+
+    assert attrs_for(parser, "section", "class", "hero")["aria-labelledby"] == (
+        "page-title"
+    )
+    assert attrs_for(parser, "p", "id", "pageLede")["class"] == "lede"
+    assert attrs_for(parser, "aside", "id", "detailPanel")["aria-live"] == "polite"
+    assert attrs_for(parser, "svg", "id", "guideLayer")["aria-hidden"] == "true"
+
+
+def test_docs_page_hotspots_match_documented_features() -> None:
+    parser = parse_docs_page()
+
+    assert values_for(parser, "button", "data-feature") == [
+        "general",
+        "top",
+        "status",
+        "clock",
+        "gauges",
+        "bottom",
+        "battery",
+    ]
+
+    for feature in values_for(parser, "button", "data-feature"):
+        hotspot = attrs_for(parser, "button", "data-feature", feature)
+        assert hotspot["class"] == "hotspot"
+        aria_label = hotspot["aria-label"]
+        assert aria_label is not None
+        assert aria_label.startswith("Explore ")
+
+
+def test_docs_page_watch_images_have_stable_ids_sources_and_alt_text() -> None:
+    parser = parse_docs_page()
+
+    watch_face = attrs_for(parser, "img", "id", "watchFace")
+    assert watch_face["src"] == "assets/normal.png"
+    assert watch_face["alt"] == "Phase0 normal watch face"
+
+    overlay_sources = {
+        attrs["src"]
+        for tag, attrs in parser.tags
+        if tag == "img" and "watch-overlay" in (attrs.get("class") or "")
+    }
+
+    assert overlay_sources == {
+        "assets/fr955-light.png",
+        "assets/fr955-dark.png",
+    }
+
+
+def test_docs_alternative_metric_copy_matches_source_wiring() -> None:
+    docs_js = Path("docs/app.js").read_text(encoding="utf-8")
+    view_mc = Path("source/phase0/view.mc").read_text(encoding="utf-8")
+
+    assert "long-pressing the clock switches" in docs_js
+    assert re.search(
+        r"^\s*self\.top_middle_alt_\s*=\s*self\.propertiesToMetrics_\(",
+        view_mc,
+        re.MULTILINE,
+    )
+    assert re.search(
+        r"^\s*self\.bottom_middle_alt_\s*=\s*self\.propertiesToMetrics_\(",
+        view_mc,
+        re.MULTILINE,
+    )

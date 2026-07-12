@@ -16,11 +16,10 @@ module Data {
 			self.value_max = 100;
 		}
 
-		function getMaybe_() as Lang.Number? {
-			return (
-				self.getSensorHistoryData_(
-					SensorHistory.getStressHistory({ :period => 1 })
-				) as Lang.Number?
+		function get_() as Lang.Number? {
+			return SensorProvider.getSensorHistoryData(
+				self.name,
+				SensorHistory.getStressHistory({ :period => 1 })
 			);
 		}
 	}

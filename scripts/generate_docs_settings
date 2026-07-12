@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+from pathlib import Path
+
+from scripts.utils.args_parse import parse_folders
+from scripts.utils.docs_settings import build_docs_settings
+
+if __name__ == "__main__":
+    folders = parse_folders()
+    build_docs_settings(
+        resources_dir=Path(folders.resources()),
+        settings_xml=Path(folders.resources("generated", "settings.xml")),
+        output=Path("docs/settings-data.js"),
+    )

@@ -14,11 +14,10 @@ module Data {
 			);
 		}
 
-		function getMaybe_() as Lang.Number? {
-			return (
-				self.getSensorHistoryData_(
-					SensorHistory.getTemperatureHistory({ :period => 1 })
-				) as Lang.Number?
+		function get_() as Lang.Number? {
+			return SensorProvider.getSensorHistoryData(
+				self.name,
+				SensorHistory.getTemperatureHistory({ :period => 1 })
 			);
 		}
 	}

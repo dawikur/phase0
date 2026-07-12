@@ -5,6 +5,10 @@ build
 bin
 generated
 
+docs/assets/fr955-dark.png
+docs/assets/fr955-light.png
+docs/settings-data.js
+
 .mypy_cache
 .venv
 .vscode

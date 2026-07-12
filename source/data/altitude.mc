@@ -8,19 +8,18 @@ import Toybox.SensorHistory;
 import Toybox.UserProfile;
 
 module Data {
-	class Elevation extends Base {
+	class Altitude extends Base {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_ALTITUDE,
-				Resources.get(Rez.Strings.LABEL_ELEVATION)
+				Resources.get(Rez.Strings.LABEL_ALTITUDE)
 			);
 		}
 
-		function getMaybe_() as Lang.Number? {
-			return (
-				self.getSensorHistoryData_(
-					SensorHistory.getElevationHistory({ :period => 1 })
-				) as Lang.Number?
+		function get_() as Lang.Number? {
+			return SensorProvider.getSensorHistoryData(
+				self.name,
+				SensorHistory.getElevationHistory({ :period => 1 })
 			);
 		}
 	}

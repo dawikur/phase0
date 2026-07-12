@@ -1,23 +1,23 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import Toybox.ActivityMonitor;
 import Toybox.Complications;
 import Toybox.Lang;
 import Toybox.System;
-import Toybox.UserProfile;
 
 module Data {
-	class Memory extends Base {
+	class BatteryPercentage extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_MEMORY)
+				Complications.COMPLICATION_TYPE_BATTERY,
+				Resources.get(Rez.Strings.LABEL_BATTERY_PERCENTAGE)
 			);
 
-			self.value_max = System.getSystemStats().totalMemory;
+			self.value_max = 100;
 		}
 
 		function get_() as Lang.Number? {
-			return System.getSystemStats().usedMemory;
+			return System.getSystemStats().battery.toNumber();
 		}
 	}
 } // module Data

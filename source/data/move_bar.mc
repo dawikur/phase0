@@ -1,24 +1,22 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import Toybox.ActivityMonitor;
 import Toybox.Complications;
 import Toybox.Lang;
+import Toybox.UserProfile;
 
 module Data {
-	class ActiveMinutesDay extends Base {
+	class MoveBar extends Base {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_DAY)
+				Resources.get(Rez.Strings.LABEL_MOVE_BAR)
 			);
+
+			self.value_max = ActivityMonitor.MOVE_BAR_LEVEL_MAX;
 		}
 
 		function get_() as Lang.Number? {
-			var active_minutes = ActivityMonitor.getInfo().activeMinutesDay;
-			if (active_minutes != null) {
-				return active_minutes.total;
-			}
-			return null;
+			return ActivityMonitor.getInfo().moveBarLevel;
 		}
 	}
 } // module Data

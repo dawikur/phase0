@@ -6,18 +6,14 @@ import Toybox.Lang;
 import Toybox.System;
 
 module Widgets {
-	class Seconds {
-		var pos_x as Lang.Number = 0;
-		var pos_y as Lang.Number = 0;
-
-		var size_x as Lang.Number = 0;
-		var size_y as Lang.Number = 0;
+	class Seconds extends Main {
+		hidden var value_ as Lang.String = "";
 
 		var is_small as Lang.Boolean = false;
 
-		hidden var value_ as Lang.String = "";
-
-		function initialize() {}
+		function initialize() {
+			Main.initialize(Complications.COMPLICATION_TYPE_INVALID);
+		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			var clock = System.getClockTime();
@@ -25,30 +21,20 @@ module Widgets {
 			self.value_ = clock.sec.format("%02d");
 		}
 
-		function render(
-			_dc as Graphics.Dc,
-			_is_high_power as Lang.Boolean
-		) as Void {
-			if (_is_high_power) {
-				Render.Text(
-					_dc,
-					Properties.general.foreground,
-					self.pos_x,
-					self.pos_y,
-					self.is_small,
-					self.value_,
-					Render.JUSTIFY_LEFT
-				);
-			} else {
-				Render.Number(
-					_dc,
-					self.pos_x,
-					self.pos_y,
-					null,
-					2,
-					self.is_small
-				);
-			}
+		function render(_dc as Graphics.Dc) as Void {
+			Render.Text(
+				_dc,
+				Properties.general.foreground,
+				self.pos_x,
+				self.pos_y,
+				self.is_small,
+				self.value_,
+				Render.JUSTIFY_LEFT
+			);
+		}
+
+		function renderMinimal(_dc as Graphics.Dc) as Void {
+			Render.Number(_dc, self.pos_x, self.pos_y, null, 2, self.is_small);
 		}
 	}
 } // module Widgets

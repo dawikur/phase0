@@ -43,10 +43,13 @@ module Widgets {
 			self.value_ = self.getValue();
 			self.moon_phase_ = SunMoon.MoonPhase(Time.now());
 
+			var cache_key = Data.Units.is_24_hour
+				? "dawn_dusk_24h"
+				: "dawn_dusk_12h";
 			if (self.value_.length() != 0) {
-				Cache.setValue("dawn_dusk", self.value_);
+				Cache.setValue(cache_key, self.value_);
 			} else {
-				var data = Cache.getValue("dawn_dusk", 24);
+				var data = Cache.getValue(cache_key, 24);
 				if (data != null) {
 					self.value_ = data as Lang.String;
 				}

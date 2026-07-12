@@ -2,21 +2,22 @@
 
 import Toybox.Complications;
 import Toybox.Lang;
+import Toybox.System;
 import Toybox.UserProfile;
 
 module Data {
-	class Move extends Base {
+	class UsedMemory extends Base {
 		function initialize() {
 			Base.initialize(
 				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_MOVE)
+				Resources.get(Rez.Strings.LABEL_USED_MEMORY)
 			);
 
-			self.value_max = ActivityMonitor.MOVE_BAR_LEVEL_MAX;
+			self.value_max = System.getSystemStats().totalMemory;
 		}
 
 		function get_() as Lang.Number? {
-			return ActivityMonitor.getInfo().moveBarLevel;
+			return System.getSystemStats().usedMemory;
 		}
 	}
 } // module Data

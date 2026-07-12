@@ -28,7 +28,7 @@ class Token:
 
     @property
     def label(self) -> str:
-        return f"LABEL_{'_'.join(part.upper() for part in self.parts)}"
+        return f"SET_{'_'.join(part.upper() for part in self.parts)}"
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Token):
@@ -42,33 +42,45 @@ class Token:
 @dataclass
 class Number(Token):
     default: int
+    hidden: bool
 
-    def __init__(self, name: str, default: int):
+    def __init__(self, name: str, default: int, hidden: bool = False):
         super().__init__(name, "Number")
         self.default = default
+        self.hidden = hidden
 
 
 @dataclass
 class Boolean(Token):
     default: bool
+    hidden: bool
 
-    def __init__(self, name: str, default: bool):
+    def __init__(self, name: str, default: bool, hidden: bool = False):
         super().__init__(name, "Boolean")
         self.default = default
+        self.hidden = hidden
 
 
 @dataclass
 class Select(Token):
     default: str
     options: dict[Token, str]
+    hidden: bool
 
-    def __init__(self, name: str, default: Any, options: EnumType | None = None):
+    def __init__(
+        self,
+        name: str,
+        default: Any,
+        options: EnumType | None = None,
+        hidden: bool = False,
+    ):
         super().__init__(name, "Number")
         self.options: dict[Token, str] = {
             Token(option.name): str(option.value)
             for option in (options or type(default))
         }
         self.default = self.options[Token(default.name)]
+        self.hidden = hidden
 
     def __iter__(self) -> Iterator[Token]:
         return self.options.__iter__()

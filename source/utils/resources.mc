@@ -9,6 +9,18 @@ module Resources {
 		return Application.loadResource(_id) as Lang.String;
 	}
 
+	function getBounded_(
+		_ids as Lang.Array<Lang.ResourceId>,
+		_id as Lang.Number,
+		_fallback_id as Lang.Number
+	) as Lang.String {
+		var id = _id;
+		if (id < 0 or _ids.size() <= id) {
+			id = _fallback_id;
+		}
+		return get(_ids[id]);
+	}
+
 	const CONDITIONS as Lang.Array<Lang.ResourceId> = [
 		Rez.Strings.CONDITION_00_CLEAR,
 		Rez.Strings.CONDITION_01_PARTLY_CLOUDY,
@@ -67,7 +79,7 @@ module Resources {
 	];
 
 	function getCondition(_id as Lang.Number) as Lang.String {
-		return get(CONDITIONS[_id]);
+		return getBounded_(CONDITIONS, _id, 53);
 	}
 
 	const CONDITIONS_SHORT as Lang.Array<Lang.ResourceId> = [
@@ -128,7 +140,7 @@ module Resources {
 	];
 
 	function getConditionShort(_id as Lang.Number) as Lang.String {
-		return get(CONDITIONS_SHORT[_id]);
+		return getBounded_(CONDITIONS_SHORT, _id, 53);
 	}
 
 	const DAYS_OF_WEEK as Lang.Array<Lang.ResourceId> = [
@@ -143,7 +155,7 @@ module Resources {
 	];
 
 	function getDayOfWeek(_id as Lang.Number) as Lang.String {
-		return get(DAYS_OF_WEEK[_id]);
+		return getBounded_(DAYS_OF_WEEK, _id, 1);
 	}
 
 	const MONTHS as Lang.Array<Lang.ResourceId> = [
@@ -163,6 +175,6 @@ module Resources {
 	];
 
 	function getMonth(_id as Lang.Number) as Lang.String {
-		return get(MONTHS[_id]);
+		return getBounded_(MONTHS, _id, 1);
 	}
 } // module Resources

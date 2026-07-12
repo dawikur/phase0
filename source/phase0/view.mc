@@ -38,9 +38,7 @@ module Phase0 {
 			Properties.clock
 		);
 		hidden var seconds_ as Widgets.Seconds = new Widgets.Seconds();
-		hidden var battery_ as Widgets.Base = new Widgets.Base(
-			Complications.COMPLICATION_TYPE_INVALID
-		);
+		hidden var battery_ as Widgets.Battery? = null;
 
 		hidden var top_outer_ as Widgets.Base = new Widgets.Base(
 			Complications.COMPLICATION_TYPE_INVALID
@@ -53,6 +51,8 @@ module Phase0 {
 
 		hidden var bottom_middle_base_ as Metrics = [];
 		hidden var bottom_middle_alt_ as Metrics = [];
+		hidden var bottom_inner_date_ as Widgets.Date = new Widgets.Date();
+		hidden var bottom_inner_am_pm_ as Widgets.AmPm = new Widgets.AmPm();
 		hidden var bottom_outer_ as Widgets.Base = new Widgets.Base(
 			Complications.COMPLICATION_TYPE_INVALID
 		);
@@ -109,10 +109,6 @@ module Phase0 {
 				WatchUi.requestUpdate();
 
 				return true;
-			}
-
-			if (self.battery_.contains(pos_x, pos_y)) {
-				return self.battery_.open();
 			}
 
 			if (!self.is_night_mode_) {
@@ -204,19 +200,16 @@ module Phase0 {
 
 			var bottom_inner = layout.bottomBox(layout.inner);
 
-			// TODO: can we move some logic to refreshProperties ?
 			var date_size_x = Render.TextWidth(
 				_dc,
 				"ABC 00 XYZ",
 				layout.inner.is_small
 			);
-			var date = new Widgets.Date();
-			date.is_small = layout.inner.is_small;
-			date.pos_x = bottom_inner.pos_x;
-			date.pos_y = bottom_inner.pos_y;
-			date.size_x = date_size_x;
-			date.size_y = bottom_inner.size_y;
-			self.widgets_per_hour_.add(date);
+			self.bottom_inner_date_.is_small = layout.inner.is_small;
+			self.bottom_inner_date_.pos_x = bottom_inner.pos_x;
+			self.bottom_inner_date_.pos_y = bottom_inner.pos_y;
+			self.bottom_inner_date_.size_x = date_size_x;
+			self.bottom_inner_date_.size_y = bottom_inner.size_y;
 
 			var seconds_size_x = Render.TextWidth(
 				_dc,
@@ -229,7 +222,6 @@ module Phase0 {
 			self.seconds_.size_x = seconds_size_x;
 			self.seconds_.size_y = bottom_inner.size_y;
 
-			// TODO: can we move some logic to refreshProperties ?
 			if (!Data.Units.is_24_hour) {
 				var left_space_x =
 					bottom_inner.size_x - date_size_x - seconds_size_x;
@@ -264,13 +256,11 @@ module Phase0 {
 					}
 				}
 
-				var am_pm = new Widgets.AmPm();
-				am_pm.is_small = bottom_inner.is_small;
-				am_pm.pos_x = am_pm_pos_x + am_pm_size_x / 2;
-				am_pm.pos_y = bottom_inner.center_y;
-				am_pm.size_x = am_pm_size_x / 2;
-				am_pm.size_y = bottom_inner.radius_y;
-				self.widgets_per_hour_.add(am_pm);
+				self.bottom_inner_am_pm_.is_small = bottom_inner.is_small;
+				self.bottom_inner_am_pm_.pos_x = am_pm_pos_x + am_pm_size_x / 2;
+				self.bottom_inner_am_pm_.pos_y = bottom_inner.center_y;
+				self.bottom_inner_am_pm_.size_x = am_pm_size_x / 2;
+				self.bottom_inner_am_pm_.size_y = bottom_inner.radius_y;
 			}
 
 			// ---- bottom middle ----
@@ -298,74 +288,6 @@ module Phase0 {
 			// ---- footer ----
 
 			self.needs_reposition_ = false;
-		}
-
-		function onUpdate(_dc as Graphics.Dc) as Void {
-			// ---- header ----
-
-			if (!self.is_visible_) {
-				return;
-			}
-
-			if (self.needs_reposition_) {
-				self.onLayout(_dc);
-			}
-
-			// ---- refresh ----
-
-			var clock = System.getClockTime();
-			var top_metrics = self.getTopMetrics_();
-			var bottom_metrics = self.getBottomMetrics_();
-
-			{
-				self.status_.refresh(_dc);
-				self.seconds_.refresh(_dc);
-
-				self.refreshWidgets_(_dc, top_metrics as Bases);
-				self.refreshWidgets_(_dc, bottom_metrics as Bases);
-			}
-
-			if (self.last_refresh_min_ != clock.min) {
-				self.last_refresh_min_ = clock.min;
-				self.is_night_mode_ = self.isNightMode_();
-
-				self.clock_.refresh(_dc);
-				self.battery_.refresh(_dc);
-
-				self.refreshWidgets_(_dc, self.widgets_per_min_);
-			}
-			if (self.last_refresh_hour_ != clock.hour) {
-				self.last_refresh_hour_ = clock.hour;
-
-				self.refreshWidgets_(_dc, self.widgets_per_hour_);
-			}
-
-			// ---- render ----
-
-			_dc.clearClip();
-
-			_dc.setColor(
-				Properties.general.background,
-				Properties.general.background
-			);
-			_dc.clear();
-
-			if (self.is_night_mode_) {
-				self.clock_.render(_dc, true);
-				self.status_.render(_dc, true);
-
-				self.battery_.render(_dc);
-			} else {
-				self.clock_.render(_dc, false);
-				self.status_.render(_dc, false);
-
-				self.seconds_.render(_dc, self.is_high_power_);
-
-				self.renderWidgets_(_dc, top_metrics as Bases);
-				self.renderWidgets_(_dc, bottom_metrics as Bases);
-				self.renderWidgets_(_dc, self.widgets_per_min_);
-				self.renderWidgets_(_dc, self.widgets_per_hour_);
-			}
 		}
 
 		function onPartialUpdate(_dc as Graphics.Dc) as Void {
@@ -400,7 +322,119 @@ module Phase0 {
 			);
 			_dc.clear();
 
-			self.seconds_.render(_dc, true);
+			self.seconds_.render(_dc);
+		}
+
+		function onUpdate(_dc as Graphics.Dc) as Void {
+			if (!self.is_visible_) {
+				return;
+			}
+
+			if (self.needs_reposition_) {
+				self.onLayout(_dc);
+			}
+
+			var clock = System.getClockTime();
+
+			if (self.last_refresh_min_ != clock.min) {
+				self.is_night_mode_ = self.isNightMode_();
+			}
+
+			if (self.is_night_mode_) {
+				self.updateMinimal_(_dc, clock);
+			} else {
+				self.updateNormal_(_dc, clock);
+			}
+		}
+
+		function updateNormal_(
+			_dc as Graphics.Dc,
+			_clock as System.ClockTime
+		) as Void {
+			// ---- refresh ----
+
+			var top_metrics = self.getTopMetrics_();
+			var bottom_metrics = self.getBottomMetrics_();
+
+			{
+				self.status_.refresh(_dc);
+				self.seconds_.refresh(_dc);
+
+				self.refreshWidgets_(_dc, top_metrics as Bases);
+				self.refreshWidgets_(_dc, bottom_metrics as Bases);
+			}
+
+			if (self.last_refresh_min_ != _clock.min) {
+				self.last_refresh_min_ = _clock.min;
+
+				self.clock_.refresh(_dc);
+
+				self.refreshWidgets_(_dc, self.widgets_per_min_);
+			}
+			if (self.last_refresh_hour_ != _clock.hour) {
+				self.last_refresh_hour_ = _clock.hour;
+
+				self.refreshWidgets_(_dc, self.widgets_per_hour_);
+			}
+
+			// ---- render ----
+
+			_dc.clearClip();
+
+			_dc.setColor(
+				Properties.general.background,
+				Properties.general.background
+			);
+			_dc.clear();
+
+			self.clock_.render(_dc);
+			self.status_.render(_dc);
+
+			if (self.is_high_power_) {
+				self.seconds_.render(_dc);
+			} else {
+				self.seconds_.renderMinimal(_dc);
+			}
+
+			self.renderWidgets_(_dc, top_metrics as Bases);
+			self.renderWidgets_(_dc, bottom_metrics as Bases);
+			self.renderWidgets_(_dc, self.widgets_per_min_);
+			self.renderWidgets_(_dc, self.widgets_per_hour_);
+		}
+
+		function updateMinimal_(
+			_dc as Graphics.Dc,
+			_clock as System.ClockTime
+		) as Void {
+			// ---- refresh ----
+
+			{
+				self.status_.refresh(_dc);
+			}
+
+			if (self.last_refresh_min_ != _clock.min) {
+				self.last_refresh_min_ = _clock.min;
+
+				self.clock_.refresh(_dc);
+				if (self.battery_ != null) {
+					self.battery_.refresh(_dc);
+				}
+			}
+
+			// ---- render ----
+
+			_dc.clearClip();
+			_dc.setColor(
+				Properties.general.background,
+				Properties.general.background
+			);
+			_dc.clear();
+
+			self.clock_.renderMinimal(_dc);
+			self.status_.renderMinimal(_dc);
+			if (self.battery_ != null) {
+				self.battery_.renderMinimal(_dc);
+			}
 		}
 
 		hidden function refreshProperties_() as Void {
@@ -413,16 +447,21 @@ module Phase0 {
 
 			self.widgets_per_min_ = [];
 			self.widgets_per_hour_ = [];
+			self.battery_ = null;
 
 			// ---- top outer ----
 
 			self.top_outer_ = Widgets.get(Properties.top_outer, Render.TOP);
-			self.widgets_per_hour_.add(self.top_outer_);
 			if (
+				Properties.top_outer.data ==
+					Properties.BATTERY_DAYS_REMAINING or
 				Properties.top_outer.data == Properties.BATTERY_ICON or
 				Properties.top_outer.data == Properties.BATTERY_PERCENTAGE
 			) {
-				self.battery_ = self.top_outer_;
+				self.battery_ = self.top_outer_ as Widgets.Battery;
+				self.widgets_per_min_.add(self.top_outer_);
+			} else {
+				self.widgets_per_hour_.add(self.top_outer_);
 			}
 
 			// ---- top middle ----
@@ -430,10 +469,9 @@ module Phase0 {
 			self.top_middle_base_ = self.propertiesToMetrics_(
 				Properties.top_middle
 			);
-			// TODO
-			// self.top_middle_alt_ = self.propertiesToMetrics_(
-			// 	Properties.top_middle_alt
-			// );
+			self.top_middle_alt_ = self.propertiesToMetrics_(
+				Properties.top_middle_alt
+			);
 
 			// ---- top inner ----
 
@@ -460,15 +498,21 @@ module Phase0 {
 
 			// ---- bottom inner ----
 
+			self.bottom_inner_date_ = new Widgets.Date();
+			self.widgets_per_hour_.add(self.bottom_inner_date_);
+			if (!Data.Units.is_24_hour) {
+				self.bottom_inner_am_pm_ = new Widgets.AmPm();
+				self.widgets_per_hour_.add(self.bottom_inner_am_pm_);
+			}
+
 			// ---- bottom middle ----
 
 			self.bottom_middle_base_ = self.propertiesToMetrics_(
 				Properties.bottom_middle
 			);
-			// TODO
-			// self.bottom_middle_alt_ = self.propertiesToMetrics_(
-			// 	Properties.bottom_middle_alt
-			// );
+			self.bottom_middle_alt_ = self.propertiesToMetrics_(
+				Properties.bottom_middle_alt
+			);
 
 			// ---- bottom outer ----
 
@@ -476,12 +520,16 @@ module Phase0 {
 				Properties.bottom_outer,
 				Render.BOTTOM
 			);
-			self.widgets_per_hour_.add(self.bottom_outer_);
 			if (
+				Properties.bottom_outer.data ==
+					Properties.BATTERY_DAYS_REMAINING or
 				Properties.bottom_outer.data == Properties.BATTERY_ICON or
 				Properties.bottom_outer.data == Properties.BATTERY_PERCENTAGE
 			) {
-				self.battery_ = self.bottom_outer_;
+				self.battery_ = self.bottom_outer_ as Widgets.Battery;
+				self.widgets_per_min_.add(self.bottom_outer_);
+			} else {
+				self.widgets_per_hour_.add(self.bottom_outer_);
 			}
 		}
 

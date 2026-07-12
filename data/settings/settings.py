@@ -9,19 +9,20 @@ from .model import Array, Boolean, Number, Select, Single
 
 
 class Options(IntEnum):
-    NONE = auto()
+    DISABLED = auto()
 
     ALARM = auto()
     AUTO = auto()
     BLUETOOTH_CONNECTED = auto()
     BLUETOOTH_DISCONNECTED = auto()
+    BATTERY_DAYS_REMAINING = auto()
     BATTERY_ICON = auto()
     LARGE = auto()
     NOTIFICATIONS = auto()
     BATTERY_PERCENTAGE = auto()
     SMALL = auto()
     SUN_MOON = auto()
-    # TODO
+    # Reserved for future widget types.
     # AM_PM = auto()
     # DATE = auto()
     # SECONDS = auto()
@@ -35,7 +36,7 @@ class Heights(IntEnum):
 
 
 class Status(IntEnum):
-    NONE = Options.NONE.value
+    DISABLED = Options.DISABLED.value
 
     ALARM = Options.ALARM.value
     BLUETOOTH_CONNECTED = Options.BLUETOOTH_CONNECTED.value
@@ -44,9 +45,10 @@ class Status(IntEnum):
 
 
 class DataExtra(IntEnum):
-    NONE = Options.NONE.value
+    DISABLED = Options.DISABLED.value
 
     # AM_PM = Options.AM_PM.value
+    BATTERY_DAYS_REMAINING = Options.BATTERY_DAYS_REMAINING.value
     BATTERY_ICON = Options.BATTERY_ICON.value
     BATTERY_PERCENTAGE = Options.BATTERY_PERCENTAGE.value
     # DATE = Options.DATE.value
@@ -66,6 +68,7 @@ def Settings(  # pylint: disable=invalid-name
     )
 
     DataAll = data.all
+    DataWithIcon = data.with_icon
     DataWithValueMax = data.with_value_max
 
     return DataWidget, [
@@ -102,7 +105,7 @@ def Settings(  # pylint: disable=invalid-name
                     Select("data", Status.NOTIFICATIONS),
                 ],
                 [
-                    Select("data", Status.NONE),
+                    Select("data", Status.DISABLED),
                 ],
             ],
         ),
@@ -119,11 +122,11 @@ def Settings(  # pylint: disable=invalid-name
                     Select("accent", Colors.YELLOW),
                 ],
                 [
-                    Select("data", DataWithValueMax.MOVE),
+                    Select("data", DataWithValueMax.MOVE_BAR),
                     Select("accent", Colors.RED),
                 ],
                 [
-                    Select("data", DataWithValueMax.NONE),
+                    Select("data", DataWithValueMax.DISABLED),
                     Select("accent", Colors.MAGENTA),
                 ],
             ],
@@ -141,78 +144,77 @@ def Settings(  # pylint: disable=invalid-name
             "Metric",
             [
                 [
-                    Select("data", DataAll.RAIN),
+                    Select("data", DataWithIcon.RAIN),
                     Select("accent", Colors.ORANGE),
                     Number("width", 2),
-                    Boolean("icon", True),
-                    Boolean("padding", False),
-                    Boolean("gauge", False),
+                    Boolean("icon", True, hidden=True),
+                    Boolean("padding", False, hidden=True),
+                    Boolean("gauge", False, hidden=True),
                 ],
                 [
-                    Select("data", DataAll.UV),
+                    Select("data", DataWithIcon.UV_INDEX),
                     Select("accent", Colors.ORANGE),
                     Number("width", 2),
-                    Boolean("icon", True),
-                    Boolean("padding", False),
-                    Boolean("gauge", False),
+                    Boolean("icon", True, hidden=True),
+                    Boolean("padding", False, hidden=True),
+                    Boolean("gauge", False, hidden=True),
                 ],
                 [
-                    Select("data", DataAll.WIND),
+                    Select("data", DataWithIcon.WIND_BEARING),
                     Select("accent", Colors.ORANGE),
                     Number("width", 2),
-                    Boolean("icon", True),
-                    Boolean("padding", False),
-                    Boolean("gauge", False),
+                    Boolean("icon", True, hidden=True),
+                    Boolean("padding", False, hidden=True),
+                    Boolean("gauge", False, hidden=True),
                 ],
                 [
-                    Select("data", DataAll.NONE),
+                    Select("data", DataWithIcon.DISABLED),
                     Select("accent", Colors.ORANGE),
                     Number("width", 2),
-                    Boolean("icon", True),
-                    Boolean("padding", False),
-                    Boolean("gauge", False),
+                    Boolean("icon", True, hidden=True),
+                    Boolean("padding", False, hidden=True),
+                    Boolean("gauge", False, hidden=True),
                 ],
             ],
         ),
-        # TODO
-        # Array(
-        #     "top middle alt",
-        #     "Metric",
-        #     [
-        #         [
-        #             Select("data", DataAll.NONE),
-        #             Select("accent", Colors.ORANGE),
-        #             Number("width", 2),
-        #             Boolean("icon", True),
-        #             Boolean("padding", False),
-        #             Boolean("gauge", False),
-        #         ],
-        #         [
-        #             Select("data", DataAll.NONE),
-        #             Select("accent", Colors.ORANGE),
-        #             Number("width", 2),
-        #             Boolean("icon", True),
-        #             Boolean("padding", False),
-        #             Boolean("gauge", False),
-        #         ],
-        #         [
-        #             Select("data", DataAll.NONE),
-        #             Select("accent", Colors.ORANGE),
-        #             Number("width", 2),
-        #             Boolean("icon", True),
-        #             Boolean("padding", False),
-        #             Boolean("gauge", False),
-        #         ],
-        #         [
-        #             Select("data", DataAll.NONE),
-        #             Select("accent", Colors.ORANGE),
-        #             Number("width", 2),
-        #             Boolean("icon", True),
-        #             Boolean("padding", False),
-        #             Boolean("gauge", False),
-        #         ],
-        #     ],
-        # ),
+        Array(
+            "top middle alt",
+            "Metric",
+            [
+                [
+                    Select("data", DataWithIcon.DISABLED),
+                    Select("accent", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True, hidden=True),
+                    Boolean("padding", False, hidden=True),
+                    Boolean("gauge", False, hidden=True),
+                ],
+                [
+                    Select("data", DataWithIcon.DISABLED),
+                    Select("accent", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True, hidden=True),
+                    Boolean("padding", False, hidden=True),
+                    Boolean("gauge", False, hidden=True),
+                ],
+                [
+                    Select("data", DataWithIcon.DISABLED),
+                    Select("accent", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True, hidden=True),
+                    Boolean("padding", False, hidden=True),
+                    Boolean("gauge", False, hidden=True),
+                ],
+                [
+                    Select("data", DataWithIcon.DISABLED),
+                    Select("accent", Colors.ORANGE),
+                    Number("width", 2),
+                    Boolean("icon", True, hidden=True),
+                    Boolean("padding", False, hidden=True),
+                    Boolean("gauge", False, hidden=True),
+                ],
+            ],
+        ),
         Array(
             "bottom middle",
             "Metric",
@@ -221,75 +223,74 @@ def Settings(  # pylint: disable=invalid-name
                     Select("data", DataAll.HEART_RATE),
                     Select("accent", Colors.ORANGE),
                     Number("width", 3),
-                    Boolean("icon", False),
-                    Boolean("padding", True),
-                    Boolean("gauge", True),
+                    Boolean("icon", False, hidden=True),
+                    Boolean("padding", True, hidden=True),
+                    Boolean("gauge", True, hidden=True),
                 ],
                 [
                     Select("data", DataAll.STEPS),
                     Select("accent", Colors.ORANGE),
                     Number("width", 3),
-                    Boolean("icon", False),
-                    Boolean("padding", True),
-                    Boolean("gauge", True),
+                    Boolean("icon", False, hidden=True),
+                    Boolean("padding", True, hidden=True),
+                    Boolean("gauge", True, hidden=True),
                 ],
                 [
                     Select("data", DataAll.FLOORS_CLIMBED),
                     Select("accent", Colors.ORANGE),
                     Number("width", 3),
-                    Boolean("icon", False),
-                    Boolean("padding", True),
-                    Boolean("gauge", True),
+                    Boolean("icon", False, hidden=True),
+                    Boolean("padding", True, hidden=True),
+                    Boolean("gauge", True, hidden=True),
                 ],
                 [
-                    Select("data", DataAll.NONE),
+                    Select("data", DataAll.DISABLED),
                     Select("accent", Colors.ORANGE),
                     Number("width", 3),
-                    Boolean("icon", False),
-                    Boolean("padding", True),
-                    Boolean("gauge", True),
+                    Boolean("icon", False, hidden=True),
+                    Boolean("padding", True, hidden=True),
+                    Boolean("gauge", True, hidden=True),
                 ],
             ],
         ),
-        # TODO
-        # Array(
-        #     "bottom middle alt",
-        #     "Metric",
-        #     [
-        #         [
-        #             Select("data", DataAll.CALORIES),
-        #             Select("accent", Colors.ORANGE),
-        #             Number("width", 5),
-        #             Boolean("icon", False),
-        #             Boolean("padding", True),
-        #             Boolean("gauge", True),
-        #         ],
-        #         [
-        #             Select("data", DataAll.SOLAR_INTENSITY),
-        #             Select("accent", Colors.ORANGE),
-        #             Number("width", 3),
-        #             Boolean("icon", False),
-        #             Boolean("padding", True),
-        #             Boolean("gauge", True),
-        #         ],
-        #         [
-        #             Select("data", DataAll.NONE),
-        #             Select("accent", Colors.ORANGE),
-        #             Number("width", 3),
-        #             Boolean("icon", False),
-        #             Boolean("padding", True),
-        #             Boolean("gauge", True),
-        #         ],
-        #         [
-        #             Select("data", DataAll.NONE),
-        #             Select("accent", Colors.ORANGE),
-        #             Number("width", 3),
-        #             Boolean("icon", False),
-        #             Boolean("padding", True),
-        #             Boolean("gauge", True),
-        #         ],
-        #     ],
-        # ),
+        Array(
+            "bottom middle alt",
+            "Metric",
+            [
+                [
+                    Select("data", DataAll.CALORIES),
+                    Select("accent", Colors.ORANGE),
+                    Number("width", 5),
+                    Boolean("icon", False, hidden=True),
+                    Boolean("padding", True, hidden=True),
+                    Boolean("gauge", True, hidden=True),
+                ],
+                [
+                    Select("data", DataAll.SOLAR_INTENSITY),
+                    Select("accent", Colors.ORANGE),
+                    Number("width", 3),
+                    Boolean("icon", False, hidden=True),
+                    Boolean("padding", True, hidden=True),
+                    Boolean("gauge", True, hidden=True),
+                ],
+                [
+                    Select("data", DataAll.DISABLED),
+                    Select("accent", Colors.ORANGE),
+                    Number("width", 3),
+                    Boolean("icon", False, hidden=True),
+                    Boolean("padding", True, hidden=True),
+                    Boolean("gauge", True, hidden=True),
+                ],
+                [
+                    Select("data", DataAll.DISABLED),
+                    Select("accent", Colors.ORANGE),
+                    Number("width", 3),
+                    Boolean("icon", False, hidden=True),
+                    Boolean("padding", True, hidden=True),
+                    Boolean("gauge", True, hidden=True),
+                ],
+            ],
+        ),
         Single(
             "bottom outer",
             "Widget",

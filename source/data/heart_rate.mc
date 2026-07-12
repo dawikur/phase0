@@ -16,10 +16,10 @@ module Data {
 			);
 
 			var current_sport = UserProfile.getCurrentSport();
-			var zones =
-				UserProfile.getHeartRateZones(current_sport) as
-				Lang.Array<Lang.Number>;
-			self.value_max = zones[5] as Lang.Number;
+			var zones = UserProfile.getHeartRateZones(current_sport);
+			if (zones != null and 5 < zones.size()) {
+				self.value_max = zones[5] as Lang.Number;
+			}
 		}
 
 		function get_() as Lang.Number? {
@@ -30,10 +30,9 @@ module Data {
 				}
 			}
 
-			return (
-				self.getSensorHistoryData_(
-					SensorHistory.getHeartRateHistory({ :period => 1 })
-				) as Lang.Number?
+			return SensorProvider.getSensorHistoryData(
+				self.name,
+				SensorHistory.getHeartRateHistory({ :period => 1 })
 			);
 		}
 	}

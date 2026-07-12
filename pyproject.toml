@@ -22,6 +22,7 @@ disable = [
 	"missing-class-docstring",
 	"missing-function-docstring",
 	"missing-module-docstring",
+	"duplicate-code",
 	"too-many-instance-attributes",
 ]
 

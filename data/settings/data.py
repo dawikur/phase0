@@ -43,6 +43,9 @@ class Data:
             class_parts = [
                 part.lower() for part in self.CLASS_PARTS_RE.split(class_match[0])
             ]
+            file_parts = data.stem.split("_")
+
+            assert class_parts == file_parts, f"{class_parts} vs {file_parts}"
 
             label_match = self.LABEL_RE.findall(data_text)
             assert label_match
@@ -86,7 +89,7 @@ class Data:
             IntEnum(
                 name,
                 {
-                    "NONE": 0,
+                    "DISABLED": 0,
                     **{
                         datum.name: datum.value
                         for datum in self.__items

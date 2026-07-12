@@ -27,7 +27,7 @@ Q   := $(Q.$(V))
 
 # ---- variables ----
 
-SDK_DIR   := $(shell cat "${HOME}/.Garmin/ConnectIQ/current-sdk.cfg")
+SDK_DIR   := $(shell cat "$(HOME)/.Garmin/ConnectIQ/current-sdk.cfg")
 SDK_DIR   := $(patsubst %/,%,$(SDK_DIR))/
 MONKEYDO  := $(SDK_DIR)bin/monkeydo
 CONNECTIQ := $(SDK_DIR)bin/connectiq
@@ -53,23 +53,32 @@ RESOURCES_DIR           := resources/
 RESOURCES_BASE_DIR      := $(RESOURCES_DIR)base/
 RESOURCES_GENERATED_DIR := $(RESOURCES_DIR)generated/
 
-SOURCE_DIR       := source/
+SOURCE_DIR         := source/
 
-SCRIPT_DEPS    := $(shell find scripts/utils -type f)
+SCRIPT_DEPS        := $(shell find scripts/utils -type f)
 
-ICON_DEPS      := scripts/generate_icon                      \
-                  $(SCRIPT_DEPS)                             \
-                  $(shell find data/fonts -type f)           \
-                  $(shell find resources -name strings.xml)
-ICON           := $(RESOURCES_GENERATED_DIR)icon.xml
-FONTS_DEPS     := scripts/generate_fonts                     \
-                  $(SCRIPT_DEPS)                             \
-                  $(shell find data/fonts -type f)
-FONTS          := $(RESOURCES_GENERATED_DIR)fonts.xml
-SETTINGS_DEPS  := scripts/generate_settings                  \
-                  $(SCRIPT_DEPS)                             \
-                  $(shell find data/settings -type f)
-SETTINGS       := $(RESOURCES_GENERATED_DIR)settings.xml
+ICON_DEPS          := scripts/generate_icon                      \
+                      $(SCRIPT_DEPS)                             \
+                      $(shell find data/fonts -type f)           \
+                      $(shell find resources -name strings.xml)
+ICON               := $(RESOURCES_GENERATED_DIR)icon.xml
+FONTS_DEPS         := scripts/generate_fonts                     \
+                      $(SCRIPT_DEPS)                             \
+                      $(shell find data/fonts -type f)
+FONTS              := $(RESOURCES_GENERATED_DIR)fonts.xml
+SETTINGS_DEPS      := scripts/generate_settings                  \
+                      $(SCRIPT_DEPS)                             \
+                      $(shell find data/settings -type f)
+SETTINGS           := $(RESOURCES_GENERATED_DIR)settings.xml
+DOCS_SETTINGS_DEPS := scripts/generate_docs_settings             \
+                      scripts/utils/docs_settings.py             \
+                      $(SETTINGS)                                \
+                      $(shell find resources -name strings.xml)
+DOCS_SETTINGS       := docs/settings-data.js
+DEVICE_OVERLAY_SRC  := $(HOME)/.Garmin/ConnectIQ/Devices/fr955/fr955.png
+DOCS_DEVICE_OVERLAY_LIGHT := docs/assets/fr955-light.png
+DOCS_DEVICE_OVERLAY_DARK  := docs/assets/fr955-dark.png
+DOCS_DEVICE_OVERLAYS := $(DOCS_DEVICE_OVERLAY_LIGHT) $(DOCS_DEVICE_OVERLAY_DARK)
 
 RESOURCES := $(ICON) $(FONTS) $(SETTINGS)
 
@@ -115,6 +124,52 @@ $(ICON): $(ICON_DEPS)
 $(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA)
 	$(Q)echo " [ $(@F) ]"
 	$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+
+$(DOCS_SETTINGS): $(DOCS_SETTINGS_DEPS)
+	$(Q)echo " [ $(@F) ]"
+	scripts/generate_docs_settings \
+		--build $(BUILD_DIR) \
+		--resources $(RESOURCES_DIR) \
+		--source $(SOURCE_DIR)
+
+$(DOCS_DEVICE_OVERLAY_LIGHT): $(DEVICE_OVERLAY_SRC)
+	$(Q)echo " [ $(@F) ]"
+	mkdir -p $(@D)
+	convert $< -alpha extract $@.orig-alpha.png
+	convert $< \
+		-alpha on \
+		-bordercolor white \
+		-border 1 \
+		-fill none \
+		-fuzz 10% \
+		-draw 'matte 0,0 floodfill' \
+		-shave 1x1 \
+		-alpha extract \
+		$@.bg-alpha.png
+	convert $@.orig-alpha.png $@.bg-alpha.png -compose Darken -composite -threshold 99% $@.alpha.png
+	convert $< $@.alpha.png -alpha off -compose CopyOpacity -composite $@
+	$(RM) $@.orig-alpha.png $@.bg-alpha.png $@.alpha.png
+
+$(DOCS_DEVICE_OVERLAY_DARK): $(DEVICE_OVERLAY_SRC)
+	$(Q)echo " [ $(@F) ]"
+	mkdir -p $(@D)
+	convert $< -alpha extract $@.orig-alpha.png
+	convert $< \
+		-alpha off \
+		-bordercolor white \
+		-border 1 \
+		-fill none \
+		-fuzz 36% \
+		-draw 'matte 0,0 floodfill' \
+		-shave 1x1 \
+		-alpha extract \
+		$@.external-alpha.png
+	convert $@.orig-alpha.png $@.external-alpha.png -compose Darken -composite -threshold 99% $@.alpha.png
+	convert $@.external-alpha.png -negate -morphology Dilate Disk:1 $@.external-dilate.png
+	convert $@.external-dilate.png $@.alpha.png -compose Multiply -composite $@.edge-mask.png
+	convert $< \( +clone -fill '#1d2020' -colorize 100 \) $@.edge-mask.png -compose Over -composite $@.edge-rgb.png
+	convert $@.edge-rgb.png $@.alpha.png -alpha off -compose CopyOpacity -composite $@
+	$(RM) $@.orig-alpha.png $@.external-alpha.png $@.alpha.png $@.external-dilate.png $@.edge-mask.png $@.edge-rgb.png
 
 $(BUILD_SOURCE_DIR):
 	$(Q)echo " [ $(@F) ]"
@@ -166,9 +221,13 @@ sr simulate_release: # run simulator in release
 r resources: $(RESOURCES) # generate resources
 .PHONY: r resources
 
+d docs: $(DOCS_SETTINGS) $(DOCS_DEVICE_OVERLAYS) # generate product page data
+.PHONY: d docs
+
 t test: $(RESOURCES) # run test
 	$(Q)echo " [ test ]"
 	pytest
+	node --test docs/tests/*.test.mjs
 .PHONY: t test
 
 ifneq ($(MODE),release)
@@ -195,7 +254,10 @@ endif
 
 c clean: # remove build directory and files
 	$(Q)echo " [ clean ]"
-	$(RM) -r bin $(BUILD_DIR) $(SRCS_GENERATED_DIR) $(RESOURCES) $(RESOURCES_GENERATED_DIR)
+	$(RM) -r bin                                \
+		$(BUILD_DIR) $(SRCS_GENERATED_DIR)      \
+		$(RESOURCES) $(RESOURCES_GENERATED_DIR) \
+		$(DOCS_SETTINGS) $(DOCS_DEVICE_OVERLAYS)
 .PHONY: c clean
 
 # ---- help ----

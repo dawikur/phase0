@@ -27,7 +27,7 @@ module Cache {
 			var now = Time.now().value();
 			var data_age = now - timestamp;
 
-			if (0 < data_age and data_age < _til_in_hours * 3600) {
+			if (0 <= data_age and data_age < _til_in_hours * 3600) {
 				return data;
 			}
 		} catch (ex instanceof Lang.UnexpectedTypeException) {}

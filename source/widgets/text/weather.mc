@@ -3,9 +3,6 @@
 import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.System;
-import Toybox.Test;
-import Toybox.Weather;
 
 module Widgets {
 	class Weather extends Text {
@@ -19,52 +16,30 @@ module Widgets {
 		function refresh(_dc as Graphics.Dc) as Void {
 			self.value_ = "";
 
-			var weather = Weather.getCurrentConditions();
-			if (weather != null) {
-				var text = "";
-				var temp = "";
+			var condition = WeatherProvider.getCondition();
+			if (condition != null) {
+				self.value_ = Resources.getCondition(condition);
+			}
 
-				if (weather.condition != null) {
-					var condition = weather.condition as Lang.Number;
+			var temperature_maybe = WeatherProvider.getTemperature();
+			if (temperature_maybe != null) {
+				var temperature = Data.Units.convertTemperature(
+					temperature_maybe as Lang.Number
+				);
+				var temp =
+					temperature.format("%d") + Data.Units.getTemperature();
 
-					text = Resources.getCondition(condition);
-				}
-
-				if (weather.temperature != null) {
-					var temperature = Data.Units.convertTemperature(
-						weather.temperature as Lang.Number
-					);
-					var unit = Data.Units.getTemperature();
-
-					temp = temperature.format("%d") + unit;
-				}
-
-				self.value_ = text + "  " + temp;
-
-				if (self.value_.length() != 0) {
-					if (
-						Render.TextWidth(_dc, self.value_, false) <=
-						self.size_x * 2
-					) {
-						self.is_small = false;
-					} else {
-						self.is_small = true;
-					}
-				}
+				self.value_ += self.value_.length() == 0 ? temp : "  " + temp;
 			}
 
 			if (self.value_.length() != 0) {
-				Cache.setValue("weather", self.value_);
-				Cache.setValue("weather_small", self.is_small);
-			} else {
-				var data = Cache.getValue("weather", 8); // 8 hours
-				if (data != null) {
-					self.value_ = data as Lang.String;
-				}
-
-				var data_small = Cache.getValue("weather_small", 8); // 8 hours
-				if (data_small != null) {
-					self.is_small = data_small as Lang.Boolean;
+				if (
+					Render.TextWidth(_dc, self.value_, false) <=
+					self.size_x * 2
+				) {
+					self.is_small = false;
+				} else {
+					self.is_small = true;
 				}
 			}
 		}

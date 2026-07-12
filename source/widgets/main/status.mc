@@ -6,16 +6,15 @@ import Toybox.Math;
 import Toybox.System;
 
 module Widgets {
-	class Status {
-		var pos_x as Lang.Number = 0;
-		var pos_y as Lang.Number = 0;
-
+	class Status extends Main {
 		hidden var enabled_ as Lang.String = "";
 		hidden var all_ as Lang.String;
 
 		var properties as Lang.Array<Properties.Status>;
 
 		function initialize(_properties as Lang.Array<Properties.Status>) {
+			Main.initialize(Complications.COMPLICATION_TYPE_INVALID);
+
 			self.properties = _properties;
 
 			self.all_ = "";
@@ -47,17 +46,26 @@ module Widgets {
 			}
 		}
 
-		function render(
-			_dc as Graphics.Dc,
-			_is_night_mode as Lang.Boolean
-		) as Void {
+		function render(_dc as Graphics.Dc) as Void {
 			Render.Icons(
 				_dc,
 				Properties.general.foreground,
 				self.pos_x,
 				self.pos_y,
 				self.enabled_,
-				_is_night_mode ? "" : self.all_,
+				self.all_,
+				Render.JUSTIFY_CENTER
+			);
+		}
+
+		function renderMinimal(_dc as Graphics.Dc) as Void {
+			Render.Icons(
+				_dc,
+				Properties.general.foreground,
+				self.pos_x,
+				self.pos_y,
+				self.enabled_,
+				"",
 				Render.JUSTIFY_CENTER
 			);
 		}

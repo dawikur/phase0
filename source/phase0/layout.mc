@@ -25,6 +25,9 @@ module Phase0 {
 			if (self.configure(_dc, true, false, false, true)) {
 				return;
 			}
+			if (self.configure(_dc, true, false, true, true)) {
+				return;
+			}
 			if (self.configure(_dc, true, true, false, true)) {
 				return;
 			}
@@ -109,6 +112,9 @@ module Phase0 {
 				line_middle_height,
 				_middle_is_small
 			);
+			if (!_middle_is_small and self.screen_size_y <= 240) {
+				return false;
+			}
 			pos_y = self.middle.end_y + gap_y;
 
 			self.inner = Box.ForY(

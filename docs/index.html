@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Phase0 Watch Face</title>
+	<link rel="icon" href="../resources/generated/icon.svg" type="image/svg+xml">
+	<script src="settings-data.js"></script>
+	<script src="theme-init.js"></script>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<main class="page">
+		<section class="hero" aria-labelledby="page-title">
+			<div class="product-copy">
+				<div class="controls">
+					<div class="theme-control" aria-label="Page theme">
+						<button class="theme-option" type="button" data-theme-mode="auto">Auto</button>
+						<button class="theme-option" type="button" data-theme-mode="light">Light</button>
+						<button class="theme-option" type="button" data-theme-mode="dark">Dark</button>
+					</div>
+					<div class="view-control" aria-label="Watch view">
+						<button class="view-option" type="button" data-watch-view="normal">Normal</button>
+						<button class="view-option" type="button" data-watch-view="aod">AoD</button>
+					</div>
+				</div>
+				<p class="eyebrow">Garmin Connect IQ watch face</p>
+				<h1 id="page-title">Phase0</h1>
+				<p class="lede" id="pageLede">
+					A dense digital watch face built around fast scanning: current time,
+					weather, daily metrics, status signals and configurable color systems
+					share one readable surface.
+				</p>
+				<div class="feature-strip" aria-label="Highlights">
+					<span>Live data layout</span>
+					<span>Configurable widgets</span>
+					<span>Always-on ready</span>
+				</div>
+				<aside class="detail-panel" id="detailPanel" aria-live="polite"></aside>
+			</div>
+
+			<div class="watch-zone" id="watchZone">
+				<div class="watch-stage" id="watchStage">
+					<img
+						class="watch-face"
+						id="watchFace"
+						src="assets/normal.png"
+						alt="Phase0 normal watch face"
+					>
+					<img
+						class="watch-overlay watch-overlay--light"
+						src="assets/fr955-light.png"
+						alt="Garmin Forerunner 955 device"
+					>
+					<img
+						class="watch-overlay watch-overlay--dark"
+						src="assets/fr955-dark.png"
+						alt="Garmin Forerunner 955 device"
+					>
+					<svg class="guide-layer" id="guideLayer" aria-hidden="true">
+						<line class="guide-line" id="guideLine" x1="0" y1="0" x2="0" y2="0"></line>
+					</svg>
+					<div class="face-ring" id="faceRing" aria-hidden="true"></div>
+					<button class="hotspot" data-feature="general" aria-label="Explore general settings"></button>
+					<button class="hotspot" data-feature="top" aria-label="Explore upper widgets"></button>
+					<button class="hotspot" data-feature="status" aria-label="Explore status icons"></button>
+					<button class="hotspot" data-feature="clock" aria-label="Explore clock settings"></button>
+					<button class="hotspot" data-feature="gauges" aria-label="Explore gauge widgets"></button>
+					<button class="hotspot" data-feature="bottom" aria-label="Explore lower metrics"></button>
+					<button class="hotspot" data-feature="battery" aria-label="Explore battery widget"></button>
+				</div>
+			</div>
+		</section>
+
+		<section class="supporting" aria-label="Product details">
+			<article>
+				<h2>Readable At A Glance</h2>
+				<p>The large segmented clock stays dominant while secondary metrics keep their own lanes.</p>
+			</article>
+			<article>
+				<h2>Adaptive Color System</h2>
+				<p>Accent, foreground and background combinations keep the face readable across bright daytime use and low-distraction AoD viewing.</p>
+			</article>
+			<article>
+				<h2>Built For Small Screens</h2>
+				<p>Every widget has a compact role: icons, labels, values and gauges are tuned for quick inspection.</p>
+			</article>
+		</section>
+	</main>
+
+	<script src="app.js"></script>
+</body>
+</html>
