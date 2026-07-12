@@ -3,8 +3,10 @@
 import os
 import re
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
-STRINGS_XML = "resources/base/strings.xml"
+import pytest
+
 SOURCE_DIR = "source"
 RESOURCES_DIR = "resources"
 
@@ -12,8 +14,12 @@ MC_LABEL_RE = re.compile(r"\bRez\.Strings\.(LABEL_[A-Za-z0-9_]+)\b")
 RESOURCES_LABEL_RE = re.compile(r"@Strings\.(LABEL_[A-Za-z0-9_]+)\b")
 
 
-def get_defined_labels() -> set[str]:
-    tree = ET.parse(STRINGS_XML)
+def get_strings_xml_files() -> list[Path]:
+    return sorted(Path(RESOURCES_DIR).glob("*/strings.xml"))
+
+
+def get_defined_labels(strings_xml: Path) -> set[str]:
+    tree = ET.parse(strings_xml)
     root = tree.getroot()
 
     return {
@@ -21,6 +27,15 @@ def get_defined_labels() -> set[str]:
         for string in root.findall("string")
         if string.get("id", "").startswith("LABEL_")
     }
+
+
+def get_all_defined_labels() -> set[str]:
+    defined = set()
+
+    for strings_xml in get_strings_xml_files():
+        defined.update(get_defined_labels(strings_xml))
+
+    return defined
 
 
 def get_used_labels() -> set[str]:
@@ -45,16 +60,23 @@ def get_used_labels() -> set[str]:
     return used
 
 
-def test_all_label_strings_are_used() -> None:
-    defined = get_defined_labels()
+@pytest.mark.parametrize("strings_xml", get_strings_xml_files(), ids=str)
+def test_all_label_strings_are_used(strings_xml: Path) -> None:
+    defined = get_defined_labels(strings_xml)
     used = get_used_labels()
 
     unused = sorted(defined - used)
-    undefined = sorted(used - defined)
 
-    assert not unused, "Unused LABEL_ strings:\n" + "\n".join(
+    assert not unused, f"Unused LABEL_ strings in {strings_xml}:\n" + "\n".join(
         f"  - {label}" for label in unused
     )
+
+
+def test_all_referenced_label_strings_are_defined() -> None:
+    used = get_used_labels()
+    defined = get_all_defined_labels()
+
+    undefined = sorted(used - defined)
 
     assert not undefined, "Undefined LABEL_ strings referenced:\n" + "\n".join(
         f"  - {label}" for label in undefined
