@@ -8,3 +8,4 @@
   - Burnout prevention
 - General
   - Verify on small screens
+  - Fix weather provider

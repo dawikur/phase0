@@ -179,7 +179,7 @@ module Widgets {
 				if (self.show_label_) {
 					Render.Label(
 						_dc,
-						self.properties.accent,
+						Properties.general.accent,
 						pos_x,
 						pos_y,
 						self.label_(),
@@ -200,7 +200,7 @@ module Widgets {
 				if (self.show_label_) {
 					Render.Label(
 						_dc,
-						self.properties.accent,
+						Properties.general.accent,
 						pos_x,
 						pos_y,
 						self.label_(),

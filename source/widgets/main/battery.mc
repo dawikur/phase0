@@ -76,7 +76,7 @@ module Widgets {
 			}
 
 			if (value_maybe == null or value_max_maybe == null) {
-				self.color_ = self.properties.accent;
+				self.color_ = Properties.general.accent;
 				self.charge_ = self.chargeString_(0);
 				return;
 			}
@@ -85,9 +85,9 @@ module Widgets {
 			var value_max = value_max_maybe as Lang.Number;
 
 			if (value < 10) {
-				self.color_ = self.properties.accent;
+				self.color_ = Properties.general.accent;
 			} else if (100 <= value) {
-				self.color_ = self.properties.accent;
+				self.color_ = Properties.general.accent;
 			} else {
 				self.color_ = Properties.general.foreground;
 			}
@@ -152,7 +152,7 @@ module Widgets {
 
 			Render.Icons(
 				_dc,
-				self.properties.accent,
+				Properties.general.accent,
 				center_x,
 				center_y,
 				_frame,

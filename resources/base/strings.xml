@@ -184,7 +184,7 @@
 	<string id="SET_SUN_MOON">Sun/Moon</string>
 	<string id="SET_TEMPERATURE">Temperature</string>
 	<string id="SET_TOP_MIDDLE">Top Middle</string>
-	<string id="SET_TOP_MIDDLE_ALT">Top Middle Alternative</string>
+	<!-- string id="SET_TOP_MIDDLE_ALT">Top Middle Alternative</string -->
 	<string id="SET_TOP_OUTER">Top Outer</string>
 	<string id="SET_UV_INDEX">Uv Index</string>
 	<string id="SET_VO2_BIKE">VO2 Bike</string>

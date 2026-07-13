@@ -16,7 +16,7 @@ module Widgets {
 			Base.initialize(_type);
 		}
 
-		function applyCandidate_(
+		hidden function applyCandidate_(
 			_dc as Graphics.Dc,
 			_is_small as Lang.Boolean,
 			_show_label as Lang.Boolean,
@@ -67,7 +67,9 @@ module Widgets {
 					false
 				)
 			) {
-			} else if (
+				return;
+			}
+			if (
 				!self.is_small and
 				self.applyCandidate_(
 					_dc,
@@ -78,7 +80,10 @@ module Widgets {
 					false
 				)
 			) {
-			} else if (
+				return;
+			}
+
+			if (
 				self.applyCandidate_(
 					_dc,
 					Render.SIZE_REGULAR,
@@ -88,19 +93,20 @@ module Widgets {
 					false
 				)
 			) {
-			} else {
-				self.applyCandidate_(
-					_dc,
-					Render.SIZE_SMALL,
-					false,
-					_size_x,
-					_size_y,
-					true
-				);
+				return;
 			}
+
+			self.applyCandidate_(
+				_dc,
+				Render.SIZE_SMALL,
+				false,
+				_size_x,
+				_size_y,
+				true
+			);
 		}
 
-		function anchorX_() as Lang.Number {
+		hidden function anchorX_() as Lang.Number {
 			if (self.justify_ & Render.JUSTIFY_LEFT) {
 				return self.pos_x;
 			} else if (self.justify_ & Render.JUSTIFY_CENTER) {
@@ -112,7 +118,7 @@ module Widgets {
 			return self.pos_x;
 		}
 
-		function anchorY_() as Lang.Number {
+		hidden function anchorY_() as Lang.Number {
 			if (self.justify_ & Graphics.TEXT_JUSTIFY_VCENTER) {
 				return self.centerY();
 			}

@@ -413,11 +413,15 @@ module Phase0 {
 			// ---- top middle ----
 
 			self.top_middle_base_ = self.propertiesToMetrics_(
-				Properties.top_middle
+				Properties.top_middle,
+				Properties.ICON
 			);
-			self.top_middle_alt_ = self.propertiesToMetrics_(
-				Properties.top_middle_alt
-			);
+			if (Properties has :top_middle_alt and (Properties has :ICON)) {
+				self.top_middle_alt_ = self.propertiesToMetrics_(
+					Properties.top_middle_alt as Lang.Array<Properties.Metric>,
+					Properties.ICON as Lang.Number
+				);
+			}
 
 			// ---- top inner ----
 
@@ -454,11 +458,16 @@ module Phase0 {
 			// ---- bottom middle ----
 
 			self.bottom_middle_base_ = self.propertiesToMetrics_(
-				Properties.bottom_middle
+				Properties.bottom_middle,
+				Properties.GAUGE
 			);
-			self.bottom_middle_alt_ = self.propertiesToMetrics_(
-				Properties.bottom_middle_alt
-			);
+			if (Properties has :bottom_middle_alt) {
+				self.bottom_middle_alt_ = self.propertiesToMetrics_(
+					Properties.bottom_middle_alt as
+						Lang.Array<Properties.Metric>,
+					Properties.GAUGE
+				);
+			}
 
 			// ---- bottom outer ----
 
@@ -523,7 +532,8 @@ module Phase0 {
 		}
 
 		hidden static function propertiesToMetrics_(
-			_properties as Lang.Array<Properties.Metric>
+			_properties as Lang.Array<Properties.Metric>,
+			_style as Lang.Number
 		) as Metrics {
 			var metrics = [];
 			var properties_size = _properties.size();
@@ -535,7 +545,7 @@ module Phase0 {
 					continue;
 				}
 
-				metrics.add(new Widgets.Metric(properties, data));
+				metrics.add(new Widgets.Metric(properties, _style, data));
 			}
 			return metrics;
 		}

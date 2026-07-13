@@ -184,7 +184,7 @@
 	<string id="SET_SUN_MOON">Słońce/Księżyc</string>
 	<string id="SET_TEMPERATURE">Temperatura</string>
 	<string id="SET_TOP_MIDDLE">Górny środek</string>
-	<string id="SET_TOP_MIDDLE_ALT">Górny środek alternatywny</string>
+	<!-- string id="SET_TOP_MIDDLE_ALT">Górny środek alternatywny</string -->
 	<string id="SET_TOP_OUTER">Górny zewnętrzny</string>
 	<string id="SET_UV_INDEX">Indeks UV</string>
 	<string id="SET_VO2_BIKE">VO2 rower</string>
