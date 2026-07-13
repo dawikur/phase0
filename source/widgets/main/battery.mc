@@ -16,6 +16,8 @@ module Widgets {
 		var value_ as Lang.String = "";
 		var charge_ as Lang.String = "";
 		var frame_ as Lang.String = "";
+		var is_charging_ as Lang.Boolean = false;
+		var bar_all_count_ as Lang.Number = 0;
 
 		var properties as Properties.Widget;
 
@@ -29,20 +31,58 @@ module Widgets {
 					: self.battery_impl_;
 		}
 
+		function resize(
+			_dc as Graphics.Dc,
+			_size_x as Lang.Number,
+			_size_y as Lang.Number,
+			_is_small as Lang.Boolean
+		) as Void {
+			Base.resize(_dc, _size_x, _size_y, _is_small);
+
+			var borders_width = Render.IconsWidth(
+				_dc,
+				Fonts.ICON_BATTERY_BEGIN + Fonts.ICON_BATTERY_END
+			);
+			var bar_width = Render.IconsWidth(_dc, Fonts.ICON_BATTERY_EMPTY);
+
+			self.bar_all_count_ = Render.BarCount(
+				self.size_x,
+				borders_width,
+				bar_width
+			);
+			self.frame_ =
+				Fonts.ICON_BATTERY_BEGIN +
+				Render.Repeat(Fonts.ICON_BATTERY_FRAME, self.bar_all_count_) +
+				Fonts.ICON_BATTERY_END;
+		}
+
 		function refresh(_dc as Graphics.Dc) as Void {
 			self.battery_impl_.refresh();
+			self.is_charging_ = System.getSystemStats().charging;
 			if (self.properties.data == Properties.BATTERY_DAYS_REMAINING) {
 				self.value_impl_.refresh();
 			}
 
-			var value = self.battery_impl_.value as Lang.Number;
-			var value_max = self.battery_impl_.value_max as Lang.Number;
-			var display_value = self.value_impl_.value as Lang.Number;
+			var value_maybe = self.battery_impl_.value;
+			var value_max_maybe = self.battery_impl_.value_max;
+			var display_value_maybe = self.value_impl_.value;
 
-			self.value_ = display_value.toString();
-			if (self.properties.data == Properties.BATTERY_DAYS_REMAINING) {
-				self.value_ += "d";
+			self.value_ = "";
+			if (display_value_maybe != null) {
+				self.value_ = display_value_maybe.toString();
+				if (self.properties.data == Properties.BATTERY_DAYS_REMAINING) {
+					self.value_ += "d";
+				}
 			}
+
+			if (value_maybe == null or value_max_maybe == null) {
+				self.color_ = self.properties.accent;
+				self.charge_ = self.chargeString_(0);
+				return;
+			}
+
+			var value = value_maybe as Lang.Number;
+			var value_max = value_max_maybe as Lang.Number;
 
 			if (value < 10) {
 				self.color_ = self.properties.accent;
@@ -52,47 +92,41 @@ module Widgets {
 				self.color_ = Properties.general.foreground;
 			}
 
-			var borders_width = Render.IconsWidth(
-				_dc,
-				Fonts.ICON_BATTERY_BEGIN + Fonts.ICON_BATTERY_END
-			);
-			var bar_width = Render.IconsWidth(_dc, Fonts.ICON_BATTERY_EMPTY);
-
-			var bar_all_count = 0;
-			if (0 < bar_width) {
-				bar_all_count = (self.size_x - borders_width) / bar_width;
-				if (bar_all_count < 0) {
-					bar_all_count = 0;
-				}
-			}
-			var bar_charged_count = Math.round(
-				(value.toFloat() / value_max) * bar_all_count
-			).toNumber();
-			if (bar_charged_count < 0) {
-				bar_charged_count = 0;
-			} else if (bar_all_count < bar_charged_count) {
-				bar_charged_count = bar_all_count;
-			}
-
-			self.frame_ = Fonts.ICON_BATTERY_BEGIN;
-			for (var i = 0; i < bar_all_count; ++i) {
-				self.frame_ += Fonts.ICON_BATTERY_FRAME;
-			}
-			self.frame_ += Fonts.ICON_BATTERY_END;
-
-			self.charge_ = Fonts.ICON_BATTERY_EMPTY;
-			for (var i = 0; i < bar_charged_count; ++i) {
-				self.charge_ += Fonts.ICON_BATTERY_CHARGE;
-			}
-			for (var i = bar_charged_count; i < bar_all_count; ++i) {
-				self.charge_ += Fonts.ICON_BATTERY_EMPTY;
-			}
-			self.charge_ += Fonts.ICON_BATTERY_EMPTY;
+			var bar_charged_count =
+				value_max == 0
+					? 0
+					: Math.round(
+							(value.toFloat() / value_max) * self.bar_all_count_
+						).toNumber();
+			self.charge_ = self.chargeString_(bar_charged_count);
 		}
 
-		function render(_dc as Graphics.Dc) as Void {
-			var center_x = self.pos_x + self.size_x / 2;
-			var center_y = self.pos_y + self.size_y / 2;
+		function chargeString_(_charged_count as Lang.Number) as Lang.String {
+			var charged_count = _charged_count;
+			if (charged_count < 0) {
+				charged_count = 0;
+			} else if (self.bar_all_count_ < charged_count) {
+				charged_count = self.bar_all_count_;
+			}
+
+			return (
+				Fonts.ICON_BATTERY_EMPTY +
+				Render.Repeat(Fonts.ICON_BATTERY_CHARGE, charged_count) +
+				Render.Repeat(
+					Fonts.ICON_BATTERY_EMPTY,
+					self.bar_all_count_ - charged_count
+				) +
+				Fonts.ICON_BATTERY_EMPTY
+			);
+		}
+
+		function render_(
+			_dc as Graphics.Dc,
+			_frame as Lang.String,
+			_charge_shade as Lang.String
+		) as Void {
+			var center_x = self.centerX();
+			var center_y = self.centerY();
 
 			if (self.properties.data == Properties.BATTERY_ICON) {
 				Render.Icons(
@@ -101,7 +135,7 @@ module Widgets {
 					center_x,
 					center_y,
 					self.charge_,
-					self.charge_,
+					_charge_shade,
 					Render.JUSTIFY_CENTER
 				);
 			} else {
@@ -121,47 +155,22 @@ module Widgets {
 				self.properties.accent,
 				center_x,
 				center_y,
-				System.getSystemStats().charging ? self.frame_ : "",
+				_frame,
 				self.frame_,
 				Render.JUSTIFY_CENTER
+			);
+		}
+
+		function render(_dc as Graphics.Dc) as Void {
+			self.render_(
+				_dc,
+				self.is_charging_ ? self.frame_ : "",
+				self.charge_
 			);
 		}
 
 		function renderMinimal(_dc as Graphics.Dc) as Void {
-			var center_x = self.pos_x + self.size_x / 2;
-			var center_y = self.pos_y + self.size_y / 2;
-
-			if (self.properties.data == Properties.BATTERY_ICON) {
-				Render.Icons(
-					_dc,
-					self.color_,
-					center_x,
-					center_y,
-					self.charge_,
-					"",
-					Render.JUSTIFY_CENTER
-				);
-			} else {
-				Render.Text(
-					_dc,
-					Properties.general.foreground,
-					center_x,
-					center_y,
-					Render.SIZE_SMALL,
-					self.value_,
-					Render.JUSTIFY_CENTER
-				);
-			}
-
-			Render.Icons(
-				_dc,
-				self.properties.accent,
-				center_x,
-				center_y,
-				"",
-				self.frame_,
-				Render.JUSTIFY_CENTER
-			);
+			self.render_(_dc, "", "");
 		}
 	}
 

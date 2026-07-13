@@ -11,7 +11,7 @@ module Data {
 	class Saturation extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_PULSE_OX,
+				Base.Complication(:saturation),
 				Resources.get(Rez.Strings.LABEL_SATURATION)
 			);
 

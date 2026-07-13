@@ -11,7 +11,7 @@ module Data {
 	class HeartRate extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_HEART_RATE,
+				Base.Complication(:heart_rate),
 				Resources.get(Rez.Strings.LABEL_HEART_RATE)
 			);
 

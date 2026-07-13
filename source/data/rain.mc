@@ -7,10 +7,7 @@ import Toybox.Lang;
 module Data {
 	class Rain extends Base {
 		function initialize() {
-			Base.initialize(
-				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_RAIN)
-			);
+			Base.initialize(null, Resources.get(Rez.Strings.LABEL_RAIN));
 
 			self.icon = Fonts.ICON_RAIN_0;
 			self.value_max = 100;

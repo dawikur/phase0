@@ -9,10 +9,7 @@ import Toybox.UserProfile;
 module Data {
 	class Distance extends Base {
 		function initialize() {
-			Base.initialize(
-				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_DISTANCE)
-			);
+			Base.initialize(null, Resources.get(Rez.Strings.LABEL_DISTANCE));
 		}
 
 		function get_() as Lang.Number? {

@@ -6,42 +6,111 @@ import Toybox.Lang;
 
 module Widgets {
 	class Weather extends Text {
-		hidden var small_text_ as Lang.Boolean = false;
-
 		function initialize() {
-			Text.initialize(Complications.COMPLICATION_TYPE_CURRENT_WEATHER);
+			Text.initialize(Base.Complication(:current_weather));
 			self.justify_ = Render.JUSTIFY_CENTER;
 		}
 
-		function refresh(_dc as Graphics.Dc) as Void {
-			self.value_ = "";
-
-			var condition = WeatherProvider.getCondition();
-			if (condition != null) {
-				self.value_ = Resources.getCondition(condition);
+		function weatherValue_(
+			_condition as Lang.Number?,
+			_use_short as Lang.Boolean,
+			_temp as Lang.String
+		) as Lang.String {
+			var value = "";
+			if (_condition != null) {
+				var condition = _condition as Lang.Number;
+				value = _use_short
+					? Resources.getConditionShort(condition)
+					: Resources.getCondition(condition);
 			}
+
+			if (_temp.length() != 0) {
+				value += value.length() == 0 ? _temp : "  " + _temp;
+			}
+
+			return value;
+		}
+
+		function tryCandidate_(
+			_dc as Graphics.Dc,
+			_condition as Lang.Number?,
+			_temp as Lang.String,
+			_use_short as Lang.Boolean,
+			_is_small as Lang.Boolean,
+			_force as Lang.Boolean
+		) as Lang.Boolean {
+			self.value_ = self.weatherValue_(_condition, _use_short, _temp);
+			return self.applyCandidate_(
+				_dc,
+				_is_small,
+				false,
+				self.size_x,
+				self.size_y,
+				_force
+			);
+		}
+
+		function refresh(_dc as Graphics.Dc) as Void {
+			var condition = WeatherProvider.getCondition();
+			var temp = "";
 
 			var temperature_maybe = WeatherProvider.getTemperature();
 			if (temperature_maybe != null) {
 				var temperature = Data.Units.convertTemperature(
 					temperature_maybe as Lang.Number
 				);
-				var temp =
-					temperature.format("%d") + Data.Units.getTemperature();
-
-				self.value_ += self.value_.length() == 0 ? temp : "  " + temp;
+				temp = temperature.format("%d") + Data.Units.getTemperature();
 			}
 
-			if (self.value_.length() != 0) {
+			if (
+				self.tryCandidate_(
+					_dc,
+					condition,
+					temp,
+					false,
+					Render.SIZE_REGULAR,
+					false
+				)
+			) {
+				return;
+			}
+
+			if (
+				self.tryCandidate_(
+					_dc,
+					condition,
+					temp,
+					false,
+					Render.SIZE_SMALL,
+					false
+				)
+			) {
+				return;
+			}
+
+			if (condition != null) {
 				if (
-					Render.TextWidth(_dc, self.value_, false) <=
-					self.size_x * 2
+					self.tryCandidate_(
+						_dc,
+						condition,
+						temp,
+						true,
+						Render.SIZE_SMALL,
+						false
+					)
 				) {
-					self.is_small = false;
-				} else {
-					self.is_small = true;
+					return;
 				}
 			}
+
+			self.tryCandidate_(
+				_dc,
+				condition,
+				temp,
+				condition != null,
+				Render.SIZE_SMALL,
+				true
+			);
 		}
 	}
 } // module Widgets

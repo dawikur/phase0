@@ -12,10 +12,12 @@ module Widgets {
 		var size_x as Lang.Number = 0;
 		var size_y as Lang.Number = 0;
 
+		var is_small as Lang.Boolean = false;
+
 		var id as Complications.Id?;
 
-		function initialize(_type as Complications.Type) {
-			if (_type != Complications.COMPLICATION_TYPE_INVALID) {
+		function initialize(_type as Complications.Type?) {
+			if (Toybox has :Complications and _type != null) {
 				self.id = new Complications.Id(_type);
 			} else {
 				self.id = null;
@@ -35,7 +37,7 @@ module Widgets {
 		}
 
 		function open() as Lang.Boolean {
-			if (self.id != null) {
+			if (Toybox has :Complications and self.id != null) {
 				Complications.exitTo(self.id);
 
 				return true;
@@ -46,6 +48,68 @@ module Widgets {
 
 		function refresh(_dc as Graphics.Dc) as Void {}
 
+		static function Fits(
+			_size_x as Lang.Number,
+			_size_y as Lang.Number,
+			_available_x as Lang.Number,
+			_available_y as Lang.Number
+		) as Lang.Boolean {
+			return _size_x <= _available_x and _size_y <= _available_y;
+		}
+
+		static function CenterStart(
+			_center as Lang.Number,
+			_size as Lang.Number
+		) as Lang.Number {
+			return _center - _size / 2;
+		}
+
+		static function AlignCenter(
+			_pos as Lang.Number,
+			_anchor_size as Lang.Number,
+			_size as Lang.Number
+		) as Lang.Number {
+			return _pos + (_anchor_size - _size) / 2;
+		}
+
+		function centerX() as Lang.Number {
+			return self.pos_x + self.size_x / 2;
+		}
+
+		function centerY() as Lang.Number {
+			return self.pos_y + self.size_y / 2;
+		}
+
+		function resize(
+			_dc as Graphics.Dc,
+			_size_x as Lang.Number,
+			_size_y as Lang.Number,
+			_is_small as Lang.Boolean
+		) as Void {
+			self.size_x = _size_x;
+			self.size_y = _size_y;
+			self.is_small = _is_small;
+		}
+
 		function render(_dc as Graphics.Dc) as Void {}
+
+		static function Complication(
+			_name as Lang.Symbol
+		) as Complications.Type? {
+			if (!(Toybox has :Complications)) {
+				return null;
+			}
+
+			switch (_name) {
+				case :current_weather:
+					return Complications.COMPLICATION_TYPE_CURRENT_WEATHER;
+				case :date:
+					return Complications.COMPLICATION_TYPE_DATE;
+				case :sunrise:
+					return Complications.COMPLICATION_TYPE_SUNRISE;
+			}
+
+			return null;
+		}
 	}
 } // module Widgets

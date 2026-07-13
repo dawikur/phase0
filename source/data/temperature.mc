@@ -9,7 +9,7 @@ module Data {
 	class Temperature extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE,
+				Base.Complication(:temperature),
 				Resources.get(Rez.Strings.LABEL_TEMPERATURE)
 			);
 		}

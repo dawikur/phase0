@@ -6,64 +6,118 @@ import Toybox.Lang;
 
 module Widgets {
 	class Text extends Base {
-		var is_small as Lang.Boolean = false;
-
 		hidden var label_ as Lang.String = "";
 		hidden var value_ as Lang.String = "";
 		hidden var justify_ as Lang.Number = Render.JUSTIFY_LEFT;
+		hidden var show_label_ as Lang.Boolean = true;
+		hidden var label_offset_y_ as Lang.Number = 0;
 
-		function initialize(_type as Complications.Type) {
+		function initialize(_type as Complications.Type?) {
 			Base.initialize(_type);
 		}
 
-		function width(_dc as Graphics.Dc) as Lang.Number {
-			return Render.TextWidth(_dc, self.value_, self.is_small);
+		function applyCandidate_(
+			_dc as Graphics.Dc,
+			_is_small as Lang.Boolean,
+			_show_label as Lang.Boolean,
+			_available_x as Lang.Number,
+			_available_y as Lang.Number,
+			_force as Lang.Boolean
+		) as Lang.Boolean {
+			var size_x = Render.TextWidth(_dc, self.value_, _is_small);
+			var label_offset_y =
+				_show_label and self.label_.length() != 0
+					? Render.LabelHeight(_dc) + Render.SPACING
+					: 0;
+			var size_y = Render.TextHeight(_dc, _is_small) + label_offset_y;
+
+			if (
+				!_force and
+				!Base.Fits(size_x, size_y, _available_x, _available_y)
+			) {
+				return false;
+			}
+
+			self.is_small = _is_small;
+			self.show_label_ = label_offset_y != 0;
+			self.label_offset_y_ = label_offset_y;
+
+			return true;
 		}
 
-		function height(_dc as Graphics.Dc) as Lang.Number {
-			if (self.is_small) {
-				if (self.label_.length() == 0) {
-					return Render.TextHeight(_dc, true);
-				}
-				return (
-					Render.LabelHeight(_dc) +
-					Render.SPACING +
-					Render.TextHeight(_dc, true)
+		function resize(
+			_dc as Graphics.Dc,
+			_size_x as Lang.Number,
+			_size_y as Lang.Number,
+			_is_small as Lang.Boolean
+		) as Void {
+			self.size_x = _size_x;
+			self.size_y = _size_y;
+			self.is_small = _is_small;
+			self.show_label_ = true;
+			self.label_offset_y_ = 0;
+
+			if (
+				self.applyCandidate_(
+					_dc,
+					self.is_small,
+					self.show_label_,
+					_size_x,
+					_size_y,
+					false
+				)
+			) {
+			} else if (
+				!self.is_small and
+				self.applyCandidate_(
+					_dc,
+					Render.SIZE_SMALL,
+					self.show_label_,
+					_size_x,
+					_size_y,
+					false
+				)
+			) {
+			} else if (
+				self.applyCandidate_(
+					_dc,
+					Render.SIZE_REGULAR,
+					false,
+					_size_x,
+					_size_y,
+					false
+				)
+			) {
+			} else {
+				self.applyCandidate_(
+					_dc,
+					Render.SIZE_SMALL,
+					false,
+					_size_x,
+					_size_y,
+					true
 				);
 			}
-
-			if (self.label_.length() == 0) {
-				return Render.TextHeight(_dc, false);
-			}
-			return (
-				Render.LabelHeight(_dc) +
-				Render.SPACING +
-				Render.TextHeight(_dc, false)
-			);
 		}
 
-		function contains(
-			_x as Lang.Number,
-			_y as Lang.Number
-		) as Lang.Boolean {
-			var pos_x = self.pos_x;
-			var pos_y = self.pos_y;
-
+		function anchorX_() as Lang.Number {
 			if (self.justify_ & Render.JUSTIFY_LEFT) {
+				return self.pos_x;
 			} else if (self.justify_ & Render.JUSTIFY_CENTER) {
-				pos_x -= self.size_x / 2;
+				return self.centerX();
 			} else if (self.justify_ & Render.JUSTIFY_RIGHT) {
-				pos_x -= self.size_x;
+				return self.pos_x + self.size_x;
 			}
 
+			return self.pos_x;
+		}
+
+		function anchorY_() as Lang.Number {
 			if (self.justify_ & Graphics.TEXT_JUSTIFY_VCENTER) {
-				pos_y -= self.size_y / 2;
+				return self.centerY();
 			}
 
-			var end_x = pos_x + self.size_x;
-			var end_y = pos_y + self.size_y;
-
-			return pos_x <= _x and _x <= end_x and pos_y <= _y and _y <= end_y;
+			return self.pos_y;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
@@ -73,12 +127,12 @@ module Widgets {
 		function render(_dc as Graphics.Dc) as Void {
 			// ---- header ----
 
-			var pos_x = self.pos_x;
-			var pos_y = self.pos_y;
+			var pos_x = self.anchorX_();
+			var pos_y = self.anchorY_();
 
 			// ---- label ----
 
-			if (self.label_.length() != 0) {
+			if (self.show_label_ and self.label_.length() != 0) {
 				Render.Label(
 					_dc,
 					Properties.general.accent,
@@ -87,7 +141,7 @@ module Widgets {
 					self.label_,
 					self.justify_
 				);
-				pos_y += Render.LabelHeight(_dc) + Render.SPACING;
+				pos_y += self.label_offset_y_;
 			}
 
 			// ---- value ----

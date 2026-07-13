@@ -6,3 +6,5 @@
 - Display
   - AOD option
   - Burnout prevention
+- General
+  - Verify on small screens

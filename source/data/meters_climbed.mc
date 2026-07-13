@@ -8,7 +8,7 @@ module Data {
 	class MetersClimbed extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_INVALID,
+				null,
 				Resources.get(Rez.Strings.LABEL_METERS_CLIMBED)
 			);
 		}

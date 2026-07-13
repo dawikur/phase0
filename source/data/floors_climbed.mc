@@ -8,7 +8,7 @@ module Data {
 	class FloorsClimbed extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_FLOORS_CLIMBED,
+				Base.Complication(:floors_climbed),
 				Resources.get(Rez.Strings.LABEL_FLOORS_CLIMBED)
 			);
 

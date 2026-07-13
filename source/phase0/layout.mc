@@ -8,50 +8,75 @@ module Phase0 {
 		var screen_size_x as Lang.Number = 0;
 		var screen_size_y as Lang.Number = 0;
 
-		var clock as Box = new Box(0, 0, 0, 0, false);
-		var inner as Box = new Box(0, 0, 0, 0, false);
-		var middle as Box = new Box(0, 0, 0, 0, false);
-		var outer as Box = new Box(0, 0, 0, 0, false);
+		var clock as Box = new Box(0, 0, 0, 0);
+		var inner as Box = new Box(0, 0, 0, 0);
+		var middle as Box = new Box(0, 0, 0, 0);
+		var outer as Box = new Box(0, 0, 0, 0);
 
-		var left as Box = new Box(0, 0, 0, 0, false);
+		var left as Box = new Box(0, 0, 0, 0);
 
 		function initialize(_dc as Graphics.Dc) {
-			if (self.configure(_dc, false, false, false, false)) {
-				return;
+			var attempts = [
+				[
+					Render.SIZE_REGULAR,
+					Render.SIZE_REGULAR,
+					Render.SIZE_REGULAR,
+					Render.SIZE_REGULAR,
+				],
+				[
+					Render.SIZE_SMALL,
+					Render.SIZE_REGULAR,
+					Render.SIZE_REGULAR,
+					Render.SIZE_REGULAR,
+				],
+				[
+					Render.SIZE_SMALL,
+					Render.SIZE_REGULAR,
+					Render.SIZE_REGULAR,
+					Render.SIZE_SMALL,
+				],
+				[
+					Render.SIZE_SMALL,
+					Render.SIZE_REGULAR,
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+				],
+				[
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+					Render.SIZE_REGULAR,
+					Render.SIZE_SMALL,
+				],
+				[
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+				],
+			];
+			var attempts_size = attempts.size();
+			for (var i = 0; i < attempts_size; ++i) {
+				var attempt = attempts[i];
+				if (
+					self.configure(
+						_dc,
+						attempt[0],
+						attempt[1],
+						attempt[2],
+						attempt[3]
+					)
+				) {
+					return;
+				}
 			}
-			if (self.configure(_dc, true, false, false, false)) {
-				return;
-			}
-			if (self.configure(_dc, true, false, false, true)) {
-				return;
-			}
-			if (self.configure(_dc, true, false, true, true)) {
-				return;
-			}
-			if (self.configure(_dc, true, true, false, true)) {
-				return;
-			}
-			self.configure(_dc, true, true, true, true);
 		}
 
 		function bottomBox(_box as Box) as Box {
-			return Box.PosSize(
-				_box.pos_x,
-				self.screen_size_y - _box.end_y + Render.SPACING,
-				_box.size_x,
-				_box.size_y,
-				_box.is_small
-			);
+			return _box.mirrorY(self.screen_size_y);
 		}
 
 		function rightBox(_box as Box) as Box {
-			return Box.PosSize(
-				self.screen_size_x - _box.end_x,
-				_box.pos_y,
-				_box.size_x,
-				_box.size_y,
-				_box.is_small
-			);
+			return _box.mirrorX(self.screen_size_x);
 		}
 
 		hidden function configure(
@@ -69,15 +94,15 @@ module Phase0 {
 
 			var line_inner_height = Render.TextHeight(_dc, _inner_is_small);
 			var line_middle_height = _middle_is_small
-				? Render.TextHeight(_dc, false)
+				? Render.TextHeight(_dc, Render.SIZE_REGULAR)
 				: Render.LabelHeight(_dc) +
 					Render.SPACING +
-					Render.TextHeight(_dc, false);
+					Render.TextHeight(_dc, Render.SIZE_REGULAR);
 			var line_outer_height = _outer_is_small
-				? Render.TextHeight(_dc, true)
+				? Render.TextHeight(_dc, Render.SIZE_SMALL)
 				: Render.LabelHeight(_dc) +
 					Render.SPACING +
-					Render.TextHeight(_dc, true);
+					Render.TextHeight(_dc, Render.SIZE_SMALL);
 
 			var side_size_x = Render.IconsWidth(_dc, " ");
 			var gap_x =
@@ -98,47 +123,31 @@ module Phase0 {
 
 			var pos_y = gap_y;
 
-			self.outer = Box.ForY(
-				self.screen_size_y,
-				pos_y,
-				line_outer_height,
-				_outer_is_small
-			);
+			self.outer = Box.ForY(self.screen_size_y, pos_y, line_outer_height);
 			pos_y = self.outer.end_y + gap_y;
 
 			self.middle = Box.ForY(
 				self.screen_size_y,
 				pos_y,
-				line_middle_height,
-				_middle_is_small
+				line_middle_height
 			);
-			if (!_middle_is_small and self.screen_size_y <= 240) {
-				return false;
-			}
 			pos_y = self.middle.end_y + gap_y;
 
-			self.inner = Box.ForY(
-				self.screen_size_y,
-				pos_y,
-				line_inner_height,
-				_inner_is_small
-			);
+			self.inner = Box.ForY(self.screen_size_y, pos_y, line_inner_height);
 			pos_y = self.inner.end_y + gap_y;
 
 			self.clock = Box.PosSize(
 				(self.screen_size_x - clock_size_x) / 2,
 				pos_y,
 				clock_size_x,
-				clock_size_y,
-				_clock_is_small
+				clock_size_y
 			);
 
 			self.left = Box.PosSize(
 				2 * gap_x,
 				self.clock.pos_y + 2 * Fonts.SPACING_REGULAR,
 				side_size_x,
-				clock_size_y - 3 * Fonts.SPACING_REGULAR,
-				false
+				clock_size_y - 3 * Fonts.SPACING_REGULAR
 			);
 
 			return true;

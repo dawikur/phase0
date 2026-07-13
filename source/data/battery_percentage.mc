@@ -9,7 +9,7 @@ module Data {
 	class BatteryPercentage extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_BATTERY,
+				Base.Complication(:battery),
 				Resources.get(Rez.Strings.LABEL_BATTERY_PERCENTAGE)
 			);
 

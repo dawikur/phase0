@@ -9,7 +9,7 @@ module Data {
 	class SolarIntensity extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_SOLAR_INPUT,
+				Base.Complication(:solar_intensity),
 				Resources.get(Rez.Strings.LABEL_SOLAR_INTENSITY)
 			);
 

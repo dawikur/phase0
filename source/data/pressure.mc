@@ -11,7 +11,7 @@ module Data {
 	class Pressure extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE,
+				Base.Complication(:pressure),
 				Resources.get(Rez.Strings.LABEL_PRESSURE)
 			);
 

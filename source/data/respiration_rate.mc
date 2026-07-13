@@ -8,7 +8,7 @@ module Data {
 	class RespirationRate extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_RESPIRATION_RATE,
+				Base.Complication(:respiration_rate),
 				Resources.get(Rez.Strings.LABEL_RESPIRATION_RATE)
 			);
 		}

@@ -7,10 +7,7 @@ import Toybox.Lang;
 module Data {
 	class UvIndex extends Base {
 		function initialize() {
-			Base.initialize(
-				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_UV_INDEX)
-			);
+			Base.initialize(null, Resources.get(Rez.Strings.LABEL_UV_INDEX));
 
 			self.icon = Fonts.ICON_UV_LOW;
 		}

@@ -8,7 +8,7 @@ module Data {
 	class Calories extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_CALORIES,
+				Base.Complication(:calories),
 				Resources.get(Rez.Strings.LABEL_CALORIES)
 			);
 		}

@@ -99,7 +99,7 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
                     generated_klasses[single_or_array.klass] == klass_entries
                 ), textwrap.dedent(
                     f"""\
-                        Klass mismatch
+                        Klass mismatch '{single_or_array.klass}'
                         Expected: {generated_klasses[single_or_array.klass]}
                              Got: {klass_entries}
                         """

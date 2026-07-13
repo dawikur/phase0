@@ -146,9 +146,11 @@ module Render {
 	}
 
 	function numberBg_(_width as Lang.Number) as Lang.String {
+		if (_width <= 0) {
+			return "";
+		}
+
 		switch (_width) {
-			case 0:
-				return "";
 			case 1:
 				return "0";
 			case 2:
@@ -183,21 +185,52 @@ module Render {
 	) as Void {
 		var fg = NumberFormat(_width, _number);
 		var bg = numberBg_(_width - fg.length());
+		var bg_width = NumberBgWidth(_dc, bg, _is_small);
 
-		// padding
-		var font_shade = fontBg_(_is_small);
-		_dc.setColor(Properties.general.shade, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_pos_x, _pos_y, font_shade, bg, JUSTIFY_LEFT);
+		NumberPrepared(_dc, _pos_x, _pos_y, bg, bg_width, fg, _is_small);
+	}
 
-		Text(
-			_dc,
-			Properties.general.foreground,
-			_pos_x + _dc.getTextWidthInPixels(bg, font_shade),
-			_pos_y,
-			_is_small,
-			fg,
-			JUSTIFY_LEFT
-		);
+	function NumberPrepared(
+		_dc as Graphics.Dc,
+		_pos_x as Lang.Number,
+		_pos_y as Lang.Number,
+		_bg as Lang.String,
+		_bg_width as Lang.Number,
+		_fg as Lang.String,
+		_is_small as Lang.Boolean
+	) as Void {
+		if (_bg.length() != 0) {
+			var font_shade = fontBg_(_is_small);
+			_dc.setColor(Properties.general.shade, Graphics.COLOR_TRANSPARENT);
+			_dc.drawText(_pos_x, _pos_y, font_shade, _bg, JUSTIFY_LEFT);
+		}
+
+		if (_fg.length() != 0) {
+			Text(
+				_dc,
+				Properties.general.foreground,
+				_pos_x + _bg_width,
+				_pos_y,
+				_is_small,
+				_fg,
+				JUSTIFY_LEFT
+			);
+		}
+	}
+
+	function NumberBgForText(
+		_width as Lang.Number,
+		_fg as Lang.String
+	) as Lang.String {
+		return numberBg_(_width - _fg.length());
+	}
+
+	function NumberBgWidth(
+		_dc as Graphics.Dc,
+		_bg as Lang.String,
+		_is_small as Lang.Boolean
+	) as Lang.Number {
+		return _dc.getTextWidthInPixels(_bg, fontBg_(_is_small));
 	}
 
 	function NumberWidth(
@@ -289,6 +322,49 @@ module Render {
 		}
 	}
 
+	function Ratio(
+		_value as Lang.Number?,
+		_value_max as Lang.Number?
+	) as Lang.Float? {
+		if (_value == null or _value_max == null or _value_max == 0) {
+			return null;
+		}
+
+		var ratio =
+			(_value as Lang.Number).toFloat() / (_value_max as Lang.Number);
+		if (ratio < 0.0) {
+			return 0.0;
+		}
+		if (1.0 < ratio) {
+			return 1.0;
+		}
+		return ratio;
+	}
+
+	function BarCount(
+		_size_x as Lang.Number,
+		_borders_width as Lang.Number,
+		_bar_width as Lang.Number
+	) as Lang.Number {
+		if (_bar_width <= 0) {
+			return 0;
+		}
+
+		var count = (_size_x - _borders_width) / _bar_width;
+		return count < 0 ? 0 : count;
+	}
+
+	function Repeat(
+		_value as Lang.String,
+		_count as Lang.Number
+	) as Lang.String {
+		var result = "";
+		for (var i = 0; i < _count; ++i) {
+			result += _value;
+		}
+		return result;
+	}
+
 	function Icons(
 		_dc as Graphics.Dc,
 		_color as Lang.Number,
@@ -314,5 +390,9 @@ module Render {
 		_icons as Lang.String
 	) as Lang.Number {
 		return _dc.getTextWidthInPixels(_icons, Fonts.ICONS);
+	}
+
+	function IconsHeight(_dc as Graphics.Dc) as Lang.Number {
+		return _dc.getFontHeight(Fonts.ICONS);
 	}
 } // module Render

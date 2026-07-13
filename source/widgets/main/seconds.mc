@@ -9,16 +9,34 @@ module Widgets {
 	class Seconds extends Main {
 		hidden var value_ as Lang.String = "";
 
-		var is_small as Lang.Boolean = false;
-
 		function initialize() {
-			Main.initialize(Complications.COMPLICATION_TYPE_INVALID);
+			Main.initialize(null);
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			var clock = System.getClockTime();
 
 			self.value_ = clock.sec.format("%02d");
+		}
+
+		function resize(
+			_dc as Graphics.Dc,
+			_size_x as Lang.Number,
+			_size_y as Lang.Number,
+			_is_small as Lang.Boolean
+		) as Void {
+			Base.resize(_dc, _size_x, _size_y, _is_small);
+			if (
+				Base.Fits(
+					Render.TextWidth(_dc, "00", self.is_small),
+					Render.TextHeight(_dc, self.is_small),
+					_size_x,
+					_size_y
+				)
+			) {
+				return;
+			}
+			self.is_small = Render.SIZE_SMALL;
 		}
 
 		function render(_dc as Graphics.Dc) as Void {

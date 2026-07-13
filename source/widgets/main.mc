@@ -8,7 +8,7 @@ import Toybox.WatchUi;
 
 module Widgets {
 	class Main extends Base {
-		function initialize(_type as Complications.Type) {
+		function initialize(_type as Complications.Type?) {
 			Base.initialize(_type);
 		}
 

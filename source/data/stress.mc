@@ -9,7 +9,7 @@ module Data {
 	class Stress extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_STRESS,
+				Base.Complication(:stress),
 				Resources.get(Rez.Strings.LABEL_STRESS)
 			);
 

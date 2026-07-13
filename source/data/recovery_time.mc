@@ -9,7 +9,7 @@ module Data {
 	class RecoveryTime extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_RECOVERY_TIME,
+				Base.Complication(:recovery_time),
 				Resources.get(Rez.Strings.LABEL_RECOVERY_TIME)
 			);
 		}

@@ -8,7 +8,7 @@ module Data {
 	class Vo2Bike extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_VO2MAX_BIKE,
+				Base.Complication(:vo2_bike),
 				Resources.get(Rez.Strings.LABEL_VO2_BIKE)
 			);
 		}

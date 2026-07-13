@@ -8,7 +8,7 @@ module Data {
 	class Steps extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_STEPS,
+				Base.Complication(:steps),
 				Resources.get(Rez.Strings.LABEL_STEPS)
 			);
 

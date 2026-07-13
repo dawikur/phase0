@@ -8,7 +8,7 @@ module Data {
 	class Pushes extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_WHEELCHAIR_PUSHES,
+				Base.Complication(:pushes),
 				Resources.get(Rez.Strings.LABEL_PUSHES)
 			);
 

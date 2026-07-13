@@ -2,30 +2,27 @@
 
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.Math;
 import Toybox.System;
 
 module Widgets {
 	class Status extends Main {
 		hidden var enabled_ as Lang.String = "";
 		hidden var all_ as Lang.String;
-
-		var properties as Lang.Array<Properties.Status>;
+		hidden var slots_ as Lang.Array<Lang.Number> = [];
 
 		function initialize(_properties as Lang.Array<Properties.Status>) {
-			Main.initialize(Complications.COMPLICATION_TYPE_INVALID);
-
-			self.properties = _properties;
+			Main.initialize(null);
 
 			self.all_ = "";
-			var properties_size = self.properties.size();
+			self.slots_ = [];
+			var properties_size = _properties.size();
 			for (var i = 0; i < properties_size; ++i) {
-				var property = self.properties[i];
+				var property = _properties[i];
 
 				var icon = self.getIcon_(property.data);
 				if (icon.length() != 0) {
-					self.all_ += i == 0 ? "" : "\n";
-					self.all_ += icon;
+					self.slots_.add(property.data);
+					self.all_ = self.appendIcon_(self.all_, icon);
 				}
 			}
 		}
@@ -34,24 +31,26 @@ module Widgets {
 			var device_settings = System.getDeviceSettings();
 
 			self.enabled_ = "";
-			var properties_size = self.properties.size();
-			for (var i = 0; i < properties_size; ++i) {
-				var property = self.properties[i];
+			var slot_size = self.slots_.size();
+			for (var i = 0; i < slot_size; ++i) {
+				var slot = self.slots_[i];
 
-				var icon = self.getStatus_(property.data, device_settings);
+				var icon = self.getStatus_(slot, device_settings);
 				if (icon.length() != 0) {
-					self.enabled_ += i == 0 ? "" : "\n";
-					self.enabled_ += icon;
+					self.enabled_ = self.appendIcon_(self.enabled_, icon);
 				}
 			}
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
+			var center_x = self.centerX();
+			var center_y = self.centerY();
+
 			Render.Icons(
 				_dc,
 				Properties.general.foreground,
-				self.pos_x,
-				self.pos_y,
+				center_x,
+				center_y,
 				self.enabled_,
 				self.all_,
 				Render.JUSTIFY_CENTER
@@ -59,15 +58,25 @@ module Widgets {
 		}
 
 		function renderMinimal(_dc as Graphics.Dc) as Void {
+			var center_x = self.centerX();
+			var center_y = self.centerY();
+
 			Render.Icons(
 				_dc,
 				Properties.general.foreground,
-				self.pos_x,
-				self.pos_y,
+				center_x,
+				center_y,
 				self.enabled_,
 				"",
 				Render.JUSTIFY_CENTER
 			);
+		}
+
+		static function appendIcon_(
+			_icons as Lang.String,
+			_icon as Lang.String
+		) as Lang.String {
+			return _icons.length() == 0 ? _icon : _icons + "\n" + _icon;
 		}
 
 		static function getIcon_(_id as Lang.Number) as Lang.String {

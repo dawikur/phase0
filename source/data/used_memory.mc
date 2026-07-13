@@ -8,10 +8,7 @@ import Toybox.UserProfile;
 module Data {
 	class UsedMemory extends Base {
 		function initialize() {
-			Base.initialize(
-				Complications.COMPLICATION_TYPE_INVALID,
-				Resources.get(Rez.Strings.LABEL_USED_MEMORY)
-			);
+			Base.initialize(null, Resources.get(Rez.Strings.LABEL_USED_MEMORY));
 
 			self.value_max = System.getSystemStats().totalMemory;
 		}

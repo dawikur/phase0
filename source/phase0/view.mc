@@ -11,6 +11,7 @@ import Toybox.WatchUi;
 module Phase0 {
 	class View extends WatchUi.WatchFace {
 		typedef Bases as Lang.Array<Widgets.Base>;
+		typedef Batteries as Lang.Array<Widgets.Battery>;
 		typedef Gauges as Lang.Array<Widgets.Gauge>;
 		typedef Metrics as Lang.Array<Widgets.Metric>;
 
@@ -38,24 +39,18 @@ module Phase0 {
 			Properties.clock
 		);
 		hidden var seconds_ as Widgets.Seconds = new Widgets.Seconds();
-		hidden var battery_ as Widgets.Battery? = null;
+		hidden var batteries_ as Batteries = [];
 
-		hidden var top_outer_ as Widgets.Base = new Widgets.Base(
-			Complications.COMPLICATION_TYPE_INVALID
-		);
+		hidden var top_outer_ as Widgets.Base = new Widgets.Base(null);
 		hidden var top_middle_base_ as Metrics = [];
 		hidden var top_middle_alt_ as Metrics = [];
-		hidden var top_inner_ as Widgets.Base = new Widgets.Base(
-			Complications.COMPLICATION_TYPE_INVALID
-		);
+		hidden var top_inner_ as Widgets.Base = new Widgets.Base(null);
 
 		hidden var bottom_middle_base_ as Metrics = [];
 		hidden var bottom_middle_alt_ as Metrics = [];
 		hidden var bottom_inner_date_ as Widgets.Date = new Widgets.Date();
 		hidden var bottom_inner_am_pm_ as Widgets.AmPm = new Widgets.AmPm();
-		hidden var bottom_outer_ as Widgets.Base = new Widgets.Base(
-			Complications.COMPLICATION_TYPE_INVALID
-		);
+		hidden var bottom_outer_ as Widgets.Base = new Widgets.Base(null);
 
 		hidden var widgets_per_min_ as Bases = [];
 		hidden var widgets_per_hour_ as Bases = [];
@@ -155,10 +150,12 @@ module Phase0 {
 
 			// ---- top outer ----
 
-			self.top_outer_.pos_x = layout.outer.pos_x;
-			self.top_outer_.pos_y = layout.outer.pos_y;
-			self.top_outer_.size_x = layout.outer.size_x;
-			self.top_outer_.size_y = layout.outer.size_y;
+			self.placeWidget_(
+				_dc,
+				self.top_outer_,
+				layout.outer,
+				Render.SIZE_REGULAR
+			);
 
 			// ---- top middle ----
 
@@ -167,101 +164,51 @@ module Phase0 {
 
 			// ---- top inner ----
 
-			self.top_inner_.pos_x = layout.inner.center_x;
-			self.top_inner_.pos_y = layout.inner.center_y;
-			self.top_inner_.size_x = layout.inner.radius_x;
-			self.top_inner_.size_y = layout.inner.radius_y;
+			self.placeWidget_(
+				_dc,
+				self.top_inner_,
+				layout.inner,
+				Render.SIZE_REGULAR
+			);
 
 			// ---- main ----
 
 			// -- left --
 
-			self.status_.pos_x = layout.left.center_x;
-			self.status_.pos_y = layout.left.center_y;
+			self.placeWidget_(
+				_dc,
+				self.status_,
+				layout.left,
+				Render.SIZE_REGULAR
+			);
 
 			// -- clock --
 
-			self.clock_.is_small = layout.clock.is_small;
-			self.clock_.pos_x = layout.clock.pos_x;
-			self.clock_.pos_y = layout.clock.pos_y;
-			self.clock_.size_x = layout.clock.size_x;
-			self.clock_.size_y = layout.clock.size_y;
+			self.placeWidget_(
+				_dc,
+				self.clock_,
+				layout.clock,
+				Render.SIZE_REGULAR
+			);
 
 			// -- right --
 
 			var layout_right = layout.rightBox(layout.left);
 			var gauges_size = self.gauges_.size();
 			for (var i = 0; i < gauges_size; ++i) {
-				self.gauges_[i].size_y = layout_right.size_y;
+				self.gauges_[i].resize(
+					_dc,
+					layout_right.size_x,
+					layout_right.size_y,
+					Render.SIZE_REGULAR
+				);
 			}
 			self.repositionWidgets_(self.gauges_ as Bases, layout_right);
 
 			// ---- bottom inner ----
 
 			var bottom_inner = layout.bottomBox(layout.inner);
-
-			var date_size_x = Render.TextWidth(
-				_dc,
-				"ABC 00 XYZ",
-				layout.inner.is_small
-			);
-			self.bottom_inner_date_.is_small = layout.inner.is_small;
-			self.bottom_inner_date_.pos_x = bottom_inner.pos_x;
-			self.bottom_inner_date_.pos_y = bottom_inner.pos_y;
-			self.bottom_inner_date_.size_x = date_size_x;
-			self.bottom_inner_date_.size_y = bottom_inner.size_y;
-
-			var seconds_size_x = Render.TextWidth(
-				_dc,
-				"00",
-				bottom_inner.is_small
-			);
-			self.seconds_.is_small = layout.inner.is_small;
-			self.seconds_.pos_x = bottom_inner.end_x - seconds_size_x;
-			self.seconds_.pos_y = bottom_inner.pos_y;
-			self.seconds_.size_x = seconds_size_x;
-			self.seconds_.size_y = bottom_inner.size_y;
-
-			if (!Data.Units.is_24_hour) {
-				var left_space_x =
-					bottom_inner.size_x - date_size_x - seconds_size_x;
-				var am_pm_size_x =
-					Render.IconsWidth(_dc, Fonts.ICON_AM_PM_BEGIN) +
-					Render.TextWidth(_dc, "am", true) +
-					Render.IconsWidth(_dc, Fonts.ICON_AM_PM_END);
-				var am_pm_pos_x =
-					bottom_inner.pos_x +
-					date_size_x +
-					(left_space_x - am_pm_size_x) / 2;
-
-				if (left_space_x < am_pm_size_x) {
-					var am_pm_icon_size_x = Render.IconsWidth(
-						_dc,
-						Fonts.ICON_DAWN
-					);
-
-					bottom_inner.is_small = true;
-					am_pm_size_x =
-						left_space_x <= 0
-							? 0
-							: left_space_x < am_pm_icon_size_x
-								? left_space_x
-								: am_pm_icon_size_x;
-
-					if (date_size_x <= seconds_size_x) {
-						am_pm_pos_x = bottom_inner.pos_x + date_size_x;
-					} else {
-						am_pm_pos_x =
-							bottom_inner.end_x - seconds_size_x - am_pm_size_x;
-					}
-				}
-
-				self.bottom_inner_am_pm_.is_small = bottom_inner.is_small;
-				self.bottom_inner_am_pm_.pos_x = am_pm_pos_x + am_pm_size_x / 2;
-				self.bottom_inner_am_pm_.pos_y = bottom_inner.center_y;
-				self.bottom_inner_am_pm_.size_x = am_pm_size_x / 2;
-				self.bottom_inner_am_pm_.size_y = bottom_inner.radius_y;
-			}
+			self.layoutBottomInner_(_dc, bottom_inner);
 
 			// ---- bottom middle ----
 
@@ -280,10 +227,12 @@ module Phase0 {
 			// ---- bottom outer ----
 
 			var bottom_outer = layout.bottomBox(layout.outer);
-			self.bottom_outer_.pos_x = bottom_outer.pos_x;
-			self.bottom_outer_.pos_y = bottom_outer.pos_y;
-			self.bottom_outer_.size_x = bottom_outer.size_x;
-			self.bottom_outer_.size_y = bottom_outer.size_y;
+			self.placeWidget_(
+				_dc,
+				self.bottom_outer_,
+				bottom_outer,
+				Render.SIZE_REGULAR
+			);
 
 			// ---- footer ----
 
@@ -312,8 +261,8 @@ module Phase0 {
 			_dc.setClip(
 				self.seconds_.pos_x,
 				self.seconds_.pos_y,
-				self.seconds_.size_x,
-				self.seconds_.size_y
+				self.seconds_.size_x + 2,
+				self.seconds_.size_y + 2
 			);
 
 			_dc.setColor(
@@ -416,8 +365,9 @@ module Phase0 {
 				self.last_refresh_min_ = _clock.min;
 
 				self.clock_.refresh(_dc);
-				if (self.battery_ != null) {
-					self.battery_.refresh(_dc);
+				var refresh_battery_size = self.batteries_.size();
+				for (var i = 0; i < refresh_battery_size; ++i) {
+					self.batteries_[i].refresh(_dc);
 				}
 			}
 
@@ -432,8 +382,9 @@ module Phase0 {
 
 			self.clock_.renderMinimal(_dc);
 			self.status_.renderMinimal(_dc);
-			if (self.battery_ != null) {
-				self.battery_.renderMinimal(_dc);
+			var render_battery_size = self.batteries_.size();
+			for (var j = 0; j < render_battery_size; ++j) {
+				self.batteries_[j].renderMinimal(_dc);
 			}
 		}
 
@@ -447,18 +398,13 @@ module Phase0 {
 
 			self.widgets_per_min_ = [];
 			self.widgets_per_hour_ = [];
-			self.battery_ = null;
+			self.batteries_ = [];
 
 			// ---- top outer ----
 
 			self.top_outer_ = Widgets.get(Properties.top_outer, Render.TOP);
-			if (
-				Properties.top_outer.data ==
-					Properties.BATTERY_DAYS_REMAINING or
-				Properties.top_outer.data == Properties.BATTERY_ICON or
-				Properties.top_outer.data == Properties.BATTERY_PERCENTAGE
-			) {
-				self.battery_ = self.top_outer_ as Widgets.Battery;
+			if (self.isBatteryData_(Properties.top_outer.data)) {
+				self.batteries_.add(self.top_outer_ as Widgets.Battery);
 				self.widgets_per_min_.add(self.top_outer_);
 			} else {
 				self.widgets_per_hour_.add(self.top_outer_);
@@ -520,13 +466,8 @@ module Phase0 {
 				Properties.bottom_outer,
 				Render.BOTTOM
 			);
-			if (
-				Properties.bottom_outer.data ==
-					Properties.BATTERY_DAYS_REMAINING or
-				Properties.bottom_outer.data == Properties.BATTERY_ICON or
-				Properties.bottom_outer.data == Properties.BATTERY_PERCENTAGE
-			) {
-				self.battery_ = self.bottom_outer_ as Widgets.Battery;
+			if (self.isBatteryData_(Properties.bottom_outer.data)) {
+				self.batteries_.add(self.bottom_outer_ as Widgets.Battery);
 				self.widgets_per_min_.add(self.bottom_outer_);
 			} else {
 				self.widgets_per_hour_.add(self.bottom_outer_);
@@ -599,6 +540,96 @@ module Phase0 {
 			return metrics;
 		}
 
+		hidden static function isBatteryData_(
+			_data as Lang.Number
+		) as Lang.Boolean {
+			return (
+				_data == Properties.BATTERY_DAYS_REMAINING or
+				_data == Properties.BATTERY_ICON or
+				_data == Properties.BATTERY_PERCENTAGE
+			);
+		}
+
+		hidden static function placeWidget_(
+			_dc as Graphics.Dc,
+			_widget as Widgets.Base,
+			_box as Box,
+			_is_small as Lang.Boolean
+		) as Void {
+			_widget.pos_x = _box.pos_x;
+			_widget.pos_y = _box.pos_y;
+			_widget.resize(_dc, _box.size_x, _box.size_y, _is_small);
+		}
+
+		hidden function layoutBottomInner_(
+			_dc as Graphics.Dc,
+			_box as Box
+		) as Void {
+			var date_size_x = Render.TextWidth(
+				_dc,
+				"ABC 00 XYZ",
+				Render.SIZE_REGULAR
+			);
+			self.bottom_inner_date_.pos_x = _box.pos_x;
+			self.bottom_inner_date_.pos_y = _box.pos_y;
+			self.bottom_inner_date_.resize(
+				_dc,
+				date_size_x,
+				_box.size_y,
+				Render.SIZE_REGULAR
+			);
+
+			var seconds_size_x = Render.TextWidth(
+				_dc,
+				"00",
+				Render.SIZE_REGULAR
+			);
+			self.seconds_.pos_x = _box.end_x - seconds_size_x;
+			self.seconds_.pos_y = _box.pos_y;
+			self.seconds_.resize(
+				_dc,
+				seconds_size_x,
+				_box.size_y,
+				Render.SIZE_REGULAR
+			);
+
+			if (Data.Units.is_24_hour) {
+				return;
+			}
+
+			var left_space_x = _box.size_x - date_size_x - seconds_size_x;
+			var am_pm_size_x =
+				Render.IconsWidth(_dc, Fonts.ICON_AM_PM_BEGIN) +
+				Render.TextWidth(_dc, "am", Render.SIZE_SMALL) +
+				Render.IconsWidth(_dc, Fonts.ICON_AM_PM_END) +
+				2 * Render.SPACING;
+			var am_pm_pos_x =
+				_box.pos_x + date_size_x + (left_space_x - am_pm_size_x) / 2;
+			var am_pm_is_small = left_space_x < am_pm_size_x;
+
+			if (am_pm_is_small) {
+				var am_pm_icon_size_x = Render.IconsWidth(_dc, Fonts.ICON_DAWN);
+
+				am_pm_size_x =
+					left_space_x < am_pm_icon_size_x ? 0 : am_pm_icon_size_x;
+
+				if (date_size_x <= seconds_size_x) {
+					am_pm_pos_x = _box.pos_x + date_size_x;
+				} else {
+					am_pm_pos_x = _box.end_x - seconds_size_x - am_pm_size_x;
+				}
+			}
+
+			self.bottom_inner_am_pm_.pos_x = am_pm_pos_x;
+			self.bottom_inner_am_pm_.pos_y = _box.pos_y;
+			self.bottom_inner_am_pm_.resize(
+				_dc,
+				am_pm_size_x,
+				_box.size_y,
+				am_pm_is_small
+			);
+		}
+
 		hidden static function repositionMetrics_(
 			_dc as Graphics.Dc,
 			_metrics as Metrics,
@@ -609,29 +640,69 @@ module Phase0 {
 				return;
 			}
 
-			var metrics_size_regular = 0;
-			for (var i = 0; i < metrics_size; ++i) {
-				var metric = _metrics[i];
-
-				metrics_size_regular += Widgets.Metric.Width(
+			if (
+				self.tryResizeMetrics_(
 					_dc,
-					metric.properties.width,
-					Render.SIZE_REGULAR,
-					metric.properties.icon,
-					metric.properties.gauge,
-					metric.properties.padding
-				);
-			}
-			var metric_is_small =
-				_box.is_small || _box.size_x < metrics_size_regular;
+					_metrics,
+					_box,
+					_box.size_x,
+					Render.SIZE_REGULAR
+				)
+			) {
+				self.repositionWidgets_(_metrics as Bases, _box);
 
+				return;
+			}
+
+			if (
+				self.tryResizeMetrics_(
+					_dc,
+					_metrics,
+					_box,
+					_box.size_x,
+					Render.SIZE_SMALL
+				)
+			) {
+				self.repositionWidgets_(_metrics as Bases, _box);
+
+				return;
+			}
+
+			self.resizeMetrics_(
+				_dc,
+				_metrics,
+				_box,
+				self.evenItemWidth_(metrics_size, _box.size_x),
+				Render.SIZE_SMALL
+			);
+			self.repositionWidgets_(_metrics as Bases, _box);
+		}
+
+		hidden static function tryResizeMetrics_(
+			_dc as Graphics.Dc,
+			_metrics as Metrics,
+			_box as Box,
+			_size_x as Lang.Number,
+			_is_small as Lang.Boolean
+		) as Lang.Boolean {
+			self.resizeMetrics_(_dc, _metrics, _box, _size_x, _is_small);
+
+			return self.distributedWidth_(_metrics as Bases) <= _box.size_x;
+		}
+
+		hidden static function resizeMetrics_(
+			_dc as Graphics.Dc,
+			_metrics as Metrics,
+			_box as Box,
+			_size_x as Lang.Number,
+			_is_small as Lang.Boolean
+		) as Void {
+			var metrics_size = _metrics.size();
 			for (var i = 0; i < metrics_size; ++i) {
 				var metric = _metrics[i];
-				metric.is_small = metric_is_small;
-				metric.resize(_dc);
-			}
 
-			self.repositionWidgets_(_metrics as Bases, _box);
+				metric.resize(_dc, _size_x, _box.size_y, _is_small);
+			}
 		}
 
 		hidden function refreshWidgets_(
@@ -663,14 +734,12 @@ module Phase0 {
 				return;
 			}
 
-			var occupied_size_x = 0;
-			for (var i = 0; i < widgets_size; ++i) {
-				occupied_size_x += _widgets[i].size_x;
+			var occupied_size_x = self.occupiedWidth_(_widgets);
+			var gap_x = (_box.size_x - occupied_size_x) / widgets_size;
+			if (gap_x < 0) {
+				gap_x = 0;
 			}
-
-			var spacing = (_box.size_x - occupied_size_x) / widgets_size;
-
-			var pos_x = _box.pos_x + spacing / 2;
+			var pos_x = _box.pos_x + gap_x / 2;
 			var pos_y = _box.pos_y;
 			for (var i = 0; i < widgets_size; ++i) {
 				var widget = _widgets[i];
@@ -678,8 +747,37 @@ module Phase0 {
 				widget.pos_x = pos_x;
 				widget.pos_y = pos_y;
 
-				pos_x += spacing + widget.size_x;
+				pos_x += gap_x + widget.size_x;
 			}
+		}
+
+		hidden static function occupiedWidth_(
+			_widgets as Bases
+		) as Lang.Number {
+			var occupied_size_x = 0;
+			var widgets_size = _widgets.size();
+			for (var i = 0; i < widgets_size; ++i) {
+				occupied_size_x += _widgets[i].size_x;
+			}
+
+			return occupied_size_x;
+		}
+
+		hidden static function distributedWidth_(
+			_widgets as Bases
+		) as Lang.Number {
+			return (
+				self.occupiedWidth_(_widgets) + _widgets.size() * Render.SPACING
+			);
+		}
+
+		hidden static function evenItemWidth_(
+			_items_size as Lang.Number,
+			_size_x as Lang.Number
+		) as Lang.Number {
+			var size_x = (_size_x - _items_size * Render.SPACING) / _items_size;
+
+			return size_x < 0 ? 0 : size_x;
 		}
 	}
 } // module Phase0

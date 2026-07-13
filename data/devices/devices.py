@@ -4,13 +4,6 @@ from .model import Device, Devices, Resolution, ScreenType
 
 DEVICES = Devices(
     [
-        Device("Forerunner 255s", Resolution(218, 218), ScreenType.MIP, ("fr255s",)),
-        Device(
-            "Forerunner 255s Music",
-            Resolution(218, 218),
-            ScreenType.MIP,
-            ("fr255sm",),
-        ),
         Device("Forerunner 745", Resolution(240, 240), ScreenType.MIP),
         Device(
             "Descent Mk2 S",

@@ -49,10 +49,6 @@ class Devices:
         )
 
     @property
-    def resolution_218x218(self) -> tuple[Device, ...]:
-        return self.__with_resolution(Resolution(218, 218))
-
-    @property
     def resolution_240x240(self) -> tuple[Device, ...]:
         return self.__with_resolution(Resolution(240, 240))
 

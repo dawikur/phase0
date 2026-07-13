@@ -5,7 +5,7 @@ from typing import Any, cast
 
 from .colors import Colors
 from .data import Data
-from .model import Array, Boolean, Number, Select, Single
+from .model import Array, Number, Select, Single
 
 
 class Options(IntEnum):
@@ -22,6 +22,9 @@ class Options(IntEnum):
     BATTERY_PERCENTAGE = auto()
     SMALL = auto()
     SUN_MOON = auto()
+    NONE = auto()
+    ICON = auto()
+    GAUGE = auto()
     # Reserved for future widget types.
     # AM_PM = auto()
     # DATE = auto()
@@ -55,6 +58,12 @@ class DataExtra(IntEnum):
     # SECONDS = Options.SECONDS.value
     SUN_MOON = Options.SUN_MOON.value
     # WEATHER = Options.WEATHER.value
+
+
+class MetricStyle(IntEnum):
+    NONE = Options.NONE.value
+    ICON = Options.ICON.value
+    GAUGE = Options.GAUGE.value
 
 
 def Settings(  # pylint: disable=invalid-name
@@ -111,7 +120,7 @@ def Settings(  # pylint: disable=invalid-name
         ),
         Array(
             "gauges",
-            "Widget",
+            "Gauge",
             [
                 [
                     Select("data", DataWithValueMax.BODY_BATTERY),
@@ -137,6 +146,7 @@ def Settings(  # pylint: disable=invalid-name
             [
                 Select("data", DataWidget.SUN_MOON),
                 Select("accent", Colors.ORANGE),
+                Select("height", Heights.AUTO),
             ],
         ),
         Array(
@@ -146,34 +156,30 @@ def Settings(  # pylint: disable=invalid-name
                 [
                     Select("data", DataWithIcon.RAIN),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 2),
-                    Boolean("icon", True, hidden=True),
-                    Boolean("padding", False, hidden=True),
-                    Boolean("gauge", False, hidden=True),
+                    Select("style", MetricStyle.ICON, hidden=True),
                 ],
                 [
                     Select("data", DataWithIcon.UV_INDEX),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 2),
-                    Boolean("icon", True, hidden=True),
-                    Boolean("padding", False, hidden=True),
-                    Boolean("gauge", False, hidden=True),
+                    Select("style", MetricStyle.ICON, hidden=True),
                 ],
                 [
                     Select("data", DataWithIcon.WIND_BEARING),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 2),
-                    Boolean("icon", True, hidden=True),
-                    Boolean("padding", False, hidden=True),
-                    Boolean("gauge", False, hidden=True),
+                    Select("style", MetricStyle.ICON, hidden=True),
                 ],
                 [
                     Select("data", DataWithIcon.DISABLED),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 2),
-                    Boolean("icon", True, hidden=True),
-                    Boolean("padding", False, hidden=True),
-                    Boolean("gauge", False, hidden=True),
+                    Select("style", MetricStyle.ICON, hidden=True),
                 ],
             ],
         ),
@@ -184,34 +190,30 @@ def Settings(  # pylint: disable=invalid-name
                 [
                     Select("data", DataWithIcon.DISABLED),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 2),
-                    Boolean("icon", True, hidden=True),
-                    Boolean("padding", False, hidden=True),
-                    Boolean("gauge", False, hidden=True),
+                    Select("style", MetricStyle.ICON, hidden=True),
                 ],
                 [
                     Select("data", DataWithIcon.DISABLED),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 2),
-                    Boolean("icon", True, hidden=True),
-                    Boolean("padding", False, hidden=True),
-                    Boolean("gauge", False, hidden=True),
+                    Select("style", MetricStyle.ICON, hidden=True),
                 ],
                 [
                     Select("data", DataWithIcon.DISABLED),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 2),
-                    Boolean("icon", True, hidden=True),
-                    Boolean("padding", False, hidden=True),
-                    Boolean("gauge", False, hidden=True),
+                    Select("style", MetricStyle.ICON, hidden=True),
                 ],
                 [
                     Select("data", DataWithIcon.DISABLED),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 2),
-                    Boolean("icon", True, hidden=True),
-                    Boolean("padding", False, hidden=True),
-                    Boolean("gauge", False, hidden=True),
+                    Select("style", MetricStyle.ICON, hidden=True),
                 ],
             ],
         ),
@@ -222,34 +224,30 @@ def Settings(  # pylint: disable=invalid-name
                 [
                     Select("data", DataAll.HEART_RATE),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 3),
-                    Boolean("icon", False, hidden=True),
-                    Boolean("padding", True, hidden=True),
-                    Boolean("gauge", True, hidden=True),
+                    Select("style", MetricStyle.GAUGE, hidden=True),
                 ],
                 [
                     Select("data", DataAll.STEPS),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 3),
-                    Boolean("icon", False, hidden=True),
-                    Boolean("padding", True, hidden=True),
-                    Boolean("gauge", True, hidden=True),
+                    Select("style", MetricStyle.GAUGE, hidden=True),
                 ],
                 [
                     Select("data", DataAll.FLOORS_CLIMBED),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 3),
-                    Boolean("icon", False, hidden=True),
-                    Boolean("padding", True, hidden=True),
-                    Boolean("gauge", True, hidden=True),
+                    Select("style", MetricStyle.GAUGE, hidden=True),
                 ],
                 [
                     Select("data", DataAll.DISABLED),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 3),
-                    Boolean("icon", False, hidden=True),
-                    Boolean("padding", True, hidden=True),
-                    Boolean("gauge", True, hidden=True),
+                    Select("style", MetricStyle.GAUGE, hidden=True),
                 ],
             ],
         ),
@@ -260,34 +258,30 @@ def Settings(  # pylint: disable=invalid-name
                 [
                     Select("data", DataAll.CALORIES),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 5),
-                    Boolean("icon", False, hidden=True),
-                    Boolean("padding", True, hidden=True),
-                    Boolean("gauge", True, hidden=True),
+                    Select("style", MetricStyle.GAUGE, hidden=True),
                 ],
                 [
                     Select("data", DataAll.SOLAR_INTENSITY),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 3),
-                    Boolean("icon", False, hidden=True),
-                    Boolean("padding", True, hidden=True),
-                    Boolean("gauge", True, hidden=True),
+                    Select("style", MetricStyle.GAUGE, hidden=True),
                 ],
                 [
                     Select("data", DataAll.DISABLED),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 3),
-                    Boolean("icon", False, hidden=True),
-                    Boolean("padding", True, hidden=True),
-                    Boolean("gauge", True, hidden=True),
+                    Select("style", MetricStyle.GAUGE, hidden=True),
                 ],
                 [
                     Select("data", DataAll.DISABLED),
                     Select("accent", Colors.ORANGE),
+                    Select("height", Heights.AUTO),
                     Number("width", 3),
-                    Boolean("icon", False, hidden=True),
-                    Boolean("padding", True, hidden=True),
-                    Boolean("gauge", True, hidden=True),
+                    Select("style", MetricStyle.GAUGE, hidden=True),
                 ],
             ],
         ),
@@ -297,6 +291,7 @@ def Settings(  # pylint: disable=invalid-name
             [
                 Select("data", DataWidget.BATTERY_ICON),
                 Select("accent", Colors.ORANGE),
+                Select("height", Heights.AUTO),
             ],
         ),
     ]

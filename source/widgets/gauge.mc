@@ -10,10 +10,10 @@ module Widgets {
 
 		hidden var value_ as Lang.Float? = null;
 
-		var properties as Properties.Widget;
+		var properties as Properties.Gauge;
 
 		function initialize(
-			_properties as Properties.Widget,
+			_properties as Properties.Gauge,
 			_impl as Data.Base
 		) {
 			Base.initialize(_impl.type);
@@ -24,22 +24,21 @@ module Widgets {
 			self.size_x = Render.SPACING;
 		}
 
+		function resize(
+			_dc as Graphics.Dc,
+			_size_x as Lang.Number,
+			_size_y as Lang.Number,
+			_is_small as Lang.Boolean
+		) as Void {
+			self.size_x = Render.SPACING;
+			self.size_y = _size_y;
+			self.is_small = _is_small;
+		}
+
 		function refresh(_dc as Graphics.Dc) as Void {
 			self.impl_.refresh();
 
-			if (
-				self.impl_.value == null or
-				self.impl_.value_max == null or
-				self.impl_.value_max == 0
-			) {
-				self.value_ = null;
-				return;
-			}
-
-			var value = self.impl_.value as Lang.Number;
-			var value_max = self.impl_.value_max as Lang.Number;
-
-			self.value_ = value.toFloat() / value_max;
+			self.value_ = Render.Ratio(self.impl_.value, self.impl_.value_max);
 		}
 
 		function render(_dc as Graphics.Dc) as Void {

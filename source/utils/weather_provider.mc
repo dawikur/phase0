@@ -7,7 +7,7 @@ import Toybox.Weather;
 
 module WeatherProvider {
 	const CACHE_TTL_HOURS as Lang.Number = 48;
-	const MIN_HOURLY_FORECAST_MEMORY as Lang.Number = 131072;
+	const MIN_HOURLY_FORECAST_MEMORY as Lang.Number = 102400;
 
 	var last_refresh_hour_ as Lang.Number = -1;
 
@@ -117,6 +117,10 @@ module WeatherProvider {
 	}
 
 	function refreshCurrentConditions_(_hour as Lang.Number) as Lang.Boolean {
+		if (!(Toybox has :Complications)) {
+			return false;
+		}
+
 		var weather = Weather.getCurrentConditions();
 		if (weather == null) {
 			return false;

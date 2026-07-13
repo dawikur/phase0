@@ -11,7 +11,7 @@ module Data {
 	class BodyBattery extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_BODY_BATTERY,
+				Base.Complication(:body_battery),
 				Resources.get(Rez.Strings.LABEL_BODY_BATTERY)
 			);
 

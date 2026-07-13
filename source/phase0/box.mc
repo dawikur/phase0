@@ -13,19 +13,11 @@ module Phase0 {
 		var end_x as Lang.Number;
 		var end_y as Lang.Number;
 
-		var center_x as Lang.Number;
-		var center_y as Lang.Number;
-		var radius_x as Lang.Number;
-		var radius_y as Lang.Number;
-
-		var is_small as Lang.Boolean;
-
 		function initialize(
 			_pos_x as Lang.Number,
 			_pos_y as Lang.Number,
 			_end_x as Lang.Number,
-			_end_y as Lang.Number,
-			_is_small as Lang.Boolean
+			_end_y as Lang.Number
 		) {
 			self.size_x = _end_x - _pos_x;
 			self.size_y = _end_y - _pos_y;
@@ -33,34 +25,39 @@ module Phase0 {
 			self.pos_y = _pos_y;
 			self.end_x = _end_x;
 			self.end_y = _end_y;
-			self.radius_x = self.size_x / 2;
-			self.radius_y = self.size_y / 2;
-			self.center_x = _pos_x + self.radius_x;
-			self.center_y = _pos_y + self.radius_y;
-			self.is_small = _is_small;
 		}
 
 		static function PosSize(
 			_pos_x as Lang.Number,
 			_pos_y as Lang.Number,
 			_size_x as Lang.Number,
-			_size_y as Lang.Number,
-			_is_small as Lang.Boolean
+			_size_y as Lang.Number
 		) as Box {
-			return new Box(
-				_pos_x,
-				_pos_y,
-				_pos_x + _size_x,
-				_pos_y + _size_y,
-				_is_small
+			return new Box(_pos_x, _pos_y, _pos_x + _size_x, _pos_y + _size_y);
+		}
+
+		function mirrorX(_screen_size_x as Lang.Number) as Box {
+			return Box.PosSize(
+				_screen_size_x - self.end_x,
+				self.pos_y,
+				self.size_x,
+				self.size_y
+			);
+		}
+
+		function mirrorY(_screen_size_y as Lang.Number) as Box {
+			return Box.PosSize(
+				self.pos_x,
+				_screen_size_y - self.end_y,
+				self.size_x,
+				self.size_y
 			);
 		}
 
 		static function ForY(
 			_screen_size_y as Lang.Number,
 			_y as Lang.Number,
-			_dy as Lang.Number,
-			_is_small as Lang.Boolean
+			_dy as Lang.Number
 		) as Box {
 			var pos_y = 0;
 			var end_y = 0;
@@ -86,7 +83,7 @@ module Phase0 {
 			var pos_x = (_screen_size_y - size_x) / 2;
 			var end_x = pos_x + size_x;
 
-			return new Box(pos_x, pos_y, end_x, end_y, _is_small);
+			return new Box(pos_x, pos_y, end_x, end_y);
 		}
 
 		static function SecondLeg_(

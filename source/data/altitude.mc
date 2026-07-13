@@ -11,7 +11,7 @@ module Data {
 	class Altitude extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_ALTITUDE,
+				Base.Complication(:altitude),
 				Resources.get(Rez.Strings.LABEL_ALTITUDE)
 			);
 		}

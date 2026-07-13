@@ -8,7 +8,7 @@ module Data {
 	class ActiveMinutesPerDay extends Base {
 		function initialize() {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_INVALID,
+				null,
 				Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_PER_DAY)
 			);
 		}

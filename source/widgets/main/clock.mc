@@ -3,18 +3,15 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
-import Toybox.WatchUi;
 
 module Widgets {
 	class Clock extends Main {
 		hidden var time_ as Lang.String = "";
 
-		var is_small as Lang.Boolean = false;
-
 		var properties as Properties.Clock;
 
 		function initialize(_properties as Properties.Clock) {
-			Main.initialize(Complications.COMPLICATION_TYPE_INVALID);
+			Main.initialize(null);
 
 			self.properties = _properties;
 		}
@@ -29,31 +26,59 @@ module Widgets {
 			]);
 		}
 
+		function resize(
+			_dc as Graphics.Dc,
+			_size_x as Lang.Number,
+			_size_y as Lang.Number,
+			_is_small as Lang.Boolean
+		) as Void {
+			Base.resize(_dc, _size_x, _size_y, _is_small);
+
+			self.is_small =
+				self.properties.height == Properties.SMALL or
+				(self.properties.height == Properties.AUTO and _is_small);
+
+			if (
+				Base.Fits(
+					Render.ClockWidth(_dc, "00:00", self.is_small),
+					Render.ClockHeight(_dc, self.is_small),
+					_size_x,
+					_size_y
+				)
+			) {
+				return;
+			}
+
+			self.is_small = Render.SIZE_SMALL;
+		}
+
 		function render(_dc as Graphics.Dc) as Void {
+			var center_x = self.centerX();
+			var center_y = self.centerY();
+
 			Render.Clock(
 				_dc,
 				self.properties.foreground,
 				self.properties.background,
-				self.pos_x + self.size_x / 2,
-				self.pos_y + self.size_y / 2,
-				self.properties.height == Properties.AUTO
-					? self.is_small
-					: self.properties.height == Properties.SMALL,
+				center_x,
+				center_y,
+				self.is_small,
 				self.time_,
 				"88:88"
 			);
 		}
 
 		function renderMinimal(_dc as Graphics.Dc) as Void {
+			var center_x = self.centerX();
+			var center_y = self.centerY();
+
 			Render.Clock(
 				_dc,
 				self.properties.foreground,
 				self.properties.background,
-				self.pos_x + self.size_x / 2,
-				self.pos_y + self.size_y / 2,
-				self.properties.height == Properties.AUTO
-					? self.is_small
-					: self.properties.height == Properties.SMALL,
+				center_x,
+				center_y,
+				self.is_small,
 				self.time_,
 				""
 			);
