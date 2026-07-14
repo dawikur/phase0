@@ -8,7 +8,9 @@ module Data {
 	class Vo2Bike extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:vo2_bike),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_VO2MAX_BIKE
+					: null,
 				Resources.get(Rez.Strings.LABEL_VO2_BIKE)
 			);
 		}

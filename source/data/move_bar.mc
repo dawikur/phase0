@@ -7,7 +7,12 @@ import Toybox.UserProfile;
 module Data {
 	class MoveBar extends Base {
 		function initialize() {
-			Base.initialize(null, Resources.get(Rez.Strings.LABEL_MOVE_BAR));
+			Base.initialize(
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_INVALID
+					: null,
+				Resources.get(Rez.Strings.LABEL_MOVE_BAR)
+			);
 
 			self.value_max = ActivityMonitor.MOVE_BAR_LEVEL_MAX;
 		}

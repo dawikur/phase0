@@ -27,6 +27,8 @@ module Widgets {
 
 		hidden var properties_ as Properties.Metric;
 
+		var is_small as Lang.Boolean = false;
+
 		function initialize(
 			_properties as Properties.Metric,
 			_style as Lang.Number,
@@ -38,103 +40,26 @@ module Widgets {
 			self.impl_ = _impl;
 			self.style_ = _style;
 		}
-
-		hidden function applyCandidate_(
-			_dc as Graphics.Dc,
-			_is_small as Lang.Boolean,
-			_show_label as Lang.Boolean,
-			_show_icon as Lang.Boolean,
-			_show_gauge as Lang.Boolean,
-			_available_x as Lang.Number,
-			_available_y as Lang.Number,
-			_force as Lang.Boolean
-		) as Lang.Boolean {
-			var number_width = Render.NumberWidth(
-				_dc,
-				self.properties_.width,
-				_is_small
-			);
-			var number_height = Render.NumberHeight(_dc, _is_small);
-			var icon_width = _show_icon
-				? Render.IconsWidth(_dc, Fonts.ICON_EMPTY) + Render.SPACING
-				: 0;
-			var gauge_height = number_height - 2 * Render.SPACING;
-
-			var body_width = number_width + icon_width;
-			if (_show_gauge) {
-				body_width += Render.SPACING / 2 + Render.SPACING;
-			}
-
-			var has_label = _show_label and self.impl_.name.length() != 0;
-			var label_offset_y = has_label
-				? Render.LabelHeight(_dc) + Render.SPACING
-				: 0;
-			var label_width = has_label
-				? Render.LabelWidth(_dc, self.impl_.name)
-				: 0;
-			var size_x = body_width < label_width ? label_width : body_width;
-			var size_y = number_height + label_offset_y;
-			var value_offset_y =
-				_show_icon and _is_small
-					? Base.AlignCenter(
-							0,
-							Render.IconsHeight(_dc),
-							number_height
-						)
-					: 0;
-
-			if (
-				!_force and
-				!Base.Fits(size_x, size_y, _available_x, _available_y)
-			) {
-				return false;
-			}
-
-			self.is_small = _is_small;
-			self.show_label_ = has_label;
-			self.show_icon_ = _show_icon;
-			self.show_gauge_ = _show_gauge;
-			self.size_x = size_x;
-			self.size_y = size_y;
-			self.body_width_ = body_width;
-			self.icon_width_ = icon_width;
-			self.label_offset_y_ = label_offset_y;
-			self.number_width_ = number_width;
-			self.number_height_ = number_height;
-			self.gauge_height_ = gauge_height;
-			self.value_offset_y_ = value_offset_y;
-
-			return true;
-		}
-
 		function resize(
 			_dc as Graphics.Dc,
 			_size_x as Lang.Number,
-			_size_y as Lang.Number,
-			_is_small as Lang.Boolean
+			_size_y as Lang.Number
 		) as Void {
 			var show_label = Properties.general.accent != Render.COLOR_NONE;
-
 			var show_icon = self.style_ == Properties.ICON;
 			var show_gauge = self.style_ == Properties.GAUGE;
 
 			if (
 				self.applyCandidate_(
 					_dc,
-					_is_small,
+					Render.SIZE_REGULAR,
 					show_label,
 					show_icon,
 					show_gauge,
 					_size_x,
 					_size_y,
 					false
-				)
-			) {
-				return;
-			}
-
-			if (
-				!self.is_small and
+				) ||
 				self.applyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
@@ -144,12 +69,7 @@ module Widgets {
 					_size_x,
 					_size_y,
 					false
-				)
-			) {
-				return;
-			}
-
-			if (
+				) ||
 				self.applyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
@@ -159,21 +79,19 @@ module Widgets {
 					_size_x,
 					_size_y,
 					false
+				) ||
+				self.applyCandidate_(
+					_dc,
+					Render.SIZE_SMALL,
+					false,
+					false,
+					false,
+					_size_x,
+					_size_y,
+					true
 				)
 			) {
-				return;
 			}
-
-			self.applyCandidate_(
-				_dc,
-				Render.SIZE_SMALL,
-				false,
-				false,
-				false,
-				_size_x,
-				_size_y,
-				true
-			);
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
@@ -275,6 +193,68 @@ module Widgets {
 					Graphics.TEXT_JUSTIFY_CENTER
 				);
 			}
+		}
+
+		hidden function applyCandidate_(
+			_dc as Graphics.Dc,
+			_is_small as Lang.Boolean,
+			_show_label as Lang.Boolean,
+			_show_icon as Lang.Boolean,
+			_show_gauge as Lang.Boolean,
+			_available_x as Lang.Number,
+			_available_y as Lang.Number,
+			_force as Lang.Boolean
+		) as Lang.Boolean {
+			var number_width = Render.NumberWidth(
+				_dc,
+				self.properties_.width,
+				_is_small
+			);
+			var number_height = Render.NumberHeight(_dc, _is_small);
+			var icon_width = _show_icon
+				? Render.IconsWidth(_dc, Fonts.ICON_EMPTY) + Render.SPACING
+				: 0;
+			var gauge_height = number_height - 2 * Render.SPACING;
+
+			var body_width = number_width + icon_width;
+			if (_show_gauge) {
+				body_width += Render.SPACING / 2 + Render.SPACING;
+			}
+
+			var has_label = _show_label and self.impl_.name.length() != 0;
+			var label_offset_y = has_label
+				? Render.LabelHeight(_dc) + Render.SPACING
+				: 0;
+			var label_width = has_label
+				? Render.LabelWidth(_dc, self.impl_.name)
+				: 0;
+			var size_x = body_width < label_width ? label_width : body_width;
+			var size_y = number_height + label_offset_y;
+			var value_offset_y =
+				_show_icon and _is_small
+					? AlignCenter(0, Render.IconsHeight(_dc), number_height)
+					: 0;
+
+			if (!_force and !Fits(size_x, size_y, _available_x, _available_y)) {
+				return false;
+			}
+
+			self.body_width_ = body_width;
+			self.gauge_height_ = gauge_height;
+			self.icon_width_ = icon_width;
+			self.label_offset_y_ = label_offset_y;
+			self.number_height_ = number_height;
+			self.number_width_ = number_width;
+			self.show_gauge_ = _show_gauge;
+			self.show_icon_ = _show_icon;
+			self.show_label_ = has_label;
+			self.size_x = size_x;
+			self.size_y = size_y;
+			self.value_offset_y_ = value_offset_y;
+
+			self.is_small = _is_small;
+
+			return true;
 		}
 	}
 } // module Widgets

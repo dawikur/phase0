@@ -58,11 +58,7 @@ def render_widgets_mc(extra_data: Any) -> str:
                     )
 
                 doc.line()
-                doc.line(
-                    "default: return new Widgets.Base("
-                    "Complications.COMPLICATION_TYPE_INVALID"
-                    ");"
-                )
+                doc.line("default: return new Widgets.Base(null);")
 
     return doc.render()
 

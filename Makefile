@@ -17,6 +17,10 @@ NAME_SUFFIX.test      := _test
 FLAG_MONKEYC.test     := --unit-test
 FLAG_SIMULATE.test    := -t
 
+NAME_SUFFIX.optimized   := _optimized
+FLAG_MONKEYC.optimized  :=
+FLAG_SIMULATE.optimized :=
+
 NAME_SUFFIX.release   := _release
 FLAG_MONKEYC.release  := --release
 FLAG_SIMULATE.release :=
@@ -192,7 +196,11 @@ bt build_test: # build project for device w/ tests
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test build
 .PHONY: bt build_test
 
-br build_release: # build project for device in release
+bo build_optimized: # build project for device in optimized mode
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=optimized build
+.PHONY: b0 build_optimized
+
+br build_release: # build project for device in release mode
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release build
 .PHONY: br build_release
 
@@ -214,7 +222,11 @@ st simulate_test: # run simulator w/ tests
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test simulate
 .PHONY: st simulate_test
 
-sr simulate_release: # run simulator in release
+so simulate_optimized: # run simulator width optimized build
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=optimized simulate
+.PHONY: so simulate_optimized
+
+sr simulate_release: # run simulator with release build
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release simulate
 .PHONY: st simulate_test
 
@@ -314,6 +326,7 @@ h help: # print help message
 	echo " $${B}Modes$${N}"
 	echo "     debug"
 	echo "     test"
+	echo "     optmized"
 	echo "     release"
 	echo ""
 .PHONY: help

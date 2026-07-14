@@ -9,7 +9,9 @@ module Data {
 	class Stress extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:stress),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_STRESS
+					: null,
 				Resources.get(Rez.Strings.LABEL_STRESS)
 			);
 
@@ -17,7 +19,7 @@ module Data {
 		}
 
 		function get_() as Lang.Number? {
-			return SensorProvider.getSensorHistoryData(
+			return SensorProvider.get(
 				self.name,
 				SensorHistory.getStressHistory({ :period => 1 })
 			);

@@ -8,7 +8,9 @@ module Data {
 	class FloorsDescended extends Base {
 		function initialize() {
 			Base.initialize(
-				null,
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_INVALID
+					: null,
 				Resources.get(Rez.Strings.LABEL_FLOORS_DESCENDED)
 			);
 		}

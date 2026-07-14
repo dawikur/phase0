@@ -8,7 +8,9 @@ module Data {
 	class RespirationRate extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:respiration_rate),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_RESPIRATION_RATE
+					: null,
 				Resources.get(Rez.Strings.LABEL_RESPIRATION_RATE)
 			);
 		}

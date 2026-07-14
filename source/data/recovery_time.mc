@@ -9,7 +9,9 @@ module Data {
 	class RecoveryTime extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:recovery_time),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_RECOVERY_TIME
+					: null,
 				Resources.get(Rez.Strings.LABEL_RECOVERY_TIME)
 			);
 		}

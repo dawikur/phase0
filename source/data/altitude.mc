@@ -11,13 +11,15 @@ module Data {
 	class Altitude extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:altitude),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_ALTITUDE
+					: null,
 				Resources.get(Rez.Strings.LABEL_ALTITUDE)
 			);
 		}
 
 		function get_() as Lang.Number? {
-			return SensorProvider.getSensorHistoryData(
+			return SensorProvider.get(
 				self.name,
 				SensorHistory.getElevationHistory({ :period => 1 })
 			);

@@ -126,7 +126,7 @@ class Fnt:
         )
 
 
-def get_required_glyphs(folders: Folders) -> set[str]:
+def get_required_glyphs(folders: Folders) -> str:
     unique_glyphs = {glyph.name for glyph in fonts.TYPEFACE_DOT.glyphs}
     all_unique_chars: set[str] = set()
     all_unique_chars.update(" ")  # whitespace
@@ -163,14 +163,14 @@ def get_required_glyphs(folders: Folders) -> set[str]:
                 except Exception as e:  # pylint: disable=broad-exception-caught
                     print(f"Error reading {file_path}: {e}")
 
-    return all_unique_chars
+    return str(all_unique_chars)
 
 
 def parse_typeface_and_style(  # pylint:disable=too-many-locals, too-many-branches, too-many-statements
     typefaces: fonts.Typeface | list[fonts.Typeface],
     styles: fonts.Style | list[fonts.Style],
     name: str | None = None,
-    required_glyphs: set[str] | None = None,
+    required_glyphs: str | None = None,
 ) -> tuple[str, Image, str, dict[str, str]]:
     if not isinstance(typefaces, list):
         typefaces = [typefaces]
@@ -287,7 +287,7 @@ def parse_typeface_and_style(  # pylint:disable=too-many-locals, too-many-branch
 
 
 def generate_fonts(  # pylint: disable=too-many-locals
-    folders: Folders, required_glyphs: set[str]
+    folders: Folders, required_glyphs: str
 ) -> None:
     fonts_xml = XmlDocument.resource("fonts")
     fonts_mc = McDocument.create()
@@ -308,10 +308,6 @@ def generate_fonts(  # pylint: disable=too-many-locals
             filename=f"../../{font_fnt}",
             antialias="false",
         )
-        fonts_mc.line(
-            f"const {font_name} = "
-            f"Application.loadResource(Rez.Fonts.{font_name}) as WatchUi.FontResource;"
-        )
 
     # #########################################################################
     # Header
@@ -323,31 +319,38 @@ def generate_fonts(  # pylint: disable=too-many-locals
         # #########################################################################
         # Digits
 
-        fonts_mc.line()
-        fonts_mc.line("// Digits")
-        fonts_mc.line()
         for digits_meta_data in [
-            (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR, "digits_regular"),
-            (fonts.TYPEFACE_DIGITS, fonts.STYLE_REGULAR_THIN, "digits_regular_thin"),
-            (fonts.TYPEFACE_DIGITS_SMALL, fonts.STYLE_REGULAR, "digits_small"),
+            (
+                fonts.TYPEFACE_DIGITS,
+                fonts.STYLE_REGULAR,
+                "digits_regular",
+                ":0123456789",
+            ),
+            (
+                fonts.TYPEFACE_DIGITS,
+                fonts.STYLE_REGULAR_THIN,
+                "digits_regular_thin",
+                ":8",
+            ),
+            (
+                fonts.TYPEFACE_DIGITS_SMALL,
+                fonts.STYLE_REGULAR,
+                "digits_small",
+                ":0123456789",
+            ),
             (
                 fonts.TYPEFACE_DIGITS_SMALL,
                 fonts.STYLE_REGULAR_THIN,
                 "digits_small_thin",
+                ":8",
             ),
         ]:
-            digits_glyphs = set("0123456789:")
-            *artefacts, names_comments = parse_typeface_and_style(
-                *digits_meta_data, required_glyphs=digits_glyphs
-            )
+            *artefacts, names_comments = parse_typeface_and_style(*digits_meta_data)
             __store_font(*artefacts)
 
         # #########################################################################
         # Dots
 
-        fonts_mc.line()
-        fonts_mc.line("// Dots")
-        fonts_mc.line()
         for dot_meta_data in [
             (fonts.TYPEFACE_DOT, fonts.STYLE_REGULAR),
             (fonts.TYPEFACE_DOT, fonts.STYLE_REGULAR_THIN),

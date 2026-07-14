@@ -11,7 +11,9 @@ module Data {
 	class BodyBattery extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:body_battery),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_BODY_BATTERY
+					: null,
 				Resources.get(Rez.Strings.LABEL_BODY_BATTERY)
 			);
 
@@ -19,7 +21,7 @@ module Data {
 		}
 
 		function get_() as Lang.Number? {
-			return SensorProvider.getSensorHistoryData(
+			return SensorProvider.get(
 				self.name,
 				SensorHistory.getBodyBatteryHistory({ :period => 1 })
 			);

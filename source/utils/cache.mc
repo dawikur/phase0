@@ -16,7 +16,7 @@ module Cache {
 
 	function getValue(
 		_name as Lang.String,
-		_til_in_hours as Lang.Number
+		_ttl_in_hours as Lang.Number
 	) as Data? {
 		try {
 			var data = Application.Storage.getValue(_name) as Data;
@@ -27,7 +27,7 @@ module Cache {
 			var now = Time.now().value();
 			var data_age = now - timestamp;
 
-			if (0 <= data_age and data_age < _til_in_hours * 3600) {
+			if (0 <= data_age and data_age < _ttl_in_hours * 3600) {
 				return data;
 			}
 		} catch (ex instanceof Lang.UnexpectedTypeException) {}

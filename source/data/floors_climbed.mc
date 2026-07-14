@@ -8,7 +8,9 @@ module Data {
 	class FloorsClimbed extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:floors_climbed),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_FLOORS_CLIMBED
+					: null,
 				Resources.get(Rez.Strings.LABEL_FLOORS_CLIMBED)
 			);
 

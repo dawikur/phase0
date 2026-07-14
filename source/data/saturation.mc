@@ -11,7 +11,9 @@ module Data {
 	class Saturation extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:saturation),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_PULSE_OX
+					: null,
 				Resources.get(Rez.Strings.LABEL_SATURATION)
 			);
 
@@ -19,7 +21,7 @@ module Data {
 		}
 
 		function get_() as Lang.Number? {
-			return SensorProvider.getSensorHistoryData(
+			return SensorProvider.get(
 				self.name,
 				SensorHistory.getOxygenSaturationHistory({ :period => 1 })
 			);

@@ -11,7 +11,9 @@ module Data {
 	class Pressure extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:pressure),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE
+					: null,
 				Resources.get(Rez.Strings.LABEL_PRESSURE)
 			);
 
@@ -19,7 +21,7 @@ module Data {
 		}
 
 		function get_() as Lang.Number? {
-			return SensorProvider.getSensorHistoryData(
+			return SensorProvider.get(
 				self.name,
 				SensorHistory.getPressureHistory({ :period => 1 })
 			);

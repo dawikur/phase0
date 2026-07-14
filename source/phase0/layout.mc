@@ -2,6 +2,7 @@
 
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.WatchUi;
 
 module Phase0 {
 	class Layout {
@@ -16,70 +17,72 @@ module Phase0 {
 		var left as Box = new Box(0, 0, 0, 0);
 
 		function initialize(_dc as Graphics.Dc) {
-			var attempts = [
-				[
+			if (
+				self.applyCandidate_(
+					_dc,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
-					Render.SIZE_REGULAR,
-				],
-				[
+					Render.SIZE_REGULAR
+				) ||
+				self.applyCandidate_(
+					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
-					Render.SIZE_REGULAR,
-				],
-				[
+					Render.SIZE_REGULAR
+				) ||
+				self.applyCandidate_(
+					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
-					Render.SIZE_SMALL,
-				],
-				[
-					Render.SIZE_SMALL,
-					Render.SIZE_REGULAR,
-					Render.SIZE_SMALL,
-					Render.SIZE_SMALL,
-				],
-				[
-					Render.SIZE_SMALL,
+					Render.SIZE_SMALL
+				) ||
+				self.applyCandidate_(
+					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_REGULAR,
 					Render.SIZE_SMALL,
-				],
-				[
+					Render.SIZE_SMALL
+				) ||
+				self.applyCandidate_(
+					_dc,
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+					Render.SIZE_REGULAR,
+					Render.SIZE_SMALL
+				) ||
+				self.applyCandidate_(
+					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
-					Render.SIZE_SMALL,
-				],
-			];
-			var attempts_size = attempts.size();
-			for (var i = 0; i < attempts_size; ++i) {
-				var attempt = attempts[i];
-				if (
-					self.configure(
-						_dc,
-						attempt[0],
-						attempt[1],
-						attempt[2],
-						attempt[3]
-					)
-				) {
-					return;
-				}
+					Render.SIZE_SMALL
+				)
+			) {
 			}
 		}
 
 		function bottomBox(_box as Box) as Box {
-			return _box.mirrorY(self.screen_size_y);
+			return new Box(
+				_box.pos_x,
+				self.screen_size_y - _box.end_y,
+				_box.size_x,
+				_box.size_y
+			);
 		}
 
 		function rightBox(_box as Box) as Box {
-			return _box.mirrorX(self.screen_size_x);
+			return new Box(
+				self.screen_size_x - _box.end_x,
+				_box.pos_y,
+				_box.size_x,
+				_box.size_y
+			);
 		}
 
-		hidden function configure(
+		hidden function applyCandidate_(
 			_dc as Graphics.Dc,
 			_clock_is_small as Lang.Boolean,
 			_inner_is_small as Lang.Boolean,
@@ -89,8 +92,15 @@ module Phase0 {
 			self.screen_size_x = _dc.getWidth();
 			self.screen_size_y = _dc.getHeight();
 
-			var clock_size_x = Render.ClockWidth(_dc, "00:00", _clock_is_small);
-			var clock_size_y = Render.ClockHeight(_dc, _clock_is_small);
+			var clock_font =
+				Application.loadResource(
+					_clock_is_small
+						? Rez.Fonts.DIGITS_SMALL
+						: Rez.Fonts.DIGITS_REGULAR
+				) as WatchUi.FontResource;
+
+			var clock_size_x = Render.ClockWidth(_dc, "00:00", clock_font);
+			var clock_size_y = Render.ClockHeight(_dc, clock_font);
 
 			var line_inner_height = Render.TextHeight(_dc, _inner_is_small);
 			var line_middle_height = _middle_is_small
@@ -136,14 +146,14 @@ module Phase0 {
 			self.inner = Box.ForY(self.screen_size_y, pos_y, line_inner_height);
 			pos_y = self.inner.end_y + gap_y;
 
-			self.clock = Box.PosSize(
+			self.clock = new Box(
 				(self.screen_size_x - clock_size_x) / 2,
 				pos_y,
 				clock_size_x,
 				clock_size_y
 			);
 
-			self.left = Box.PosSize(
+			self.left = new Box(
 				2 * gap_x,
 				self.clock.pos_y + 2 * Fonts.SPACING_REGULAR,
 				side_size_x,

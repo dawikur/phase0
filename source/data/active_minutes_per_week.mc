@@ -8,7 +8,9 @@ module Data {
 	class ActiveMinutesPerWeek extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:active_minutes_per_week),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_INTENSITY_MINUTES
+					: null,
 				Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_PER_WEEK)
 			);
 

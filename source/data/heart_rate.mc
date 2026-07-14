@@ -11,7 +11,9 @@ module Data {
 	class HeartRate extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:heart_rate),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_HEART_RATE
+					: null,
 				Resources.get(Rez.Strings.LABEL_HEART_RATE)
 			);
 
@@ -30,7 +32,7 @@ module Data {
 				}
 			}
 
-			return SensorProvider.getSensorHistoryData(
+			return SensorProvider.get(
 				self.name,
 				SensorHistory.getHeartRateHistory({ :period => 1 })
 			);

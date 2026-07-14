@@ -3,15 +3,26 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
+import Toybox.WatchUi;
 
 module Widgets {
 	class Clock extends Main {
 		hidden var time_ as Lang.String = "";
 
+		hidden var font_fg_ as WatchUi.FontResource;
+		hidden var font_bg_ as WatchUi.FontResource;
+
 		var properties as Properties.Clock;
 
 		function initialize(_properties as Properties.Clock) {
 			Main.initialize(null);
+
+			self.font_fg_ =
+				Application.loadResource(Rez.Fonts.DIGITS_REGULAR) as
+				WatchUi.FontResource;
+			self.font_bg_ =
+				Application.loadResource(Rez.Fonts.DIGITS_REGULAR_THIN) as
+				WatchUi.FontResource;
 
 			self.properties = _properties;
 		}
@@ -29,27 +40,36 @@ module Widgets {
 		function resize(
 			_dc as Graphics.Dc,
 			_size_x as Lang.Number,
-			_size_y as Lang.Number,
-			_is_small as Lang.Boolean
+			_size_y as Lang.Number
 		) as Void {
-			Base.resize(_dc, _size_x, _size_y, _is_small);
+			Base.resize(_dc, _size_x, _size_y);
 
-			self.is_small =
-				self.properties.height == Properties.SMALL or
-				(self.properties.height == Properties.AUTO and _is_small);
+			if (self.properties.height != Properties.SMALL) {
+				self.font_fg_ =
+					Application.loadResource(Rez.Fonts.DIGITS_REGULAR) as
+					WatchUi.FontResource;
+				self.font_bg_ =
+					Application.loadResource(Rez.Fonts.DIGITS_REGULAR_THIN) as
+					WatchUi.FontResource;
 
-			if (
-				Base.Fits(
-					Render.ClockWidth(_dc, "00:00", self.is_small),
-					Render.ClockHeight(_dc, self.is_small),
-					_size_x,
-					_size_y
-				)
-			) {
-				return;
+				if (
+					Fits(
+						Render.ClockWidth(_dc, "00:00", self.font_fg_),
+						Render.ClockHeight(_dc, self.font_fg_),
+						_size_x,
+						_size_y
+					)
+				) {
+					return;
+				}
 			}
 
-			self.is_small = Render.SIZE_SMALL;
+			self.font_fg_ =
+				Application.loadResource(Rez.Fonts.DIGITS_SMALL) as
+				WatchUi.FontResource;
+			self.font_bg_ =
+				Application.loadResource(Rez.Fonts.DIGITS_SMALL_THIN) as
+				WatchUi.FontResource;
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
@@ -62,7 +82,8 @@ module Widgets {
 				self.properties.background,
 				center_x,
 				center_y,
-				self.is_small,
+				self.font_fg_,
+				self.font_bg_,
 				self.time_,
 				"88:88"
 			);
@@ -78,7 +99,8 @@ module Widgets {
 				self.properties.background,
 				center_x,
 				center_y,
-				self.is_small,
+				self.font_fg_,
+				self.font_bg_,
 				self.time_,
 				""
 			);

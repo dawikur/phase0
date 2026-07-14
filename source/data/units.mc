@@ -13,9 +13,9 @@ module Data {
 		var temperature as System.UnitsSystem = System.UNIT_METRIC;
 		var weight as System.UnitsSystem = System.UNIT_METRIC;
 
-		var meters_to_feet as Lang.Float = 3.28084;
-		var meters_to_miles as Lang.Float = 0.000621371;
-		var kg_to_lb as Lang.Float = 2.20462;
+		const METERS_TO_FEET as Lang.Float = 3.28084;
+		const METERS_TO_MILES as Lang.Float = 0.000621371;
+		const KG_TO_LB as Lang.Float = 2.20462;
 
 		function refresh() as Void {
 			var device_settings = System.getDeviceSettings();
@@ -52,21 +52,21 @@ module Data {
 			if (distance == System.UNIT_METRIC) {
 				return _meters / 1000;
 			}
-			return (_meters * meters_to_miles).toNumber();
+			return (_meters * METERS_TO_MILES).toNumber();
 		}
 
 		function convertElevation(_meters as Lang.Number) as Lang.Number {
 			if (elevation == System.UNIT_METRIC) {
 				return _meters;
 			}
-			return (_meters * meters_to_feet).toNumber();
+			return (_meters * METERS_TO_FEET).toNumber();
 		}
 
 		function convertHeight(_meters as Lang.Number) as Lang.Number {
 			if (height == System.UNIT_METRIC) {
 				return _meters;
 			}
-			return (_meters * meters_to_feet).toNumber();
+			return (_meters * METERS_TO_FEET).toNumber();
 		}
 
 		function convertTemperature(

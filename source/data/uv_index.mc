@@ -7,7 +7,12 @@ import Toybox.Lang;
 module Data {
 	class UvIndex extends Base {
 		function initialize() {
-			Base.initialize(null, Resources.get(Rez.Strings.LABEL_UV_INDEX));
+			Base.initialize(
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_INVALID
+					: null,
+				Resources.get(Rez.Strings.LABEL_UV_INDEX)
+			);
 
 			self.icon = Fonts.ICON_UV_LOW;
 		}
@@ -15,7 +20,7 @@ module Data {
 		function get_() as Lang.Number? {
 			self.icon = Fonts.ICON_UV_LOW;
 
-			var uv_index = WeatherProvider.getUvIndex();
+			var uv_index = WeatherProvider.uv_index;
 			if (uv_index != null) {
 				if (uv_index < 2) {
 					self.icon = Fonts.ICON_UV_LOW;

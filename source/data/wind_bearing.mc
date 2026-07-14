@@ -8,7 +8,9 @@ module Data {
 	class WindBearing extends Base {
 		function initialize() {
 			Base.initialize(
-				null,
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_INVALID
+					: null,
 				Resources.get(Rez.Strings.LABEL_WIND_BEARING)
 			);
 
@@ -18,7 +20,7 @@ module Data {
 		function get_() as Lang.Number? {
 			self.icon = Fonts.ICON_WIND_NONE;
 
-			var wind_bearing = WeatherProvider.getWindBearing();
+			var wind_bearing = WeatherProvider.wind_bearing;
 			if (wind_bearing != null) {
 				if (wind_bearing < 0 + 22.5) {
 					self.icon = Fonts.ICON_WIND_N_0;
@@ -40,7 +42,7 @@ module Data {
 					self.icon = Fonts.ICON_WIND_N_0;
 				}
 
-				var wind_speed = WeatherProvider.getWindSpeed();
+				var wind_speed = WeatherProvider.wind_speed;
 				if (wind_speed != null) {
 					var icon = self.icon as Lang.String;
 					if (wind_speed <= 2) {

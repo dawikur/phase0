@@ -8,7 +8,9 @@ module Data {
 	class Calories extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:calories),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_CALORIES
+					: null,
 				Resources.get(Rez.Strings.LABEL_CALORIES)
 			);
 		}

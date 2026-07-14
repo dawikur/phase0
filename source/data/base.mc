@@ -28,54 +28,5 @@ module Data {
 		function get_() as Lang.Number? {
 			return null;
 		}
-
-		static function Complication(
-			_name as Lang.Symbol
-		) as Complications.Type? {
-			if (!(Toybox has :Complications)) {
-				return null;
-			}
-
-			switch (_name) {
-				case :active_minutes_per_week:
-					return Complications.COMPLICATION_TYPE_INTENSITY_MINUTES;
-				case :altitude:
-					return Complications.COMPLICATION_TYPE_ALTITUDE;
-				case :battery:
-					return Complications.COMPLICATION_TYPE_BATTERY;
-				case :body_battery:
-					return Complications.COMPLICATION_TYPE_BODY_BATTERY;
-				case :calories:
-					return Complications.COMPLICATION_TYPE_CALORIES;
-				case :floors_climbed:
-					return Complications.COMPLICATION_TYPE_FLOORS_CLIMBED;
-				case :heart_rate:
-					return Complications.COMPLICATION_TYPE_HEART_RATE;
-				case :pressure:
-					return Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE;
-				case :pushes:
-					return Complications.COMPLICATION_TYPE_WHEELCHAIR_PUSHES;
-				case :recovery_time:
-					return Complications.COMPLICATION_TYPE_RECOVERY_TIME;
-				case :respiration_rate:
-					return Complications.COMPLICATION_TYPE_RESPIRATION_RATE;
-				case :saturation:
-					return Complications.COMPLICATION_TYPE_PULSE_OX;
-				case :solar_intensity:
-					return Complications.COMPLICATION_TYPE_SOLAR_INPUT;
-				case :steps:
-					return Complications.COMPLICATION_TYPE_STEPS;
-				case :stress:
-					return Complications.COMPLICATION_TYPE_STRESS;
-				case :temperature:
-					return Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE;
-				case :vo2_bike:
-					return Complications.COMPLICATION_TYPE_VO2MAX_BIKE;
-				case :vo2_run:
-					return Complications.COMPLICATION_TYPE_VO2MAX_RUN;
-			}
-
-			return null;
-		}
 	}
 } // module Data

@@ -27,12 +27,10 @@ module Widgets {
 		function resize(
 			_dc as Graphics.Dc,
 			_size_x as Lang.Number,
-			_size_y as Lang.Number,
-			_is_small as Lang.Boolean
+			_size_y as Lang.Number
 		) as Void {
 			self.size_x = Render.SPACING;
 			self.size_y = _size_y;
-			self.is_small = _is_small;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {

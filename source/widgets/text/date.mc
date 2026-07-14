@@ -7,7 +7,11 @@ import Toybox.Time;
 module Widgets {
 	class Date extends Text {
 		function initialize() {
-			Text.initialize(Base.Complication(:date));
+			Text.initialize(
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_DATE
+					: null
+			);
 		}
 
 		hidden function getValue() as Lang.String {

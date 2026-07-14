@@ -7,7 +7,11 @@ import Toybox.Lang;
 module Widgets {
 	class Weather extends Text {
 		function initialize() {
-			Text.initialize(Base.Complication(:current_weather));
+			Text.initialize(
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_CURRENT_WEATHER
+					: null
+			);
 			self.justify_ = Render.JUSTIFY_CENTER;
 		}
 
@@ -31,30 +35,11 @@ module Widgets {
 			return value;
 		}
 
-		function tryCandidate_(
-			_dc as Graphics.Dc,
-			_condition as Lang.Number?,
-			_temp as Lang.String,
-			_use_short as Lang.Boolean,
-			_is_small as Lang.Boolean,
-			_force as Lang.Boolean
-		) as Lang.Boolean {
-			self.value_ = self.weatherValue_(_condition, _use_short, _temp);
-			return self.applyCandidate_(
-				_dc,
-				_is_small,
-				false,
-				self.size_x,
-				self.size_y,
-				_force
-			);
-		}
-
 		function refresh(_dc as Graphics.Dc) as Void {
-			var condition = WeatherProvider.getCondition();
+			var condition = WeatherProvider.condition;
 			var temp = "";
 
-			var temperature_maybe = WeatherProvider.getTemperature();
+			var temperature_maybe = WeatherProvider.temperature;
 			if (temperature_maybe != null) {
 				var temperature = Data.Units.convertTemperature(
 					temperature_maybe as Lang.Number
@@ -110,6 +95,25 @@ module Widgets {
 				condition != null,
 				Render.SIZE_SMALL,
 				true
+			);
+		}
+
+		hidden function tryCandidate_(
+			_dc as Graphics.Dc,
+			_condition as Lang.Number?,
+			_temp as Lang.String,
+			_use_short as Lang.Boolean,
+			_is_small as Lang.Boolean,
+			_force as Lang.Boolean
+		) as Lang.Boolean {
+			self.value_ = self.weatherValue_(_condition, _use_short, _temp);
+			return self.applyCandidate_(
+				_dc,
+				_is_small,
+				false,
+				self.size_x,
+				self.size_y,
+				_force
 			);
 		}
 	}

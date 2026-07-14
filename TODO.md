@@ -9,3 +9,7 @@
 - General
   - Verify on small screens
   - Fix weather provider
+
+Memory:
+66.8kB
+66.1kB

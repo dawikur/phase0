@@ -8,7 +8,9 @@ module Data {
 	class Pushes extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:pushes),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_WHEELCHAIR_PUSHES
+					: null,
 				Resources.get(Rez.Strings.LABEL_PUSHES)
 			);
 

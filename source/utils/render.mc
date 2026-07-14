@@ -1,10 +1,30 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import Toybox.Application;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
 module Render {
+	// Font
+
+	const FONT_REGULAR =
+		Application.loadResource(Rez.Fonts.DOT_REGULAR) as WatchUi.FontResource;
+	const FONT_REGULAR_THIN =
+		Application.loadResource(Rez.Fonts.DOT_REGULAR_THIN) as
+		WatchUi.FontResource;
+	const FONT_SMALL =
+		Application.loadResource(Rez.Fonts.DOT_SMALL) as WatchUi.FontResource;
+	const FONT_TINY =
+		Application.loadResource(Rez.Fonts.DOT_TINY) as WatchUi.FontResource;
+
+	// Icons
+
+	const ICONS =
+		Application.loadResource(Rez.Fonts.ICONS) as WatchUi.FontResource;
+
+	// Settings
+
 	const COLOR_NONE as Lang.Number = -1;
 
 	const SPACING as Lang.Number = Fonts.SPACING_SMALL;
@@ -20,20 +40,12 @@ module Render {
 	const TOP as Lang.Boolean = true;
 	const BOTTOM as Lang.Boolean = false;
 
-	function fontClockFg_(_is_small as Lang.Boolean) as WatchUi.FontResource {
-		return _is_small ? Fonts.DIGITS_SMALL : Fonts.DIGITS_REGULAR;
-	}
-
-	function fontClockBg_(_is_small as Lang.Boolean) as WatchUi.FontResource {
-		return _is_small ? Fonts.DIGITS_SMALL_THIN : Fonts.DIGITS_REGULAR_THIN;
-	}
-
 	function fontFg_(_is_small as Lang.Boolean) as WatchUi.FontResource {
-		return _is_small ? Fonts.DOT_SMALL : Fonts.DOT_REGULAR;
+		return _is_small ? FONT_SMALL : FONT_REGULAR;
 	}
 
 	function fontBg_(_is_small as Lang.Boolean) as WatchUi.FontResource {
-		return _is_small ? Fonts.DOT_SMALL : Fonts.DOT_REGULAR_THIN;
+		return _is_small ? FONT_SMALL : FONT_REGULAR_THIN;
 	}
 
 	function Clock(
@@ -42,7 +54,8 @@ module Render {
 		_background as Lang.Number,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number,
-		_is_small as Lang.Boolean,
+		_font_fg as WatchUi.FontResource,
+		_font_bg as WatchUi.FontResource,
 		_clock as Lang.String,
 		_shade as Lang.String
 	) as Void {
@@ -51,7 +64,7 @@ module Render {
 			_dc.drawText(
 				_pos_x,
 				_pos_y,
-				fontClockFg_(_is_small),
+				_font_fg,
 				_clock,
 				Render.JUSTIFY_CENTER
 			);
@@ -62,7 +75,7 @@ module Render {
 			_dc.drawText(
 				_pos_x + 1,
 				_pos_y + 1,
-				fontClockBg_(_is_small),
+				_font_bg,
 				_shade,
 				Render.JUSTIFY_CENTER
 			);
@@ -72,16 +85,16 @@ module Render {
 	function ClockWidth(
 		_dc as Graphics.Dc,
 		_label as Lang.String,
-		_is_small as Lang.Boolean
+		_font as WatchUi.FontResource
 	) as Lang.Number {
-		return _dc.getTextWidthInPixels(_label, fontClockFg_(_is_small));
+		return _dc.getTextWidthInPixels(_label, _font);
 	}
 
 	function ClockHeight(
 		_dc as Graphics.Dc,
-		_is_small as Lang.Boolean
+		_font as WatchUi.FontResource
 	) as Lang.Number {
-		return _dc.getFontHeight(fontClockFg_(_is_small));
+		return _dc.getFontHeight(_font);
 	}
 
 	function Label(
@@ -93,18 +106,18 @@ module Render {
 		_justify as Lang.Number
 	) as Void {
 		_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
-		_dc.drawText(_pos_x, _pos_y, Fonts.DOT_TINY, _label, _justify);
+		_dc.drawText(_pos_x, _pos_y, FONT_TINY, _label, _justify);
 	}
 
 	function LabelWidth(
 		_dc as Graphics.Dc,
 		_label as Lang.String
 	) as Lang.Number {
-		return _dc.getTextWidthInPixels(_label, Fonts.DOT_TINY);
+		return _dc.getTextWidthInPixels(_label, FONT_TINY);
 	}
 
 	function LabelHeight(_dc as Graphics.Dc) as Lang.Number {
-		return _dc.getFontHeight(Fonts.DOT_TINY);
+		return _dc.getFontHeight(FONT_TINY);
 	}
 
 	function Text(
@@ -354,17 +367,6 @@ module Render {
 		return count < 0 ? 0 : count;
 	}
 
-	function Repeat(
-		_value as Lang.String,
-		_count as Lang.Number
-	) as Lang.String {
-		var result = "";
-		for (var i = 0; i < _count; ++i) {
-			result += _value;
-		}
-		return result;
-	}
-
 	function Icons(
 		_dc as Graphics.Dc,
 		_color as Lang.Number,
@@ -376,12 +378,12 @@ module Render {
 	) as Void {
 		if (_icons.length() != 0) {
 			_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(_pos_x, _pos_y, Fonts.ICONS, _icons, _justify);
+			_dc.drawText(_pos_x, _pos_y, ICONS, _icons, _justify);
 		}
 
 		if (_shade.length() != 0) {
 			_dc.setColor(Properties.general.shade, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(_pos_x + 1, _pos_y + 1, Fonts.ICONS, _shade, _justify);
+			_dc.drawText(_pos_x + 1, _pos_y + 1, ICONS, _shade, _justify);
 		}
 	}
 
@@ -389,10 +391,21 @@ module Render {
 		_dc as Graphics.Dc,
 		_icons as Lang.String
 	) as Lang.Number {
-		return _dc.getTextWidthInPixels(_icons, Fonts.ICONS);
+		return _dc.getTextWidthInPixels(_icons, ICONS);
 	}
 
 	function IconsHeight(_dc as Graphics.Dc) as Lang.Number {
-		return _dc.getFontHeight(Fonts.ICONS);
+		return _dc.getFontHeight(ICONS);
+	}
+
+	function Repeat(
+		_value as Lang.String,
+		_count as Lang.Number
+	) as Lang.String {
+		var result = "";
+		for (var i = 0; i < _count; ++i) {
+			result += _value;
+		}
+		return result;
 	}
 } // module Render

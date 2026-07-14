@@ -9,13 +9,15 @@ module Data {
 	class Temperature extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:temperature),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE
+					: null,
 				Resources.get(Rez.Strings.LABEL_TEMPERATURE)
 			);
 		}
 
 		function get_() as Lang.Number? {
-			return SensorProvider.getSensorHistoryData(
+			return SensorProvider.get(
 				self.name,
 				SensorHistory.getTemperatureHistory({ :period => 1 })
 			);

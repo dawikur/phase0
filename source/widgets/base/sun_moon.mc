@@ -11,6 +11,7 @@ import Toybox.Weather;
 module Widgets {
 	class SunMoon extends Base {
 		static const MOON_PHASES = 16;
+
 		static const VALUE_BOTH = 0;
 		static const VALUE_DAWN = 1;
 		static const VALUE_DUSK = 2;
@@ -22,11 +23,11 @@ module Widgets {
 		hidden var dawn_ as Lang.String = "";
 		hidden var dusk_ as Lang.String = "";
 		hidden var value_mode_ as Lang.Number = VALUE_BOTH;
+		hidden var allow_single_ as Lang.Boolean = true;
 		hidden var next_is_dawn_ as Lang.Boolean = true;
-		hidden var group_width_ as Lang.Number = 0;
-		hidden var dawn_width_ as Lang.Number = 0;
-		hidden var dusk_width_ as Lang.Number = 0;
+		hidden var content_width_ as Lang.Number = 0;
 		hidden var icon_width_ as Lang.Number = 0;
+		hidden var dawn_dusk_width_ as Lang.Number = 0;
 
 		hidden var on_top_ as Lang.Boolean;
 		hidden var show_label_ as Lang.Boolean = true;
@@ -35,136 +36,131 @@ module Widgets {
 
 		function initialize(
 			_properties as Properties.Widget,
-			_on_top as Lang.Boolean
+			_on_top as Lang.Boolean,
+			_allow_single as Lang.Boolean
 		) {
-			Base.initialize(Base.Complication(:sunrise));
+			Base.initialize(
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_SUNRISE
+					: null
+			);
 
 			self.properties = _properties;
 
+			self.allow_single_ = _allow_single;
 			self.on_top_ = _on_top;
 			self.dawn_label_ = Resources.get(Rez.Strings.LABEL_DAWN);
 			self.dusk_label_ = Resources.get(Rez.Strings.LABEL_DUSK);
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			self.refreshValue_();
+			// ---- value ----
+
+			self.dawn_ = "";
+			self.dusk_ = "";
+
+			var weather = Weather.getCurrentConditions();
+			if (weather == null) {
+				return;
+			}
+
+			var location = weather.observationLocationPosition;
+			if (location == null) {
+				return;
+			}
+
+			var now = Time.now();
+
+			var sunrise = Weather.getSunrise(location, now);
+			if (sunrise == null) {
+				return;
+			}
+
+			var sunset = Weather.getSunset(location, now);
+			if (sunset == null) {
+				return;
+			}
+
+			var sunrise_info = Time.Gregorian.info(sunrise, Time.FORMAT_SHORT);
+			var sunrise_hour = Data.Units.convertHour(sunrise_info.hour);
+			var sunrise_min = sunrise_info.min;
+			var sunset_info = Time.Gregorian.info(sunset, Time.FORMAT_SHORT);
+			var sunset_hour = Data.Units.convertHour(sunset_info.hour);
+			var sunset_min = sunset_info.min;
+
+			self.dawn_ = Lang.format("$1$:$2$", [
+				sunrise_hour.format("%02d"),
+				sunrise_min.format("%02d"),
+			]);
+			self.dusk_ = Lang.format("$1$:$2$", [
+				sunset_hour.format("%02d"),
+				sunset_min.format("%02d"),
+			]);
+			self.next_is_dawn_ =
+				now.compare(sunrise) < 0 or now.compare(sunset) >= 0;
+
 			self.moon_phase_ = SunMoon.MoonPhase(Time.now());
+
+			// ---- cache ----
 
 			var cache_key = Data.Units.is_24_hour
 				? "dawn_dusk_24h"
 				: "dawn_dusk_12h";
-			var next_cache_key = cache_key + "_next";
+			var cache_key_dawn = cache_key + "_dawn";
+			var cache_key_dusk = cache_key + "_dusk";
+			var cache_key_next = cache_key + "_next";
 			if (self.dawn_.length() != 0 and self.dusk_.length() != 0) {
-				Cache.setValue(cache_key, self.value_());
-				Cache.setValue(next_cache_key, self.next_is_dawn_ ? 1 : 0);
+				Cache.setValue(cache_key_dawn, self.dawn_);
+				Cache.setValue(cache_key_dusk, self.dusk_);
+				Cache.setValue(cache_key_next, self.next_is_dawn_ ? 1 : 0);
 			} else {
-				var data = Cache.getValue(cache_key, 24);
-				if (data != null) {
-					var value = data as Lang.String;
-					if (10 <= value.length()) {
-						self.dawn_ = value.substring(0, 5) as Lang.String;
-						self.dusk_ =
-							value.substring(value.length() - 5, null) as
-							Lang.String;
-					}
+				var dawn = Cache.getValue(cache_key_dawn, 24);
+				if (dawn != null) {
+					self.dawn_ = dawn as Lang.String;
 				}
 
-				var next = Cache.getValue(next_cache_key, 24);
+				var dusk = Cache.getValue(cache_key_dusk, 24);
+				if (dusk != null) {
+					self.dusk_ = dusk as Lang.String;
+				}
+
+				var next = Cache.getValue(cache_key_next, 24);
 				if (next != null) {
 					self.next_is_dawn_ = (next as Lang.Number) == 1;
 				}
 			}
-
-			self.updateLayout_(_dc);
-		}
-
-		function value_() as Lang.String {
-			return Lang.format("$1$   $2$", [self.dawn_, self.dusk_]);
-		}
-
-		function labelWidth_(
-			_dc as Graphics.Dc,
-			_mode as Lang.Number
-		) as Lang.Number {
-			if (_mode == VALUE_DAWN) {
-				return Render.LabelWidth(_dc, self.dawn_label_);
-			}
-			if (_mode == VALUE_DUSK) {
-				return Render.LabelWidth(_dc, self.dusk_label_);
-			}
-			return Render.LabelWidth(
-				_dc,
-				Lang.format("$1$   $2$", [self.dawn_label_, self.dusk_label_])
-			);
-		}
-
-		function dawnWidth_(_dc as Graphics.Dc) as Lang.Number {
-			return Render.TextWidth(
-				_dc,
-				self.dawnOrPlaceholder_(),
-				Render.SIZE_SMALL
-			);
-		}
-
-		function duskWidth_(_dc as Graphics.Dc) as Lang.Number {
-			return Render.TextWidth(
-				_dc,
-				self.duskOrPlaceholder_(),
-				Render.SIZE_SMALL
-			);
-		}
-
-		function iconWidth_(_dc as Graphics.Dc) as Lang.Number {
-			return Render.IconsWidth(_dc, Fonts.ICON_MOON_00);
-		}
-
-		function groupWidth_(
-			_dc as Graphics.Dc,
-			_mode as Lang.Number
-		) as Lang.Number {
-			var dawn_width = self.dawnWidth_(_dc);
-			var dusk_width = self.duskWidth_(_dc);
-			var icon_width = self.iconWidth_(_dc);
-
-			if (_mode == VALUE_DAWN) {
-				return dawn_width + Render.SPACING + icon_width;
-			}
-			if (_mode == VALUE_DUSK) {
-				return icon_width + Render.SPACING + dusk_width;
-			}
-			return (
-				dawn_width +
-				Render.SPACING +
-				icon_width +
-				Render.SPACING +
-				dusk_width
-			);
 		}
 
 		function resize(
 			_dc as Graphics.Dc,
 			_size_x as Lang.Number,
-			_size_y as Lang.Number,
-			_is_small as Lang.Boolean
+			_size_y as Lang.Number
 		) as Void {
-			Base.resize(_dc, _size_x, _size_y, _is_small);
-			self.updateLayout_(_dc);
-		}
+			Base.resize(_dc, _size_x, _size_y);
 
-		function updateLayout_(_dc as Graphics.Dc) as Void {
+			self.dawn_dusk_width_ = Render.TextWidth(
+				_dc,
+				"00:00",
+				Render.SIZE_SMALL
+			);
+			self.icon_width_ = Render.IconsWidth(_dc, Fonts.ICON_MOON_00);
+
 			self.value_mode_ = VALUE_BOTH;
-
-			if (self.groupWidth_(_dc, self.value_mode_) > self.size_x) {
-				self.value_mode_ = self.next_is_dawn_ ? VALUE_DAWN : VALUE_DUSK;
+			if (self.allow_single_) {
+				if (self.size_x < self.layoutWidth_(VALUE_BOTH)) {
+					self.value_mode_ = self.next_is_dawn_
+						? VALUE_DAWN
+						: VALUE_DUSK;
+				}
 			}
 
 			self.show_label_ =
-				!self.is_small and
 				Render.LabelHeight(_dc) +
 					Render.SPACING +
 					Render.TextHeight(_dc, Render.SIZE_SMALL) <=
-					self.size_y and
-				self.labelWidth_(_dc, self.value_mode_) <= self.size_x;
+				self.size_y;
+
+			self.content_width_ = self.layoutWidth_(self.value_mode_);
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
@@ -175,18 +171,16 @@ module Widgets {
 
 			// ---- label on top ----
 
-			if (self.on_top_) {
-				if (self.show_label_) {
-					Render.Label(
-						_dc,
-						Properties.general.accent,
-						pos_x,
-						pos_y,
-						self.label_(),
-						Graphics.TEXT_JUSTIFY_CENTER
-					);
-					pos_y += Render.LabelHeight(_dc) + Render.SPACING;
-				}
+			if (self.on_top_ and self.show_label_) {
+				Render.Label(
+					_dc,
+					Properties.general.accent,
+					pos_x,
+					pos_y,
+					self.label_(),
+					Graphics.TEXT_JUSTIFY_CENTER
+				);
+				pos_y += Render.LabelHeight(_dc) + Render.SPACING;
 			}
 
 			// ---- value ----
@@ -196,18 +190,70 @@ module Widgets {
 
 			// ---- label on bottom ----
 
-			if (!self.on_top_) {
-				if (self.show_label_) {
-					Render.Label(
-						_dc,
-						Properties.general.accent,
-						pos_x,
-						pos_y,
-						self.label_(),
-						Graphics.TEXT_JUSTIFY_CENTER
-					);
-					pos_y += Render.LabelHeight(_dc) + Render.SPACING;
-				}
+			if (!self.on_top_ and self.show_label_) {
+				Render.Label(
+					_dc,
+					Properties.general.accent,
+					pos_x,
+					pos_y,
+					self.label_(),
+					Graphics.TEXT_JUSTIFY_CENTER
+				);
+				pos_y += Render.LabelHeight(_dc) + Render.SPACING;
+			}
+		}
+
+		hidden function labelWidth_(_dc as Graphics.Dc) as Lang.Number {
+			return Render.LabelWidth(_dc, self.label_());
+		}
+
+		hidden function layoutWidth_(_mode as Lang.Number) as Lang.Number {
+			if (_mode == VALUE_DAWN || _mode == VALUE_DUSK) {
+				return self.icon_width_ + self.dawn_dusk_width_;
+			}
+			return 2 * self.dawn_dusk_width_ + self.icon_width_;
+		}
+
+		function renderValue_(
+			_dc as Graphics.Dc,
+			_pos_x as Lang.Number,
+			_pos_y as Lang.Number
+		) as Void {
+			var color =
+				self.dawn_.length() != 0 and self.dusk_.length() != 0
+					? Properties.general.foreground
+					: Properties.general.shade;
+			var dawn = self.dawn_.length() != 0 ? self.dawn_ : "00:00";
+			var dusk = self.dusk_.length() != 0 ? self.dusk_ : "00:00";
+			var pos_x = CenterStart(_pos_x, self.content_width_);
+
+			if (self.value_mode_ != VALUE_DUSK) {
+				pos_x += self.dawn_dusk_width_;
+				Render.Text(
+					_dc,
+					color,
+					pos_x,
+					_pos_y,
+					Render.SIZE_SMALL,
+					dawn,
+					Graphics.TEXT_JUSTIFY_RIGHT
+				);
+			}
+
+			pos_x += self.icon_width_ / 2;
+			self.renderMoon_(_dc, pos_x, _pos_y);
+			pos_x += self.icon_width_ / 2;
+
+			if (self.value_mode_ != VALUE_DAWN) {
+				Render.Text(
+					_dc,
+					color,
+					pos_x,
+					_pos_y,
+					Render.SIZE_SMALL,
+					dusk,
+					Graphics.TEXT_JUSTIFY_LEFT
+				);
 			}
 		}
 
@@ -221,8 +267,8 @@ module Widgets {
 			var moon_icon = (
 				Fonts.ICON_MOON_00.toCharArray()[0] + self.moon_phase_
 			).toString();
-			var pos_y = Base.AlignCenter(
-				_pos_y,
+			var pos_y = AlignCenter(
+				_pos_y - Render.SPACING,
 				Render.TextHeight(_dc, Render.SIZE_SMALL),
 				Render.IconsHeight(_dc)
 			);
@@ -269,14 +315,6 @@ module Widgets {
 			}
 		}
 
-		function dawnOrPlaceholder_() as Lang.String {
-			return self.dawn_.length() != 0 ? self.dawn_ : "00:00";
-		}
-
-		function duskOrPlaceholder_() as Lang.String {
-			return self.dusk_.length() != 0 ? self.dusk_ : "00:00";
-		}
-
 		function label_() as Lang.String {
 			if (self.value_mode_ == VALUE_DAWN) {
 				return self.dawn_label_;
@@ -287,142 +325,6 @@ module Widgets {
 			return Lang.format("$1$   $2$", [
 				self.dawn_label_,
 				self.dusk_label_,
-			]);
-		}
-
-		function renderValue_(
-			_dc as Graphics.Dc,
-			_pos_x as Lang.Number,
-			_pos_y as Lang.Number
-		) as Void {
-			var color =
-				self.dawn_.length() != 0 and self.dusk_.length() != 0
-					? Properties.general.foreground
-					: Properties.general.shade;
-			var dawn = self.dawnOrPlaceholder_();
-			var dusk = self.duskOrPlaceholder_();
-			self.dawn_width_ = self.dawnWidth_(_dc);
-			self.dusk_width_ = self.duskWidth_(_dc);
-			self.icon_width_ = self.iconWidth_(_dc);
-			self.group_width_ = self.groupWidth_(_dc, self.value_mode_);
-
-			if (self.value_mode_ == VALUE_DAWN) {
-				var group_start = Base.CenterStart(_pos_x, self.group_width_);
-				var moon_x =
-					group_start +
-					self.dawn_width_ +
-					Render.SPACING +
-					self.icon_width_ / 2;
-
-				Render.Text(
-					_dc,
-					color,
-					group_start + self.dawn_width_,
-					_pos_y,
-					Render.SIZE_SMALL,
-					dawn,
-					Graphics.TEXT_JUSTIFY_RIGHT
-				);
-				self.renderMoon_(_dc, moon_x, _pos_y);
-				return;
-			}
-
-			if (self.value_mode_ == VALUE_DUSK) {
-				var group_start = Base.CenterStart(_pos_x, self.group_width_);
-				var moon_x = group_start + self.icon_width_ / 2;
-
-				self.renderMoon_(_dc, moon_x, _pos_y);
-				Render.Text(
-					_dc,
-					color,
-					group_start + self.icon_width_ + Render.SPACING,
-					_pos_y,
-					Render.SIZE_SMALL,
-					dusk,
-					Graphics.TEXT_JUSTIFY_LEFT
-				);
-				return;
-			}
-
-			var group_start = Base.CenterStart(_pos_x, self.group_width_);
-			var moon_x =
-				group_start +
-				self.dawn_width_ +
-				Render.SPACING +
-				self.icon_width_ / 2;
-
-			Render.Text(
-				_dc,
-				color,
-				group_start + self.dawn_width_,
-				_pos_y,
-				Render.SIZE_SMALL,
-				dawn,
-				Graphics.TEXT_JUSTIFY_RIGHT
-			);
-			self.renderMoon_(_dc, moon_x, _pos_y);
-			Render.Text(
-				_dc,
-				color,
-				group_start +
-					self.dawn_width_ +
-					Render.SPACING +
-					self.icon_width_ +
-					Render.SPACING,
-				_pos_y,
-				Render.SIZE_SMALL,
-				dusk,
-				Graphics.TEXT_JUSTIFY_LEFT
-			);
-		}
-
-		function refreshValue_() as Void {
-			self.dawn_ = "";
-			self.dusk_ = "";
-
-			if (!(Toybox has :Complications)) {
-				return;
-			}
-
-			var weather = Weather.getCurrentConditions();
-			if (weather == null) {
-				return;
-			}
-
-			var location = weather.observationLocationPosition;
-			if (location == null) {
-				return;
-			}
-
-			var now = Time.now();
-
-			var sunrise = Weather.getSunrise(location, now);
-			if (sunrise == null) {
-				return;
-			}
-
-			var sunset = Weather.getSunset(location, now);
-			if (sunset == null) {
-				return;
-			}
-
-			self.next_is_dawn_ =
-				now.compare(sunrise) < 0 or now.compare(sunset) >= 0;
-
-			var sunrise_info = Time.Gregorian.info(sunrise, Time.FORMAT_SHORT);
-			var sunrise_hour = Data.Units.convertHour(sunrise_info.hour);
-			var sunrise_min = sunrise_info.min;
-			var sunset_info = Time.Gregorian.info(sunset, Time.FORMAT_SHORT);
-			var sunset_hour = Data.Units.convertHour(sunset_info.hour);
-			var sunset_min = sunset_info.min;
-
-			self.dawn_ = Lang.format("$1$:$2$", [
-				sunrise_hour.format("%02d"),
-				sunrise_min.format("%02d"),
-			]);
-			self.dusk_ = Lang.format("$1$:$2$", [
-				sunset_hour.format("%02d"),
-				sunset_min.format("%02d"),
 			]);
 		}
 
@@ -507,6 +409,24 @@ module Widgets {
 			}
 
 			return true;
+		}
+	}
+
+	class DawnDuskMoon extends SunMoon {
+		function initialize(
+			_properties as Properties.Widget,
+			_on_top as Lang.Boolean
+		) {
+			SunMoon.initialize(_properties, _on_top, false);
+		}
+	}
+
+	class DawnOrDuskMoon extends SunMoon {
+		function initialize(
+			_properties as Properties.Widget,
+			_on_top as Lang.Boolean
+		) {
+			SunMoon.initialize(_properties, _on_top, true);
 		}
 	}
 } // module Widgets

@@ -34,10 +34,9 @@ module Widgets {
 		function resize(
 			_dc as Graphics.Dc,
 			_size_x as Lang.Number,
-			_size_y as Lang.Number,
-			_is_small as Lang.Boolean
+			_size_y as Lang.Number
 		) as Void {
-			Base.resize(_dc, _size_x, _size_y, _is_small);
+			Base.resize(_dc, _size_x, _size_y);
 
 			var borders_width = Render.IconsWidth(
 				_dc,

@@ -7,7 +7,12 @@ import Toybox.Lang;
 module Data {
 	class Rain extends Base {
 		function initialize() {
-			Base.initialize(null, Resources.get(Rez.Strings.LABEL_RAIN));
+			Base.initialize(
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_INVALID
+					: null,
+				Resources.get(Rez.Strings.LABEL_RAIN)
+			);
 
 			self.icon = Fonts.ICON_RAIN_0;
 			self.value_max = 100;
@@ -16,7 +21,7 @@ module Data {
 		function get_() as Lang.Number? {
 			self.icon = Fonts.ICON_RAIN_0;
 
-			var precipitation_chance = WeatherProvider.getPrecipitationChance();
+			var precipitation_chance = WeatherProvider.precipitation_chance;
 			if (precipitation_chance != null) {
 				if (precipitation_chance <= 20) {
 					self.icon = Fonts.ICON_RAIN_0;

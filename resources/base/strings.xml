@@ -112,6 +112,7 @@
 	<string id="LABEL_VO2_RUN">VO2R</string>
 	<string id="LABEL_WIND_BEARING">Wind</string>
 
+	<!-- string id="SET_TOP_MIDDLE_ALT">Top Middle Alternative</string -->
 	<string id="SET_ACCENT">Accent</string>
 	<string id="SET_ACTIVE_MINUTES_PER_DAY">Active Minutes Per Day</string>
 	<string id="SET_ACTIVE_MINUTES_PER_WEEK">Active Minutes Per Week</string>
@@ -136,6 +137,9 @@
 	<string id="SET_CLOCK">Clock</string>
 	<string id="SET_CYAN">Cyan</string>
 	<string id="SET_DATA">Data</string>
+	<string id="SET_DAWN_DUSK_MOON">Dawn and Dusk, Moon</string>
+	<string id="SET_DAWN_OR_DUSK_MOON">Dawn or Dusk, Moon</string>
+	<string id="SET_DISABLED">Disabled</string>
 	<string id="SET_DISTANCE">Distance</string>
 	<string id="SET_FLOORS_CLIMBED">Floors Climbed</string>
 	<string id="SET_FLOORS_DESCENDED">Floors Descended</string>
@@ -158,17 +162,15 @@
 	<string id="SET_LIGHT_RED">Light Red</string>
 	<string id="SET_LIGHT_YELLOW">Light Yellow</string>
 	<string id="SET_MAGENTA">Magenta</string>
-	<string id="SET_USED_MEMORY">Used Memory</string>
 	<string id="SET_METERS_CLIMBED">Meters Climbed</string>
 	<string id="SET_METERS_DESCENDED">Meters Descended</string>
 	<string id="SET_MOVE_BAR">Move Bar</string>
-	<string id="SET_DISABLED">Disabled</string>
 	<string id="SET_NOTIFICATIONS">Notifications</string>
 	<string id="SET_ORANGE">Orange</string>
 	<string id="SET_PINK">Pink</string>
 	<string id="SET_PRESSURE">Pressure</string>
-	<string id="SET_PUSH_DISTANCE">Push Distance</string>
 	<string id="SET_PUSHES">Pushes</string>
+	<string id="SET_PUSH_DISTANCE">Push Distance</string>
 	<string id="SET_RAIN">Rain</string>
 	<string id="SET_RECOVERY_TIME">Recovery Time</string>
 	<string id="SET_RED">Red</string>
@@ -181,11 +183,10 @@
 	<string id="SET_STATUS">Status</string>
 	<string id="SET_STEPS">Steps</string>
 	<string id="SET_STRESS">Stress</string>
-	<string id="SET_SUN_MOON">Sun/Moon</string>
 	<string id="SET_TEMPERATURE">Temperature</string>
 	<string id="SET_TOP_MIDDLE">Top Middle</string>
-	<!-- string id="SET_TOP_MIDDLE_ALT">Top Middle Alternative</string -->
 	<string id="SET_TOP_OUTER">Top Outer</string>
+	<string id="SET_USED_MEMORY">Used Memory</string>
 	<string id="SET_UV_INDEX">Uv Index</string>
 	<string id="SET_VO2_BIKE">VO2 Bike</string>
 	<string id="SET_VO2_RUN">VO2 Run</string>

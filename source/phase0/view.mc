@@ -150,12 +150,7 @@ module Phase0 {
 
 			// ---- top outer ----
 
-			self.placeWidget_(
-				_dc,
-				self.top_outer_,
-				layout.outer,
-				Render.SIZE_REGULAR
-			);
+			self.placeWidget_(_dc, self.top_outer_, layout.outer);
 
 			// ---- top middle ----
 
@@ -164,32 +159,17 @@ module Phase0 {
 
 			// ---- top inner ----
 
-			self.placeWidget_(
-				_dc,
-				self.top_inner_,
-				layout.inner,
-				Render.SIZE_REGULAR
-			);
+			self.placeWidget_(_dc, self.top_inner_, layout.inner);
 
 			// ---- main ----
 
 			// -- left --
 
-			self.placeWidget_(
-				_dc,
-				self.status_,
-				layout.left,
-				Render.SIZE_REGULAR
-			);
+			self.placeWidget_(_dc, self.status_, layout.left);
 
 			// -- clock --
 
-			self.placeWidget_(
-				_dc,
-				self.clock_,
-				layout.clock,
-				Render.SIZE_REGULAR
-			);
+			self.placeWidget_(_dc, self.clock_, layout.clock);
 
 			// -- right --
 
@@ -199,8 +179,7 @@ module Phase0 {
 				self.gauges_[i].resize(
 					_dc,
 					layout_right.size_x,
-					layout_right.size_y,
-					Render.SIZE_REGULAR
+					layout_right.size_y
 				);
 			}
 			self.repositionWidgets_(self.gauges_ as Bases, layout_right);
@@ -227,12 +206,7 @@ module Phase0 {
 			// ---- bottom outer ----
 
 			var bottom_outer = layout.bottomBox(layout.outer);
-			self.placeWidget_(
-				_dc,
-				self.bottom_outer_,
-				bottom_outer,
-				Render.SIZE_REGULAR
-			);
+			self.placeWidget_(_dc, self.bottom_outer_, bottom_outer);
 
 			// ---- footer ----
 
@@ -302,12 +276,19 @@ module Phase0 {
 		) as Void {
 			// ---- refresh ----
 
+			WeatherProvider.refresh(_clock.hour);
+
 			var top_metrics = self.getTopMetrics_();
 			var bottom_metrics = self.getBottomMetrics_();
 
 			{
 				self.status_.refresh(_dc);
 				self.seconds_.refresh(_dc);
+
+				var battery_size = self.batteries_.size();
+				for (var i = 0; i < battery_size; ++i) {
+					self.batteries_[i].refresh(_dc);
+				}
 
 				self.refreshWidgets_(_dc, top_metrics as Bases);
 				self.refreshWidgets_(_dc, bottom_metrics as Bases);
@@ -339,6 +320,11 @@ module Phase0 {
 			self.clock_.render(_dc);
 			self.status_.render(_dc);
 
+			var battery_size = self.batteries_.size();
+			for (var i = 0; i < battery_size; ++i) {
+				self.batteries_[i].render(_dc);
+			}
+
 			if (self.is_high_power_) {
 				self.seconds_.render(_dc);
 			} else {
@@ -357,18 +343,17 @@ module Phase0 {
 		) as Void {
 			// ---- refresh ----
 
-			{
-				self.status_.refresh(_dc);
+			self.status_.refresh(_dc);
+
+			var battery_size = self.batteries_.size();
+			for (var i = 0; i < battery_size; ++i) {
+				self.batteries_[i].refresh(_dc);
 			}
 
 			if (self.last_refresh_min_ != _clock.min) {
 				self.last_refresh_min_ = _clock.min;
 
 				self.clock_.refresh(_dc);
-				var refresh_battery_size = self.batteries_.size();
-				for (var i = 0; i < refresh_battery_size; ++i) {
-					self.batteries_[i].refresh(_dc);
-				}
 			}
 
 			// ---- render ----
@@ -405,7 +390,6 @@ module Phase0 {
 			self.top_outer_ = Widgets.get(Properties.top_outer, Render.TOP);
 			if (self.isBatteryData_(Properties.top_outer.data)) {
 				self.batteries_.add(self.top_outer_ as Widgets.Battery);
-				self.widgets_per_min_.add(self.top_outer_);
 			} else {
 				self.widgets_per_hour_.add(self.top_outer_);
 			}
@@ -419,7 +403,7 @@ module Phase0 {
 			if (Properties has :top_middle_alt and (Properties has :ICON)) {
 				self.top_middle_alt_ = self.propertiesToMetrics_(
 					Properties.top_middle_alt as Lang.Array<Properties.Metric>,
-					Properties.ICON as Lang.Number
+					Properties.ICON
 				);
 			}
 
@@ -461,7 +445,7 @@ module Phase0 {
 				Properties.bottom_middle,
 				Properties.GAUGE
 			);
-			if (Properties has :bottom_middle_alt) {
+			if (Properties has :bottom_middle_alt and (Properties has :GAUGE)) {
 				self.bottom_middle_alt_ = self.propertiesToMetrics_(
 					Properties.bottom_middle_alt as
 						Lang.Array<Properties.Metric>,
@@ -477,7 +461,6 @@ module Phase0 {
 			);
 			if (self.isBatteryData_(Properties.bottom_outer.data)) {
 				self.batteries_.add(self.bottom_outer_ as Widgets.Battery);
-				self.widgets_per_min_.add(self.bottom_outer_);
 			} else {
 				self.widgets_per_hour_.add(self.bottom_outer_);
 			}
@@ -563,12 +546,11 @@ module Phase0 {
 		hidden static function placeWidget_(
 			_dc as Graphics.Dc,
 			_widget as Widgets.Base,
-			_box as Box,
-			_is_small as Lang.Boolean
+			_box as Box
 		) as Void {
 			_widget.pos_x = _box.pos_x;
 			_widget.pos_y = _box.pos_y;
-			_widget.resize(_dc, _box.size_x, _box.size_y, _is_small);
+			_widget.resize(_dc, _box.size_x, _box.size_y);
 		}
 
 		hidden function layoutBottomInner_(
@@ -582,12 +564,7 @@ module Phase0 {
 			);
 			self.bottom_inner_date_.pos_x = _box.pos_x;
 			self.bottom_inner_date_.pos_y = _box.pos_y;
-			self.bottom_inner_date_.resize(
-				_dc,
-				date_size_x,
-				_box.size_y,
-				Render.SIZE_REGULAR
-			);
+			self.bottom_inner_date_.resize(_dc, date_size_x, _box.size_y);
 
 			var seconds_size_x = Render.TextWidth(
 				_dc,
@@ -596,12 +573,7 @@ module Phase0 {
 			);
 			self.seconds_.pos_x = _box.end_x - seconds_size_x;
 			self.seconds_.pos_y = _box.pos_y;
-			self.seconds_.resize(
-				_dc,
-				seconds_size_x,
-				_box.size_y,
-				Render.SIZE_REGULAR
-			);
+			self.seconds_.resize(_dc, seconds_size_x, _box.size_y);
 
 			if (Data.Units.is_24_hour) {
 				return;
@@ -632,12 +604,7 @@ module Phase0 {
 
 			self.bottom_inner_am_pm_.pos_x = am_pm_pos_x;
 			self.bottom_inner_am_pm_.pos_y = _box.pos_y;
-			self.bottom_inner_am_pm_.resize(
-				_dc,
-				am_pm_size_x,
-				_box.size_y,
-				am_pm_is_small
-			);
+			self.bottom_inner_am_pm_.resize(_dc, am_pm_size_x, _box.size_y);
 		}
 
 		hidden static function repositionMetrics_(
@@ -711,7 +678,8 @@ module Phase0 {
 			for (var i = 0; i < metrics_size; ++i) {
 				var metric = _metrics[i];
 
-				metric.resize(_dc, _size_x, _box.size_y, _is_small);
+				metric.resize(_dc, _size_x, _box.size_y);
+				metric.is_small = _is_small;
 			}
 		}
 

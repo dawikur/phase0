@@ -18,12 +18,13 @@ class Options(IntEnum):
     BATTERY_PERCENTAGE = auto()
     BLUETOOTH_CONNECTED = auto()
     BLUETOOTH_DISCONNECTED = auto()
+    DAWN_DUSK_MOON = auto()
+    DAWN_OR_DUSK_MOON = auto()
+    GAUGE = auto()
+    ICON = auto()
     LARGE = auto()
     NOTIFICATIONS = auto()
     SMALL = auto()
-    SUN_MOON = auto()
-    ICON = auto()
-    GAUGE = auto()
 
 
 class Heights(IntEnum):
@@ -47,7 +48,8 @@ class DataExtra(IntEnum):
     BATTERY_DAYS_REMAINING = Options.BATTERY_DAYS_REMAINING.value
     BATTERY_ICON = Options.BATTERY_ICON.value
     BATTERY_PERCENTAGE = Options.BATTERY_PERCENTAGE.value
-    SUN_MOON = Options.SUN_MOON.value
+    DAWN_DUSK_MOON = Options.DAWN_DUSK_MOON.value
+    DAWN_OR_DUSK_MOON = Options.DAWN_OR_DUSK_MOON.value
 
 
 class MetricStyle(IntEnum):
@@ -135,7 +137,7 @@ def Settings(  # pylint: disable=invalid-name
             "top outer",
             "Widget",
             [
-                Select("data", DataWidget.SUN_MOON),
+                Select("data", DataWidget.DAWN_DUSK_MOON),
             ],
         ),
         Array(
@@ -160,6 +162,28 @@ def Settings(  # pylint: disable=invalid-name
                 ],
             ],
         ),
+        # Array(
+        #    "top middle alt",
+        #    "Metric",
+        #    [
+        #        [
+        #            Select("data", DataWithIcon.DISABLED),
+        #            Number("width", 2),
+        #        ],
+        #        [
+        #            Select("data", DataWithIcon.DISABLED),
+        #            Number("width", 2),
+        #        ],
+        #        [
+        #            Select("data", DataWithIcon.DISABLED),
+        #            Number("width", 2),
+        #        ],
+        #        [
+        #            Select("data", DataWithIcon.DISABLED),
+        #            Number("width", 2),
+        #        ],
+        #    ],
+        # ),
         Array(
             "bottom middle",
             "Metric",
@@ -182,28 +206,28 @@ def Settings(  # pylint: disable=invalid-name
                 ],
             ],
         ),
-        Array(
-            "bottom middle alt",
-            "Metric",
-            [
-                [
-                    Select("data", DataAll.CALORIES),
-                    Number("width", 5),
-                ],
-                [
-                    Select("data", DataAll.SOLAR_INTENSITY),
-                    Number("width", 3),
-                ],
-                [
-                    Select("data", DataAll.DISABLED),
-                    Number("width", 3),
-                ],
-                [
-                    Select("data", DataAll.DISABLED),
-                    Number("width", 3),
-                ],
-            ],
-        ),
+        # Array(
+        #    "bottom middle alt",
+        #    "Metric",
+        #    [
+        #        [
+        #            Select("data", DataAll.CALORIES),
+        #            Number("width", 5),
+        #        ],
+        #        [
+        #            Select("data", DataAll.SOLAR_INTENSITY),
+        #            Number("width", 3),
+        #        ],
+        #        [
+        #            Select("data", DataAll.DISABLED),
+        #            Number("width", 3),
+        #        ],
+        #        [
+        #            Select("data", DataAll.DISABLED),
+        #            Number("width", 3),
+        #        ],
+        #    ],
+        # ),
         Single(
             "bottom outer",
             "Widget",

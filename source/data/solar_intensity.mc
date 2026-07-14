@@ -9,7 +9,9 @@ module Data {
 	class SolarIntensity extends Base {
 		function initialize() {
 			Base.initialize(
-				Base.Complication(:solar_intensity),
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_SOLAR_INPUT
+					: null,
 				Resources.get(Rez.Strings.LABEL_SOLAR_INTENSITY)
 			);
 
