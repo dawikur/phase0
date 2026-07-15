@@ -63,14 +63,14 @@ let activeView = "normal";
 
 const watchViews = {
 	normal: {
-		label: "Phase0 normal watch face on a Garmin watch",
+		label: "phase0 normal watch face on a Garmin watch",
 		lede: "Normal mode is built for fast human scanning: time, conditions and daily progress resolve into clear visual reads. Gauges add completeness cues to bottom metrics, condition icons stay recognizable at a glance, and the dense layout keeps a unified retro style without giving up readability.",
 		src: "assets/normal.png",
 		fallback: "assets/normal.png",
 		features: ["general", "top", "status", "clock", "gauges", "bottom", "battery"],
 	},
 	aod: {
-		label: "Phase0 always-on watch face on a Garmin watch",
+		label: "phase0 always-on watch face on a Garmin watch",
 		lede: "Always-on mode keeps only the essentials: the time, battery state for the charge-or-not decision, and quiet status signals for alarms, notifications and connection state.",
 		src: "assets/aod.png",
 		fallback: "assets/aod.png",

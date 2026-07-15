@@ -18,8 +18,12 @@ class Options(IntEnum):
     BATTERY_PERCENTAGE = auto()
     BLUETOOTH_CONNECTED = auto()
     BLUETOOTH_DISCONNECTED = auto()
-    DAWN_DUSK_MOON = auto()
+    DAWN_AND_DUSK = auto()
+    DAWN_AND_DUSK_MOON = auto()
+    DAWN_AND_DUSK_SUN = auto()
+    DAWN_OR_DUSK = auto()
     DAWN_OR_DUSK_MOON = auto()
+    DAWN_OR_DUSK_SUN = auto()
     GAUGE = auto()
     ICON = auto()
     LARGE = auto()
@@ -42,14 +46,18 @@ class Status(IntEnum):
     NOTIFICATIONS = Options.NOTIFICATIONS.value
 
 
-class DataExtra(IntEnum):
+class Widgets(IntEnum):
     DISABLED = Options.DISABLED.value
 
     BATTERY_DAYS_REMAINING = Options.BATTERY_DAYS_REMAINING.value
     BATTERY_ICON = Options.BATTERY_ICON.value
     BATTERY_PERCENTAGE = Options.BATTERY_PERCENTAGE.value
-    DAWN_DUSK_MOON = Options.DAWN_DUSK_MOON.value
+    DAWN_AND_DUSK = Options.DAWN_AND_DUSK.value
+    DAWN_AND_DUSK_MOON = Options.DAWN_AND_DUSK_MOON.value
+    DAWN_AND_DUSK_SUN = Options.DAWN_AND_DUSK_SUN.value
+    DAWN_OR_DUSK = Options.DAWN_OR_DUSK.value
     DAWN_OR_DUSK_MOON = Options.DAWN_OR_DUSK_MOON.value
+    DAWN_OR_DUSK_SUN = Options.DAWN_OR_DUSK_SUN.value
 
 
 class MetricStyle(IntEnum):
@@ -65,7 +73,7 @@ def Settings(  # pylint: disable=invalid-name
     DataWidget = cast(
         Any,
         IntEnum(
-            "DataWidget", {datum.name: datum.value + len(data) for datum in DataExtra}
+            "DataWidget", {datum.name: datum.value + len(data) for datum in Widgets}
         ),
     )
 
@@ -137,7 +145,7 @@ def Settings(  # pylint: disable=invalid-name
             "top outer",
             "Widget",
             [
-                Select("data", DataWidget.DAWN_DUSK_MOON),
+                Select("data", DataWidget.DAWN_AND_DUSK_MOON),
             ],
         ),
         Array(

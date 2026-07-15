@@ -36,6 +36,39 @@ def get_defined_strings(strings_xml: Path, prefix: str) -> set[str]:
     }
 
 
+def get_defined_string_entries(strings_xml: Path, prefix: str) -> list[tuple[str, str]]:
+    tree = ET.parse(strings_xml)
+    root = tree.getroot()
+
+    return [
+        (string.get("id", ""), string.text or "")
+        for string in root.findall("string")
+        if string.get("id", "").startswith(prefix)
+    ]
+
+
+def get_string_entries_with_invalid_length(
+    strings_xml: Path,
+    prefix: str,
+    *,
+    exact_length: int | None = None,
+    max_length: int | None = None,
+) -> list[tuple[str, str, int]]:
+    assert exact_length is not None or max_length is not None
+
+    invalid_entries = []
+
+    for string_id, value in get_defined_string_entries(strings_xml, prefix):
+        value_length = len(value)
+
+        if exact_length is not None and value_length != exact_length:
+            invalid_entries.append((string_id, value, value_length))
+        elif max_length is not None and value_length > max_length:
+            invalid_entries.append((string_id, value, value_length))
+
+    return sorted(invalid_entries)
+
+
 def get_all_defined_strings(prefix: str) -> set[str]:
     defined = set()
 
@@ -99,6 +132,47 @@ def test_all_watchface_label_strings_are_used_by_monkey_c(strings_xml: Path) -> 
         not unused
     ), f"Unused watchface LABEL_ strings in {strings_xml}:\n" + "\n".join(
         f"  - {label}" for label in unused
+    )
+
+
+@pytest.mark.parametrize("strings_xml", get_strings_xml_files(), ids=str)
+def test_all_watchface_label_strings_have_max_length_five(strings_xml: Path) -> None:
+    too_long = get_string_entries_with_invalid_length(
+        strings_xml, "LABEL_", max_length=5
+    )
+
+    assert (
+        not too_long
+    ), f"Watchface LABEL_ strings longer than 5 chars in {strings_xml}:\n" + "\n".join(
+        f"  - {string_id}: {length} ({value})" for string_id, value, length in too_long
+    )
+
+
+@pytest.mark.parametrize("strings_xml", get_strings_xml_files(), ids=str)
+def test_all_day_of_week_strings_have_exact_length_three(strings_xml: Path) -> None:
+    invalid_entries = get_string_entries_with_invalid_length(
+        strings_xml, "DAY_OF_WEEK_", exact_length=3
+    )
+
+    assert (
+        not invalid_entries
+    ), f"DAY_OF_WEEK_ strings not exactly 3 chars in {strings_xml}:\n" + "\n".join(
+        f"  - {string_id}: {length} ({value})"
+        for string_id, value, length in invalid_entries
+    )
+
+
+@pytest.mark.parametrize("strings_xml", get_strings_xml_files(), ids=str)
+def test_all_month_strings_have_exact_length_three(strings_xml: Path) -> None:
+    invalid_entries = get_string_entries_with_invalid_length(
+        strings_xml, "MONTH_", exact_length=3
+    )
+
+    assert (
+        not invalid_entries
+    ), f"MONTH_ strings not exactly 3 chars in {strings_xml}:\n" + "\n".join(
+        f"  - {string_id}: {length} ({value})"
+        for string_id, value, length in invalid_entries
     )
 
 

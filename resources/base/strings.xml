@@ -89,7 +89,7 @@
 	<string id="LABEL_DAWN">Dawn</string>
 	<string id="LABEL_DISTANCE">Dist</string>
 	<string id="LABEL_DUSK">Dusk</string>
-	<string id="LABEL_FLOORS_CLIMBED">Floors</string>
+	<string id="LABEL_FLOORS_CLIMBED">FlUp</string>
 	<string id="LABEL_FLOORS_DESCENDED">Fl Dn</string>
 	<string id="LABEL_HEART_RATE">HR</string>
 	<string id="LABEL_USED_MEMORY">Mem</string>
@@ -98,7 +98,7 @@
 	<string id="LABEL_MOVE_BAR">Move</string>
 	<string id="LABEL_PRESSURE">Press</string>
 	<string id="LABEL_PUSHES">Push</string>
-	<string id="LABEL_PUSH_DISTANCE">Push D</string>
+	<string id="LABEL_PUSH_DISTANCE">PushD</string>
 	<string id="LABEL_RAIN">Rain</string>
 	<string id="LABEL_RECOVERY_TIME">Recov</string>
 	<string id="LABEL_RESPIRATION_RATE">Resp</string>
@@ -137,8 +137,12 @@
 	<string id="SET_CLOCK">Clock</string>
 	<string id="SET_CYAN">Cyan</string>
 	<string id="SET_DATA">Data</string>
-	<string id="SET_DAWN_DUSK_MOON">Dawn and Dusk, Moon</string>
+	<string id="SET_DAWN_OR_DUSK">Dawn or Dusk</string>
+	<string id="SET_DAWN_AND_DUSK">Dawn and Dusk</string>
+	<string id="SET_DAWN_AND_DUSK_MOON">Dawn and Dusk, Moon</string>
 	<string id="SET_DAWN_OR_DUSK_MOON">Dawn or Dusk, Moon</string>
+	<string id="SET_DAWN_AND_DUSK_SUN">Dawn and Dusk, Sun</string>
+	<string id="SET_DAWN_OR_DUSK_SUN">Dawn or Dusk, Sun</string>
 	<string id="SET_DISABLED">Disabled</string>
 	<string id="SET_DISTANCE">Distance</string>
 	<string id="SET_FLOORS_CLIMBED">Floors Climbed</string>

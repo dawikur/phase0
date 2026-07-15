@@ -69,9 +69,9 @@ module Widgets {
 			var clock = System.getClockTime();
 
 			self.label_ = Data.Units.getAmPm(clock.hour);
-			if (self.label_ == "am") {
+			if (self.label_.equals("am")) {
 				self.fallback_ = Fonts.ICON_DAWN;
-			} else if (self.label_ == "pm") {
+			} else if (self.label_.equals("pm")) {
 				self.fallback_ = Fonts.ICON_DUSK;
 			} else {
 				self.fallback_ = null;
@@ -82,6 +82,7 @@ module Widgets {
 				self.label_,
 				Render.SIZE_SMALL
 			);
+
 			var mode = self.base_mode_;
 			if (
 				self.size_x < label_width and
@@ -108,14 +109,13 @@ module Widgets {
 			var center_y = self.centerY();
 
 			if (self.mode_ == MODE_ICON and self.fallback_ != null) {
-				var fallback = self.fallback_ as Lang.String;
 				Render.Icons(
 					_dc,
 					Properties.general.foreground,
 					center_x,
 					center_y,
-					fallback,
-					fallback,
+					self.fallback_,
+					self.fallback_,
 					Render.JUSTIFY_CENTER
 				);
 				return;

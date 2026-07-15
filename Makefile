@@ -282,13 +282,13 @@ h help: # print help message
 	I="\033[3m"
 	U="\033[4m"
 
-	echo ""
-	echo " Makefile for ConnectIQ project."
-	echo ""
-	echo " $${B}Usage$${N}"
-	echo "     $${B}make$${N} [$${U}target$${N}] [$${U}arguments$${N}]..."
-	echo ""
-	echo " $${B}Targets$${N}"
+	printf "\n"
+	printf " Makefile for ConnectIQ project.\n"
+	printf "\n"
+	printf " %bUsage%b\n" "$$B" "$$N"
+	printf "     %bmake%b [%btarget%b] [%barguments%b]...\n" "$$B" "$$N" "$$U" "$$N" "$$U" "$$N"
+	printf "\n"
+	printf " %bTargets%b\n" "$$B" "$$N"
 	awk -F'#' '\
 	/^[[:alnum:]_-]+([[:space:]][[:alnum:]_-]+)*:.*#/ { \
 		target_part = $$1; \
@@ -313,20 +313,20 @@ h help: # print help message
 		for (i = 1; i <= n; i++) \
 			printf "%" padding "s %" max_short "s %-" max_long "s %s\n", "", shorts[i], longs[i], desc[i]; \
 	}' $(MAKEFILE_LIST)
-	echo ""
-	echo " $${B}Arguments$${N}"
-	echo "     NAME              (default: $(NAME))"
-	echo "     DEVICE            (default: $(DEVICE))"
-	echo "     MODE              (default: $(MODE))"
-	echo "     V                 (default: $(V))"
-	echo ""
-	echo " $${B}Devices$${N}"
+	printf "\n"
+	printf " %bArguments%b\n" "$$B" "$$N"
+	printf "     NAME              (default: $(NAME))\n"
+	printf "     DEVICE            (default: $(DEVICE))\n"
+	printf "     MODE              (default: $(MODE))\n"
+	printf "     V                 (default: $(V))\n"
+	printf "\n"
+	printf " %bDevices%b\n" "$$B" "$$N"
 	sed -n 's/.*iq:product id="\(.*\)"\/>/     \1/p' ./manifest.xml
-	echo ""
-	echo " $${B}Modes$${N}"
-	echo "     debug"
-	echo "     test"
-	echo "     optmized"
-	echo "     release"
-	echo ""
+	printf "\n"
+	printf " %bModes%b\n" "$$B" "$$N"
+	printf "     debug\n"
+	printf "     test\n"
+	printf "     optmized\n"
+	printf "     release\n"
+	printf "\n"
 .PHONY: help

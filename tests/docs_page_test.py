@@ -113,7 +113,7 @@ def test_docs_page_watch_images_have_stable_ids_sources_and_alt_text() -> None:
 
     watch_face = attrs_for(parser, "img", "id", "watchFace")
     assert watch_face["src"] == "assets/normal.png"
-    assert watch_face["alt"] == "Phase0 normal watch face"
+    assert watch_face["alt"] == "phase0 normal watch face"
 
     overlay_sources = {
         attrs["src"]
