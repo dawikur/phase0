@@ -15,12 +15,14 @@ module Data {
 			);
 
 			self.icon = Fonts.ICON_UV_LOW;
+
+			WeatherProvider.register("uv_index");
 		}
 
 		function get_() as Lang.Number? {
 			self.icon = Fonts.ICON_UV_LOW;
 
-			var uv_index = WeatherProvider.uv_index;
+			var uv_index = WeatherProvider.get("uv_index");
 			if (uv_index != null) {
 				if (uv_index < 2) {
 					self.icon = Fonts.ICON_UV_LOW;

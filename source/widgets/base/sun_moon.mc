@@ -11,7 +11,7 @@ import Toybox.Weather;
 module Widgets {
 	class SunMoon extends Base {
 		static const MOON_PHASES = 16;
-		static const CACHE_TTL_HOURS = 24;
+		static const CACHE_TTL_HOURS = 48;
 		static const CACHE_KEY_SUNRISE = "dawn_dusk_sunrise";
 		static const CACHE_KEY_SUNSET = "dawn_dusk_sunset";
 		static const EVENT_DISPLAY_OFFSET_SECONDS = 5 * 60;

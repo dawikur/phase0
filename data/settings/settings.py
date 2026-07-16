@@ -170,28 +170,6 @@ def Settings(  # pylint: disable=invalid-name
                 ],
             ],
         ),
-        # Array(
-        #    "top middle alt",
-        #    "Metric",
-        #    [
-        #        [
-        #            Select("data", DataWithIcon.DISABLED),
-        #            Number("width", 2),
-        #        ],
-        #        [
-        #            Select("data", DataWithIcon.DISABLED),
-        #            Number("width", 2),
-        #        ],
-        #        [
-        #            Select("data", DataWithIcon.DISABLED),
-        #            Number("width", 2),
-        #        ],
-        #        [
-        #            Select("data", DataWithIcon.DISABLED),
-        #            Number("width", 2),
-        #        ],
-        #    ],
-        # ),
         Array(
             "bottom middle",
             "Metric",
@@ -214,28 +192,6 @@ def Settings(  # pylint: disable=invalid-name
                 ],
             ],
         ),
-        # Array(
-        #    "bottom middle alt",
-        #    "Metric",
-        #    [
-        #        [
-        #            Select("data", DataAll.CALORIES),
-        #            Number("width", 5),
-        #        ],
-        #        [
-        #            Select("data", DataAll.SOLAR_INTENSITY),
-        #            Number("width", 3),
-        #        ],
-        #        [
-        #            Select("data", DataAll.DISABLED),
-        #            Number("width", 3),
-        #        ],
-        #        [
-        #            Select("data", DataAll.DISABLED),
-        #            Number("width", 3),
-        #        ],
-        #    ],
-        # ),
         Single(
             "bottom outer",
             "Widget",

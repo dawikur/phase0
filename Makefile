@@ -72,6 +72,7 @@ FONTS_DEPS         := scripts/generate_fonts                     \
 FONTS              := $(RESOURCES_GENERATED_DIR)fonts.xml
 SETTINGS_DEPS      := scripts/generate_settings                  \
                       $(SCRIPT_DEPS)                             \
+                      $(shell find data/fonts -type f)           \
                       $(shell find data/settings -type f)
 SETTINGS           := $(RESOURCES_GENERATED_DIR)settings.xml
 DOCS_SETTINGS_DEPS := scripts/generate_docs_settings             \

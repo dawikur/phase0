@@ -25,5 +25,5 @@ def test_render_xml_references_generated_icon() -> None:
     xml = render_xml(Path("resources/generated/icon.svg"))
 
     assert '<bitmap id="ICON"' in xml
-    assert 'filename="../../resources/generated/icon.svg"' in xml
+    assert 'filename="icon.svg"' in xml
     assert 'dithering="none"' in xml

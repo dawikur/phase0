@@ -276,7 +276,7 @@ module Phase0 {
 		) as Void {
 			// ---- refresh ----
 
-			WeatherProvider.refresh(_clock.hour);
+			WeatherProvider.refresh(Time.now().value());
 
 			var top_metrics = self.getTopMetrics_();
 			var bottom_metrics = self.getBottomMetrics_();

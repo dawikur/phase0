@@ -14,6 +14,13 @@ module Cache {
 		Application.Storage.setValue(_name + "_timestamp", now);
 	}
 
+	function hasValue(
+		_name as Lang.String,
+		_ttl_in_hours as Lang.Number
+	) as Lang.Boolean {
+		return getValue(_name, _ttl_in_hours) != null;
+	}
+
 	function getValue(
 		_name as Lang.String,
 		_ttl_in_hours as Lang.Number
@@ -36,5 +43,10 @@ module Cache {
 		Application.Storage.deleteValue(_name + "_timestamp");
 
 		return null;
+	}
+
+	function clearValue(_name as Lang.String) as Void {
+		Application.Storage.deleteValue(_name);
+		Application.Storage.deleteValue(_name + "_timestamp");
 	}
 } // module Cache

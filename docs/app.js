@@ -254,6 +254,24 @@ function groupsForFeature(feature) {
 	return settingsData.groups.filter((group) => regions.includes(group.region));
 }
 
+function hasAlternativeGroup(groupId) {
+	return settingsData.groups.some(
+		(group) => group.id === groupId && group.hasAlternative
+	);
+}
+
+function alternativeNoteForFeature(feature) {
+	if (feature === "top" && hasAlternativeGroup("TopMiddle")) {
+		return featureContent.top.alternativeCopy;
+	}
+
+	if (feature === "bottom" && hasAlternativeGroup("BottomMiddle")) {
+		return featureContent.bottom.alternativeCopy;
+	}
+
+	return "";
+}
+
 function optionsMarkup(setting) {
 	if (setting.type === "boolean") {
 		return `<span class="boolean-toggle"><span>On</span><span>Off</span></span>`;
@@ -299,8 +317,9 @@ function groupMarkup(group) {
 function renderPanel(feature) {
 	const content = featureContent[feature];
 	const groups = groupsForFeature(feature);
-	const alternativeNote = content.alternativeCopy
-		? `<p class="panel-note">${content.alternativeCopy}</p>`
+	const alternativeCopy = alternativeNoteForFeature(feature);
+	const alternativeNote = alternativeCopy
+		? `<p class="panel-note">${alternativeCopy}</p>`
 		: "";
 	panel.innerHTML = `
 		<div class="panel-inner">

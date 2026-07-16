@@ -166,6 +166,8 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 						settings: [{ title: "Foreground", type: "list", options: [{ label: "White", value: 16777215 }] }],
 					},
 					{
+						id: "TopMiddle",
+						hasAlternative: true,
 						region: "top",
 						title: "Top",
 						settings: [
@@ -175,6 +177,8 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 						],
 					},
 					{
+						id: "BottomMiddle",
+						hasAlternative: false,
 						region: "bottom",
 						title: "Bottom",
 						settings: [
@@ -319,8 +323,8 @@ test("renders alternative setting guidance for middle metric regions", () => {
 	context.renderPanel("bottom");
 	const bottomHtml = document.getElementById("detailPanel").innerHTML;
 
-	assert.match(bottomHtml, /panel-note/);
-	assert.match(bottomHtml, /alternative bottom middle metrics/);
+	assert.doesNotMatch(bottomHtml, /panel-note/);
+	assert.doesNotMatch(bottomHtml, /alternative bottom middle metrics/);
 });
 
 test("middle metric feature copy matches exposed settings", () => {

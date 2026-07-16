@@ -56,7 +56,7 @@ def render_xml(icon_svg: Path) -> str:
         root.root,
         "bitmap",
         id="ICON",
-        filename=f"../../{icon_svg}",
+        filename=icon_svg.name,
         dithering="none",
     )
     return root.render()

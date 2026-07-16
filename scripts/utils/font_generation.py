@@ -305,7 +305,7 @@ def generate_fonts(  # pylint: disable=too-many-locals
             fonts_xml.root,
             "font",
             id=font_name,
-            filename=f"../../{font_fnt}",
+            filename=font_fnt.name,
             antialias="false",
         )
 

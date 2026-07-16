@@ -445,6 +445,8 @@ TYPEFACE = Typeface("Icons", [
     # #########################################################################
     # conditions
 
+    # rain
+
     Glyph("#rain 0", [
         "00000000000",
         "00001110000",
@@ -497,6 +499,8 @@ TYPEFACE = Typeface("Icons", [
         "00100000100",
         "00000000000",
     ]),
+
+    # uv
 
     Glyph("#uv low", [
         "00000000000",
@@ -563,6 +567,8 @@ TYPEFACE = Typeface("Icons", [
         "00000000000",
         "00000000000",
     ]),
+
+    # wind
 
     Glyph("#wind none", [
         "00000000000",
@@ -896,6 +902,19 @@ TYPEFACE = Typeface("Icons", [
         "00000000000",
         "00000000000",
     ]),
+
+    # TODO: altitude
+    # TODO: battery percentage
+    # TODO: body battery
+    # TODO: heart rate
+    # TODO: humidity
+    # TODO: move bar
+    # TODO: pressure
+    # TODO: recovery time
+    # TODO: respiration
+    # TODO: saturation
+    # TODO: stress
+    # TODO: temperature
 ])
 
 ICON = Glyph("icon", [

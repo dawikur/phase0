@@ -13,6 +13,9 @@ module Widgets {
 					: null
 			);
 			self.justify_ = Render.JUSTIFY_CENTER;
+
+			WeatherProvider.register("condition");
+			WeatherProvider.register("temperature");
 		}
 
 		function weatherValue_(
@@ -36,10 +39,10 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			var condition = WeatherProvider.condition;
+			var condition = WeatherProvider.get("condition");
 			var temp = "";
 
-			var temperature_maybe = WeatherProvider.temperature;
+			var temperature_maybe = WeatherProvider.get("temperature");
 			if (temperature_maybe != null) {
 				var temperature = Data.Units.convertTemperature(
 					temperature_maybe as Lang.Number

@@ -89,9 +89,12 @@
 	<string id="LABEL_DAWN">Świt</string>
 	<string id="LABEL_DISTANCE">Dyst</string>
 	<string id="LABEL_DUSK">Zach</string>
+	<string id="LABEL_FEELS_LIKE_TEMPERATURE">OdczT</string>
 	<string id="LABEL_FLOORS_CLIMBED">PGór</string>
 	<string id="LABEL_FLOORS_DESCENDED">P. Dn</string>
 	<string id="LABEL_HEART_RATE">Tętno</string>
+	<string id="LABEL_HIGH_TEMPERATURE">MaxT</string>
+	<string id="LABEL_LOW_TEMPERATURE">MinT</string>
 	<string id="LABEL_USED_MEMORY">Mem</string>
 	<string id="LABEL_METERS_CLIMBED">M Gór</string>
 	<string id="LABEL_METERS_DESCENDED">M Dół</string>
@@ -101,6 +104,7 @@
 	<string id="LABEL_PUSH_DISTANCE">DPch</string>
 	<string id="LABEL_RAIN">Desz</string>
 	<string id="LABEL_RECOVERY_TIME">Reg</string>
+	<string id="LABEL_RELATIVE_HUMIDITY">Wilg</string>
 	<string id="LABEL_RESPIRATION_RATE">Odd</string>
 	<string id="LABEL_SATURATION">SPO2</string>
 	<string id="LABEL_SOLAR_INTENSITY">Solar</string>
@@ -145,6 +149,7 @@
 	<string id="SET_DAWN_OR_DUSK_SUN">Wschód albo Zachód, Słońce</string>
 	<string id="SET_DISABLED">Wyłączone</string>
 	<string id="SET_DISTANCE">Dystans</string>
+	<string id="SET_FEELS_LIKE_TEMPERATURE">Temperatura odczuwalna</string>
 	<string id="SET_FLOORS_CLIMBED">Piętra w górę</string>
 	<string id="SET_FLOORS_DESCENDED">Piętra w dół</string>
 	<string id="SET_FOREGROUND">Pierwszy plan</string>
@@ -153,6 +158,7 @@
 	<string id="SET_GREEN">Zielony</string>
 	<string id="SET_HEART_RATE">Tętno</string>
 	<string id="SET_HEIGHT">Wysokość</string>
+	<string id="SET_HIGH_TEMPERATURE">Maksymalna temperatura</string>
 	<string id="SET_INDIGO">Indygo</string>
 	<string id="SET_LARGE">Duży</string>
 	<string id="SET_LIGHT_AZURE">Jasny lazurowy</string>
@@ -165,6 +171,7 @@
 	<string id="SET_LIGHT_PINK">Jasny różowy</string>
 	<string id="SET_LIGHT_RED">Jasny czerwony</string>
 	<string id="SET_LIGHT_YELLOW">Jasny żółty</string>
+	<string id="SET_LOW_TEMPERATURE">Minimalna temperatura</string>
 	<string id="SET_MAGENTA">Magenta</string>
 	<string id="SET_METERS_CLIMBED">Metry w górę</string>
 	<string id="SET_METERS_DESCENDED">Metry w dół</string>
@@ -178,6 +185,7 @@
 	<string id="SET_RAIN">Deszcz</string>
 	<string id="SET_RECOVERY_TIME">Czas regeneracji</string>
 	<string id="SET_RED">Czerwony</string>
+	<string id="SET_RELATIVE_HUMIDITY">Wilgotność względna</string>
 	<string id="SET_RESPIRATION_RATE">Częstość oddechu</string>
 	<string id="SET_SATURATION">Saturacja</string>
 	<string id="SET_SHADE">Cień</string>

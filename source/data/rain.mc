@@ -16,12 +16,14 @@ module Data {
 
 			self.icon = Fonts.ICON_RAIN_0;
 			self.value_max = 100;
+
+			WeatherProvider.register("precipitation_chance");
 		}
 
 		function get_() as Lang.Number? {
 			self.icon = Fonts.ICON_RAIN_0;
 
-			var precipitation_chance = WeatherProvider.precipitation_chance;
+			var precipitation_chance = WeatherProvider.get("precipitation_chance");
 			if (precipitation_chance != null) {
 				if (precipitation_chance <= 20) {
 					self.icon = Fonts.ICON_RAIN_0;

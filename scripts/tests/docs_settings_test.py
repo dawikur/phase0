@@ -44,6 +44,7 @@ def test_docs_settings_preserves_numeric_boolean_and_regions() -> None:
     settings = {setting["title"]: setting for setting in top_middle["settings"]}
 
     assert top_middle["region"] == "top"
+    assert top_middle["hasAlternative"] is False
     assert groups["BottomOuter"]["region"] == "battery"
     assert "TopMiddle0" not in groups
     assert "TopMiddleAlt0" not in groups
@@ -119,6 +120,7 @@ def test_docs_settings_collapses_alternative_middle_groups(tmp_path: Path) -> No
 
     assert [group["id"] for group in data["groups"]] == ["TopMiddle"]
     assert data["groups"][0]["title"] == "Top Middle"
+    assert data["groups"][0]["hasAlternative"] is True
 
 
 def test_docs_settings_includes_supported_devices_and_languages(tmp_path: Path) -> None:

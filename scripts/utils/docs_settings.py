@@ -85,6 +85,10 @@ def display_group_id(group_id: str) -> str:
     return match.group(1) if match else group_id
 
 
+def is_alternative_group(source_group_id: str) -> bool:
+    return bool(re.search(r"(?:Alt|Alternative)\d+$", source_group_id))
+
+
 def setting_summary(group_id: str) -> str:
     summaries = {
         "General": "Global palette controls for the whole watch face.",
@@ -148,6 +152,11 @@ def parse_settings(
     root = ET.parse(settings_xml).getroot()
     groups = []
     seen_group_ids: set[str] = set()
+    alternative_groups = {
+        display_group_id(group.get("id", ""))
+        for group in root.findall("group")
+        if is_alternative_group(group.get("id", ""))
+    }
 
     for group in root.findall("group"):
         source_group_id = group.get("id", "")
@@ -160,6 +169,7 @@ def parse_settings(
         parsed_group: dict[str, Any] = {
             "id": group_id,
             "sourceId": source_group_id,
+            "hasAlternative": group_id in alternative_groups,
             "title": resolve_text(group.get("title"), strings),
             "region": setting_region(group_id),
             "summary": setting_summary(group_id),
