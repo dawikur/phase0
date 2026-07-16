@@ -85,6 +85,13 @@ def test_docs_page_exposes_theme_view_and_accessible_regions() -> None:
     assert attrs_for(parser, "p", "id", "pageLede")["class"] == "lede"
     assert attrs_for(parser, "aside", "id", "detailPanel")["aria-live"] == "polite"
     assert attrs_for(parser, "svg", "id", "guideLayer")["aria-hidden"] == "true"
+    assert attrs_for(parser, "article", "id", "supportCard")["class"] == "support-card"
+    assert "support-list" in (
+        attrs_for(parser, "ul", "id", "supportedDevices")["class"] or ""
+    )
+    assert (
+        attrs_for(parser, "ul", "id", "supportedLanguages")["class"] == "support-list"
+    )
 
 
 def test_docs_page_hotspots_match_documented_features() -> None:

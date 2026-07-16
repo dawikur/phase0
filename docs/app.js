@@ -57,6 +57,8 @@ const themeButtons = Array.from(document.querySelectorAll(".theme-option"));
 const viewButtons = Array.from(document.querySelectorAll(".view-option"));
 const watchFace = document.getElementById("watchFace");
 const pageLede = document.getElementById("pageLede");
+const supportedDevicesList = document.getElementById("supportedDevices");
+const supportedLanguagesList = document.getElementById("supportedLanguages");
 const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
 let activeFeature = "general";
 let activeView = "normal";
@@ -222,6 +224,29 @@ function colorFromValue(value) {
 		return null;
 	}
 	return `#${numeric.toString(16).padStart(6, "0")}`;
+}
+
+function supportListMarkup(items, formatter = (item) => item) {
+	if (!items.length) {
+		return "<li>Not generated yet.</li>";
+	}
+
+	return items.map((item) => `<li>${formatter(item)}</li>`).join("");
+}
+
+function renderSupportMeta() {
+	if (supportedDevicesList) {
+		supportedDevicesList.innerHTML = supportListMarkup(
+			settingsData.supportedDevices || []
+		);
+	}
+
+	if (supportedLanguagesList) {
+		supportedLanguagesList.innerHTML = supportListMarkup(
+			settingsData.supportedLanguages || [],
+			(language) => `${language.name} <span class="support-code">${language.code}</span>`
+		);
+	}
 }
 
 function groupsForFeature(feature) {
@@ -409,4 +434,5 @@ const themeMode = ["auto", "light", "dark"].includes(initialTheme)
 
 applyHotspotGeometry();
 applyTheme(themeMode);
+renderSupportMeta();
 applyWatchView(initialView || "normal");

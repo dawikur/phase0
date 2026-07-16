@@ -9,6 +9,7 @@ def test_docs_settings_resolves_labels_and_options() -> None:
     data = parse_settings(
         Path("resources/generated/settings.xml"),
         Path("resources"),
+        Path("manifest.xml"),
     )
 
     groups = {group["id"]: group for group in data["groups"]}
@@ -35,6 +36,7 @@ def test_docs_settings_preserves_numeric_boolean_and_regions() -> None:
     data = parse_settings(
         Path("resources/generated/settings.xml"),
         Path("resources"),
+        Path("manifest.xml"),
     )
 
     groups = {group["id"]: group for group in data["groups"]}
@@ -96,7 +98,63 @@ def test_docs_settings_collapses_alternative_middle_groups(tmp_path: Path) -> No
         encoding="utf-8",
     )
 
-    data = parse_settings(settings_xml, tmp_path / "resources")
+    manifest_xml = tmp_path / "manifest.xml"
+    manifest_xml.write_text(
+        """
+        <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+            <iq:application>
+                <iq:products>
+                    <iq:product id="fr255" />
+                </iq:products>
+                <iq:languages>
+                    <iq:language>eng</iq:language>
+                </iq:languages>
+            </iq:application>
+        </iq:manifest>
+        """,
+        encoding="utf-8",
+    )
+
+    data = parse_settings(settings_xml, tmp_path / "resources", manifest_xml)
 
     assert [group["id"] for group in data["groups"]] == ["TopMiddle"]
     assert data["groups"][0]["title"] == "Top Middle"
+
+
+def test_docs_settings_includes_supported_devices_and_languages(tmp_path: Path) -> None:
+    resources = tmp_path / "resources" / "base"
+    resources.mkdir(parents=True)
+    resources.joinpath("strings.xml").write_text("<resources />", encoding="utf-8")
+
+    settings_xml = tmp_path / "settings.xml"
+    settings_xml.write_text("<settings />", encoding="utf-8")
+
+    manifest_xml = tmp_path / "manifest.xml"
+    manifest_xml.write_text(
+        """
+        <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+            <iq:application>
+                <iq:products>
+                    <iq:product id="fr255" />
+                    <iq:product id="fenix7x" />
+                </iq:products>
+                <iq:languages>
+                    <iq:language>eng</iq:language>
+                    <iq:language>pol</iq:language>
+                </iq:languages>
+            </iq:application>
+        </iq:manifest>
+        """,
+        encoding="utf-8",
+    )
+
+    data = parse_settings(settings_xml, tmp_path / "resources", manifest_xml)
+
+    assert data["supportedDevices"] == [
+        "Forerunner 255",
+        "Fenix 7X / tactix 7 / quatix 7X / Enduro 2",
+    ]
+    assert data["supportedLanguages"] == [
+        {"code": "eng", "name": "English"},
+        {"code": "pol", "name": "Polish"},
+    ]

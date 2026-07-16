@@ -116,6 +116,8 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 	register(makeElement({ id: "faceRing" }));
 	const watchFace = register(makeElement({ id: "watchFace" }));
 	const pageLede = register(makeElement({ id: "pageLede" }));
+	const supportedDevices = register(makeElement({ id: "supportedDevices" }));
+	const supportedLanguages = register(makeElement({ id: "supportedLanguages" }));
 
 	for (const feature of ["general", "top", "status", "clock", "gauges", "bottom", "battery"]) {
 		register(makeElement({
@@ -152,6 +154,11 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 			},
 			addEventListener() {},
 			PHASE_SETTINGS: {
+				supportedDevices: ["Forerunner 255", "Fenix 7X / tactix 7 / quatix 7X / Enduro 2"],
+				supportedLanguages: [
+					{ code: "eng", name: "English" },
+					{ code: "pol", name: "Polish" },
+				],
 				groups: [
 					{
 						region: "clock",
@@ -191,7 +198,16 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 	vm.createContext(context);
 	vm.runInContext(readFileSync(new URL("../app.js", import.meta.url), "utf8"), context);
 
-	return { all, context, document, mediaListeners, pageLede, watchFace };
+	return {
+		all,
+		context,
+		document,
+		mediaListeners,
+		pageLede,
+		supportedDevices,
+		supportedLanguages,
+		watchFace,
+	};
 }
 
 test("computes stable hotspot geometry from watch face regions", () => {
@@ -321,4 +337,14 @@ test("middle metric feature copy matches exposed settings", () => {
 		assert.doesNotMatch(html, /\bpadding\b/i);
 		assert.doesNotMatch(html, /\bgauge behavior\b/i);
 	}
+});
+
+test("renders supported devices and languages from generated docs data", () => {
+	const { supportedDevices, supportedLanguages } = createHarness();
+
+	assert.match(supportedDevices.innerHTML, /Forerunner 255/);
+	assert.match(supportedDevices.innerHTML, /Fenix 7X/);
+	assert.match(supportedLanguages.innerHTML, /English/);
+	assert.match(supportedLanguages.innerHTML, /support-code/);
+	assert.match(supportedLanguages.innerHTML, /eng/);
 });

@@ -6,11 +6,18 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
+from data.devices import DEVICES
+
 STRING_REF_RE = re.compile(r"^@Strings\.([A-Za-z0-9_]+)$")
 PROPERTY_REF_RE = re.compile(r"^@Properties\.([A-Za-z0-9_]+)$")
 REPEATED_GROUP_RE = re.compile(
     r"^(Status|Gauges|TopMiddle|BottomMiddle)(?:Alt|Alternative)?\d+$"
 )
+CONNECT_IQ_NAMESPACE = {"iq": "http://www.garmin.com/xml/connectiq"}
+LANGUAGE_NAMES = {
+    "eng": "English",
+    "pol": "Polish",
+}
 
 
 def load_strings(resources_dir: Path) -> dict[str, str]:
@@ -97,7 +104,46 @@ def setting_summary(group_id: str) -> str:
     )
 
 
-def parse_settings(settings_xml: Path, resources_dir: Path) -> dict[str, Any]:
+def supported_devices(manifest_xml: Path) -> list[str]:
+    root = ET.parse(manifest_xml).getroot()
+    products = [
+        product.get("id", "")
+        for product in root.findall(".//iq:products/iq:product", CONNECT_IQ_NAMESPACE)
+        if product.get("id")
+    ]
+    by_connect_iq_id = {
+        connect_iq_id: device.product_id
+        for device in DEVICES
+        for connect_iq_id in device.connect_iq_ids
+    }
+
+    return [by_connect_iq_id.get(product_id, product_id) for product_id in products]
+
+
+def supported_languages(manifest_xml: Path) -> list[dict[str, str]]:
+    root = ET.parse(manifest_xml).getroot()
+    languages = []
+
+    for language in root.findall(".//iq:languages/iq:language", CONNECT_IQ_NAMESPACE):
+        code = (language.text or "").strip()
+        if not code:
+            continue
+
+        languages.append(
+            {
+                "code": code,
+                "name": LANGUAGE_NAMES.get(code, code.upper()),
+            }
+        )
+
+    return languages
+
+
+def parse_settings(
+    settings_xml: Path,
+    resources_dir: Path,
+    manifest_xml: Path = Path("manifest.xml"),
+) -> dict[str, Any]:
     strings = load_strings(resources_dir)
     root = ET.parse(settings_xml).getroot()
     groups = []
@@ -153,6 +199,8 @@ def parse_settings(settings_xml: Path, resources_dir: Path) -> dict[str, Any]:
 
     return {
         "source": str(settings_xml),
+        "supportedDevices": supported_devices(manifest_xml),
+        "supportedLanguages": supported_languages(manifest_xml),
         "groups": groups,
     }
 
@@ -166,6 +214,7 @@ def write_settings_js(data: dict[str, Any], output: Path) -> None:
 def build_docs_settings(
     resources_dir: Path = Path("resources"),
     settings_xml: Path = Path("resources/generated/settings.xml"),
+    manifest_xml: Path = Path("manifest.xml"),
     output: Path = Path("docs/settings-data.js"),
 ) -> None:
-    write_settings_js(parse_settings(settings_xml, resources_dir), output)
+    write_settings_js(parse_settings(settings_xml, resources_dir, manifest_xml), output)

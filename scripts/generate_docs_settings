@@ -11,5 +11,6 @@ if __name__ == "__main__":
     build_docs_settings(
         resources_dir=Path(folders.resources()),
         settings_xml=Path(folders.resources("generated", "settings.xml")),
+        manifest_xml=Path("manifest.xml"),
         output=Path("docs/settings-data.js"),
     )
