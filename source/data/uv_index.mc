@@ -14,13 +14,13 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_UV_INDEX)
 			);
 
-			self.icon = Fonts.ICON_UV_LOW;
+			self.icon = Fonts.ICON_NONE;
 
 			WeatherProvider.register("uv_index");
 		}
 
 		function get_() as Lang.Number? {
-			self.icon = Fonts.ICON_UV_LOW;
+			self.icon = Fonts.ICON_NONE;
 
 			var uv_index = WeatherProvider.get("uv_index");
 			if (uv_index != null) {

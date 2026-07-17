@@ -194,10 +194,6 @@ def test_all_settings_strings_are_used_by_resources(strings_xml: Path) -> None:
     defined = get_defined_strings(strings_xml, "SET_")
     used = get_used_resource_strings(RESOURCES_SET_RE)
 
-    defined -= {
-        "SET_BOTTOM_MIDDLE_ALT",
-    }
-
     unused = sorted(defined - used)
 
     assert not unused, f"Unused settings SET_ strings in {strings_xml}:\n" + "\n".join(

@@ -161,7 +161,7 @@ def Settings(  # pylint: disable=invalid-name
                     Number("width", 2),
                 ],
                 [
-                    Select("data", DataWithIcon.WIND_BEARING),
+                    Select("data", DataWithIcon.WIND),
                     Number("width", 2),
                 ],
                 [

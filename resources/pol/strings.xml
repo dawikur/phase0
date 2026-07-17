@@ -114,9 +114,8 @@
 	<string id="LABEL_UV_INDEX">Uv</string>
 	<string id="LABEL_VO2_BIKE">VO2B</string>
 	<string id="LABEL_VO2_RUN">VO2R</string>
-	<string id="LABEL_WIND_BEARING">Wiatr</string>
+	<string id="LABEL_WIND">Wiatr</string>
 
-	<!-- string id="SET_TOP_MIDDLE_ALT">Górny środek alternatywny</string -->
 	<string id="SET_ACCENT">Akcent</string>
 	<string id="SET_ACTIVE_MINUTES_PER_DAY">Minuty aktywności dziennie</string>
 	<string id="SET_ACTIVE_MINUTES_PER_WEEK">Minuty aktywności tygodniowo</string>
@@ -134,7 +133,6 @@
 	<string id="SET_BLUETOOTH_DISCONNECTED">Bluetooth rozłączony</string>
 	<string id="SET_BODY_BATTERY">Body Battery</string>
 	<string id="SET_BOTTOM_MIDDLE">Dolny środek</string>
-	<string id="SET_BOTTOM_MIDDLE_ALT">Dolny środek alternatywny</string>
 	<string id="SET_BOTTOM_OUTER">Dolny zewnętrzny</string>
 	<string id="SET_CALORIES">Kalorie</string>
 	<string id="SET_CHARCOAL">Grafitowy</string>
@@ -204,6 +202,6 @@
 	<string id="SET_VO2_RUN">VO2 bieg</string>
 	<string id="SET_WHITE">Biały</string>
 	<string id="SET_WIDTH">Szerokość</string>
-	<string id="SET_WIND_BEARING">Kierunek wiatru</string>
+	<string id="SET_WIND">Wiatr</string>
 	<string id="SET_YELLOW">Żółty</string>
 </strings>

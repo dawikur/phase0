@@ -2,14 +2,14 @@
 
 import Toybox.Lang;
 import Toybox.System;
+import Toybox.Test;
 import Toybox.Time;
 import Toybox.Weather;
 
 module WeatherProvider {
 	const CURRENT_CACHE_TTL_HOURS as Lang.Number = 4;
-	const FORECAST_CACHE_MAX_HOURS as Lang.Number = 48;
-	const FORECAST_CACHE_TTL_HOURS as Lang.Number = 48;
-	const FORECAST_MEMORY_THRESHOLD as Lang.Number = 80 * 1024;
+	const FORECAST_CACHE_TTL_HOURS as Lang.Number = 12;
+	const FORECAST_MEMORY_THRESHOLD as Lang.Number = 100 * 1024;
 	const FORECAST_SNAPSHOT_KEY as Lang.String = "weather_forecast_snapshot";
 
 	var FIELDS_ as Lang.Dictionary<Lang.String, Lang.Number?> = {};
@@ -35,8 +35,6 @@ module WeatherProvider {
 			return;
 		}
 
-		last_refresh_hour = now_hour;
-
 		var should_use_forecast =
 			System.getSystemStats().totalMemory > FORECAST_MEMORY_THRESHOLD;
 		var weather = Weather.getCurrentConditions();
@@ -50,6 +48,13 @@ module WeatherProvider {
 				weather,
 				!should_use_forecast or !stored_forecast and !had_valid_forecast
 			);
+			last_refresh_hour = now_hour;
+			return;
+		}
+
+		if (should_use_forecast and stored_forecast) {
+			refreshForecastFallback_(fields, now_hour);
+			last_refresh_hour = now_hour;
 			return;
 		}
 
@@ -96,8 +101,8 @@ module WeatherProvider {
 		}
 
 		var max_size = forecast_size;
-		if (max_size > FORECAST_CACHE_MAX_HOURS) {
-			max_size = FORECAST_CACHE_MAX_HOURS;
+		if (max_size > FORECAST_CACHE_TTL_HOURS) {
+			max_size = FORECAST_CACHE_TTL_HOURS;
 		}
 
 		clearForecast_();
@@ -114,7 +119,7 @@ module WeatherProvider {
 			if (forecast_hour <= _now_hour) {
 				continue;
 			}
-			if (forecast_hour > _now_hour + FORECAST_CACHE_MAX_HOURS) {
+			if (forecast_hour > _now_hour + FORECAST_CACHE_TTL_HOURS) {
 				continue;
 			}
 
@@ -210,7 +215,7 @@ module WeatherProvider {
 	) as Lang.Number? {
 		for (
 			var forecast_hour = _now_hour + 1;
-			forecast_hour <= _now_hour + FORECAST_CACHE_MAX_HOURS;
+			forecast_hour <= _now_hour + FORECAST_CACHE_TTL_HOURS;
 			++forecast_hour
 		) {
 			var cached = Cache.getValue(
@@ -222,7 +227,7 @@ module WeatherProvider {
 			}
 		}
 
-		return currentCacheValue_(_key);
+		return null;
 	}
 
 	function hasValidForecast_() as Lang.Boolean {
@@ -312,7 +317,7 @@ module WeatherProvider {
 			var fields_size = fields.size();
 			for (
 				var forecast_hour = snapshot_hour + 1;
-				forecast_hour <= snapshot_hour + FORECAST_CACHE_MAX_HOURS;
+				forecast_hour <= snapshot_hour + FORECAST_CACHE_TTL_HOURS;
 				++forecast_hour
 			) {
 				for (var i = 0; i < fields_size; ++i) {
@@ -322,5 +327,168 @@ module WeatherProvider {
 		}
 
 		Cache.clearValue(FORECAST_SNAPSHOT_KEY);
+	}
+
+	function clearWeatherProviderTestState_() as Void {
+		var test_fields = [
+			"weather_provider_test_condition",
+			"weather_provider_test_temperature",
+		];
+		var test_fields_size = test_fields.size();
+
+		for (var i = 0; i < test_fields_size; ++i) {
+			var field = test_fields[i];
+			Cache.clearValue(field);
+
+			for (
+				var forecast_hour = 0;
+				forecast_hour <= FORECAST_CACHE_TTL_HOURS + 2;
+				++forecast_hour
+			) {
+				Cache.clearValue(forecastKey_(field, forecast_hour));
+			}
+		}
+
+		Cache.clearValue(FORECAST_SNAPSHOT_KEY);
+		FIELDS_ = {};
+		last_refresh_hour = -1;
+	}
+
+	function assertNull_(_value as Lang.Object?) as Void {
+		Test.assertEqual(_value == null, true);
+	}
+
+	function assertNumberEqual_(
+		_actual as Lang.Number?,
+		_expected as Lang.Number?
+	) as Void {
+		if (_expected == null) {
+			assertNull_(_actual);
+			return;
+		}
+
+		Test.assertEqual(_actual != null, true);
+		Test.assertEqual(_actual as Lang.Number, _expected as Lang.Number);
+	}
+
+	function assertCacheValueEqual_(
+		_key as Lang.String,
+		_ttl_in_hours as Lang.Number,
+		_expected as Lang.Number?
+	) as Void {
+		var cached = Cache.getValue(_key, _ttl_in_hours);
+		if (_expected == null) {
+			assertNull_(cached);
+			return;
+		}
+
+		Test.assertEqual(cached != null, true);
+		Test.assertEqual(cached as Lang.Number, _expected as Lang.Number);
+	}
+
+	function assertForecastValue_(
+		_key as Lang.String,
+		_hour as Lang.Number,
+		_expected as Lang.Number?
+	) as Void {
+		assertCacheValueEqual_(
+			forecastKey_(_key, _hour),
+			FORECAST_CACHE_TTL_HOURS,
+			_expected
+		);
+	}
+
+	(:test)
+	function WeatherProviderCurrentCacheTest(
+		_logger as Test.Logger
+	) as Lang.Boolean {
+		clearWeatherProviderTestState_();
+
+		var field = "weather_provider_test_temperature";
+
+		Test.assertEqual(forecastKey_(field, 42), "forecast_" + field + "_42");
+
+		assertNumberEqual_(refreshCurrentValue_(field, null, false), null);
+
+		Cache.setValue(field, 12);
+		assertNumberEqual_(refreshCurrentValue_(field, null, false), 12);
+
+		assertNumberEqual_(refreshCurrentValue_(field, 27.8, false), 27);
+		assertCacheValueEqual_(field, CURRENT_CACHE_TTL_HOURS, 12);
+
+		assertNumberEqual_(refreshCurrentValue_(field, 33, true), 33);
+		assertCacheValueEqual_(field, CURRENT_CACHE_TTL_HOURS, 33);
+
+		clearWeatherProviderTestState_();
+		return true;
+	}
+
+	(:test)
+	function WeatherProviderForecastCacheTest(
+		_logger as Test.Logger
+	) as Lang.Boolean {
+		clearWeatherProviderTestState_();
+
+		var condition = "weather_provider_test_condition";
+		var temperature = "weather_provider_test_temperature";
+		var now_hour = 10;
+
+		register(condition);
+		register(temperature);
+
+		storeForecastValue_(condition, now_hour + 1, 7);
+		storeForecastValue_(condition, now_hour + 3, 9);
+		storeForecastValue_(temperature, now_hour + 2, 21);
+
+		assertNumberEqual_(nextForecastValue_(condition, now_hour), 7);
+		assertNumberEqual_(nextForecastValue_(temperature, now_hour), 21);
+		assertNumberEqual_(nextForecastValue_(temperature, now_hour + 2), null);
+
+		Cache.setValue(FORECAST_SNAPSHOT_KEY, now_hour);
+		refreshForecastFallback_([condition, temperature], now_hour);
+		assertNumberEqual_(get(condition), 7);
+		assertNumberEqual_(get(temperature), 21);
+
+		storeForecastValue_(condition, now_hour + 1, null);
+		assertForecastValue_(condition, now_hour + 1, null);
+
+		clearWeatherProviderTestState_();
+		return true;
+	}
+
+	(:test)
+	function WeatherProviderForecastCleanupTest(
+		_logger as Test.Logger
+	) as Lang.Boolean {
+		clearWeatherProviderTestState_();
+
+		var condition = "weather_provider_test_condition";
+		var temperature = "weather_provider_test_temperature";
+		var snapshot_hour = 20;
+
+		register(condition);
+		register(temperature);
+
+		Cache.setValue(FORECAST_SNAPSHOT_KEY, snapshot_hour);
+		storeForecastValue_(condition, snapshot_hour + 1, 1);
+		storeForecastValue_(condition, snapshot_hour + 2, 2);
+		storeForecastValue_(temperature, snapshot_hour + 1, 3);
+
+		clearForecast_();
+
+		Test.assertEqual(
+			Cache.hasValue(FORECAST_SNAPSHOT_KEY, FORECAST_CACHE_TTL_HOURS),
+			false
+		);
+		assertForecastValue_(condition, snapshot_hour + 1, null);
+		assertForecastValue_(condition, snapshot_hour + 2, null);
+		assertForecastValue_(temperature, snapshot_hour + 1, null);
+
+		Cache.setValue(condition, 44);
+		refreshForecastFallback_([condition], snapshot_hour);
+		assertNumberEqual_(get(condition), 44);
+
+		clearWeatherProviderTestState_();
+		return true;
 	}
 } // module WeatherProvider

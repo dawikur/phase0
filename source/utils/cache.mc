@@ -2,6 +2,7 @@
 
 import Toybox.Application;
 import Toybox.Lang;
+import Toybox.Test;
 import Toybox.Time;
 
 module Cache {
@@ -48,5 +49,61 @@ module Cache {
 	function clearValue(_name as Lang.String) as Void {
 		Application.Storage.deleteValue(_name);
 		Application.Storage.deleteValue(_name + "_timestamp");
+	}
+
+	function assertNull_(_value as Lang.Object?) as Void {
+		Test.assertEqual(_value == null, true);
+	}
+
+	function assertNumberEqual_(
+		_actual as Lang.Number?,
+		_expected as Lang.Number?
+	) as Void {
+		if (_expected == null) {
+			assertNull_(_actual);
+			return;
+		}
+
+		Test.assertEqual(_actual != null, true);
+		Test.assertEqual(_actual as Lang.Number, _expected as Lang.Number);
+	}
+
+	function clearTestValue_(_name as Lang.String) as Void {
+		Application.Storage.deleteValue(_name);
+		Application.Storage.deleteValue(_name + "_timestamp");
+	}
+
+	(:test)
+	function CacheRoundTripTest(_logger as Test.Logger) as Lang.Boolean {
+		var key = "cache_test_round_trip";
+		clearTestValue_(key);
+
+		setValue(key, 123);
+		Test.assertEqual(hasValue(key, 1), true);
+		assertNumberEqual_(getValue(key, 1) as Lang.Number or Null, 123);
+
+		clearValue(key);
+		Test.assertEqual(hasValue(key, 1), false);
+		assertNull_(getValue(key, 1));
+
+		return true;
+	}
+
+	(:test)
+	function CacheExpiryAndCleanupTest(_logger as Test.Logger) as Lang.Boolean {
+		var key = "cache_test_expiry";
+		clearTestValue_(key);
+
+		setValue(key, 55);
+		Test.assertEqual(hasValue(key, 0), false);
+		assertNull_(getValue(key, 1));
+
+		Application.Storage.setValue(key, 77);
+		Application.Storage.setValue(key + "_timestamp", "bad");
+		assertNull_(getValue(key, 1));
+		assertNull_(Application.Storage.getValue(key));
+		assertNull_(Application.Storage.getValue(key + "_timestamp"));
+
+		return true;
 	}
 } // module Cache

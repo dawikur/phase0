@@ -57,7 +57,7 @@ def test_docs_settings_preserves_numeric_boolean_and_regions() -> None:
     assert settings["Width"]["max"] == "10"
     assert settings["Data"]["options"]
     assert settings["Data"]["options"][0]["label"] == "Disabled"
-    assert "Wind Bearing" in [option["label"] for option in settings["Data"]["options"]]
+    assert "Wind" in [option["label"] for option in settings["Data"]["options"]]
 
 
 def test_docs_settings_collapses_alternative_middle_groups(tmp_path: Path) -> None:

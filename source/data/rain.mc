@@ -14,14 +14,14 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_RAIN)
 			);
 
-			self.icon = Fonts.ICON_RAIN_0;
+			self.icon = Fonts.ICON_NONE;
 			self.value_max = 100;
 
 			WeatherProvider.register("precipitation_chance");
 		}
 
 		function get_() as Lang.Number? {
-			self.icon = Fonts.ICON_RAIN_0;
+			self.icon = Fonts.ICON_NONE;
 
 			var precipitation_chance = WeatherProvider.get("precipitation_chance");
 			if (precipitation_chance != null) {

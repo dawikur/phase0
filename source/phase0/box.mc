@@ -2,6 +2,7 @@
 
 import Toybox.Lang;
 import Toybox.Math;
+import Toybox.Test;
 
 module Phase0 {
 	class Box {
@@ -62,11 +63,41 @@ module Phase0 {
 		static function SecondLeg_(
 			_screen_size as Lang.Number,
 			_leg as Lang.Number
-		) as Lang.Numeric {
+		) as Lang.Float {
 			var hypotenuse = _screen_size / 2;
 			var leg = hypotenuse - _leg; // center of triangle is in the center of screen
 
-			return Math.sqrt(hypotenuse * hypotenuse - leg * leg).toNumber();
+			return Math.sqrt(hypotenuse * hypotenuse - leg * leg) as Lang.Float;
+		}
+
+		(:test)
+		static function SecondLegTest(_logger as Test.Logger) as Lang.Boolean {
+			Test.assertEqual(Math.round(Box.SecondLeg_(100, 0)).toNumber(), 0);
+			Test.assertEqual(Math.round(Box.SecondLeg_(100, 50)).toNumber(), 50);
+			Test.assertEqual(Math.round(Box.SecondLeg_(100, 25)).toNumber(), 43);
+
+			return true;
+		}
+
+		(:test)
+		static function ForYTest(_logger as Test.Logger) as Lang.Boolean {
+			var below = Box.ForY(100, 10, 20);
+			Test.assertEqual(below.pos_x, 20);
+			Test.assertEqual(below.pos_y, 10);
+			Test.assertEqual(below.size_x, 60);
+			Test.assertEqual(below.size_y, 20);
+			Test.assertEqual(below.end_x, 80);
+			Test.assertEqual(below.end_y, 30);
+
+			var above = Box.ForY(100, 60, -20);
+			Test.assertEqual(above.pos_x, 1);
+			Test.assertEqual(above.pos_y, 40);
+			Test.assertEqual(above.size_x, 97);
+			Test.assertEqual(above.size_y, 20);
+			Test.assertEqual(above.end_x, 98);
+			Test.assertEqual(above.end_y, 60);
+
+			return true;
 		}
 	}
 } // module Phase0

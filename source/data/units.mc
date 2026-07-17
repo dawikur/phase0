@@ -2,6 +2,7 @@
 
 import Toybox.Lang;
 import Toybox.System;
+import Toybox.Test;
 
 module Data {
 	module Units {
@@ -83,6 +84,59 @@ module Data {
 				return "C";
 			}
 			return "F";
+		}
+
+		(:test)
+		function UnitsHourConversionTest(_logger as Test.Logger) as Lang.Boolean {
+			is_24_hour = false;
+			Test.assertEqual(convertHour(0), 12);
+			Test.assertEqual(convertHour(12), 12);
+			Test.assertEqual(convertHour(15), 3);
+			Test.assertEqual(getAmPm(11), "am");
+			Test.assertEqual(getAmPm(12), "pm");
+
+			is_24_hour = true;
+			Test.assertEqual(convertHour(0), 0);
+			Test.assertEqual(convertHour(15), 15);
+			Test.assertEqual(getAmPm(15), "");
+
+			return true;
+		}
+
+		(:test)
+		function UnitsMetricConversionTest(
+			_logger as Test.Logger
+		) as Lang.Boolean {
+			distance = System.UNIT_METRIC;
+			elevation = System.UNIT_METRIC;
+			height = System.UNIT_METRIC;
+			temperature = System.UNIT_METRIC;
+
+			Test.assertEqual(convertDistance(1234), 1);
+			Test.assertEqual(convertElevation(321), 321);
+			Test.assertEqual(convertHeight(180), 180);
+			Test.assertEqual(convertTemperature(22), 22);
+			Test.assertEqual(getTemperature(), "C");
+
+			return true;
+		}
+
+		(:test)
+		function UnitsImperialConversionTest(
+			_logger as Test.Logger
+		) as Lang.Boolean {
+			distance = System.UNIT_STATUTE;
+			elevation = System.UNIT_STATUTE;
+			height = System.UNIT_STATUTE;
+			temperature = System.UNIT_STATUTE;
+
+			Test.assertEqual(convertDistance(1609), 0);
+			Test.assertEqual(convertElevation(100), 328);
+			Test.assertEqual(convertHeight(2), 6);
+			Test.assertEqual(convertTemperature(0), 32);
+			Test.assertEqual(getTemperature(), "F");
+
+			return true;
 		}
 	} // module Units
 } // module Data
