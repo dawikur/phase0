@@ -31,32 +31,28 @@ module Widgets {
 					self.is_small_,
 					self.show_label_,
 					_size_x,
-					_size_y,
-					false
+					_size_y
 				) ||
 				self.applyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					self.show_label_,
 					_size_x,
-					_size_y,
-					false
+					_size_y
 				) ||
 				self.applyCandidate_(
 					_dc,
 					Render.SIZE_REGULAR,
 					false,
 					_size_x,
-					_size_y,
-					false
+					_size_y
 				) ||
 				self.applyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					false,
 					_size_x,
-					_size_y,
-					true
+					_size_y
 				)
 			) {
 			}
@@ -126,25 +122,22 @@ module Widgets {
 			_is_small as Lang.Boolean,
 			_show_label as Lang.Boolean,
 			_available_x as Lang.Number,
-			_available_y as Lang.Number,
-			_force as Lang.Boolean
+			_available_y as Lang.Number
 		) as Lang.Boolean {
-			var size_x = Render.TextWidth(_dc, self.value_, _is_small);
+			var text_size_x = Render.TextWidth(_dc, self.value_, _is_small);
+			var text_size_y = Render.TextHeight(_dc, _is_small);
 			var label_offset_y =
 				_show_label and self.label_.length() != 0
 					? Render.LabelHeight(_dc) + Render.SPACING
 					: 0;
-			var size_y = Render.TextHeight(_dc, _is_small) + label_offset_y;
-
-			if (!_force and !Fits(size_x, size_y, _available_x, _available_y)) {
-				return false;
-			}
+			var size_x = text_size_x;
+			var size_y = text_size_y + label_offset_y;
 
 			self.is_small_ = _is_small;
 			self.label_offset_y_ = label_offset_y;
 			self.show_label_ = label_offset_y != 0;
 
-			return true;
+			return Fits(size_x, size_y, _available_x, _available_y);
 		}
 	}
 } // module Widgets

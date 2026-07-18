@@ -57,8 +57,7 @@ module Widgets {
 					show_icon,
 					show_gauge,
 					_size_x,
-					_size_y,
-					false
+					_size_y
 				) ||
 				self.applyCandidate_(
 					_dc,
@@ -67,8 +66,7 @@ module Widgets {
 					show_icon,
 					show_gauge,
 					_size_x,
-					_size_y,
-					false
+					_size_y
 				) ||
 				self.applyCandidate_(
 					_dc,
@@ -77,8 +75,7 @@ module Widgets {
 					false,
 					false,
 					_size_x,
-					_size_y,
-					false
+					_size_y
 				) ||
 				self.applyCandidate_(
 					_dc,
@@ -87,8 +84,7 @@ module Widgets {
 					false,
 					false,
 					_size_x,
-					_size_y,
-					true
+					_size_y
 				)
 			) {
 			}
@@ -202,8 +198,7 @@ module Widgets {
 			_show_icon as Lang.Boolean,
 			_show_gauge as Lang.Boolean,
 			_available_x as Lang.Number,
-			_available_y as Lang.Number,
-			_force as Lang.Boolean
+			_available_y as Lang.Number
 		) as Lang.Boolean {
 			var number_width = Render.NumberWidth(
 				_dc,
@@ -211,6 +206,7 @@ module Widgets {
 				_is_small
 			);
 			var number_height = Render.NumberHeight(_dc, _is_small);
+			var icon_height = _show_icon ? Render.IconsHeight(_dc) : 0;
 			var icon_width = _show_icon
 				? Render.IconsWidth(_dc, Fonts.ICON_EMPTY) + Render.SPACING
 				: 0;
@@ -229,15 +225,15 @@ module Widgets {
 				? Render.LabelWidth(_dc, self.impl_.name)
 				: 0;
 			var size_x = body_width < label_width ? label_width : body_width;
-			var size_y = number_height + label_offset_y;
 			var value_offset_y =
 				_show_icon and _is_small
 					? AlignCenter(0, Render.IconsHeight(_dc), number_height)
 					: 0;
-
-			if (!_force and !Fits(size_x, size_y, _available_x, _available_y)) {
-				return false;
+			var body_height = number_height + value_offset_y;
+			if (body_height < icon_height) {
+				body_height = icon_height;
 			}
+			var size_y = body_height + label_offset_y;
 
 			self.body_width_ = body_width;
 			self.gauge_height_ = gauge_height;
@@ -254,7 +250,7 @@ module Widgets {
 
 			self.is_small = _is_small;
 
-			return true;
+			return Fits(size_x, size_y, _available_x, _available_y);
 		}
 	}
 } // module Widgets

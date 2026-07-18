@@ -36,16 +36,24 @@ module Widgets {
 			_size_x as Lang.Number,
 			_size_y as Lang.Number
 		) as Void {
-			Base.resize(_dc, _size_x, _size_y);
+			Base.resize(
+				_dc,
+				2 * Render.IconsWidth(_dc, Fonts.ICON_EMPTY),
+				_size_y
+			);
+			self.pos_x += (_size_x - self.size_x) / 2;
 
-			var borders_width = Render.IconsWidth(
+			var borders_width = Render.IconsRawWidth(
 				_dc,
 				Fonts.ICON_BATTERY_BEGIN + Fonts.ICON_BATTERY_END
 			);
-			var bar_width = Render.IconsWidth(_dc, Fonts.ICON_BATTERY_EMPTY);
+			var bar_width = Render.IconsRawWidth(
+				_dc,
+				Fonts.ICON_BATTERY_EMPTY
+			);
 
 			self.bar_all_count_ = Render.BarCount(
-				self.size_x,
+				self.size_x - Render.SHADOW_OFFSET,
 				borders_width,
 				bar_width
 			);

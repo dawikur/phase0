@@ -8,3 +8,4 @@
 - General
   - Verify on small screens
   - More icons
+  - pre-render to buffer

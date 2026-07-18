@@ -12,6 +12,12 @@ module Widgets {
 			Base.initialize(_type);
 		}
 
+		//function updateMinimal(_dc as Graphics.Dc) as Void {
+		//	self.refresh(_dc);
+		//	self.clear(_dc);
+		//	self.renderMinimal(_dc);
+		//}
+
 		function renderMinimal(_dc as Graphics.Dc) as Void {}
 	}
 } // module Widgets

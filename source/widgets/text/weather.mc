@@ -56,49 +56,30 @@ module Widgets {
 					condition,
 					temp,
 					false,
-					Render.SIZE_REGULAR,
-					false
-				)
-			) {
-				return;
-			}
-
-			if (
+					Render.SIZE_REGULAR
+				) ||
 				self.tryCandidate_(
 					_dc,
 					condition,
 					temp,
 					false,
-					Render.SIZE_SMALL,
-					false
+					Render.SIZE_SMALL
+				) ||
+				self.tryCandidate_(
+					_dc,
+					condition,
+					temp,
+					true,
+					Render.SIZE_REGULAR
+				) ||
+				self.tryCandidate_(
+					_dc,
+					condition,
+					temp,
+					true,
+					Render.SIZE_SMALL
 				)
-			) {
-				return;
-			}
-
-			if (condition != null) {
-				if (
-					self.tryCandidate_(
-						_dc,
-						condition,
-						temp,
-						true,
-						Render.SIZE_SMALL,
-						false
-					)
-				) {
-					return;
-				}
-			}
-
-			self.tryCandidate_(
-				_dc,
-				condition,
-				temp,
-				condition != null,
-				Render.SIZE_SMALL,
-				true
-			);
+			) {}
 		}
 
 		hidden function tryCandidate_(
@@ -106,8 +87,7 @@ module Widgets {
 			_condition as Lang.Number?,
 			_temp as Lang.String,
 			_use_short as Lang.Boolean,
-			_is_small as Lang.Boolean,
-			_force as Lang.Boolean
+			_is_small as Lang.Boolean
 		) as Lang.Boolean {
 			self.value_ = self.weatherValue_(_condition, _use_short, _temp);
 			return self.applyCandidate_(
@@ -115,8 +95,7 @@ module Widgets {
 				_is_small,
 				false,
 				self.size_x,
-				self.size_y,
-				_force
+				self.size_y
 			);
 		}
 	}

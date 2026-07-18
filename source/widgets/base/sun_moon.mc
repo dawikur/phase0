@@ -33,8 +33,6 @@ module Widgets {
 		hidden var sunset_seconds_ as Lang.Number? = null;
 		hidden var value_mode_ as Lang.Number = VALUE_BOTH;
 		hidden var sunrise_before_sunset_ as Lang.Boolean = true;
-		hidden var content_width_ as Lang.Number = 0;
-		hidden var content_height_ as Lang.Number = 0;
 		hidden var icon_width_ as Lang.Number = 0;
 		hidden var dawn_dusk_width_ as Lang.Number = 0;
 		hidden var has_icon_ as Lang.Boolean = false;
@@ -76,8 +74,7 @@ module Widgets {
 			self.sunset_seconds_ = null;
 			self.sunrise_before_sunset_ = true;
 
-			var now = Time.now();
-			self.moon_phase_ = SunMoon.MoonPhase(now);
+			self.moon_phase_ = SunMoon.MoonPhase(Runtime.now);
 
 			var sunrise = null;
 			var sunset = null;
@@ -86,8 +83,8 @@ module Widgets {
 				weather != null ? weather.observationLocationPosition : null;
 
 			if (location != null) {
-				var sunrise_moment = Weather.getSunrise(location, now);
-				var sunset_moment = Weather.getSunset(location, now);
+				var sunrise_moment = Weather.getSunrise(location, Runtime.now);
+				var sunset_moment = Weather.getSunset(location, Runtime.now);
 
 				if (sunrise_moment != null and sunset_moment != null) {
 					sunrise = self.daySeconds_(sunrise_moment as Time.Moment);
@@ -117,6 +114,8 @@ module Widgets {
 			_size_x as Lang.Number,
 			_size_y as Lang.Number
 		) as Void {
+			var center_x = self.pos_x + _size_x / 2;
+			var center_y = self.pos_y + _size_y / 2;
 			Base.resize(_dc, _size_x, _size_y);
 
 			self.dawn_dusk_width_ = Render.TextWidth(
@@ -137,13 +136,20 @@ module Widgets {
 				Render.LabelHeight(_dc) +
 					Render.SPACING +
 					Render.TextHeight(_dc, Render.SIZE_SMALL) <=
-				self.size_y;
-			self.updateContentHeight_(_dc);
+				_size_y;
+			self.updateSize_(_dc);
+
+			self.pos_x = CenterStart(center_x, self.size_x);
+			self.pos_y = CenterStart(center_y, self.size_y);
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
-			self.updateValueMode_();
-			self.updateContentHeight_(_dc);
+			if (self.dawn_.length() == 0 or self.dusk_.length() == 0) {
+				self.refresh(_dc);
+			} else {
+				self.updateValueMode_();
+				self.updateSize_(_dc);
+			}
 
 			var pos_x = self.centerX();
 			var pos_y = self.pos_y;
@@ -178,14 +184,13 @@ module Widgets {
 				self.value_mode_ = self.currentValueMode_();
 			}
 
-			self.content_width_ = self.layoutWidth_(self.value_mode_);
+			self.size_x = self.layoutWidth_(self.value_mode_);
 		}
 
-		hidden function updateContentHeight_(_dc as Graphics.Dc) as Void {
-			self.content_height_ = Render.TextHeight(_dc, Render.SIZE_SMALL);
+		hidden function updateSize_(_dc as Graphics.Dc) as Void {
+			self.size_y = Render.TextHeight(_dc, Render.SIZE_SMALL);
 			if (self.show_label_) {
-				self.content_height_ +=
-					Render.LabelHeight(_dc) + Render.SPACING;
+				self.size_y += Render.LabelHeight(_dc) + Render.SPACING;
 			}
 		}
 
@@ -205,7 +210,7 @@ module Widgets {
 				return VALUE_DAWN;
 			}
 
-			var now_seconds = self.daySeconds_(Time.now());
+			var now_seconds = Runtime.day_seconds;
 			var sunrise_seconds = self.sunrise_seconds_ as Lang.Number;
 			var sunset_seconds = self.sunset_seconds_ as Lang.Number;
 			var dawn_end = self.dayWrap_(
@@ -287,7 +292,7 @@ module Widgets {
 				return;
 			}
 
-			var pos_x = CenterStart(_pos_x, self.content_width_);
+			var pos_x = CenterStart(_pos_x, self.size_x);
 			var left_value_mode = self.leftValueMode_();
 			var right_value_mode = self.rightValueMode_();
 
@@ -326,7 +331,7 @@ module Widgets {
 				self.dawn_.length() != 0 and self.dusk_.length() != 0
 					? Properties.general.foreground
 					: Properties.general.shade;
-			var pos_x = CenterStart(_pos_x, self.content_width_);
+			var pos_x = CenterStart(_pos_x, self.size_x);
 			var left_value_mode = self.leftValueMode_();
 			var right_value_mode = self.rightValueMode_();
 
@@ -504,13 +509,13 @@ module Widgets {
 			var content_pos_y =
 				self.show_label_ and self.on_top_
 					? _value_pos_y -
-						(self.content_height_ -
+						(self.size_y -
 							Render.TextHeight(_dc, Render.SIZE_SMALL))
 					: _value_pos_y;
 
 			return AlignCenter(
 				content_pos_y,
-				self.content_height_,
+				self.size_y,
 				Render.IconsHeight(_dc)
 			);
 		}

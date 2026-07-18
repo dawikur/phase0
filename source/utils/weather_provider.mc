@@ -11,54 +11,57 @@ module WeatherProvider {
 	const FORECAST_CACHE_TTL_HOURS as Lang.Number = 12;
 	const FORECAST_MEMORY_THRESHOLD as Lang.Number = 100 * 1024;
 	const FORECAST_SNAPSHOT_KEY as Lang.String = "weather_forecast_snapshot";
+	const SHOULD_USE_FORECAST =
+		System.getSystemStats().totalMemory > FORECAST_MEMORY_THRESHOLD;
 
 	var FIELDS_ as Lang.Dictionary<Lang.String, Lang.Number?> = {};
 
 	var last_refresh_hour as Lang.Number = -1;
 
 	function register(_key as Lang.String) as Void {
-		FIELDS_.put(_key, null);
+		if (!FIELDS_.hasKey(_key)) {
+			FIELDS_.put(_key, null);
+		}
 	}
 
 	function get(_key as Lang.String) as Lang.Number? {
 		return FIELDS_.get(_key);
 	}
 
-	function refresh(_now_seconds as Lang.Number) as Void {
+	function refresh() as Void {
 		var fields = FIELDS_.keys();
 		if (fields.size() == 0) {
 			return;
 		}
 
-		var now_hour = (_now_seconds - _now_seconds % 3600) / 3600;
+		var now_seconds = Runtime.now.value();
+		var now_hour = (now_seconds - now_seconds % 3600) / 3600;
 		if (last_refresh_hour == now_hour) {
 			return;
 		}
 
-		var should_use_forecast =
-			System.getSystemStats().totalMemory > FORECAST_MEMORY_THRESHOLD;
 		var weather = Weather.getCurrentConditions();
-		var had_valid_forecast = should_use_forecast and hasValidForecast_();
+		var had_valid_forecast = SHOULD_USE_FORECAST and hasValidForecast_();
 		var stored_forecast =
-			should_use_forecast and refreshForecast_(fields, now_hour);
+			SHOULD_USE_FORECAST and refreshForecast_(fields, now_hour);
 
 		if (weather != null) {
 			refreshCurrentConditions_(
 				fields,
 				weather,
-				!should_use_forecast or !stored_forecast and !had_valid_forecast
+				!SHOULD_USE_FORECAST or !stored_forecast and !had_valid_forecast
 			);
 			last_refresh_hour = now_hour;
 			return;
 		}
 
-		if (should_use_forecast and stored_forecast) {
+		if (SHOULD_USE_FORECAST and stored_forecast) {
 			refreshForecastFallback_(fields, now_hour);
 			last_refresh_hour = now_hour;
 			return;
 		}
 
-		if (should_use_forecast) {
+		if (SHOULD_USE_FORECAST) {
 			refreshForecastFallback_(fields, now_hour);
 			return;
 		}
@@ -491,4 +494,4 @@ module WeatherProvider {
 		clearWeatherProviderTestState_();
 		return true;
 	}
-} // module WeatherProvider
+} // get("module") WeatherProvider

@@ -2,7 +2,6 @@
 
 import Toybox.Complications;
 import Toybox.Lang;
-import Toybox.Time;
 
 module Widgets {
 	class Date extends Text {
@@ -15,7 +14,7 @@ module Widgets {
 		}
 
 		hidden function getValue() as Lang.String {
-			var now = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
+			var now = Runtime.now_info;
 
 			return Lang.format("$1$ $2$ $3$", [
 				Resources.getDayOfWeek(now.day_of_week as Lang.Number),

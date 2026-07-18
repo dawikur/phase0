@@ -28,6 +28,7 @@ module Render {
 	const COLOR_NONE as Lang.Number = -1;
 
 	const SPACING as Lang.Number = Fonts.SPACING_SMALL;
+	const SHADOW_OFFSET as Lang.Number = 1;
 
 	const SIZE_SMALL as Lang.Boolean = true;
 	const SIZE_REGULAR as Lang.Boolean = false;
@@ -73,8 +74,8 @@ module Render {
 		if (_shade.length() != 0) {
 			_dc.setColor(_background, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
-				_pos_x + 1,
-				_pos_y + 1,
+				_pos_x + SHADOW_OFFSET,
+				_pos_y + SHADOW_OFFSET,
 				_font_bg,
 				_shade,
 				Render.JUSTIFY_CENTER
@@ -87,14 +88,15 @@ module Render {
 		_label as Lang.String,
 		_font as WatchUi.FontResource
 	) as Lang.Number {
-		return _dc.getTextWidthInPixels(_label, _font);
+		return _dc.getTextWidthInPixels(_label, _font) +
+			(_label.length() == 0 ? 0 : SHADOW_OFFSET);
 	}
 
 	function ClockHeight(
 		_dc as Graphics.Dc,
 		_font as WatchUi.FontResource
 	) as Lang.Number {
-		return _dc.getFontHeight(_font);
+		return _dc.getFontHeight(_font) + SHADOW_OFFSET;
 	}
 
 	function Label(
@@ -134,8 +136,8 @@ module Render {
 			_dc.drawText(_pos_x, _pos_y, fontFg_(_is_small), _text, _justify);
 			_dc.setColor(Properties.general.shade, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
-				_pos_x + 1,
-				_pos_y + 1,
+				_pos_x + SHADOW_OFFSET,
+				_pos_y + SHADOW_OFFSET,
 				fontBg_(_is_small),
 				_text,
 				_justify
@@ -148,14 +150,15 @@ module Render {
 		_text as Lang.String,
 		_is_small as Lang.Boolean
 	) as Lang.Number {
-		return _dc.getTextWidthInPixels(_text, fontFg_(_is_small));
+		return _dc.getTextWidthInPixels(_text, fontFg_(_is_small)) +
+			(_text.length() == 0 ? 0 : SHADOW_OFFSET);
 	}
 
 	function TextHeight(
 		_dc as Graphics.Dc,
 		_is_small as Lang.Boolean
 	) as Lang.Number {
-		return _dc.getFontHeight(fontFg_(_is_small));
+		return _dc.getFontHeight(fontFg_(_is_small)) + SHADOW_OFFSET;
 	}
 
 	function numberBg_(_width as Lang.Number) as Lang.String {
@@ -251,14 +254,15 @@ module Render {
 		_width as Lang.Number,
 		_is_small as Lang.Boolean
 	) as Lang.Number {
-		return _dc.getTextWidthInPixels(numberBg_(_width), fontFg_(_is_small));
+		return _dc.getTextWidthInPixels(numberBg_(_width), fontFg_(_is_small)) +
+			SHADOW_OFFSET;
 	}
 
 	function NumberHeight(
 		_dc as Graphics.Dc,
 		_is_small as Lang.Boolean
 	) as Lang.Number {
-		return _dc.getFontHeight(fontFg_(_is_small));
+		return _dc.getFontHeight(fontFg_(_is_small)) + SHADOW_OFFSET;
 	}
 
 	function NumberFormat(
@@ -383,19 +387,33 @@ module Render {
 
 		if (_shade.length() != 0) {
 			_dc.setColor(Properties.general.shade, Graphics.COLOR_TRANSPARENT);
-			_dc.drawText(_pos_x + 1, _pos_y + 1, ICONS, _shade, _justify);
+			_dc.drawText(
+				_pos_x + SHADOW_OFFSET,
+				_pos_y + SHADOW_OFFSET,
+				ICONS,
+				_shade,
+				_justify
+			);
 		}
 	}
 
-	function IconsWidth(
+	function IconsRawWidth(
 		_dc as Graphics.Dc,
 		_icons as Lang.String
 	) as Lang.Number {
 		return _dc.getTextWidthInPixels(_icons, ICONS);
 	}
 
+	function IconsWidth(
+		_dc as Graphics.Dc,
+		_icons as Lang.String
+	) as Lang.Number {
+		return IconsRawWidth(_dc, _icons) +
+			(_icons.length() == 0 ? 0 : SHADOW_OFFSET);
+	}
+
 	function IconsHeight(_dc as Graphics.Dc) as Lang.Number {
-		return _dc.getFontHeight(ICONS);
+		return _dc.getFontHeight(ICONS) + SHADOW_OFFSET;
 	}
 
 	function Repeat(

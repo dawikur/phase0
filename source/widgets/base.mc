@@ -89,7 +89,31 @@ module Widgets {
 			return false;
 		}
 
+		//function update(_dc as Graphics.Dc) as Void {
+		//	self.refresh(_dc);
+		//	self.clear(_dc);
+		//	self.render(_dc);
+		//}
+
 		function refresh(_dc as Graphics.Dc) as Void {}
+
+		function clear(_dc as Graphics.Dc) as Void {
+			// TODO: is this needed?
+			// _dc.clearClip();
+			_dc.setClip(
+				self.pos_x,
+				self.pos_y,
+				self.size_x,
+				self.size_y
+			);
+
+			_dc.setColor(
+				Properties.general.background,
+				Properties.general.background
+			);
+
+			_dc.clear();
+		}
 
 		function render(_dc as Graphics.Dc) as Void {}
 	}

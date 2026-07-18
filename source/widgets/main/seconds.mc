@@ -16,9 +16,7 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			var clock = System.getClockTime();
-
-			self.value_ = clock.sec.format("%02d");
+			self.value_ = Runtime.clock.sec.format("%02d");
 		}
 
 		function resize(

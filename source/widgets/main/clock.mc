@@ -28,12 +28,11 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			var clock = System.getClockTime();
-
-			var hour = Data.Units.convertHour(clock.hour);
+			var hour = Data.Units.convertHour(Runtime.clock.hour);
+			var min = Runtime.clock.min;
 			self.time_ = Lang.format("$1$:$2$", [
 				hour.format("%02d"),
-				clock.min.format("%02d"),
+				min.format("%02d"),
 			]);
 		}
 
@@ -64,12 +63,14 @@ module Widgets {
 				}
 			}
 
-			self.font_fg_ =
-				Application.loadResource(Rez.Fonts.DIGITS_SMALL) as
-				WatchUi.FontResource;
-			self.font_bg_ =
-				Application.loadResource(Rez.Fonts.DIGITS_SMALL_THIN) as
-				WatchUi.FontResource;
+			if (self.properties.height != Properties.LARGE) {
+				self.font_fg_ =
+					Application.loadResource(Rez.Fonts.DIGITS_SMALL) as
+					WatchUi.FontResource;
+				self.font_bg_ =
+					Application.loadResource(Rez.Fonts.DIGITS_SMALL_THIN) as
+					WatchUi.FontResource;
+			}
 		}
 
 		function render(_dc as Graphics.Dc) as Void {

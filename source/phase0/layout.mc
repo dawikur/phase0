@@ -2,6 +2,7 @@
 
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.System;
 import Toybox.WatchUi;
 
 module Phase0 {
@@ -117,9 +118,6 @@ module Phase0 {
 			var side_size_x = Render.IconsWidth(_dc, " ");
 			var gap_x =
 				((self.screen_size_x - clock_size_x) / 2 - side_size_x) / 2;
-			if (gap_x < 1) {
-				return false;
-			}
 
 			var content_height =
 				clock_size_y +
@@ -127,7 +125,8 @@ module Phase0 {
 				2 * line_middle_height +
 				2 * line_outer_height;
 			var gap_y = (self.screen_size_y - content_height) / 8;
-			if (gap_y <= 1) {
+
+			if (gap_x < 1 || gap_y < 1) {
 				return false;
 			}
 
@@ -155,9 +154,9 @@ module Phase0 {
 
 			self.left = new Box(
 				2 * gap_x,
-				self.clock.pos_y + 2 * Fonts.SPACING_REGULAR,
+				self.clock.pos_y,
 				side_size_x,
-				clock_size_y - 3 * Fonts.SPACING_REGULAR
+				clock_size_y
 			);
 
 			return true;

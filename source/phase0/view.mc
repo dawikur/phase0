@@ -60,7 +60,7 @@ module Phase0 {
 		function initialize() {
 			WatchFace.initialize();
 
-			self.refreshProperties_();
+			self.updateProperties_();
 		}
 
 		function onShow() as Void {
@@ -73,6 +73,8 @@ module Phase0 {
 
 		function onEnterSleep() as Void {
 			self.is_base_view_ = true;
+			// TODO: only on AoD?
+			// self.is_high_power_ = false;
 
 			WatchUi.requestUpdate();
 		}
@@ -85,7 +87,7 @@ module Phase0 {
 		}
 
 		function onSettingsChanged() as Void {
-			self.refreshProperties_();
+			self.updateProperties_();
 
 			WatchUi.requestUpdate();
 		}
@@ -222,9 +224,8 @@ module Phase0 {
 			if (self.is_night_mode_) {
 				return;
 			}
-			if (!self.is_high_power_) {
-				return;
-			}
+
+			Runtime.partialRefresh();
 
 			// ---- refresh ----
 
@@ -257,26 +258,21 @@ module Phase0 {
 				self.onLayout(_dc);
 			}
 
-			var clock = System.getClockTime();
+			Runtime.refresh();
 
-			if (self.last_refresh_min_ != clock.min) {
+			if (self.last_refresh_min_ != Runtime.clock.min) {
 				self.is_night_mode_ = self.isNightMode_();
 			}
 
 			if (self.is_night_mode_) {
-				self.updateMinimal_(_dc, clock);
+				self.updateMinimal_(_dc);
 			} else {
-				self.updateNormal_(_dc, clock);
+				self.updateNormal_(_dc);
 			}
 		}
 
-		function updateNormal_(
-			_dc as Graphics.Dc,
-			_clock as System.ClockTime
-		) as Void {
-			// ---- refresh ----
-
-			WeatherProvider.refresh(Time.now().value());
+		function updateNormal_(_dc as Graphics.Dc) as Void {
+			WeatherProvider.refresh();
 
 			var top_metrics = self.getTopMetrics_();
 			var bottom_metrics = self.getBottomMetrics_();
@@ -294,15 +290,15 @@ module Phase0 {
 				self.refreshWidgets_(_dc, bottom_metrics as Bases);
 			}
 
-			if (self.last_refresh_min_ != _clock.min) {
-				self.last_refresh_min_ = _clock.min;
+			if (self.last_refresh_min_ != Runtime.clock.min) {
+				self.last_refresh_min_ = Runtime.clock.min;
 
 				self.clock_.refresh(_dc);
 
 				self.refreshWidgets_(_dc, self.widgets_per_min_);
 			}
-			if (self.last_refresh_hour_ != _clock.hour) {
-				self.last_refresh_hour_ = _clock.hour;
+			if (self.last_refresh_hour_ != Runtime.clock.hour) {
+				self.last_refresh_hour_ = Runtime.clock.hour;
 
 				self.refreshWidgets_(_dc, self.widgets_per_hour_);
 			}
@@ -337,10 +333,7 @@ module Phase0 {
 			self.renderWidgets_(_dc, self.widgets_per_hour_);
 		}
 
-		function updateMinimal_(
-			_dc as Graphics.Dc,
-			_clock as System.ClockTime
-		) as Void {
+		function updateMinimal_(_dc as Graphics.Dc) as Void {
 			// ---- refresh ----
 
 			self.status_.refresh(_dc);
@@ -350,8 +343,8 @@ module Phase0 {
 				self.batteries_[i].refresh(_dc);
 			}
 
-			if (self.last_refresh_min_ != _clock.min) {
-				self.last_refresh_min_ = _clock.min;
+			if (self.last_refresh_min_ != Runtime.clock.min) {
+				self.last_refresh_min_ = Runtime.clock.min;
 
 				self.clock_.refresh(_dc);
 			}
@@ -373,7 +366,7 @@ module Phase0 {
 			}
 		}
 
-		hidden function refreshProperties_() as Void {
+		hidden function updateProperties_() as Void {
 			// ---- header ----
 
 			self.last_refresh_min_ = -1;
@@ -478,8 +471,8 @@ module Phase0 {
 			var sleep_time = user_profile.sleepTime as Time.Duration;
 			var wake_time = user_profile.wakeTime as Time.Duration;
 
-			var now = Time.now();
-			var midnight = Time.today();
+			var now = Runtime.now;
+			var midnight = Runtime.today;
 			var since_midnight = now.subtract(midnight) as Time.Duration;
 
 			if (sleep_time.greaterThan(wake_time)) {
@@ -502,6 +495,68 @@ module Phase0 {
 			return self.is_base_view_
 				? self.top_middle_base_
 				: self.top_middle_alt_;
+		}
+
+		hidden function layoutBottomInner_(
+			_dc as Graphics.Dc,
+			_box as Box
+		) as Void {
+			var date_size_x = Render.TextWidth(
+				_dc,
+				Lang.format("$1$ 00 $2$", [
+					Resources.getDayOfWeek(1),
+					Resources.getMonth(1),
+				]),
+				Render.SIZE_REGULAR
+			);
+
+
+
+			self.bottom_inner_date_.pos_x = _box.pos_x;
+			self.bottom_inner_date_.pos_y = _box.pos_y;
+			self.bottom_inner_date_.resize(_dc, date_size_x, _box.size_y);
+
+			var seconds_size_x = Render.TextWidth(
+				_dc,
+				"00",
+				Render.SIZE_REGULAR
+			);
+			self.seconds_.pos_x = _box.end_x - seconds_size_x;
+			self.seconds_.pos_y = _box.pos_y;
+			self.seconds_.resize(_dc, seconds_size_x, _box.size_y);
+
+			if (Data.Units.is_24_hour) {
+				return;
+			}
+
+			var left_space_x = _box.size_x - date_size_x - seconds_size_x;
+			var am_pm_size_x =
+				Render.IconsWidth(
+					_dc,
+					Fonts.ICON_AM_PM_BEGIN + Fonts.ICON_AM_PM_END
+				) +
+				Render.TextWidth(_dc, "am", Render.SIZE_SMALL) +
+				2 * Render.SPACING;
+			var am_pm_pos_x =
+				_box.pos_x + date_size_x + (left_space_x - am_pm_size_x) / 2;
+			var am_pm_is_small = left_space_x < am_pm_size_x;
+
+			if (am_pm_is_small) {
+				var am_pm_icon_size_x = Render.IconsWidth(_dc, Fonts.ICON_DAWN);
+
+				am_pm_size_x =
+					left_space_x < am_pm_icon_size_x ? 0 : am_pm_icon_size_x;
+
+				if (date_size_x <= seconds_size_x) {
+					am_pm_pos_x = _box.pos_x + date_size_x;
+				} else {
+					am_pm_pos_x = _box.end_x - seconds_size_x - am_pm_size_x;
+				}
+			}
+
+			self.bottom_inner_am_pm_.pos_x = am_pm_pos_x;
+			self.bottom_inner_am_pm_.pos_y = _box.pos_y;
+			self.bottom_inner_am_pm_.resize(_dc, am_pm_size_x, _box.size_y);
 		}
 
 		hidden function getBottomMetrics_() as Metrics {
@@ -543,6 +598,19 @@ module Phase0 {
 			);
 		}
 
+		hidden static function isDawnDuskData_(
+			_data as Lang.Number
+		) as Lang.Boolean {
+			return (
+				_data == Properties.DAWN_AND_DUSK or
+				_data == Properties.DAWN_AND_DUSK_MOON or
+				_data == Properties.DAWN_AND_DUSK_SUN or
+				_data == Properties.DAWN_OR_DUSK or
+				_data == Properties.DAWN_OR_DUSK_MOON or
+				_data == Properties.DAWN_OR_DUSK_SUN
+			);
+		}
+
 		hidden static function placeWidget_(
 			_dc as Graphics.Dc,
 			_widget as Widgets.Base,
@@ -551,60 +619,6 @@ module Phase0 {
 			_widget.pos_x = _box.pos_x;
 			_widget.pos_y = _box.pos_y;
 			_widget.resize(_dc, _box.size_x, _box.size_y);
-		}
-
-		hidden function layoutBottomInner_(
-			_dc as Graphics.Dc,
-			_box as Box
-		) as Void {
-			var date_size_x = Render.TextWidth(
-				_dc,
-				"ABC 00 XYZ",
-				Render.SIZE_REGULAR
-			);
-			self.bottom_inner_date_.pos_x = _box.pos_x;
-			self.bottom_inner_date_.pos_y = _box.pos_y;
-			self.bottom_inner_date_.resize(_dc, date_size_x, _box.size_y);
-
-			var seconds_size_x = Render.TextWidth(
-				_dc,
-				"00",
-				Render.SIZE_REGULAR
-			);
-			self.seconds_.pos_x = _box.end_x - seconds_size_x;
-			self.seconds_.pos_y = _box.pos_y;
-			self.seconds_.resize(_dc, seconds_size_x, _box.size_y);
-
-			if (Data.Units.is_24_hour) {
-				return;
-			}
-
-			var left_space_x = _box.size_x - date_size_x - seconds_size_x;
-			var am_pm_size_x =
-				Render.IconsWidth(_dc, Fonts.ICON_AM_PM_BEGIN) +
-				Render.TextWidth(_dc, "am", Render.SIZE_SMALL) +
-				Render.IconsWidth(_dc, Fonts.ICON_AM_PM_END) +
-				2 * Render.SPACING;
-			var am_pm_pos_x =
-				_box.pos_x + date_size_x + (left_space_x - am_pm_size_x) / 2;
-			var am_pm_is_small = left_space_x < am_pm_size_x;
-
-			if (am_pm_is_small) {
-				var am_pm_icon_size_x = Render.IconsWidth(_dc, Fonts.ICON_DAWN);
-
-				am_pm_size_x =
-					left_space_x < am_pm_icon_size_x ? 0 : am_pm_icon_size_x;
-
-				if (date_size_x <= seconds_size_x) {
-					am_pm_pos_x = _box.pos_x + date_size_x;
-				} else {
-					am_pm_pos_x = _box.end_x - seconds_size_x - am_pm_size_x;
-				}
-			}
-
-			self.bottom_inner_am_pm_.pos_x = am_pm_pos_x;
-			self.bottom_inner_am_pm_.pos_y = _box.pos_y;
-			self.bottom_inner_am_pm_.resize(_dc, am_pm_size_x, _box.size_y);
 		}
 
 		hidden static function repositionMetrics_(

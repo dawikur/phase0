@@ -9,7 +9,7 @@ module Cache {
 	typedef Data as Lang.String or Lang.Number or Lang.Float or Lang.Boolean;
 
 	function setValue(_name as Lang.String, _data as Data) as Void {
-		var now = Time.now().value();
+		var now = Runtime.now.value();
 
 		Application.Storage.setValue(_name, _data);
 		Application.Storage.setValue(_name + "_timestamp", now);
@@ -32,8 +32,7 @@ module Cache {
 				Application.Storage.getValue(_name + "_timestamp") as
 				Lang.Number;
 
-			var now = Time.now().value();
-			var data_age = now - timestamp;
+			var data_age = Runtime.now.value() - timestamp;
 
 			if (0 <= data_age and data_age < _ttl_in_hours * 3600) {
 				return data;

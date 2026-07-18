@@ -39,14 +39,14 @@ module Widgets {
 
 			var icon_height = Render.IconsHeight(_dc);
 			var text_height = Render.TextHeight(_dc, Render.SIZE_SMALL);
-			var frame_border_width = Render.IconsWidth(
+			var frame_border_width = Render.IconsRawWidth(
 				_dc,
 				Fonts.ICON_AM_PM_BEGIN + Fonts.ICON_AM_PM_END
 			);
-			var bar_width = Render.IconsWidth(_dc, Fonts.ICON_AM_PM_FRAME);
+			var bar_width = Render.IconsRawWidth(_dc, Fonts.ICON_AM_PM_FRAME);
 			self.fallback_width_ = Render.IconsWidth(_dc, Fonts.ICON_DAWN);
 			var bar_all_count = Render.BarCount(
-				self.size_x,
+				self.size_x - Render.SHADOW_OFFSET,
 				frame_border_width,
 				bar_width
 			);
@@ -66,9 +66,7 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			var clock = System.getClockTime();
-
-			self.label_ = Data.Units.getAmPm(clock.hour);
+			self.label_ = Data.Units.getAmPm(Runtime.clock.hour);
 			if (self.label_.equals("am")) {
 				self.fallback_ = Fonts.ICON_DAWN;
 			} else if (self.label_.equals("pm")) {
