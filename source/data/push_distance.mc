@@ -11,7 +11,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_INVALID
 					: null,
-				Resources.get(Rez.Strings.LABEL_PUSH_DISTANCE)
+				Resources.get(Rez.Strings.LABEL_PUSH_DISTANCE),
+				RefreshRate.MIN
 			);
 		}
 

@@ -11,7 +11,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_INTENSITY_MINUTES
 					: null,
-				Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_PER_WEEK)
+				Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_PER_WEEK),
+				RefreshRate.MIN
 			);
 
 			self.value_max = ActivityMonitor.getInfo().activeMinutesWeekGoal;

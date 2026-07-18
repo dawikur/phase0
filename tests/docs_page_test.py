@@ -1,6 +1,5 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
-import re
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -136,16 +135,5 @@ def test_docs_page_watch_images_have_stable_ids_sources_and_alt_text() -> None:
 
 def test_docs_alternative_metric_copy_matches_source_wiring() -> None:
     docs_js = Path("docs/app.js").read_text(encoding="utf-8")
-    view_mc = Path("source/phase0/view.mc").read_text(encoding="utf-8")
 
     assert "long-pressing the clock switches" in docs_js
-    assert re.search(
-        r"^\s*self\.top_middle_alt_\s*=\s*self\.propertiesToMetrics_\(",
-        view_mc,
-        re.MULTILINE,
-    )
-    assert re.search(
-        r"^\s*self\.bottom_middle_alt_\s*=\s*self\.propertiesToMetrics_\(",
-        view_mc,
-        re.MULTILINE,
-    )

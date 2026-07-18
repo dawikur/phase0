@@ -6,7 +6,7 @@ import Toybox.System;
 import Toybox.WatchUi;
 
 module Widgets {
-	class Clock extends Main {
+	class Clock extends Base {
 		hidden var time_ as Lang.String = "";
 
 		hidden var font_fg_ as WatchUi.FontResource;
@@ -15,7 +15,7 @@ module Widgets {
 		var properties as Properties.Clock;
 
 		function initialize(_properties as Properties.Clock) {
-			Main.initialize(null);
+			Base.initialize(null, RefreshRate.MIN);
 
 			self.font_fg_ =
 				Application.loadResource(Rez.Fonts.DIGITS_REGULAR) as

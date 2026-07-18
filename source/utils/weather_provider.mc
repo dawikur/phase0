@@ -14,29 +14,37 @@ module WeatherProvider {
 	const SHOULD_USE_FORECAST =
 		System.getSystemStats().totalMemory > FORECAST_MEMORY_THRESHOLD;
 
-	var FIELDS_ as Lang.Dictionary<Lang.String, Lang.Number?> = {};
+	var fields_ as Lang.Dictionary<Lang.String, Lang.Number?> = {};
 
-	var last_refresh_hour as Lang.Number = -1;
+	var last_refresh_hour_ as Lang.Number = -1;
 
-	function register(_key as Lang.String) as Void {
-		if (!FIELDS_.hasKey(_key)) {
-			FIELDS_.put(_key, null);
-		}
-	}
+	const refresh_rate as Lang.Number = RefreshRate.HOUR;
 
 	function get(_key as Lang.String) as Lang.Number? {
-		return FIELDS_.get(_key);
+		var value = null;
+
+		if (fields_.hasKey(_key)) {
+			value = fields_.get(_key);
+		} else {
+			fields_.put(_key, null);
+		}
+
+		if (value == null) {
+			last_refresh_hour_ = -1;
+		}
+
+		return value;
 	}
 
 	function refresh() as Void {
-		var fields = FIELDS_.keys();
+		var fields = fields_.keys();
 		if (fields.size() == 0) {
 			return;
 		}
 
 		var now_seconds = Runtime.now.value();
-		var now_hour = (now_seconds - now_seconds % 3600) / 3600;
-		if (last_refresh_hour == now_hour) {
+		var now_hour = (now_seconds - (now_seconds % 3600)) / 3600;
+		if (last_refresh_hour_ == now_hour) {
 			return;
 		}
 
@@ -49,15 +57,16 @@ module WeatherProvider {
 			refreshCurrentConditions_(
 				fields,
 				weather,
-				!SHOULD_USE_FORECAST or !stored_forecast and !had_valid_forecast
+				!SHOULD_USE_FORECAST or
+					(!stored_forecast and !had_valid_forecast)
 			);
-			last_refresh_hour = now_hour;
+			last_refresh_hour_ = now_hour;
 			return;
 		}
 
 		if (SHOULD_USE_FORECAST and stored_forecast) {
 			refreshForecastFallback_(fields, now_hour);
-			last_refresh_hour = now_hour;
+			last_refresh_hour_ = now_hour;
 			return;
 		}
 
@@ -78,11 +87,14 @@ module WeatherProvider {
 		for (var i = 0; i < fields_size; ++i) {
 			var key = _fields[i];
 
-			FIELDS_.put(key, refreshCurrentValue_(
+			fields_.put(
 				key,
-				weatherValue_(_weather, key),
-				_store_cache
-			));
+				refreshCurrentValue_(
+					key,
+					weatherValue_(_weather, key),
+					_store_cache
+				)
+			);
 		}
 	}
 
@@ -91,8 +103,7 @@ module WeatherProvider {
 		_now_hour as Lang.Number
 	) as Lang.Boolean {
 		var forecast_maybe =
-			Weather.getHourlyForecast() as Lang.Array<Weather.HourlyForecast>
-				or Null;
+			Weather.getHourlyForecast() as Lang.Array<Weather.HourlyForecast>?;
 		if (forecast_maybe == null) {
 			return false;
 		}
@@ -160,7 +171,7 @@ module WeatherProvider {
 		for (var i = 0; i < fields_size; ++i) {
 			var key = _fields[i];
 
-			FIELDS_.put(key, nextForecastValue_(key, _now_hour));
+			fields_.put(key, nextForecastValue_(key, _now_hour));
 		}
 	}
 
@@ -169,7 +180,7 @@ module WeatherProvider {
 		for (var i = 0; i < fields_size; ++i) {
 			var key = _fields[i];
 
-			FIELDS_.put(key, currentCacheValue_(key));
+			fields_.put(key, currentCacheValue_(key));
 		}
 	}
 
@@ -306,7 +317,7 @@ module WeatherProvider {
 		}
 
 		var forecast_seconds = (forecast_time as Time.Moment).value();
-		return (forecast_seconds - forecast_seconds % 3600) / 3600;
+		return (forecast_seconds - (forecast_seconds % 3600)) / 3600;
 	}
 
 	function clearForecast_() as Void {
@@ -316,7 +327,7 @@ module WeatherProvider {
 		);
 		if (snapshot != null) {
 			var snapshot_hour = snapshot as Lang.Number;
-			var fields = FIELDS_.keys();
+			var fields = fields_.keys();
 			var fields_size = fields.size();
 			for (
 				var forecast_hour = snapshot_hour + 1;
@@ -353,8 +364,8 @@ module WeatherProvider {
 		}
 
 		Cache.clearValue(FORECAST_SNAPSHOT_KEY);
-		FIELDS_ = {};
-		last_refresh_hour = -1;
+		fields_ = {};
+		last_refresh_hour_ = -1;
 	}
 
 	function assertNull_(_value as Lang.Object?) as Void {
@@ -436,8 +447,8 @@ module WeatherProvider {
 		var temperature = "weather_provider_test_temperature";
 		var now_hour = 10;
 
-		register(condition);
-		register(temperature);
+		get(condition);
+		get(temperature);
 
 		storeForecastValue_(condition, now_hour + 1, 7);
 		storeForecastValue_(condition, now_hour + 3, 9);
@@ -469,8 +480,8 @@ module WeatherProvider {
 		var temperature = "weather_provider_test_temperature";
 		var snapshot_hour = 20;
 
-		register(condition);
-		register(temperature);
+		get(condition);
+		get(temperature);
 
 		Cache.setValue(FORECAST_SNAPSHOT_KEY, snapshot_hour);
 		storeForecastValue_(condition, snapshot_hour + 1, 1);

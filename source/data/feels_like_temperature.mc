@@ -10,10 +10,9 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_INVALID
 					: null,
-				Resources.get(Rez.Strings.LABEL_FEELS_LIKE_TEMPERATURE)
+				Resources.get(Rez.Strings.LABEL_FEELS_LIKE_TEMPERATURE),
+				WeatherProvider.refresh_rate
 			);
-
-			WeatherProvider.register("feels_like_temperature");
 		}
 
 		function get_() as Lang.Number? {

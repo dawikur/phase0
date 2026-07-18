@@ -13,8 +13,11 @@ module Widgets {
 		hidden var label_offset_y_ as Lang.Number = 0;
 		hidden var show_label_ as Lang.Boolean = true;
 
-		function initialize(_type as Complications.Type?) {
-			Base.initialize(_type);
+		function initialize(
+			_type as Complications.Type?,
+			_refresh_rate as Lang.Number
+		) {
+			Base.initialize(_type, _refresh_rate);
 		}
 
 		function resize(
@@ -26,28 +29,28 @@ module Widgets {
 			self.size_y = _size_y;
 
 			if (
-				self.applyCandidate_(
+				self.tryApplyCandidate_(
 					_dc,
 					self.is_small_,
 					self.show_label_,
 					_size_x,
 					_size_y
-				) ||
-				self.applyCandidate_(
+				) or
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					self.show_label_,
 					_size_x,
 					_size_y
-				) ||
-				self.applyCandidate_(
+				) or
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_REGULAR,
 					false,
 					_size_x,
 					_size_y
-				) ||
-				self.applyCandidate_(
+				) or
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					false,
@@ -63,6 +66,10 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
+			if (self.value_.length() == 0) {
+				self.refresh(_dc);
+			}
+
 			// ---- header ----
 
 			var pos_x = self.anchorX_();
@@ -84,7 +91,7 @@ module Widgets {
 
 			// ---- value ----
 
-			if (self.value_.length() != 0) {
+			if (self.value_ != null) {
 				Render.Text(
 					_dc,
 					Properties.general.foreground,
@@ -117,7 +124,7 @@ module Widgets {
 			return self.pos_y;
 		}
 
-		hidden function applyCandidate_(
+		hidden function tryApplyCandidate_(
 			_dc as Graphics.Dc,
 			_is_small as Lang.Boolean,
 			_show_label as Lang.Boolean,

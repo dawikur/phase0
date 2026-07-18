@@ -12,7 +12,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_RECOVERY_TIME
 					: null,
-				Resources.get(Rez.Strings.LABEL_RECOVERY_TIME)
+				Resources.get(Rez.Strings.LABEL_RECOVERY_TIME),
+				RefreshRate.MIN
 			);
 		}
 

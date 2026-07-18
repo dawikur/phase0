@@ -58,7 +58,7 @@ def render_widgets_mc(extra_data: Any) -> str:
                     )
 
                 doc.line()
-                doc.line("default: return new Widgets.Base(null);")
+                doc.line("default: return Widgets.Base.None();")
 
     return doc.render()
 

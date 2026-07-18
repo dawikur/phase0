@@ -12,7 +12,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_SOLAR_INPUT
 					: null,
-				Resources.get(Rez.Strings.LABEL_SOLAR_INTENSITY)
+				Resources.get(Rez.Strings.LABEL_SOLAR_INTENSITY),
+				RefreshRate.MIN
 			);
 
 			self.value_max = 100;

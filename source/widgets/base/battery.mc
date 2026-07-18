@@ -6,7 +6,7 @@ import Toybox.Math;
 import Toybox.System;
 
 module Widgets {
-	class Battery extends Main {
+	class Battery extends Base {
 		var battery_impl_ as Data.BatteryPercentage =
 			new Data.BatteryPercentage();
 		var value_impl_ as Data.Base = new Data.BatteryPercentage();
@@ -22,7 +22,7 @@ module Widgets {
 		var properties as Properties.Widget;
 
 		function initialize(_properties as Properties.Widget) {
-			Main.initialize(battery_impl_.type);
+			Base.initialize(battery_impl_.type, RefreshRate.SEC);
 
 			self.properties = _properties;
 			self.value_impl_ =
@@ -47,10 +47,7 @@ module Widgets {
 				_dc,
 				Fonts.ICON_BATTERY_BEGIN + Fonts.ICON_BATTERY_END
 			);
-			var bar_width = Render.IconsRawWidth(
-				_dc,
-				Fonts.ICON_BATTERY_EMPTY
-			);
+			var bar_width = Render.IconsRawWidth(_dc, Fonts.ICON_BATTERY_EMPTY);
 
 			self.bar_all_count_ = Render.BarCount(
 				self.size_x - Render.SHADOW_OFFSET,

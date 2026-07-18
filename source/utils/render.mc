@@ -88,8 +88,10 @@ module Render {
 		_label as Lang.String,
 		_font as WatchUi.FontResource
 	) as Lang.Number {
-		return _dc.getTextWidthInPixels(_label, _font) +
-			(_label.length() == 0 ? 0 : SHADOW_OFFSET);
+		return (
+			_dc.getTextWidthInPixels(_label, _font) +
+			(_label.length() == 0 ? 0 : SHADOW_OFFSET)
+		);
 	}
 
 	function ClockHeight(
@@ -150,8 +152,10 @@ module Render {
 		_text as Lang.String,
 		_is_small as Lang.Boolean
 	) as Lang.Number {
-		return _dc.getTextWidthInPixels(_text, fontFg_(_is_small)) +
-			(_text.length() == 0 ? 0 : SHADOW_OFFSET);
+		return (
+			_dc.getTextWidthInPixels(_text, fontFg_(_is_small)) +
+			(_text.length() == 0 ? 0 : SHADOW_OFFSET)
+		);
 	}
 
 	function TextHeight(
@@ -254,8 +258,10 @@ module Render {
 		_width as Lang.Number,
 		_is_small as Lang.Boolean
 	) as Lang.Number {
-		return _dc.getTextWidthInPixels(numberBg_(_width), fontFg_(_is_small)) +
-			SHADOW_OFFSET;
+		return (
+			_dc.getTextWidthInPixels(numberBg_(_width), fontFg_(_is_small)) +
+			SHADOW_OFFSET
+		);
 	}
 
 	function NumberHeight(
@@ -408,8 +414,10 @@ module Render {
 		_dc as Graphics.Dc,
 		_icons as Lang.String
 	) as Lang.Number {
-		return IconsRawWidth(_dc, _icons) +
-			(_icons.length() == 0 ? 0 : SHADOW_OFFSET);
+		return (
+			IconsRawWidth(_dc, _icons) +
+			(_icons.length() == 0 ? 0 : SHADOW_OFFSET)
+		);
 	}
 
 	function IconsHeight(_dc as Graphics.Dc) as Lang.Number {

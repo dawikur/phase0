@@ -11,7 +11,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_RESPIRATION_RATE
 					: null,
-				Resources.get(Rez.Strings.LABEL_RESPIRATION_RATE)
+				Resources.get(Rez.Strings.LABEL_RESPIRATION_RATE),
+				RefreshRate.MIN
 			);
 		}
 

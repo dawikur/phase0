@@ -19,42 +19,42 @@ module Phase0 {
 
 		function initialize(_dc as Graphics.Dc) {
 			if (
-				self.applyCandidate_(
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR
-				) ||
-				self.applyCandidate_(
+				) or
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR
-				) ||
-				self.applyCandidate_(
+				) or
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
 					Render.SIZE_SMALL
-				) ||
-				self.applyCandidate_(
+				) or
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_REGULAR,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL
-				) ||
-				self.applyCandidate_(
+				) or
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
 					Render.SIZE_REGULAR,
 					Render.SIZE_SMALL
-				) ||
-				self.applyCandidate_(
+				) or
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
@@ -83,7 +83,7 @@ module Phase0 {
 			);
 		}
 
-		hidden function applyCandidate_(
+		hidden function tryApplyCandidate_(
 			_dc as Graphics.Dc,
 			_clock_is_small as Lang.Boolean,
 			_inner_is_small as Lang.Boolean,
@@ -126,7 +126,7 @@ module Phase0 {
 				2 * line_outer_height;
 			var gap_y = (self.screen_size_y - content_height) / 8;
 
-			if (gap_x < 1 || gap_y < 1) {
+			if (gap_x < 1 or gap_y < 1) {
 				return false;
 			}
 

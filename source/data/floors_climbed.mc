@@ -11,7 +11,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_FLOORS_CLIMBED
 					: null,
-				Resources.get(Rez.Strings.LABEL_FLOORS_CLIMBED)
+				Resources.get(Rez.Strings.LABEL_FLOORS_CLIMBED),
+				RefreshRate.MIN
 			);
 
 			self.value_max = ActivityMonitor.getInfo().floorsClimbedGoal;

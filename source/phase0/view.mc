@@ -11,14 +11,10 @@ import Toybox.WatchUi;
 module Phase0 {
 	class View extends WatchUi.WatchFace {
 		typedef Bases as Lang.Array<Widgets.Base>;
-		typedef Batteries as Lang.Array<Widgets.Battery>;
-		typedef Gauges as Lang.Array<Widgets.Gauge>;
-		typedef Metrics as Lang.Array<Widgets.Metric>;
 
 		// ---- fields ----
 
 		// -- base --
-		hidden var is_base_view_ as Lang.Boolean = true;
 		hidden var is_high_power_ as Lang.Boolean = true;
 		hidden var is_night_mode_ as Lang.Boolean = false;
 		hidden var is_visible_ as Lang.Boolean = false;
@@ -30,28 +26,24 @@ module Phase0 {
 		hidden var last_refresh_hour_ as Lang.Number = -1;
 
 		// -- widgets --
-		hidden var status_ as Widgets.Status = new Widgets.Status(
-			Properties.status
-		);
-		hidden var gauges_ as Gauges = [];
+		hidden var status_ as Widgets.Base = Widgets.Base.None();
+		hidden var gauges_ as Bases = [];
 
-		hidden var clock_ as Widgets.Clock = new Widgets.Clock(
-			Properties.clock
-		);
-		hidden var seconds_ as Widgets.Seconds = new Widgets.Seconds();
-		hidden var batteries_ as Batteries = [];
+		hidden var clock_ as Widgets.Base = Widgets.Base.None();
+		hidden var seconds_ as Widgets.Base = Widgets.Base.None();
+		hidden var batteries_ as Bases = [];
 
-		hidden var top_outer_ as Widgets.Base = new Widgets.Base(null);
-		hidden var top_middle_base_ as Metrics = [];
-		hidden var top_middle_alt_ as Metrics = [];
-		hidden var top_inner_ as Widgets.Base = new Widgets.Base(null);
+		hidden var top_outer_ as Widgets.Base = Widgets.Base.None();
+		hidden var top_middle_ as Bases = [];
+		hidden var top_inner_ as Widgets.Base = Widgets.Base.None();
 
-		hidden var bottom_middle_base_ as Metrics = [];
-		hidden var bottom_middle_alt_ as Metrics = [];
-		hidden var bottom_inner_date_ as Widgets.Date = new Widgets.Date();
-		hidden var bottom_inner_am_pm_ as Widgets.AmPm = new Widgets.AmPm();
-		hidden var bottom_outer_ as Widgets.Base = new Widgets.Base(null);
+		// TODO: Can this be Bases?
+		hidden var bottom_middle_ as Bases = [];
+		hidden var bottom_inner_date_ as Widgets.Base = Widgets.Base.None();
+		hidden var bottom_inner_am_pm_ as Widgets.Base = Widgets.Base.None();
+		hidden var bottom_outer_ as Widgets.Base = Widgets.Base.None();
 
+		hidden var widgets_per_sec_ as Bases = [];
 		hidden var widgets_per_min_ as Bases = [];
 		hidden var widgets_per_hour_ as Bases = [];
 
@@ -72,7 +64,6 @@ module Phase0 {
 		}
 
 		function onEnterSleep() as Void {
-			self.is_base_view_ = true;
 			// TODO: only on AoD?
 			// self.is_high_power_ = false;
 
@@ -80,7 +71,6 @@ module Phase0 {
 		}
 
 		function onExitSleep() as Void {
-			self.is_base_view_ = true;
 			self.is_high_power_ = true;
 
 			WatchUi.requestUpdate();
@@ -102,44 +92,33 @@ module Phase0 {
 			var pos_y = coordinates[1];
 
 			if (self.clock_.contains(pos_x, pos_y)) {
-				self.is_base_view_ = !self.is_base_view_;
 				WatchUi.requestUpdate();
 
 				return true;
 			}
 
 			if (!self.is_night_mode_) {
-				var widgets_per_min_size = widgets_per_min_.size();
+				var widgets_per_sec_size = self.widgets_per_sec_.size();
+				for (var i = 0; i < widgets_per_sec_size; ++i) {
+					var widget = self.widgets_per_sec_[i];
+					if (widget.contains(pos_x, pos_y)) {
+						return widget.open();
+					}
+				}
+
+				var widgets_per_min_size = self.widgets_per_min_.size();
 				for (var i = 0; i < widgets_per_min_size; ++i) {
-					var widget = widgets_per_min_[i];
+					var widget = self.widgets_per_min_[i];
 					if (widget.contains(pos_x, pos_y)) {
 						return widget.open();
 					}
 				}
 
-				var widgets_per_hour_size = widgets_per_hour_.size();
+				var widgets_per_hour_size = self.widgets_per_hour_.size();
 				for (var i = 0; i < widgets_per_hour_size; ++i) {
-					var widget = widgets_per_hour_[i];
+					var widget = self.widgets_per_hour_[i];
 					if (widget.contains(pos_x, pos_y)) {
 						return widget.open();
-					}
-				}
-
-				var top_metrics = self.getTopMetrics_();
-				var top_metrics_size = top_metrics.size();
-				for (var i = 0; i < top_metrics_size; ++i) {
-					var metric = top_metrics[i];
-					if (metric.contains(pos_x, pos_y)) {
-						return metric.open();
-					}
-				}
-
-				var bottom_metrics = self.getBottomMetrics_();
-				var bottom_metrics_size = bottom_metrics.size();
-				for (var i = 0; i < bottom_metrics_size; ++i) {
-					var metric = bottom_metrics[i];
-					if (metric.contains(pos_x, pos_y)) {
-						return metric.open();
 					}
 				}
 			}
@@ -152,26 +131,25 @@ module Phase0 {
 
 			// ---- top outer ----
 
-			self.placeWidget_(_dc, self.top_outer_, layout.outer);
+			self.layoutWidget_(_dc, self.top_outer_, layout.outer);
 
 			// ---- top middle ----
 
-			self.repositionMetrics_(_dc, self.top_middle_base_, layout.middle);
-			self.repositionMetrics_(_dc, self.top_middle_alt_, layout.middle);
+			self.fitWidgetsInBox_(_dc, self.top_middle_, layout.middle);
 
 			// ---- top inner ----
 
-			self.placeWidget_(_dc, self.top_inner_, layout.inner);
+			self.layoutWidget_(_dc, self.top_inner_, layout.inner);
 
 			// ---- main ----
 
 			// -- left --
 
-			self.placeWidget_(_dc, self.status_, layout.left);
+			self.layoutWidget_(_dc, self.status_, layout.left);
 
 			// -- clock --
 
-			self.placeWidget_(_dc, self.clock_, layout.clock);
+			self.layoutWidget_(_dc, self.clock_, layout.clock);
 
 			// -- right --
 
@@ -184,7 +162,7 @@ module Phase0 {
 					layout_right.size_y
 				);
 			}
-			self.repositionWidgets_(self.gauges_ as Bases, layout_right);
+			self.distributeWidgetsInBox_(self.gauges_, layout_right);
 
 			// ---- bottom inner ----
 
@@ -194,21 +172,12 @@ module Phase0 {
 			// ---- bottom middle ----
 
 			var bottom_middle = layout.bottomBox(layout.middle);
-			self.repositionMetrics_(
-				_dc,
-				self.bottom_middle_base_,
-				bottom_middle
-			);
-			self.repositionMetrics_(
-				_dc,
-				self.bottom_middle_alt_,
-				bottom_middle
-			);
+			self.fitWidgetsInBox_(_dc, self.bottom_middle_, bottom_middle);
 
 			// ---- bottom outer ----
 
 			var bottom_outer = layout.bottomBox(layout.outer);
-			self.placeWidget_(_dc, self.bottom_outer_, bottom_outer);
+			self.layoutWidget_(_dc, self.bottom_outer_, bottom_outer);
 
 			// ---- footer ----
 
@@ -274,26 +243,12 @@ module Phase0 {
 		function updateNormal_(_dc as Graphics.Dc) as Void {
 			WeatherProvider.refresh();
 
-			var top_metrics = self.getTopMetrics_();
-			var bottom_metrics = self.getBottomMetrics_();
+			self.seconds_.refresh(_dc);
 
-			{
-				self.status_.refresh(_dc);
-				self.seconds_.refresh(_dc);
-
-				var battery_size = self.batteries_.size();
-				for (var i = 0; i < battery_size; ++i) {
-					self.batteries_[i].refresh(_dc);
-				}
-
-				self.refreshWidgets_(_dc, top_metrics as Bases);
-				self.refreshWidgets_(_dc, bottom_metrics as Bases);
-			}
+			self.refreshWidgets_(_dc, self.widgets_per_sec_);
 
 			if (self.last_refresh_min_ != Runtime.clock.min) {
 				self.last_refresh_min_ = Runtime.clock.min;
-
-				self.clock_.refresh(_dc);
 
 				self.refreshWidgets_(_dc, self.widgets_per_min_);
 			}
@@ -313,22 +268,13 @@ module Phase0 {
 			);
 			_dc.clear();
 
-			self.clock_.render(_dc);
-			self.status_.render(_dc);
-
-			var battery_size = self.batteries_.size();
-			for (var i = 0; i < battery_size; ++i) {
-				self.batteries_[i].render(_dc);
-			}
-
 			if (self.is_high_power_) {
 				self.seconds_.render(_dc);
 			} else {
 				self.seconds_.renderMinimal(_dc);
 			}
 
-			self.renderWidgets_(_dc, top_metrics as Bases);
-			self.renderWidgets_(_dc, bottom_metrics as Bases);
+			self.renderWidgets_(_dc, self.widgets_per_sec_);
 			self.renderWidgets_(_dc, self.widgets_per_min_);
 			self.renderWidgets_(_dc, self.widgets_per_hour_);
 		}
@@ -337,11 +283,7 @@ module Phase0 {
 			// ---- refresh ----
 
 			self.status_.refresh(_dc);
-
-			var battery_size = self.batteries_.size();
-			for (var i = 0; i < battery_size; ++i) {
-				self.batteries_[i].refresh(_dc);
-			}
+			self.refreshWidgets_(_dc, self.batteries_);
 
 			if (self.last_refresh_min_ != Runtime.clock.min) {
 				self.last_refresh_min_ = Runtime.clock.min;
@@ -360,9 +302,10 @@ module Phase0 {
 
 			self.clock_.renderMinimal(_dc);
 			self.status_.renderMinimal(_dc);
-			var render_battery_size = self.batteries_.size();
-			for (var j = 0; j < render_battery_size; ++j) {
-				self.batteries_[j].renderMinimal(_dc);
+
+			var batteries_size = self.batteries_.size();
+			for (var i = 0; i < batteries_size; ++i) {
+				self.batteries_[i].renderMinimal(_dc);
 			}
 		}
 
@@ -374,40 +317,40 @@ module Phase0 {
 
 			self.needs_reposition_ = true;
 
+			self.batteries_ = [];
+
+			self.widgets_per_sec_ = [];
 			self.widgets_per_min_ = [];
 			self.widgets_per_hour_ = [];
-			self.batteries_ = [];
 
 			// ---- top outer ----
 
 			self.top_outer_ = Widgets.get(Properties.top_outer, Render.TOP);
 			if (self.isBatteryData_(Properties.top_outer.data)) {
 				self.batteries_.add(self.top_outer_ as Widgets.Battery);
-			} else {
-				self.widgets_per_hour_.add(self.top_outer_);
 			}
+			self.addWidget_(self.top_outer_);
 
 			// ---- top middle ----
 
-			self.top_middle_base_ = self.propertiesToMetrics_(
+			self.top_middle_ = self.createDataWidgets_(
 				Properties.top_middle,
 				Properties.ICON
 			);
-			if (Properties has :top_middle_alt and (Properties has :ICON)) {
-				self.top_middle_alt_ = self.propertiesToMetrics_(
-					Properties.top_middle_alt as Lang.Array<Properties.Metric>,
-					Properties.ICON
-				);
-			}
+			self.addWidgets_(self.top_middle_);
 
 			// ---- top inner ----
 
 			self.top_inner_ = new Widgets.Weather();
-			self.widgets_per_min_.add(self.top_inner_);
+			self.addWidget_(self.top_inner_);
 
 			// ---- main ----
 
 			self.status_ = new Widgets.Status(Properties.status);
+			self.addWidget_(self.status_);
+
+			self.clock_ = new Widgets.Clock(Properties.clock);
+			self.addWidget_(self.clock_);
 
 			self.gauges_ = [];
 			var gauges_size = Properties.gauges.size();
@@ -421,30 +364,26 @@ module Phase0 {
 
 				self.gauges_.add(new Widgets.Gauge(properties, data));
 			}
-			self.widgets_per_min_.addAll(self.gauges_ as Bases);
+			self.addWidgets_(self.gauges_);
 
 			// ---- bottom inner ----
 
 			self.bottom_inner_date_ = new Widgets.Date();
-			self.widgets_per_hour_.add(self.bottom_inner_date_);
+			self.addWidget_(self.bottom_inner_date_);
 			if (!Data.Units.is_24_hour) {
 				self.bottom_inner_am_pm_ = new Widgets.AmPm();
-				self.widgets_per_hour_.add(self.bottom_inner_am_pm_);
+				self.addWidget_(self.bottom_inner_am_pm_);
 			}
+
+			self.seconds_ = new Widgets.Seconds();
 
 			// ---- bottom middle ----
 
-			self.bottom_middle_base_ = self.propertiesToMetrics_(
+			self.bottom_middle_ = self.createDataWidgets_(
 				Properties.bottom_middle,
 				Properties.GAUGE
 			);
-			if (Properties has :bottom_middle_alt and (Properties has :GAUGE)) {
-				self.bottom_middle_alt_ = self.propertiesToMetrics_(
-					Properties.bottom_middle_alt as
-						Lang.Array<Properties.Metric>,
-					Properties.GAUGE
-				);
-			}
+			self.addWidgets_(self.bottom_middle_);
 
 			// ---- bottom outer ----
 
@@ -454,9 +393,8 @@ module Phase0 {
 			);
 			if (self.isBatteryData_(Properties.bottom_outer.data)) {
 				self.batteries_.add(self.bottom_outer_ as Widgets.Battery);
-			} else {
-				self.widgets_per_hour_.add(self.bottom_outer_);
 			}
+			self.addWidget_(self.bottom_outer_);
 		}
 
 		hidden function isNightMode_() as Lang.Boolean {
@@ -487,16 +425,6 @@ module Phase0 {
 			);
 		}
 
-		hidden function getTopMetrics_() as Metrics {
-			if (self.top_middle_alt_.size() == 0) {
-				return self.top_middle_base_;
-			}
-
-			return self.is_base_view_
-				? self.top_middle_base_
-				: self.top_middle_alt_;
-		}
-
 		hidden function layoutBottomInner_(
 			_dc as Graphics.Dc,
 			_box as Box
@@ -509,8 +437,6 @@ module Phase0 {
 				]),
 				Render.SIZE_REGULAR
 			);
-
-
 
 			self.bottom_inner_date_.pos_x = _box.pos_x;
 			self.bottom_inner_date_.pos_y = _box.pos_y;
@@ -559,21 +485,40 @@ module Phase0 {
 			self.bottom_inner_am_pm_.resize(_dc, am_pm_size_x, _box.size_y);
 		}
 
-		hidden function getBottomMetrics_() as Metrics {
-			if (self.bottom_middle_alt_.size() == 0) {
-				return self.bottom_middle_base_;
-			}
+		hidden function addWidget_(_widget as Widgets.Base) as Void {
+			switch (_widget.refresh_rate) {
+				case RefreshRate.NONE:
+					break;
 
-			return self.is_base_view_
-				? self.bottom_middle_base_
-				: self.bottom_middle_alt_;
+				case RefreshRate.SEC:
+					self.widgets_per_sec_.add(_widget);
+					break;
+
+				case RefreshRate.MIN:
+					self.widgets_per_min_.add(_widget);
+					break;
+
+				case RefreshRate.HOUR:
+					self.widgets_per_hour_.add(_widget);
+					break;
+
+				default:
+					System.println("Unsupported refresh rate");
+			}
 		}
 
-		hidden static function propertiesToMetrics_(
+		hidden function addWidgets_(_widgets as Bases) as Void {
+			var widgets_size = _widgets.size();
+			for (var i = 0; i < widgets_size; ++i) {
+				self.addWidget_(_widgets[i]);
+			}
+		}
+
+		hidden static function createDataWidgets_(
 			_properties as Lang.Array<Properties.Metric>,
 			_style as Lang.Number
-		) as Metrics {
-			var metrics = [];
+		) as Bases {
+			var widgets = [];
 			var properties_size = _properties.size();
 			for (var i = 0; i < properties_size; ++i) {
 				var properties = _properties[i];
@@ -583,9 +528,9 @@ module Phase0 {
 					continue;
 				}
 
-				metrics.add(new Widgets.Metric(properties, _style, data));
+				widgets.add(new Widgets.Metric(properties, _style, data));
 			}
-			return metrics;
+			return widgets;
 		}
 
 		hidden static function isBatteryData_(
@@ -598,20 +543,7 @@ module Phase0 {
 			);
 		}
 
-		hidden static function isDawnDuskData_(
-			_data as Lang.Number
-		) as Lang.Boolean {
-			return (
-				_data == Properties.DAWN_AND_DUSK or
-				_data == Properties.DAWN_AND_DUSK_MOON or
-				_data == Properties.DAWN_AND_DUSK_SUN or
-				_data == Properties.DAWN_OR_DUSK or
-				_data == Properties.DAWN_OR_DUSK_MOON or
-				_data == Properties.DAWN_OR_DUSK_SUN
-			);
-		}
-
-		hidden static function placeWidget_(
+		hidden static function layoutWidget_(
 			_dc as Graphics.Dc,
 			_widget as Widgets.Base,
 			_box as Box
@@ -621,80 +553,59 @@ module Phase0 {
 			_widget.resize(_dc, _box.size_x, _box.size_y);
 		}
 
-		hidden static function repositionMetrics_(
+		hidden static function fitWidgetsInBox_(
 			_dc as Graphics.Dc,
-			_metrics as Metrics,
+			_widgets as Bases,
 			_box as Box
 		) as Void {
-			var metrics_size = _metrics.size();
-			if (metrics_size == 0) {
+			var widgets_size = _widgets.size();
+			if (widgets_size == 0) {
 				return;
 			}
 
 			if (
-				self.tryResizeMetrics_(
+				self.tryResizeWidgets_(
 					_dc,
-					_metrics,
+					_widgets,
 					_box,
 					_box.size_x,
 					Render.SIZE_REGULAR
-				)
-			) {
-				self.repositionWidgets_(_metrics as Bases, _box);
-
-				return;
-			}
-
-			if (
-				self.tryResizeMetrics_(
+				) or
+				self.tryResizeWidgets_(
 					_dc,
-					_metrics,
+					_widgets,
 					_box,
 					_box.size_x,
 					Render.SIZE_SMALL
+				) or
+				self.tryResizeWidgets_(
+					_dc,
+					_widgets,
+					_box,
+					self.evenItemWidth_(widgets_size, _box.size_x),
+					Render.SIZE_SMALL
 				)
 			) {
-				self.repositionWidgets_(_metrics as Bases, _box);
-
-				return;
 			}
-
-			self.resizeMetrics_(
-				_dc,
-				_metrics,
-				_box,
-				self.evenItemWidth_(metrics_size, _box.size_x),
-				Render.SIZE_SMALL
-			);
-			self.repositionWidgets_(_metrics as Bases, _box);
+			self.distributeWidgetsInBox_(_widgets, _box);
 		}
 
-		hidden static function tryResizeMetrics_(
+		hidden static function tryResizeWidgets_(
 			_dc as Graphics.Dc,
-			_metrics as Metrics,
+			_widgets as Bases,
 			_box as Box,
 			_size_x as Lang.Number,
 			_is_small as Lang.Boolean
 		) as Lang.Boolean {
-			self.resizeMetrics_(_dc, _metrics, _box, _size_x, _is_small);
+			var widgets_size = _widgets.size();
+			for (var i = 0; i < widgets_size; ++i) {
+				var widget = _widgets[i];
 
-			return self.distributedWidth_(_metrics as Bases) <= _box.size_x;
-		}
-
-		hidden static function resizeMetrics_(
-			_dc as Graphics.Dc,
-			_metrics as Metrics,
-			_box as Box,
-			_size_x as Lang.Number,
-			_is_small as Lang.Boolean
-		) as Void {
-			var metrics_size = _metrics.size();
-			for (var i = 0; i < metrics_size; ++i) {
-				var metric = _metrics[i];
-
-				metric.resize(_dc, _size_x, _box.size_y);
-				metric.is_small = _is_small;
+				widget.resize(_dc, _size_x, _box.size_y);
+				widget.is_small = _is_small;
 			}
+
+			return self.distributedWidth_(_widgets) <= _box.size_x;
 		}
 
 		hidden function refreshWidgets_(
@@ -717,7 +628,7 @@ module Phase0 {
 			}
 		}
 
-		hidden static function repositionWidgets_(
+		hidden static function distributeWidgetsInBox_(
 			_widgets as Bases,
 			_box as Box
 		) as Void {

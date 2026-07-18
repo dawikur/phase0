@@ -14,7 +14,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_HEART_RATE
 					: null,
-				Resources.get(Rez.Strings.LABEL_HEART_RATE)
+				Resources.get(Rez.Strings.LABEL_HEART_RATE),
+				RefreshRate.SEC
 			);
 
 			var current_sport = UserProfile.getCurrentSport();

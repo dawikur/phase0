@@ -6,13 +6,13 @@ import Toybox.Lang;
 import Toybox.System;
 
 module Widgets {
-	class Seconds extends Main {
+	class Seconds extends Base {
 		hidden var value_ as Lang.String = "";
 
 		hidden var is_small as Lang.Boolean = false;
 
 		function initialize() {
-			Main.initialize(null);
+			Base.initialize(null, RefreshRate.SEC);
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {

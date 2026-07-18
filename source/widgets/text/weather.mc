@@ -10,12 +10,11 @@ module Widgets {
 			Text.initialize(
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_CURRENT_WEATHER
-					: null
+					: null,
+				WeatherProvider.refresh_rate
 			);
-			self.justify_ = Render.JUSTIFY_CENTER;
 
-			WeatherProvider.register("condition");
-			WeatherProvider.register("temperature");
+			self.justify_ = Render.JUSTIFY_CENTER;
 		}
 
 		function weatherValue_(
@@ -24,6 +23,7 @@ module Widgets {
 			_temp as Lang.String
 		) as Lang.String {
 			var value = "";
+
 			if (_condition != null) {
 				var condition = _condition as Lang.Number;
 				value = _use_short
@@ -51,38 +51,39 @@ module Widgets {
 			}
 
 			if (
-				self.tryCandidate_(
+				self.tryApplyWeatherCandidate_(
 					_dc,
 					condition,
 					temp,
 					false,
 					Render.SIZE_REGULAR
-				) ||
-				self.tryCandidate_(
+				) or
+				self.tryApplyWeatherCandidate_(
 					_dc,
 					condition,
 					temp,
 					false,
 					Render.SIZE_SMALL
-				) ||
-				self.tryCandidate_(
+				) or
+				self.tryApplyWeatherCandidate_(
 					_dc,
 					condition,
 					temp,
 					true,
 					Render.SIZE_REGULAR
-				) ||
-				self.tryCandidate_(
+				) or
+				self.tryApplyWeatherCandidate_(
 					_dc,
 					condition,
 					temp,
 					true,
 					Render.SIZE_SMALL
 				)
-			) {}
+			) {
+			}
 		}
 
-		hidden function tryCandidate_(
+		hidden function tryApplyWeatherCandidate_(
 			_dc as Graphics.Dc,
 			_condition as Lang.Number?,
 			_temp as Lang.String,
@@ -90,7 +91,7 @@ module Widgets {
 			_is_small as Lang.Boolean
 		) as Lang.Boolean {
 			self.value_ = self.weatherValue_(_condition, _use_short, _temp);
-			return self.applyCandidate_(
+			return self.tryApplyCandidate_(
 				_dc,
 				_is_small,
 				false,

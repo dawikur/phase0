@@ -73,8 +73,14 @@ module Phase0 {
 		(:test)
 		static function SecondLegTest(_logger as Test.Logger) as Lang.Boolean {
 			Test.assertEqual(Math.round(Box.SecondLeg_(100, 0)).toNumber(), 0);
-			Test.assertEqual(Math.round(Box.SecondLeg_(100, 50)).toNumber(), 50);
-			Test.assertEqual(Math.round(Box.SecondLeg_(100, 25)).toNumber(), 43);
+			Test.assertEqual(
+				Math.round(Box.SecondLeg_(100, 50)).toNumber(),
+				50
+			);
+			Test.assertEqual(
+				Math.round(Box.SecondLeg_(100, 25)).toNumber(),
+				43
+			);
 
 			return true;
 		}

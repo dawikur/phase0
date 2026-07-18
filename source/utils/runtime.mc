@@ -8,7 +8,10 @@ module Runtime {
 	var clock as System.ClockTime = System.getClockTime();
 	var now as Time.Moment = Time.now();
 	var today as Time.Moment = Time.today();
-	var now_info as Time.Gregorian.Info = Time.Gregorian.info(now, Time.FORMAT_SHORT);
+	var now_info as Time.Gregorian.Info = Time.Gregorian.info(
+		now,
+		Time.FORMAT_SHORT
+	);
 	var since_midnight as Time.Duration = now.subtract(today) as Time.Duration;
 	var day_seconds as Lang.Number =
 		now_info.hour * 3600 + now_info.min * 60 + now_info.sec;

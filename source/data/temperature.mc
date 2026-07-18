@@ -12,7 +12,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE
 					: null,
-				Resources.get(Rez.Strings.LABEL_TEMPERATURE)
+				Resources.get(Rez.Strings.LABEL_TEMPERATURE),
+				RefreshRate.MIN
 			);
 		}
 

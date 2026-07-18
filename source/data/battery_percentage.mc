@@ -12,7 +12,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_BATTERY
 					: null,
-				Resources.get(Rez.Strings.LABEL_BATTERY_PERCENTAGE)
+				Resources.get(Rez.Strings.LABEL_BATTERY_PERCENTAGE),
+				RefreshRate.SEC
 			);
 
 			self.value_max = 100;

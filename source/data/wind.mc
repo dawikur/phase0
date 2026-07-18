@@ -11,13 +11,11 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_INVALID
 					: null,
-				Resources.get(Rez.Strings.LABEL_WIND)
+				Resources.get(Rez.Strings.LABEL_WIND),
+				WeatherProvider.refresh_rate
 			);
 
 			self.icon = Fonts.ICON_NONE;
-
-			WeatherProvider.register("wind_bearing");
-			WeatherProvider.register("wind_speed");
 		}
 
 		function get_() as Lang.Number? {

@@ -12,7 +12,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_STRESS
 					: null,
-				Resources.get(Rez.Strings.LABEL_STRESS)
+				Resources.get(Rez.Strings.LABEL_STRESS),
+				RefreshRate.MIN
 			);
 
 			self.value_max = 100;

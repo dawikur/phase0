@@ -11,7 +11,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_VO2MAX_BIKE
 					: null,
-				Resources.get(Rez.Strings.LABEL_VO2_BIKE)
+				Resources.get(Rez.Strings.LABEL_VO2_BIKE),
+				RefreshRate.MIN
 			);
 		}
 

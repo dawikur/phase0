@@ -11,7 +11,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_WHEELCHAIR_PUSHES
 					: null,
-				Resources.get(Rez.Strings.LABEL_PUSHES)
+				Resources.get(Rez.Strings.LABEL_PUSHES),
+				RefreshRate.MIN
 			);
 
 			self.value_max = ActivityMonitor.getInfo().pushGoal;

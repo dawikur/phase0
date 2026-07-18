@@ -11,7 +11,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_BATTERY
 					: null,
-				Resources.get(Rez.Strings.LABEL_BATTERY_DAYS_REMAINING)
+				Resources.get(Rez.Strings.LABEL_BATTERY_DAYS_REMAINING),
+				RefreshRate.SEC
 			);
 		}
 

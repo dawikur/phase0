@@ -54,7 +54,8 @@ module Widgets {
 			Base.initialize(
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_SUNRISE
-					: null
+					: null,
+				RefreshRate.HOUR
 			);
 
 			self.properties = _properties;
@@ -169,7 +170,7 @@ module Widgets {
 		}
 
 		hidden function layoutWidth_(_mode as Lang.Number) as Lang.Number {
-			if (_mode == VALUE_DAWN || _mode == VALUE_DUSK) {
+			if (_mode == VALUE_DAWN or _mode == VALUE_DUSK) {
 				return self.icon_width_ + self.dawn_dusk_width_;
 			}
 			return 2 * self.dawn_dusk_width_ + self.icon_width_;
@@ -335,7 +336,7 @@ module Widgets {
 			var left_value_mode = self.leftValueMode_();
 			var right_value_mode = self.rightValueMode_();
 
-			if (self.value_mode_ == VALUE_BOTH || self.isLeftValueMode_()) {
+			if (self.value_mode_ == VALUE_BOTH or self.isLeftValueMode_()) {
 				pos_x += self.dawn_dusk_width_;
 				Render.Text(
 					_dc,
@@ -360,7 +361,7 @@ module Widgets {
 			}
 			pos_x += self.icon_width_ / 2;
 
-			if (self.value_mode_ == VALUE_BOTH || !self.isLeftValueMode_()) {
+			if (self.value_mode_ == VALUE_BOTH or !self.isLeftValueMode_()) {
 				Render.Text(
 					_dc,
 					color,

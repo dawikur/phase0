@@ -16,7 +16,7 @@ module Widgets {
 			_properties as Properties.Gauge,
 			_impl as Data.Base
 		) {
-			Base.initialize(_impl.type);
+			Base.initialize(_impl.type, _impl.refresh_rate);
 
 			self.impl_ = _impl;
 			self.properties = _properties;
@@ -40,6 +40,10 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
+			if (self.value_ == null) {
+				self.refresh(_dc);
+			}
+
 			if (self.value_ != null) {
 				Render.Gauge(
 					_dc,

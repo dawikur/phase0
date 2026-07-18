@@ -79,7 +79,7 @@ module Cache {
 
 		setValue(key, 123);
 		Test.assertEqual(hasValue(key, 1), true);
-		assertNumberEqual_(getValue(key, 1) as Lang.Number or Null, 123);
+		assertNumberEqual_(getValue(key, 1) as Lang.Number?, 123);
 
 		clearValue(key);
 		Test.assertEqual(hasValue(key, 1), false);

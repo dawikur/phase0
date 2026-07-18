@@ -14,7 +14,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE
 					: null,
-				Resources.get(Rez.Strings.LABEL_PRESSURE)
+				Resources.get(Rez.Strings.LABEL_PRESSURE),
+				RefreshRate.MIN
 			);
 
 			self.value_max = 100;

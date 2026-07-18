@@ -11,7 +11,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_INVALID
 					: null,
-				Resources.get(Rez.Strings.LABEL_MOVE_BAR)
+				Resources.get(Rez.Strings.LABEL_MOVE_BAR),
+				RefreshRate.MIN
 			);
 
 			self.value_max = ActivityMonitor.MOVE_BAR_LEVEL_MAX;

@@ -27,17 +27,15 @@ module Widgets {
 
 		hidden var properties_ as Properties.Metric;
 
-		var is_small as Lang.Boolean = false;
-
 		function initialize(
 			_properties as Properties.Metric,
 			_style as Lang.Number,
 			_impl as Data.Base
 		) {
-			Base.initialize(_impl.type);
+			Base.initialize(_impl.type, _impl.refresh_rate);
 
-			self.properties_ = _properties;
 			self.impl_ = _impl;
+			self.properties_ = _properties;
 			self.style_ = _style;
 		}
 		function resize(
@@ -50,7 +48,7 @@ module Widgets {
 			var show_gauge = self.style_ == Properties.GAUGE;
 
 			if (
-				self.applyCandidate_(
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_REGULAR,
 					show_label,
@@ -58,8 +56,8 @@ module Widgets {
 					show_gauge,
 					_size_x,
 					_size_y
-				) ||
-				self.applyCandidate_(
+				) or
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					show_label,
@@ -67,8 +65,8 @@ module Widgets {
 					show_gauge,
 					_size_x,
 					_size_y
-				) ||
-				self.applyCandidate_(
+				) or
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					show_label,
@@ -76,8 +74,8 @@ module Widgets {
 					false,
 					_size_x,
 					_size_y
-				) ||
-				self.applyCandidate_(
+				) or
+				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					false,
@@ -120,6 +118,10 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
+			if (self.value_ == null) {
+				self.refresh(_dc);
+			}
+
 			// ---- header ----
 
 			var center_x = self.centerX();
@@ -191,7 +193,7 @@ module Widgets {
 			}
 		}
 
-		hidden function applyCandidate_(
+		hidden function tryApplyCandidate_(
 			_dc as Graphics.Dc,
 			_is_small as Lang.Boolean,
 			_show_label as Lang.Boolean,

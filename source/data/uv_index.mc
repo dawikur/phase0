@@ -11,12 +11,11 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_INVALID
 					: null,
-				Resources.get(Rez.Strings.LABEL_UV_INDEX)
+				Resources.get(Rez.Strings.LABEL_UV_INDEX),
+				WeatherProvider.refresh_rate
 			);
 
 			self.icon = Fonts.ICON_NONE;
-
-			WeatherProvider.register("uv_index");
 		}
 
 		function get_() as Lang.Number? {

@@ -36,9 +36,20 @@ module Widgets {
 		var size_x as Lang.Number = 0;
 		var size_y as Lang.Number = 0;
 
+		var is_small as Lang.Boolean = false;
+
 		var id as Complications.Id?;
 
-		function initialize(_type as Complications.Type?) {
+		var refresh_rate as Lang.Number;
+
+		static function None() as Base {
+			return new Base(null, RefreshRate.NONE);
+		}
+
+		function initialize(
+			_type as Complications.Type?,
+			_refresh_rate as Lang.Number
+		) {
 			if (
 				Toybox has :Complications and
 				_type != null and
@@ -48,6 +59,8 @@ module Widgets {
 			} else {
 				self.id = null;
 			}
+
+			self.refresh_rate = _refresh_rate;
 		}
 
 		function resize(
@@ -89,23 +102,10 @@ module Widgets {
 			return false;
 		}
 
-		//function update(_dc as Graphics.Dc) as Void {
-		//	self.refresh(_dc);
-		//	self.clear(_dc);
-		//	self.render(_dc);
-		//}
-
 		function refresh(_dc as Graphics.Dc) as Void {}
 
 		function clear(_dc as Graphics.Dc) as Void {
-			// TODO: is this needed?
-			// _dc.clearClip();
-			_dc.setClip(
-				self.pos_x,
-				self.pos_y,
-				self.size_x,
-				self.size_y
-			);
+			_dc.setClip(self.pos_x, self.pos_y, self.size_x, self.size_y);
 
 			_dc.setColor(
 				Properties.general.background,
@@ -116,5 +116,6 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {}
+		function renderMinimal(_dc as Graphics.Dc) as Void {}
 	}
 } // module Widgets

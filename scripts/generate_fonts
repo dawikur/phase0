@@ -6,5 +6,5 @@ from scripts.utils.font_generation import generate_fonts, get_required_glyphs
 
 if __name__ == "__main__":
     folders = parse_folders()
-    glyphs = get_required_glyphs(folders)
-    generate_fonts(folders, glyphs)
+    GLYPHS = get_required_glyphs(folders)
+    generate_fonts(folders, GLYPHS)

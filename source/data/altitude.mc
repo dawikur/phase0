@@ -14,7 +14,8 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_ALTITUDE
 					: null,
-				Resources.get(Rez.Strings.LABEL_ALTITUDE)
+				Resources.get(Rez.Strings.LABEL_ALTITUDE),
+				RefreshRate.MIN
 			);
 		}
 

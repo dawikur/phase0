@@ -5,13 +5,13 @@ import Toybox.Lang;
 import Toybox.System;
 
 module Widgets {
-	class Status extends Main {
+	class Status extends Base {
 		hidden var enabled_ as Lang.String = "";
 		hidden var all_ as Lang.String;
 		hidden var slots_ as Lang.Array<Lang.Number> = [];
 
 		function initialize(_properties as Lang.Array<Properties.Status>) {
-			Main.initialize(null);
+			Base.initialize(null, RefreshRate.SEC);
 
 			self.all_ = "";
 			self.slots_ = [];

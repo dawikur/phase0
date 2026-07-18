@@ -35,7 +35,7 @@ def test_parse_typeface_and_style_filters_required_glyphs() -> None:
     name, atlas, fnt, comments = parse_typeface_and_style(
         typeface,
         style,
-        required_glyphs={"B"},
+        required_glyphs="B",
     )
 
     assert name == "sample_regular"

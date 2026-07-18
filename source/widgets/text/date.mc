@@ -9,7 +9,8 @@ module Widgets {
 			Text.initialize(
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_DATE
-					: null
+					: null,
+				RefreshRate.HOUR
 			);
 		}
 

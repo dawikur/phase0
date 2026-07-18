@@ -87,7 +87,9 @@ module Data {
 		}
 
 		(:test)
-		function UnitsHourConversionTest(_logger as Test.Logger) as Lang.Boolean {
+		function UnitsHourConversionTest(
+			_logger as Test.Logger
+		) as Lang.Boolean {
 			is_24_hour = false;
 			Test.assertEqual(convertHour(0), 12);
 			Test.assertEqual(convertHour(12), 12);

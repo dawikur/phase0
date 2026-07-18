@@ -10,12 +10,11 @@ module Data {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_INVALID
 					: null,
-				Resources.get(Rez.Strings.LABEL_RELATIVE_HUMIDITY)
+				Resources.get(Rez.Strings.LABEL_RELATIVE_HUMIDITY),
+				WeatherProvider.refresh_rate
 			);
 
 			self.value_max = 100;
-
-			WeatherProvider.register("relative_humidity");
 		}
 
 		function get_() as Lang.Number? {
