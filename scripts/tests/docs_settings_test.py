@@ -27,7 +27,6 @@ def test_docs_settings_resolves_labels_and_options() -> None:
     assert height["type"] == "list"
     assert [option["label"] for option in height["options"]] == [
         "Auto",
-        "Large",
         "Small",
     ]
 
@@ -141,8 +140,13 @@ def test_docs_settings_includes_supported_devices_and_languages(tmp_path: Path) 
                     <iq:product id="fenix7x" />
                 </iq:products>
                 <iq:languages>
+                    <iq:language>deu</iq:language>
                     <iq:language>eng</iq:language>
+                    <iq:language>fre</iq:language>
+                    <iq:language>ita</iq:language>
                     <iq:language>pol</iq:language>
+                    <iq:language>por</iq:language>
+                    <iq:language>spa</iq:language>
                 </iq:languages>
             </iq:application>
         </iq:manifest>
@@ -157,6 +161,11 @@ def test_docs_settings_includes_supported_devices_and_languages(tmp_path: Path) 
         "Fenix 7X / tactix 7 / quatix 7X / Enduro 2",
     ]
     assert data["supportedLanguages"] == [
+        {"code": "deu", "name": "German"},
         {"code": "eng", "name": "English"},
+        {"code": "fre", "name": "French"},
+        {"code": "ita", "name": "Italian"},
         {"code": "pol", "name": "Polish"},
+        {"code": "por", "name": "Portuguese"},
+        {"code": "spa", "name": "Spanish"},
     ]

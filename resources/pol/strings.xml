@@ -50,8 +50,8 @@
 	<string id="CONDITION_44_CHANCE_OF_RAIN_SNOW">Możl. deszcz/śnieg</string>
 	<string id="CONDITION_45_CLOUDY_CHANCE_OF_RAIN">Pochm., możliwy deszcz</string>
 	<string id="CONDITION_46_CLOUDY_CHANCE_OF_SNOW">Pochm., możliwy śnieg</string>
-	<string id="CONDITION_47_CLOUDY_CHANCE_OF_RAIN_SNOW">Pochm., deszcz/śnieg</string>
-	<string id="CONDITION_48_FLURRIES">Śnieżyca</string>
+	<string id="CONDITION_47_CLOUDY_CHANCE_OF_RAIN_SNOW">Pochm., możl. deszcz/śnieg</string>
+	<string id="CONDITION_48_FLURRIES">Przelotny śnieg</string>
 	<string id="CONDITION_49_FREEZING_RAIN">Marznący deszcz</string>
 	<string id="CONDITION_50_SLEET">Deszcz lodowy</string>
 	<string id="CONDITION_51_ICE_SNOW">Lód/śnieg</string>
@@ -158,7 +158,7 @@
 	<string id="SET_HEIGHT">Wysokość</string>
 	<string id="SET_HIGH_TEMPERATURE">Maksymalna temperatura</string>
 	<string id="SET_INDIGO">Indygo</string>
-	<string id="SET_LARGE">Duży</string>
+	<!-- string id="SET_LARGE">Duży</string -->
 	<string id="SET_LIGHT_AZURE">Jasny lazurowy</string>
 	<string id="SET_LIGHT_BLUE">Jasny niebieski</string>
 	<string id="SET_LIGHT_CYAN">Jasny cyjan</string>

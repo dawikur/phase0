@@ -7,14 +7,9 @@ import Toybox.System;
 
 module Widgets {
 	class Battery extends Base {
-		var battery_impl_ as Data.BatteryPercentage =
-			new Data.BatteryPercentage();
-		var value_impl_ as Data.Base = new Data.BatteryPercentage();
-
 		var color_ as Lang.Number = 0;
 
 		var value_ as Lang.String = "";
-		var charge_ as Lang.String = "";
 		var frame_ as Lang.String = "";
 		var is_charging_ as Lang.Boolean = false;
 		var bar_all_count_ as Lang.Number = 0;
@@ -22,13 +17,11 @@ module Widgets {
 		var properties as Properties.Widget;
 
 		function initialize(_properties as Properties.Widget) {
-			Base.initialize(battery_impl_.type, RefreshRate.SEC);
+			Base.initialize(
+				Complications.COMPLICATION_TYPE_BATTERY, RefreshRate.SEC
+			);
 
 			self.properties = _properties;
-			self.value_impl_ =
-				_properties.data == Properties.BATTERY_DAYS_REMAINING
-					? new Data.BatteryDaysRemaining()
-					: self.battery_impl_;
 		}
 
 		function resize(
@@ -61,48 +54,46 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			self.battery_impl_.refresh();
-			self.is_charging_ = System.getSystemStats().charging;
-			if (self.properties.data == Properties.BATTERY_DAYS_REMAINING) {
-				self.value_impl_.refresh();
+			var system_stats = System.getSystemStats();
+
+			self.is_charging_ = system_stats.charging;
+			var percentage = system_stats.battery;
+
+			self.value_ = "?";
+
+			switch (self.properties.data) {
+				case Properties.BATTERY_DAYS_REMAINING:
+					var days = system_stats.batteryInDays;
+					if (1.0 <= days) {
+						self.value_ = days.toNumber().toString();
+						if (self.value_.length() < 3) {
+							self.value_ += "d";
+						}
+					} else {
+						var hours = days * 24;
+						self.value_ = hours.toNumber().toString();
+						if (self.value_.length() < 3) {
+							self.value_ += "h";
+						}
+					}
+					break;
+				case Properties.BATTERY_PERCENTAGE:
+					self.value_ = percentage.toNumber().toString();
+					break;
+				case Properties.BATTERY_ICON:
+					self.value_ = self.chargeString_(Math.round(
+						percentage / 100 * self.bar_all_count_
+					).toNumber());
+					break;
 			}
 
-			var value_maybe = self.battery_impl_.value;
-			var value_max_maybe = self.battery_impl_.value_max;
-			var display_value_maybe = self.value_impl_.value;
-
-			self.value_ = "";
-			if (display_value_maybe != null) {
-				self.value_ = display_value_maybe.toString();
-				if (self.properties.data == Properties.BATTERY_DAYS_REMAINING) {
-					self.value_ += "d";
-				}
-			}
-
-			if (value_maybe == null or value_max_maybe == null) {
+			if (percentage < 10) {
 				self.color_ = Properties.general.accent;
-				self.charge_ = self.chargeString_(0);
-				return;
-			}
-
-			var value = value_maybe as Lang.Number;
-			var value_max = value_max_maybe as Lang.Number;
-
-			if (value < 10) {
-				self.color_ = Properties.general.accent;
-			} else if (100 <= value) {
+			} else if (100 <= percentage) {
 				self.color_ = Properties.general.accent;
 			} else {
 				self.color_ = Properties.general.foreground;
 			}
-
-			var bar_charged_count =
-				value_max == 0
-					? 0
-					: Math.round(
-							(value.toFloat() / value_max) * self.bar_all_count_
-						).toNumber();
-			self.charge_ = self.chargeString_(bar_charged_count);
 		}
 
 		function chargeString_(_charged_count as Lang.Number) as Lang.String {
@@ -138,7 +129,7 @@ module Widgets {
 					self.color_,
 					center_x,
 					center_y,
-					self.charge_,
+					self.value_,
 					_charge_shade,
 					Render.JUSTIFY_CENTER
 				);
@@ -169,7 +160,7 @@ module Widgets {
 			self.render_(
 				_dc,
 				self.is_charging_ ? self.frame_ : "",
-				self.charge_
+				self.value_
 			);
 		}
 

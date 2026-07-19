@@ -27,6 +27,7 @@
 	--green: #a8d640;
 	--red: #e45742;
 	--border: rgba(242, 160, 31, 0.26);
+	--focus-ring: #ffd166;
 	--radius: 8px;
 	color-scheme: dark;
 	font-family:
@@ -58,6 +59,7 @@
 	--rule: rgba(19, 24, 21, 0.12);
 	--watch-shadow: rgba(28, 26, 22, 0.36);
 	--border: rgba(176, 109, 16, 0.38);
+	--focus-ring: #704300;
 	color-scheme: light;
 }
 
@@ -69,7 +71,7 @@ body {
 	margin: 0;
 	min-height: 100vh;
 	overflow-x: hidden;
-	scrollbar-color: rgba(242, 160, 31, 0.72) rgba(255, 255, 255, 0.05);
+	scrollbar-color: rgba(128, 128, 128, 0.72) rgba(255, 255, 255, 0.05);
 	scrollbar-width: thin;
 	background:
 		radial-gradient(circle at 50% 18%, var(--body-glow), transparent 24rem),
@@ -98,16 +100,12 @@ body {
 ::-webkit-scrollbar-thumb {
 	border: 3px solid transparent;
 	border-radius: 999px;
-	background:
-		linear-gradient(180deg, rgba(242, 160, 31, 0.82), rgba(39, 200, 211, 0.62))
-		border-box;
+	background: rgba(128, 128, 128, 0.72) border-box;
 	background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background:
-		linear-gradient(180deg, rgba(242, 160, 31, 0.98), rgba(39, 200, 211, 0.82))
-		border-box;
+	background: rgba(128, 128, 128, 0.9) border-box;
 	background-clip: padding-box;
 }
 
@@ -192,7 +190,7 @@ button {
 
 .theme-option:focus-visible,
 .view-option:focus-visible {
-	outline: 2px solid var(--orange);
+	outline: 2px solid var(--focus-ring);
 	outline-offset: 2px;
 }
 
@@ -253,13 +251,51 @@ h1 {
 }
 
 .feature-strip span {
+	display: inline-flex;
+	align-items: center;
 	max-width: 100%;
+	border: 1px solid var(--chip-border);
+	border-radius: 999px;
+	padding: 7px 10px;
+	color: var(--muted);
+	background: rgba(255, 255, 255, 0.045);
+	font-size: 0.88rem;
+}
+
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-top: 18px;
+}
+
+.action-link {
+	display: inline-flex;
+	align-items: center;
 	border: 1px solid var(--chip-border);
 	border-radius: 999px;
 	padding: 7px 10px;
 	color: var(--chip-ink);
 	background: var(--chip-bg);
 	font-size: 0.88rem;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.action-link--primary:hover {
+	border-color: var(--control-active-border);
+	background: var(--control-hover);
+	color: var(--ink);
+}
+
+.action-link--primary:focus-visible {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 2px;
+}
+
+.action-link--pending {
+	color: var(--muted);
+	cursor: default;
 }
 
 .support-card {
@@ -403,17 +439,6 @@ h1 {
 	box-shadow: 0 0 18px rgba(242, 160, 31, 0.22);
 }
 
-.guide-layer {
-	display: none;
-}
-
-.guide-line {
-	stroke: var(--line);
-	stroke-width: 2;
-	stroke-dasharray: 7 7;
-	filter: drop-shadow(0 0 8px rgba(242, 160, 31, 0.56));
-}
-
 .hotspot {
 	appearance: none;
 	position: absolute;
@@ -507,6 +532,11 @@ h1 {
 		inset 0 0 24px rgba(242, 160, 31, 0.12);
 }
 
+.hotspot:focus-visible {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 3px;
+}
+
 .hotspot[data-feature="general"]:focus-visible,
 .hotspot[data-feature="general"].is-active {
 	border-color: transparent;
@@ -580,7 +610,7 @@ h1 {
 .panel-kicker {
 	margin: 0 0 8px;
 	color: var(--orange);
-	font-size: 0.76rem;
+	font-size: 0.75rem;
 	font-weight: 800;
 	text-transform: uppercase;
 }
@@ -625,7 +655,7 @@ h1 {
 
 .group-head h3 {
 	margin: 0;
-	font-size: 0.96rem;
+	font-size: 1rem;
 	letter-spacing: 0;
 }
 
@@ -643,7 +673,7 @@ h1 {
 
 .setting-name {
 	color: var(--setting-label);
-	font-size: 0.86rem;
+	font-size: 0.875rem;
 	font-weight: 700;
 }
 
@@ -653,7 +683,7 @@ h1 {
 	gap: 6px;
 	min-width: 0;
 	color: var(--chip-ink);
-	font-size: 0.8rem;
+	font-size: 0.875rem;
 	line-height: 1.35;
 }
 
@@ -766,10 +796,6 @@ h1 {
 		margin: 14px auto 0;
 	}
 
-	.guide-layer {
-		display: none;
-	}
-
 	.supporting {
 		grid-template-columns: 1fr;
 		margin-top: 28px;
@@ -830,5 +856,15 @@ h1 {
 
 	.option-pill.is-color {
 		display: flex;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
 	}
 }

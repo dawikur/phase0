@@ -68,7 +68,8 @@ ICON_DEPS          := scripts/generate_icon                      \
 ICON               := $(RESOURCES_GENERATED_DIR)icon.xml
 FONTS_DEPS         := scripts/generate_fonts                     \
                       $(SCRIPT_DEPS)                             \
-                      $(shell find data/fonts -type f)
+                      $(shell find data/fonts -type f)           \
+                      $(shell find resources -name strings.xml)
 FONTS              := $(RESOURCES_GENERATED_DIR)fonts.xml
 SETTINGS_DEPS      := scripts/generate_settings                  \
                       $(SCRIPT_DEPS)                             \
@@ -80,6 +81,7 @@ DOCS_SETTINGS_DEPS := scripts/generate_docs_settings             \
                       $(SETTINGS)                                \
                       $(shell find resources -name strings.xml)
 DOCS_SETTINGS       := docs/settings-data.js
+DOCS_ICON           := docs/assets/icon.svg
 DEVICE_OVERLAY_SRC  := $(HOME)/.Garmin/ConnectIQ/Devices/fr955/fr955.png
 DOCS_DEVICE_OVERLAY_LIGHT := docs/assets/fr955-light.png
 DOCS_DEVICE_OVERLAY_DARK  := docs/assets/fr955-dark.png
@@ -136,6 +138,11 @@ $(DOCS_SETTINGS): $(DOCS_SETTINGS_DEPS)
 		--build $(BUILD_DIR) \
 		--resources $(RESOURCES_DIR) \
 		--source $(SOURCE_DIR)
+
+$(DOCS_ICON): $(ICON)
+	$(Q)echo " [ $(@F) ]"
+	mkdir -p $(@D)
+	cp $< $@
 
 $(DOCS_DEVICE_OVERLAY_LIGHT): $(DEVICE_OVERLAY_SRC)
 	$(Q)echo " [ $(@F) ]"
@@ -234,7 +241,7 @@ sr simulate_release: # run simulator with release build
 r resources: $(RESOURCES) # generate resources
 .PHONY: r resources
 
-d docs: $(DOCS_SETTINGS) $(DOCS_DEVICE_OVERLAYS) # generate product page data
+d docs: $(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS) # generate product page data
 .PHONY: d docs
 
 t test: $(RESOURCES) # run test
@@ -270,7 +277,7 @@ c clean: # remove build directory and files
 	$(RM) -r bin                                \
 		$(BUILD_DIR) $(SRCS_GENERATED_DIR)      \
 		$(RESOURCES) $(RESOURCES_GENERATED_DIR) \
-		$(DOCS_SETTINGS) $(DOCS_DEVICE_OVERLAYS)
+		$(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS)
 .PHONY: c clean
 
 # ---- help ----

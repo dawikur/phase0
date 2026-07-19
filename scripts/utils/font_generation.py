@@ -130,9 +130,10 @@ def get_required_glyphs(folders: Folders) -> str:
     unique_glyphs = {glyph.name for glyph in fonts.TYPEFACE_DOT.glyphs}
     all_unique_chars: set[str] = set()
     all_unique_chars.update(" ")  # whitespace
-    all_unique_chars.update(":0123456789")  # numbers
+    all_unique_chars.update("0123456789")  # numbers
     all_unique_chars.update("-CF")  # temperature
     all_unique_chars.update(".kMGTPEZY")  # value suffixes
+    all_unique_chars.update(":%?!")  # extra
 
     for dirpath, _, filenames in os.walk(  # pylint:disable=too-many-nested-blocks
         folders.resources()

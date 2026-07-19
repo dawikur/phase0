@@ -110,9 +110,6 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 	};
 
 	register(makeElement({ id: "detailPanel", rect: { left: -260, top: 20, right: -20, bottom: 360, width: 240, height: 340 } }));
-	register(makeElement({ id: "watchStage", rect: { left: 0, top: 0, right: 400, bottom: 400, width: 400, height: 400 } }));
-	register(makeElement({ id: "guideLayer" }));
-	register(makeElement({ id: "guideLine" }));
 	register(makeElement({ id: "faceRing" }));
 	const watchFace = register(makeElement({ id: "watchFace" }));
 	const pageLede = register(makeElement({ id: "pageLede" }));
@@ -200,6 +197,7 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 	}
 
 	vm.createContext(context);
+	vm.runInContext(readFileSync(new URL("../theme.js", import.meta.url), "utf8"), context);
 	vm.runInContext(readFileSync(new URL("../app.js", import.meta.url), "utf8"), context);
 
 	return {
@@ -234,6 +232,15 @@ test("converts numeric color values to padded css hex values", () => {
 	assert.equal(context.colorFromValue(255), "#0000ff");
 	assert.equal(context.colorFromValue(16777215), "#ffffff");
 	assert.equal(context.colorFromValue("not-a-number"), null);
+	assert.equal(context.colorFromValue(-1), null);
+	assert.equal(context.colorFromValue(0x1000000), null);
+	assert.equal(context.colorFromValue(1.5), null);
+});
+
+test("escapes generated text before inserting it as markup", () => {
+	const { context } = createHarness();
+
+	assert.equal(context.escapeHtml(`<phase0 & \"test\">`), "&lt;phase0 &amp; &quot;test&quot;&gt;");
 });
 
 test("applies theme mode and resolves auto from system preference", () => {
@@ -279,7 +286,9 @@ test("switches to always-on view and hides unsupported hotspots", () => {
 	assert.equal(byFeature.top.classList.contains("is-hidden"), true);
 	assert.equal(byFeature.top.tabIndex, -1);
 	assert.equal(byFeature.top.getAttribute("aria-hidden"), "true");
+	assert.equal(byFeature.top.getAttribute("aria-pressed"), "false");
 	assert.equal(byFeature.bottom.classList.contains("is-hidden"), true);
+	assert.equal(byFeature.clock.getAttribute("aria-pressed"), "true");
 });
 
 test("falls back to normal view for unknown view names", () => {

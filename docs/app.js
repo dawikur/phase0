@@ -48,18 +48,13 @@ const featureContent = {
 };
 
 const panel = document.getElementById("detailPanel");
-const stage = document.getElementById("watchStage");
-const guideLayer = document.getElementById("guideLayer");
-const guideLine = document.getElementById("guideLine");
 const faceRing = document.getElementById("faceRing");
 const hotspots = Array.from(document.querySelectorAll(".hotspot"));
-const themeButtons = Array.from(document.querySelectorAll(".theme-option"));
 const viewButtons = Array.from(document.querySelectorAll(".view-option"));
 const watchFace = document.getElementById("watchFace");
 const pageLede = document.getElementById("pageLede");
 const supportedDevicesList = document.getElementById("supportedDevices");
 const supportedLanguagesList = document.getElementById("supportedLanguages");
-const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
 let activeFeature = "general";
 let activeView = "normal";
 
@@ -163,21 +158,8 @@ function applyHotspotGeometry() {
 	faceRing.style.height = `${face.bottom - face.top}%`;
 }
 
-function resolvedTheme(mode) {
-	return mode === "auto" ? (systemTheme.matches ? "dark" : "light") : mode;
-}
-
 function applyTheme(mode) {
-	document.documentElement.dataset.themeMode = mode;
-	document.documentElement.dataset.theme = resolvedTheme(mode);
-
-	themeButtons.forEach((button) => {
-		button.setAttribute("aria-pressed", String(button.dataset.themeMode === mode));
-	});
-}
-
-function visibleHotspots() {
-	return hotspots.filter((hotspot) => !hotspot.classList.contains("is-hidden"));
+	window.phaseTheme.apply(mode);
 }
 
 function applyWatchView(view) {
@@ -195,6 +177,7 @@ function applyWatchView(view) {
 		hotspot.classList.toggle("is-hidden", !visible);
 		hotspot.tabIndex = visible ? 0 : -1;
 		hotspot.setAttribute("aria-hidden", String(!visible));
+		hotspot.setAttribute("aria-pressed", String(visible && hotspot.dataset.feature === activeFeature));
 	});
 
 	viewButtons.forEach((button) => {
@@ -220,10 +203,19 @@ watchFace.addEventListener("error", (event) => {
 
 function colorFromValue(value) {
 	const numeric = Number(value);
-	if (!Number.isFinite(numeric)) {
+	if (!Number.isInteger(numeric) || numeric < 0 || numeric > 0xffffff) {
 		return null;
 	}
 	return `#${numeric.toString(16).padStart(6, "0")}`;
+}
+
+function escapeHtml(value) {
+	return String(value)
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll('"', "&quot;")
+		.replaceAll("'", "&#39;");
 }
 
 function supportListMarkup(items, formatter = (item) => item) {
@@ -237,14 +229,15 @@ function supportListMarkup(items, formatter = (item) => item) {
 function renderSupportMeta() {
 	if (supportedDevicesList) {
 		supportedDevicesList.innerHTML = supportListMarkup(
-			settingsData.supportedDevices || []
+			settingsData.supportedDevices || [],
+			escapeHtml
 		);
 	}
 
 	if (supportedLanguagesList) {
 		supportedLanguagesList.innerHTML = supportListMarkup(
 			settingsData.supportedLanguages || [],
-			(language) => `${language.name} <span class="support-code">${language.code}</span>`
+			(language) => `${escapeHtml(language.name)} <span class="support-code">${escapeHtml(language.code)}</span>`
 		);
 	}
 }
@@ -280,24 +273,24 @@ function optionsMarkup(setting) {
 	if (setting.type === "numeric") {
 		const min = setting.min ?? "0";
 		const max = setting.max ?? "10";
-		return `<span class="option-pill">Range ${min}-${max}</span>`;
+		return `<span class="option-pill">Range ${escapeHtml(min)}-${escapeHtml(max)}</span>`;
 	}
 
-	return setting.options.map((option) => {
+	return (setting.options || []).map((option) => {
 		const color = setting.title === "Accent" || setting.title === "Foreground" || setting.title === "Background" || setting.title === "Shade"
 			? colorFromValue(option.value)
 			: null;
 		if (color) {
-			return `<span class="option-pill is-color"><span class="swatch" style="background:${color}"></span>${option.label}</span>`;
+			return `<span class="option-pill is-color"><span class="swatch" style="background:${color}"></span>${escapeHtml(option.label)}</span>`;
 		}
-		return `<span class="option-pill">${option.label}</span>`;
+		return `<span class="option-pill">${escapeHtml(option.label)}</span>`;
 	}).join("");
 }
 
 function settingMarkup(setting) {
 	return `
 		<div class="setting-row">
-			<div class="setting-name">${setting.title}</div>
+			<div class="setting-name">${escapeHtml(setting.title)}</div>
 			<div class="setting-options">${optionsMarkup(setting)}</div>
 		</div>
 	`;
@@ -307,7 +300,7 @@ function groupMarkup(group) {
 	return `
 		<section class="setting-group">
 			<div class="group-head">
-				<h3>${group.title}</h3>
+				<h3>${escapeHtml(group.title)}</h3>
 			</div>
 			${group.settings.map(settingMarkup).join("")}
 		</section>
@@ -323,68 +316,23 @@ function renderPanel(feature) {
 		: "";
 	panel.innerHTML = `
 		<div class="panel-inner">
-			<p class="panel-kicker">${content.kicker}</p>
-			<h2 class="panel-title">${content.title}</h2>
-			<p class="panel-copy">${content.copy}</p>
+			<p class="panel-kicker">${escapeHtml(content.kicker)}</p>
+			<h2 class="panel-title">${escapeHtml(content.title)}</h2>
+			<p class="panel-copy">${escapeHtml(content.copy)}</p>
 			${alternativeNote}
 			${groups.length ? groups.map(groupMarkup).join("") : "<p class=\"panel-copy\">Settings data has not been generated yet.</p>"}
 		</div>
 	`;
 }
 
-function updateGuide(feature) {
-	const hotspot = hotspots.find((item) => item.dataset.feature === feature);
-	if (!hotspot || window.matchMedia("(max-width: 980px)").matches) {
-		return;
-	}
-
-	const stageRect = stage.getBoundingClientRect();
-	const hotspotRect = hotspot.getBoundingClientRect();
-	const panelRect = panel.getBoundingClientRect();
-
-	const startX = hotspotRect.left + hotspotRect.width / 2 - stageRect.left;
-	const startY = hotspotRect.top + hotspotRect.height / 2 - stageRect.top;
-	const endX = panelRect.right - stageRect.left - 10;
-	const endY = Math.min(
-		Math.max(startY, panelRect.top - stageRect.top + 28),
-		panelRect.bottom - stageRect.top - 28
-	);
-
-	guideLayer.setAttribute("viewBox", `0 0 ${stageRect.width} ${stageRect.height}`);
-	guideLine.setAttribute("x1", startX);
-	guideLine.setAttribute("y1", startY);
-	guideLine.setAttribute("x2", endX);
-	guideLine.setAttribute("y2", endY);
-}
-
 function activate(feature) {
 	activeFeature = feature;
 	hotspots.forEach((hotspot) => {
 		hotspot.classList.toggle("is-active", hotspot.dataset.feature === feature);
+		hotspot.setAttribute("aria-pressed", String(hotspot.dataset.feature === feature));
 	});
 	faceRing.classList.toggle("is-active", feature === "general");
 	renderPanel(feature);
-	requestAnimationFrame(() => updateGuide(feature));
-}
-
-function focusFeature(feature) {
-	const hotspot = hotspots.find((item) => item.dataset.feature === feature);
-	if (!hotspot) {
-		return;
-	}
-
-	hotspot.focus({ preventScroll: true });
-	activate(feature);
-}
-
-function cycleHotspotFocus(backwards) {
-	const focusableHotspots = visibleHotspots();
-	const currentIndex = focusableHotspots.findIndex((hotspot) => hotspot.dataset.feature === activeFeature);
-	const fallbackIndex = 0;
-	const startIndex = currentIndex === -1 ? fallbackIndex : currentIndex;
-	const nextIndex = (startIndex + (backwards ? -1 : 1) + focusableHotspots.length) % focusableHotspots.length;
-
-	focusFeature(focusableHotspots[nextIndex].dataset.feature);
 }
 
 function blurFocusedHotspot(exceptFeature) {
@@ -409,36 +357,13 @@ hotspots.forEach((hotspot) => {
 	hotspot.addEventListener("click", () => activate(hotspot.dataset.feature));
 });
 
-themeButtons.forEach((button) => {
-	button.addEventListener("click", () => applyTheme(button.dataset.themeMode));
-});
-
 viewButtons.forEach((button) => {
 	button.addEventListener("click", () => applyWatchView(button.dataset.watchView));
 });
 
-systemTheme.addEventListener("change", () => {
-	if (document.documentElement.dataset.themeMode === "auto") {
-		applyTheme("auto");
-	}
-});
-
 window.addEventListener("resize", () => {
 	applyHotspotGeometry();
-	updateGuide(activeFeature);
 });
-window.addEventListener("keydown", (event) => {
-	if (event.key === "Tab") {
-		event.preventDefault();
-		cycleHotspotFocus(event.shiftKey);
-		return;
-	}
-
-	if (event.key === "Escape") {
-		focusFeature(watchViews[activeView].features.includes("general") ? "general" : "clock");
-	}
-});
-
 const initialFeature = window.location.hash.slice(1);
 if (featureContent[initialFeature]) {
 	activeFeature = initialFeature;

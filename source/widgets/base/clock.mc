@@ -63,14 +63,12 @@ module Widgets {
 				}
 			}
 
-			if (self.properties.height != Properties.LARGE) {
-				self.font_fg_ =
-					Application.loadResource(Rez.Fonts.DIGITS_SMALL) as
-					WatchUi.FontResource;
-				self.font_bg_ =
-					Application.loadResource(Rez.Fonts.DIGITS_SMALL_THIN) as
-					WatchUi.FontResource;
-			}
+			self.font_fg_ =
+				Application.loadResource(Rez.Fonts.DIGITS_SMALL) as
+				WatchUi.FontResource;
+			self.font_bg_ =
+				Application.loadResource(Rez.Fonts.DIGITS_SMALL_THIN) as
+				WatchUi.FontResource;
 		}
 
 		function render(_dc as Graphics.Dc) as Void {

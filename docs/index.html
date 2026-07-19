@@ -4,9 +4,9 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>phase0 Watch Face</title>
-	<link rel="icon" href="../resources/generated/icon.svg" type="image/svg+xml">
+	<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 	<script src="settings-data.js"></script>
-	<script src="theme-init.js"></script>
+	<script src="theme.js"></script>
 	<link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,12 +14,12 @@
 		<section class="hero" aria-labelledby="page-title">
 			<div class="product-copy">
 				<div class="controls">
-					<div class="theme-control" aria-label="Page theme">
+					<div class="theme-control" role="group" aria-label="Page theme">
 						<button class="theme-option" type="button" data-theme-mode="auto">Auto</button>
 						<button class="theme-option" type="button" data-theme-mode="light">Light</button>
 						<button class="theme-option" type="button" data-theme-mode="dark">Dark</button>
 					</div>
-					<div class="view-control" aria-label="Watch view">
+					<div class="view-control" role="group" aria-label="Watch view">
 						<button class="view-option" type="button" data-watch-view="normal">Normal</button>
 						<button class="view-option" type="button" data-watch-view="aod">AoD</button>
 					</div>
@@ -36,7 +36,12 @@
 					<span>Configurable widgets</span>
 					<span>Always-on ready</span>
 				</div>
-				<aside class="detail-panel" id="detailPanel" aria-live="polite"></aside>
+				<div class="actions" aria-label="Project links">
+					<span class="action-link action-link--pending" aria-label="Connect IQ listing coming soon">Connect IQ · soon</span>
+					<a class="action-link action-link--primary" href="mip64-palette/">MIP64 palette</a>
+					<a class="action-link action-link--primary" href="https://github.com/dawikur/phase0">View on GitHub</a>
+				</div>
+				<aside class="detail-panel" id="detailPanel"></aside>
 			</div>
 
 			<div class="watch-zone" id="watchZone">
@@ -50,24 +55,21 @@
 					<img
 						class="watch-overlay watch-overlay--light"
 						src="assets/fr955-light.png"
-						alt="Garmin Forerunner 955 device"
+						alt=""
 					>
 					<img
 						class="watch-overlay watch-overlay--dark"
 						src="assets/fr955-dark.png"
-						alt="Garmin Forerunner 955 device"
+						alt=""
 					>
-					<svg class="guide-layer" id="guideLayer" aria-hidden="true">
-						<line class="guide-line" id="guideLine" x1="0" y1="0" x2="0" y2="0"></line>
-					</svg>
 					<div class="face-ring" id="faceRing" aria-hidden="true"></div>
-					<button class="hotspot" data-feature="general" aria-label="Explore general settings"></button>
-					<button class="hotspot" data-feature="top" aria-label="Explore upper widgets"></button>
-					<button class="hotspot" data-feature="status" aria-label="Explore status icons"></button>
-					<button class="hotspot" data-feature="clock" aria-label="Explore clock settings"></button>
-					<button class="hotspot" data-feature="gauges" aria-label="Explore gauge widgets"></button>
-					<button class="hotspot" data-feature="bottom" aria-label="Explore lower metrics"></button>
-					<button class="hotspot" data-feature="battery" aria-label="Explore battery widget"></button>
+					<button class="hotspot" data-feature="general" aria-controls="detailPanel" aria-label="Explore general settings"></button>
+					<button class="hotspot" data-feature="top" aria-controls="detailPanel" aria-label="Explore upper widgets"></button>
+					<button class="hotspot" data-feature="status" aria-controls="detailPanel" aria-label="Explore status icons"></button>
+					<button class="hotspot" data-feature="clock" aria-controls="detailPanel" aria-label="Explore clock settings"></button>
+					<button class="hotspot" data-feature="gauges" aria-controls="detailPanel" aria-label="Explore gauge widgets"></button>
+					<button class="hotspot" data-feature="bottom" aria-controls="detailPanel" aria-label="Explore lower metrics"></button>
+					<button class="hotspot" data-feature="battery" aria-controls="detailPanel" aria-label="Explore battery widget"></button>
 				</div>
 			</div>
 		</section>

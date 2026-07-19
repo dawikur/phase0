@@ -15,8 +15,13 @@ REPEATED_GROUP_RE = re.compile(
 )
 CONNECT_IQ_NAMESPACE = {"iq": "http://www.garmin.com/xml/connectiq"}
 LANGUAGE_NAMES = {
+    "deu": "German",
     "eng": "English",
+    "fre": "French",
+    "ita": "Italian",
     "pol": "Polish",
+    "por": "Portuguese",
+    "spa": "Spanish",
 }
 
 

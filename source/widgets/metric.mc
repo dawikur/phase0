@@ -212,7 +212,7 @@ module Widgets {
 			var icon_width = _show_icon
 				? Render.IconsWidth(_dc, Fonts.ICON_EMPTY) + Render.SPACING
 				: 0;
-			var gauge_height = number_height - 2 * Render.SPACING;
+			var gauge_height = number_height - 3 * Render.SPACING;
 
 			var body_width = number_width + icon_width;
 			if (_show_gauge) {

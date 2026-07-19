@@ -153,7 +153,7 @@ module Phase0 {
 
 			// -- right --
 
-			var layout_right = layout.rightBox(layout.left);
+			var layout_right = layout.rightBox(layout.left_raw);
 			var gauges_size = self.gauges_.size();
 			for (var i = 0; i < gauges_size; ++i) {
 				self.gauges_[i].resize(

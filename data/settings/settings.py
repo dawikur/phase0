@@ -26,14 +26,12 @@ class Options(IntEnum):
     DAWN_OR_DUSK_SUN = auto()
     GAUGE = auto()
     ICON = auto()
-    LARGE = auto()
     NOTIFICATIONS = auto()
     SMALL = auto()
 
 
 class Heights(IntEnum):
     AUTO = Options.AUTO.value
-    LARGE = Options.LARGE.value
     SMALL = Options.SMALL.value
 
 

@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 
+from data.fonts import TYPEFACE_DOT
+
 SOURCE_DIR = "source"
 RESOURCES_DIR = "resources"
 
@@ -76,6 +78,17 @@ def get_all_defined_strings(prefix: str) -> set[str]:
         defined.update(get_defined_strings(strings_xml, prefix))
 
     return defined
+
+
+def get_resource_characters() -> set[str]:
+    characters: set[str] = set()
+
+    for strings_xml in get_strings_xml_files():
+        tree = ET.parse(strings_xml)
+        for string in tree.getroot().findall("string"):
+            characters.update(string.text or "")
+
+    return characters
 
 
 def get_used_mc_labels() -> set[str]:
@@ -176,6 +189,25 @@ def test_all_month_strings_have_exact_length_three(strings_xml: Path) -> None:
     )
 
 
+@pytest.mark.parametrize("strings_xml", get_strings_xml_files(), ids=str)
+@pytest.mark.parametrize("prefix", ("DAY_OF_WEEK_", "MONTH_"))
+def test_all_date_abbreviations_contain_only_letters(
+    strings_xml: Path, prefix: str
+) -> None:
+    invalid_entries = [
+        (string_id, value)
+        for string_id, value in get_defined_string_entries(strings_xml, prefix)
+        if not value.isalpha()
+    ]
+
+    assert not invalid_entries, (
+        f"{prefix} abbreviations in {strings_xml} must contain only letters:\n"
+        + "\n".join(
+            f"  - {string_id}: {value}" for string_id, value in invalid_entries
+        )
+    )
+
+
 def test_all_referenced_watchface_label_strings_are_defined() -> None:
     used = get_used_mc_labels()
     defined = get_all_defined_strings("LABEL_")
@@ -209,6 +241,15 @@ def test_all_referenced_settings_strings_are_defined() -> None:
 
     assert not undefined, "Undefined settings SET_ strings referenced:\n" + "\n".join(
         f"  - {label}" for label in undefined
+    )
+
+
+def test_all_resource_characters_are_supported_by_dot_font() -> None:
+    supported = {glyph.name for glyph in TYPEFACE_DOT.glyphs}
+    missing = sorted(get_resource_characters() - supported)
+
+    assert not missing, "Missing Dot font glyphs:\n" + "\n".join(
+        f"  - {character}" for character in missing
     )
 
 

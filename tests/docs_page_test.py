@@ -58,14 +58,23 @@ def test_docs_page_loads_assets_in_expected_order() -> None:
 
     assert values_for(parser, "script", "src") == [
         "settings-data.js",
-        "theme-init.js",
+        "theme.js",
         "app.js",
     ]
     assert "styles.css" in values_for(parser, "link", "href")
+    assert "assets/icon.svg" in values_for(parser, "link", "href")
 
-    assert Path("docs/theme-init.js").is_file()
+    assert Path("docs/theme.js").is_file()
     assert Path("docs/styles.css").is_file()
     assert Path("docs/app.js").is_file()
+
+
+def test_docs_page_links_to_mip64_palette() -> None:
+    parser = parse_docs_page()
+
+    assert attrs_for(parser, "a", "href", "mip64-palette/")["class"] == (
+        "action-link action-link--primary"
+    )
 
 
 def test_docs_page_exposes_theme_view_and_accessible_regions() -> None:
@@ -82,8 +91,9 @@ def test_docs_page_exposes_theme_view_and_accessible_regions() -> None:
         "page-title"
     )
     assert attrs_for(parser, "p", "id", "pageLede")["class"] == "lede"
-    assert attrs_for(parser, "aside", "id", "detailPanel")["aria-live"] == "polite"
-    assert attrs_for(parser, "svg", "id", "guideLayer")["aria-hidden"] == "true"
+    assert attrs_for(parser, "aside", "id", "detailPanel").get("aria-live") is None
+    assert attrs_for(parser, "div", "class", "theme-control")["role"] == "group"
+    assert attrs_for(parser, "div", "class", "view-control")["role"] == "group"
     assert attrs_for(parser, "article", "id", "supportCard")["class"] == "support-card"
     assert "support-list" in (
         attrs_for(parser, "ul", "id", "supportedDevices")["class"] or ""
@@ -112,6 +122,7 @@ def test_docs_page_hotspots_match_documented_features() -> None:
         aria_label = hotspot["aria-label"]
         assert aria_label is not None
         assert aria_label.startswith("Explore ")
+        assert hotspot["aria-controls"] == "detailPanel"
 
 
 def test_docs_page_watch_images_have_stable_ids_sources_and_alt_text() -> None:

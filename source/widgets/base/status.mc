@@ -44,7 +44,7 @@ module Widgets {
 
 		function render(_dc as Graphics.Dc) as Void {
 			var center_x = self.centerX();
-			var center_y = self.centerY();
+			var center_y = self.centerY() + Render.SHADOW_OFFSET;
 
 			Render.Icons(
 				_dc,
@@ -59,7 +59,7 @@ module Widgets {
 
 		function renderMinimal(_dc as Graphics.Dc) as Void {
 			var center_x = self.centerX();
-			var center_y = self.centerY();
+			var center_y = self.centerY() + Render.SHADOW_OFFSET;
 
 			Render.Icons(
 				_dc,

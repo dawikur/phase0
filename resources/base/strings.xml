@@ -10,7 +10,7 @@
 	<string id="CONDITION_04_SNOW">Snow</string>
 	<string id="CONDITION_05_WINDY">Windy</string>
 	<string id="CONDITION_06_THUNDERSTORMS">Storms</string>
-	<string id="CONDITION_07_WINTRY_MIX">Mix Wintry</string>
+	<string id="CONDITION_07_WINTRY_MIX">Wintry Mix</string>
 	<string id="CONDITION_08_FOG">Fog</string>
 	<string id="CONDITION_09_HAZY">Hazy</string>
 	<string id="CONDITION_10_HAIL">Hail</string>
@@ -158,7 +158,7 @@
 	<string id="SET_HEIGHT">Height</string>
 	<string id="SET_HIGH_TEMPERATURE">High Temperature</string>
 	<string id="SET_INDIGO">Indigo</string>
-	<string id="SET_LARGE">Large</string>
+	<!-- string id="SET_LARGE">Large</string -->
 	<string id="SET_LIGHT_AZURE">Light Azure</string>
 	<string id="SET_LIGHT_BLUE">Light Blue</string>
 	<string id="SET_LIGHT_CYAN">Light Cyan</string>

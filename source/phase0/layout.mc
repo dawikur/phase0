@@ -16,6 +16,7 @@ module Phase0 {
 		var outer as Box = new Box(0, 0, 0, 0);
 
 		var left as Box = new Box(0, 0, 0, 0);
+		var left_raw as Box = new Box(0, 0, 0, 0);
 
 		function initialize(_dc as Graphics.Dc) {
 			if (
@@ -116,6 +117,8 @@ module Phase0 {
 					Render.TextHeight(_dc, Render.SIZE_SMALL);
 
 			var side_size_x = Render.IconsWidth(_dc, " ");
+			var side_size_raw_x = Render.IconsRawWidth(_dc, " ");
+			var side_size_raw_y = _dc.getFontHeight(clock_font);
 			var gap_x =
 				((self.screen_size_x - clock_size_x) / 2 - side_size_x) / 2;
 
@@ -157,6 +160,13 @@ module Phase0 {
 				self.clock.pos_y,
 				side_size_x,
 				clock_size_y
+			);
+
+			self.left_raw = new Box(
+				2 * gap_x,
+				self.clock.pos_y + Render.SPACING,
+				side_size_raw_x,
+				side_size_raw_y - Render.SPACING
 			);
 
 			return true;
