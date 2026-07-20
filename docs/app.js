@@ -71,7 +71,7 @@ const watchViews = {
 		lede: "Always-on mode keeps only the essentials: the time, battery state for the charge-or-not decision, and quiet status signals for alarms, notifications and connection state.",
 		src: "assets/aod.png",
 		fallback: "assets/aod.png",
-		features: ["status", "clock", "battery"],
+		features: ["general", "status", "clock", "battery"],
 	},
 };
 
@@ -189,9 +189,10 @@ function applyWatchView(view) {
 	applyHotspotGeometry();
 
 	if (!config.features.includes(activeFeature)) {
-		activate(config.features.includes("general") ? "general" : "clock");
+		const fallbackFeature = config.features.includes("general") ? "general" : "clock";
+		activate(fallbackFeature, fallbackFeature !== "general");
 	} else {
-		activate(activeFeature);
+		activate(activeFeature, activeFeature !== "general");
 	}
 }
 
@@ -327,13 +328,13 @@ function renderPanel(feature) {
 	`;
 }
 
-function activate(feature) {
+function activate(feature, highlight = true) {
 	activeFeature = feature;
 	hotspots.forEach((hotspot) => {
-		hotspot.classList.toggle("is-active", hotspot.dataset.feature === feature);
+		hotspot.classList.toggle("is-active", highlight && hotspot.dataset.feature === feature);
 		hotspot.setAttribute("aria-pressed", String(hotspot.dataset.feature === feature));
 	});
-	faceRing.classList.toggle("is-active", feature === "general");
+	faceRing.classList.toggle("is-active", highlight && feature === "general");
 	renderPanel(feature);
 }
 
@@ -363,6 +364,16 @@ viewButtons.forEach((button) => {
 	button.addEventListener("click", () => applyWatchView(button.dataset.watchView));
 });
 
+window.addEventListener("keydown", (event) => {
+	if (event.key !== "Escape") {
+		return;
+	}
+
+	event.preventDefault();
+	blurFocusedHotspot();
+	activate("general", false);
+});
+
 window.addEventListener("resize", () => {
 	applyHotspotGeometry();
 });
@@ -379,3 +390,7 @@ applyHotspotGeometry();
 applyTheme(themeMode);
 renderSupportMeta();
 applyWatchView(initialView || "normal");
+
+if (!featureContent[initialFeature]) {
+	activate("general", false);
+}

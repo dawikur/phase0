@@ -31,7 +31,16 @@ Q   := $(Q.$(V))
 
 # ---- variables ----
 
-SDK_DIR   := $(shell cat "$(HOME)/.Garmin/ConnectIQ/current-sdk.cfg")
+SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release w watch
+
+ifneq ($(strip $(MAKECMDGOALS)),)
+ifneq ($(filter $(SDK_TARGETS),$(MAKECMDGOALS)),)
+SDK_DIR := $(shell cat "$(HOME)/.Garmin/ConnectIQ/current-sdk.cfg")
+endif
+else
+SDK_DIR := $(shell cat "$(HOME)/.Garmin/ConnectIQ/current-sdk.cfg")
+endif
+
 SDK_DIR   := $(patsubst %/,%,$(SDK_DIR))/
 MONKEYDO  := $(SDK_DIR)bin/monkeydo
 CONNECTIQ := $(SDK_DIR)bin/connectiq
@@ -83,7 +92,7 @@ DOCS_SETTINGS_DEPS := scripts/generate_docs_settings             \
                       $(shell find resources -name strings.xml)
 DOCS_SETTINGS       := $(DOCS_DIR)settings-data.js
 DOCS_ICON           := $(DOCS_DIR)assets/icon.svg
-DEVICE_OVERLAY_SRC  := $(HOME)/.Garmin/ConnectIQ/Devices/fr955/fr955.png
+DEVICE_OVERLAY_SRC  := $(DOCS_DIR)assets/fr955.png
 DOCS_DEVICE_OVERLAY_LIGHT := $(DOCS_DIR)assets/fr955-light.png
 DOCS_DEVICE_OVERLAY_DARK  := $(DOCS_DIR)assets/fr955-dark.png
 DOCS_DEVICE_OVERLAYS := $(DOCS_DEVICE_OVERLAY_LIGHT) $(DOCS_DEVICE_OVERLAY_DARK)
@@ -95,8 +104,10 @@ PRG_DEPS := $(JUNGLE) $(SRCS) $(RSCS) $(RESOURCES) $(SETTINGS)
 # ---- settings ----
 
 .DEFAULT_GOAL := build
-.ONESHELL:
 .DELETE_ON_ERROR:
+.ONESHELL:
+.SHELLFLAGS := -e -o pipefail -c
+SHELL := /bin/bash
 
 MAKEFLAGS += --no-print-directory
 
@@ -123,19 +134,19 @@ $(IQ): $(PRG_DEPS)
 
 $(FONTS): $(FONTS_DEPS)
 	$(Q)echo " [ $(@F) ]"
-	$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	PYTHONPATH=. $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
 $(ICON): $(ICON_DEPS)
 	$(Q)echo " [ $(@F) ]"
-	$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	PYTHONPATH=. $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
 $(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA)
 	$(Q)echo " [ $(@F) ]"
-	$< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	PYTHONPATH=. $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
 $(DOCS_SETTINGS): $(DOCS_SETTINGS_DEPS)
 	$(Q)echo " [ $(@F) ]"
-	scripts/generate_docs_settings \
+	PYTHONPATH=. scripts/generate_docs_settings \
 		--build $(BUILD_DIR) \
 		--resources $(RESOURCES_DIR) \
 		--source $(SOURCE_DIR)
@@ -252,7 +263,7 @@ p preview: docs # preview docs locally
 
 t test: $(RESOURCES) # run test
 	$(Q)echo " [ test ]"
-	pytest
+	PYTHONPATH=. pytest
 	node --test docs/tests/*.test.mjs
 .PHONY: t test
 

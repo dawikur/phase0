@@ -288,6 +288,9 @@ Avoid introducing shell scripts unless they provide clear value.
 
 Keep build steps reproducible.
 
+The release optimizer is pinned in `package-lock.json`; install its Node
+dependencies with `npm ci` before producing a release build.
+
 Do not run the project build or the Connect IQ simulator in this environment.
 Both are known to fail here, so they do not provide useful verification.
 

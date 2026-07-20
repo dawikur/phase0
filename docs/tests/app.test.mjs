@@ -143,6 +143,7 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 	}));
 
 	const mediaListeners = [];
+	const windowListeners = {};
 	const historyCalls = [];
 	const context = {
 		console,
@@ -166,7 +167,9 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 					},
 				};
 			},
-			addEventListener() {},
+			addEventListener(event, handler) {
+				windowListeners[event] = handler;
+			},
 			PHASE_SETTINGS: {
 				supportedDevices: ["Forerunner 255", "Fenix 7X / tactix 7 / quatix 7X / Enduro 2"],
 				supportedLanguages: [
@@ -222,6 +225,7 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 		context,
 		document,
 		mediaListeners,
+		windowListeners,
 		historyCalls,
 		pageLede,
 		supportedDevices,
@@ -300,7 +304,7 @@ test("updates the palette link with the selected one-time theme", () => {
 });
 
 test("switches to always-on view and hides unsupported hotspots", () => {
-	const { all, context, pageLede, watchFace } = createHarness();
+	const { all, context, document, pageLede, watchFace } = createHarness();
 
 	context.applyWatchView("aod");
 
@@ -316,13 +320,65 @@ test("switches to always-on view and hides unsupported hotspots", () => {
 	);
 
 	assert.equal(byFeature.clock.classList.contains("is-hidden"), false);
+	assert.equal(byFeature.general.classList.contains("is-hidden"), false);
+	assert.equal(byFeature.general.tabIndex, 0);
 	assert.equal(byFeature.battery.tabIndex, 0);
 	assert.equal(byFeature.top.classList.contains("is-hidden"), true);
 	assert.equal(byFeature.top.tabIndex, -1);
 	assert.equal(byFeature.top.getAttribute("aria-hidden"), "true");
 	assert.equal(byFeature.top.getAttribute("aria-pressed"), "false");
 	assert.equal(byFeature.bottom.classList.contains("is-hidden"), true);
-	assert.equal(byFeature.clock.getAttribute("aria-pressed"), "true");
+	assert.equal(byFeature.general.getAttribute("aria-pressed"), "true");
+	assert.equal(byFeature.general.classList.contains("is-active"), false);
+	assert.equal(byFeature.clock.getAttribute("aria-pressed"), "false");
+	assert.equal(document.getElementById("faceRing").classList.contains("is-active"), false);
+});
+
+test("Escape opens global settings without highlighting the global hotspot", () => {
+	const { all, document, windowListeners } = createHarness();
+	const general = all.find((element) => element.dataset.feature === "general");
+	const clock = all.find((element) => element.dataset.feature === "clock");
+	let prevented = false;
+
+	clock.focus();
+	windowListeners.keydown({
+		key: "Escape",
+		preventDefault() {
+			prevented = true;
+		},
+	});
+
+	assert.equal(prevented, true);
+	assert.equal(document.activeElement, null);
+	assert.equal(general.getAttribute("aria-pressed"), "true");
+	assert.equal(general.classList.contains("is-active"), false);
+	assert.equal(document.getElementById("faceRing").classList.contains("is-active"), false);
+
+	general.eventListeners.mouseenter({ currentTarget: general });
+
+	assert.equal(general.classList.contains("is-active"), true);
+	assert.equal(document.getElementById("faceRing").classList.contains("is-active"), true);
+});
+
+test("switching to AoD clears the global highlight when the active hotspot is unavailable", () => {
+	const { all, context, document } = createHarness();
+	const general = all.find((element) => element.dataset.feature === "general");
+
+	context.activate("top");
+	context.applyWatchView("aod");
+
+	assert.equal(general.getAttribute("aria-pressed"), "true");
+	assert.equal(general.classList.contains("is-active"), false);
+	assert.equal(document.getElementById("faceRing").classList.contains("is-active"), false);
+});
+
+test("starts with global settings open but without a hotspot highlight", () => {
+	const { all, document } = createHarness();
+	const general = all.find((element) => element.dataset.feature === "general");
+
+	assert.equal(general.getAttribute("aria-pressed"), "true");
+	assert.equal(general.classList.contains("is-active"), false);
+	assert.equal(document.getElementById("faceRing").classList.contains("is-active"), false);
 });
 
 test("falls back to normal view for unknown view names", () => {
