@@ -28,8 +28,9 @@ class ClassList {
 }
 
 class Element {
-	constructor({ id = "", classes = [], dataset = {}, rect = {} } = {}) {
+	constructor({ id = "", classes = [], dataset = {}, rect = {}, tagName = "div", href = "" } = {}) {
 		this.id = id;
+		this.tagName = tagName.toUpperCase();
 		this.classList = new ClassList(classes);
 		this.dataset = { ...dataset };
 		this.style = {};
@@ -38,6 +39,7 @@ class Element {
 		this.innerHTML = "";
 		this.textContent = "";
 		this.tabIndex = 0;
+		this.href = href;
 		this.src = "";
 		this.alt = "";
 		this.rect = {
@@ -95,6 +97,9 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 			return ids.get(id);
 		},
 		querySelectorAll(selector) {
+			if (selector === "a[data-theme-transfer]") {
+				return all.filter((element) => element.tagName === "A" && "themeTransfer" in element.dataset);
+			}
 			const className = selector.startsWith(".") ? selector.slice(1) : selector;
 			return all.filter((element) => element.classList.contains(className));
 		},
@@ -131,16 +136,28 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 	for (const view of ["normal", "aod"]) {
 		register(makeElement({ classes: ["view-option"], dataset: { watchView: view } }));
 	}
+	const themeTransferLink = register(makeElement({
+		tagName: "a",
+		dataset: { themeTransfer: "" },
+		href: "http://example.test/mip64-palette/",
+	}));
 
 	const mediaListeners = [];
+	const historyCalls = [];
 	const context = {
 		console,
 		document,
 		HTMLElement: Element,
 		Number,
+		URL,
 		URLSearchParams,
 		window: {
-			location: { hash, search },
+			location: { hash, search, pathname: "/", href: "http://example.test/" },
+			history: {
+				replaceState(...args) {
+					historyCalls.push(args);
+				},
+			},
 			matchMedia(query) {
 				return {
 					matches: query.includes("prefers-color-scheme") ? prefersDark : false,
@@ -205,9 +222,11 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 		context,
 		document,
 		mediaListeners,
+		historyCalls,
 		pageLede,
 		supportedDevices,
 		supportedLanguages,
+		themeTransferLink,
 		watchFace,
 	};
 }
@@ -263,6 +282,21 @@ test("applies theme mode and resolves auto from system preference", () => {
 		all.find((element) => element.dataset.themeMode === "dark").getAttribute("aria-pressed"),
 		"false",
 	);
+});
+
+test("uses and removes the one-time theme parameter between pages", () => {
+	const { document, historyCalls } = createHarness({ search: "?theme=dark" });
+
+	assert.equal(document.documentElement.dataset.themeMode, "dark");
+	assert.deepEqual(historyCalls, [[null, "", "/"]]);
+});
+
+test("updates the palette link with the selected one-time theme", () => {
+	const { context, themeTransferLink } = createHarness();
+
+	context.applyTheme("dark");
+
+	assert.equal(themeTransferLink.href, "http://example.test/mip64-palette/?theme=dark&view=normal&sort=hue");
 });
 
 test("switches to always-on view and hides unsupported hotspots", () => {

@@ -60,6 +60,7 @@ Avoid solutions that:
 - redraw unnecessarily
 - introduce hidden complexity
 - require excessive abstraction
+- use client-side caches or persistent browser storage for website state
 
 Prefer explicit code over clever code.
 

@@ -208,7 +208,7 @@
           <button class="view-option" type="button" data-sort-mode="rgb" aria-pressed="false">RGB</button>
         </div>
       </div>
-      <p class="eyebrow"><a href="../">← phase0</a> · Garmin display reference</p>
+      <p class="eyebrow"><a href="../" data-theme-transfer>← phase0</a> · Garmin display reference</p>
       <h1>Garmin MIP64 Palette</h1>
       <p class="lede">
         A compact reference for the 64-color MIP palette. Select any swatch to
@@ -307,8 +307,11 @@
       }
 
       function sortPalette(mode) {
+		if (!["hue", "lightness", "rgb"].includes(mode)) mode = "hue";
         colors.sort((a, b) => compareColors(mode, a, b));
         colors.forEach((color) => palette.appendChild(color.card));
+		document.documentElement.dataset.paletteSort = mode;
+		window.phaseTheme.updateTransferLinks();
         sortButtons.forEach((button) => {
           button.setAttribute("aria-pressed", String(button.dataset.sortMode === mode));
         });
@@ -354,7 +357,7 @@
       sortButtons.forEach((button) => {
         button.addEventListener("click", () => sortPalette(button.dataset.sortMode));
       });
-      sortPalette("hue");
+      sortPalette(document.documentElement.dataset.paletteSort || "hue");
 
       function showCopied(swatch) {
         const existing = swatch.querySelector(".copied-label");

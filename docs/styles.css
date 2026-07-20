@@ -341,6 +341,13 @@ h1 {
 	text-transform: uppercase;
 }
 
+.support-note {
+	margin: 10px 0 0;
+	color: var(--muted);
+	font-size: 0.8rem;
+	line-height: 1.4;
+}
+
 .watch-zone {
 	position: relative;
 	align-self: start;
@@ -542,6 +549,10 @@ h1 {
 	border-color: transparent;
 	background: transparent;
 	box-shadow: none;
+}
+
+.hotspot[data-feature="general"]:focus-visible {
+	outline: none;
 }
 
 .hotspot[data-feature="general"]:focus-visible::after,

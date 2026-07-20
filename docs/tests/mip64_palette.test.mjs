@@ -32,7 +32,7 @@ test("palette page offers accessible in-session sorting controls", () => {
 	assert.match(palettePage, /data-sort-mode="hue" aria-pressed="true">Hue/);
 	assert.match(palettePage, /data-sort-mode="lightness" aria-pressed="false">Lightness/);
 	assert.match(palettePage, /data-sort-mode="rgb" aria-pressed="false">RGB/);
-	assert.match(palettePage, /sortPalette\("hue"\)/);
+	assert.match(palettePage, /sortPalette\(document\.documentElement\.dataset\.paletteSort \|\| "hue"\)/);
 });
 
 test("palette page keeps deterministic ordering for each sort mode", () => {

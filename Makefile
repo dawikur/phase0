@@ -43,6 +43,7 @@ MONKEYC   := node scripts/optimizedc.mjs
 endif
 
 BUILD_DIR := build/
+DOCS_DIR  := docs/
 OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX.$(MODE))
 PRG       := $(BUILD_DIR)$(OUT).prg
 IQ        := $(BUILD_DIR)$(NAME).iq
@@ -80,11 +81,11 @@ DOCS_SETTINGS_DEPS := scripts/generate_docs_settings             \
                       scripts/utils/docs_settings.py             \
                       $(SETTINGS)                                \
                       $(shell find resources -name strings.xml)
-DOCS_SETTINGS       := docs/settings-data.js
-DOCS_ICON           := docs/assets/icon.svg
+DOCS_SETTINGS       := $(DOCS_DIR)settings-data.js
+DOCS_ICON           := $(DOCS_DIR)assets/icon.svg
 DEVICE_OVERLAY_SRC  := $(HOME)/.Garmin/ConnectIQ/Devices/fr955/fr955.png
-DOCS_DEVICE_OVERLAY_LIGHT := docs/assets/fr955-light.png
-DOCS_DEVICE_OVERLAY_DARK  := docs/assets/fr955-dark.png
+DOCS_DEVICE_OVERLAY_LIGHT := $(DOCS_DIR)assets/fr955-light.png
+DOCS_DEVICE_OVERLAY_DARK  := $(DOCS_DIR)assets/fr955-dark.png
 DOCS_DEVICE_OVERLAYS := $(DOCS_DEVICE_OVERLAY_LIGHT) $(DOCS_DEVICE_OVERLAY_DARK)
 
 RESOURCES := $(ICON) $(FONTS) $(SETTINGS)
@@ -243,6 +244,11 @@ r resources: $(RESOURCES) # generate resources
 
 d docs: $(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS) # generate product page data
 .PHONY: d docs
+
+p preview: docs # preview docs locally
+	$(Q)echo " [ preview ]"
+	python3 -m http.server 8000 --directory "$(DOCS_DIR)"
+.PHONY: p preview
 
 t test: $(RESOURCES) # run test
 	$(Q)echo " [ test ]"

@@ -101,6 +101,9 @@ def test_docs_page_exposes_theme_view_and_accessible_regions() -> None:
     assert (
         attrs_for(parser, "ul", "id", "supportedLanguages")["class"] == "support-list"
     )
+    assert attrs_for(parser, "p", "id", "languageTranslationNote")["class"] == (
+        "support-note"
+    )
 
 
 def test_docs_page_hotspots_match_documented_features() -> None:

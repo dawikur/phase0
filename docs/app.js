@@ -167,6 +167,8 @@ function applyWatchView(view) {
 	const config = watchViews[nextView];
 
 	activeView = nextView;
+	document.documentElement.dataset.phaseView = nextView;
+	window.phaseTheme.updateTransferLinks();
 	watchFace.dataset.fallbackApplied = "";
 	watchFace.src = config.src;
 	watchFace.alt = config.label;
@@ -370,11 +372,8 @@ if (featureContent[initialFeature]) {
 }
 
 const urlParams = new URLSearchParams(window.location.search);
-const initialTheme = urlParams.get("theme");
-const initialView = urlParams.get("view");
-const themeMode = ["auto", "light", "dark"].includes(initialTheme)
-	? initialTheme
-	: document.documentElement.dataset.themeMode || "auto";
+const initialView = document.documentElement.dataset.phaseView || urlParams.get("view");
+const themeMode = document.documentElement.dataset.themeMode || "auto";
 
 applyHotspotGeometry();
 applyTheme(themeMode);
