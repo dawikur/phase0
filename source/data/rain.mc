@@ -17,6 +17,8 @@ module Data {
 
 			self.icon = Fonts.ICON_NONE;
 			self.value_max = 100;
+
+			WeatherProvider.register("precipitation_chance");
 		}
 
 		function get_() as Lang.Number? {

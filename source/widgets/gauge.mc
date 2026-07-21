@@ -40,10 +40,6 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
-			if (self.value_ == null) {
-				self.refresh(_dc);
-			}
-
 			if (self.value_ != null) {
 				Render.Gauge(
 					_dc,

@@ -6,26 +6,27 @@ import Toybox.Time;
 
 module Runtime {
 	var clock as System.ClockTime = System.getClockTime();
+	var day_minute as Lang.Number = clock.hour * 60 + clock.min;
+	var day_seconds as Lang.Number = day_minute * 60 + clock.sec;
+
 	var now as Time.Moment = Time.now();
 	var today as Time.Moment = Time.today();
 	var now_info as Time.Gregorian.Info = Time.Gregorian.info(
 		now,
 		Time.FORMAT_SHORT
 	);
-	var since_midnight as Time.Duration = now.subtract(today) as Time.Duration;
-	var day_seconds as Lang.Number =
-		now_info.hour * 3600 + now_info.min * 60 + now_info.sec;
 
-	function refresh() as Void {
+	// Called by every update. Keep this path allocation-free.
+	function refreshClock() as Void {
 		clock = System.getClockTime();
+		day_minute = clock.hour * 60 + clock.min;
+		day_seconds = day_minute * 60 + clock.sec;
+	}
+
+	// Calendar objects are required only by minute-or-slower consumers.
+	function refreshCalendar() as Void {
 		now = Time.now();
 		today = Time.today();
 		now_info = Time.Gregorian.info(now, Time.FORMAT_SHORT);
-		since_midnight = now.subtract(today) as Time.Duration;
-		day_seconds = now_info.hour * 3600 + now_info.min * 60 + now_info.sec;
-	}
-
-	function partialRefresh() as Void {
-		clock = System.getClockTime();
 	}
 } // module Runtime

@@ -13,6 +13,8 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_FEELS_LIKE_TEMPERATURE),
 				WeatherProvider.refresh_rate
 			);
+
+			WeatherProvider.register("feels_like_temperature");
 		}
 
 		function get_() as Lang.Number? {

@@ -10,6 +10,16 @@ import Toybox.WatchUi;
 
 module Phase0 {
 	class View extends WatchUi.WatchFace {
+		// Update lifecycle:
+		// - rebuildWidgets_ creates widgets and groups them by their desired
+		//   full-update cadence after settings change.
+		// - onLayout positions and sizes those widgets after layout changes.
+		// - onUpdate refreshes and renders the full face. SEC widgets therefore
+		//   update every second when the system provides full updates, such as
+		//   while the user is viewing the watch face.
+		// - onPartialUpdate is the low-power path between full updates: it clears
+		//   and redraws only seconds, never other SEC widgets.
+
 		typedef Bases as Lang.Array<Widgets.Base>;
 
 		// ---- fields ----
@@ -52,7 +62,7 @@ module Phase0 {
 		function initialize() {
 			WatchFace.initialize();
 
-			self.updateProperties_();
+			self.rebuildWidgets_();
 		}
 
 		function onShow() as Void {
@@ -64,8 +74,7 @@ module Phase0 {
 		}
 
 		function onEnterSleep() as Void {
-			// TODO: only on AoD?
-			// self.is_high_power_ = false;
+			//self.is_high_power_ = false;
 
 			WatchUi.requestUpdate();
 		}
@@ -77,16 +86,16 @@ module Phase0 {
 		}
 
 		function onSettingsChanged() as Void {
-			self.updateProperties_();
+			self.rebuildWidgets_();
 
 			WatchUi.requestUpdate();
 		}
 
-		function onPowerBudgetExceeded() as Void {
+		function handlePowerBudgetExceeded() as Void {
 			self.is_high_power_ = false;
 		}
 
-		function onPress(_click_event as WatchUi.ClickEvent) as Lang.Boolean {
+		function handlePress(_click_event as WatchUi.ClickEvent) as Lang.Boolean {
 			var coordinates = _click_event.getCoordinates();
 			var pos_x = coordinates[0];
 			var pos_y = coordinates[1];
@@ -194,7 +203,7 @@ module Phase0 {
 				return;
 			}
 
-			Runtime.partialRefresh();
+			Runtime.refreshClock();
 
 			// ---- refresh ----
 
@@ -227,9 +236,10 @@ module Phase0 {
 				self.onLayout(_dc);
 			}
 
-			Runtime.refresh();
+			Runtime.refreshClock();
 
-			if (self.last_refresh_min_ != Runtime.clock.min) {
+			if (self.last_refresh_min_ != Runtime.day_minute) {
+				Runtime.refreshCalendar();
 				self.is_night_mode_ = self.isNightMode_();
 			}
 
@@ -240,15 +250,45 @@ module Phase0 {
 			}
 		}
 
-		function updateNormal_(_dc as Graphics.Dc) as Void {
+		hidden function updateMinimal_(_dc as Graphics.Dc) as Void {
+			// ---- refresh ----
+
+			self.status_.refresh(_dc);
+			self.refreshWidgets_(_dc, self.batteries_);
+
+			if (self.last_refresh_min_ != Runtime.day_minute) {
+				self.last_refresh_min_ = Runtime.day_minute;
+
+				self.clock_.refresh(_dc);
+			}
+
+			// ---- render ----
+
+			_dc.clearClip();
+			_dc.setColor(
+				Properties.general.background,
+				Properties.general.background
+			);
+			_dc.clear();
+
+			self.clock_.renderMinimal(_dc);
+			self.status_.renderMinimal(_dc);
+
+			var batteries_size = self.batteries_.size();
+			for (var i = 0; i < batteries_size; ++i) {
+				self.batteries_[i].renderMinimal(_dc);
+			}
+		}
+
+		hidden function updateNormal_(_dc as Graphics.Dc) as Void {
 			WeatherProvider.refresh();
 
 			self.seconds_.refresh(_dc);
 
 			self.refreshWidgets_(_dc, self.widgets_per_sec_);
 
-			if (self.last_refresh_min_ != Runtime.clock.min) {
-				self.last_refresh_min_ = Runtime.clock.min;
+			if (self.last_refresh_min_ != Runtime.day_minute) {
+				self.last_refresh_min_ = Runtime.day_minute;
 
 				self.refreshWidgets_(_dc, self.widgets_per_min_);
 			}
@@ -279,37 +319,7 @@ module Phase0 {
 			self.renderWidgets_(_dc, self.widgets_per_hour_);
 		}
 
-		function updateMinimal_(_dc as Graphics.Dc) as Void {
-			// ---- refresh ----
-
-			self.status_.refresh(_dc);
-			self.refreshWidgets_(_dc, self.batteries_);
-
-			if (self.last_refresh_min_ != Runtime.clock.min) {
-				self.last_refresh_min_ = Runtime.clock.min;
-
-				self.clock_.refresh(_dc);
-			}
-
-			// ---- render ----
-
-			_dc.clearClip();
-			_dc.setColor(
-				Properties.general.background,
-				Properties.general.background
-			);
-			_dc.clear();
-
-			self.clock_.renderMinimal(_dc);
-			self.status_.renderMinimal(_dc);
-
-			var batteries_size = self.batteries_.size();
-			for (var i = 0; i < batteries_size; ++i) {
-				self.batteries_[i].renderMinimal(_dc);
-			}
-		}
-
-		hidden function updateProperties_() as Void {
+		hidden function rebuildWidgets_() as Void {
 			// ---- header ----
 
 			self.last_refresh_min_ = -1;
@@ -333,7 +343,7 @@ module Phase0 {
 
 			// ---- top middle ----
 
-			self.top_middle_ = self.createDataWidgets_(
+			self.top_middle_ = self.createMetricWidgets_(
 				Properties.top_middle,
 				Properties.ICON
 			);
@@ -379,7 +389,7 @@ module Phase0 {
 
 			// ---- bottom middle ----
 
-			self.bottom_middle_ = self.createDataWidgets_(
+			self.bottom_middle_ = self.createMetricWidgets_(
 				Properties.bottom_middle,
 				Properties.GAUGE
 			);
@@ -514,7 +524,7 @@ module Phase0 {
 			}
 		}
 
-		hidden static function createDataWidgets_(
+		hidden static function createMetricWidgets_(
 			_properties as Lang.Array<Properties.Metric>,
 			_style as Lang.Number
 		) as Bases {
@@ -564,21 +574,21 @@ module Phase0 {
 			}
 
 			if (
-				self.tryResizeWidgets_(
+				self.tryFitWidgets_(
 					_dc,
 					_widgets,
 					_box,
 					_box.size_x,
 					Render.SIZE_REGULAR
 				) or
-				self.tryResizeWidgets_(
+				self.tryFitWidgets_(
 					_dc,
 					_widgets,
 					_box,
 					_box.size_x,
 					Render.SIZE_SMALL
 				) or
-				self.tryResizeWidgets_(
+				self.tryFitWidgets_(
 					_dc,
 					_widgets,
 					_box,
@@ -590,7 +600,7 @@ module Phase0 {
 			self.distributeWidgetsInBox_(_widgets, _box);
 		}
 
-		hidden static function tryResizeWidgets_(
+		hidden static function tryFitWidgets_(
 			_dc as Graphics.Dc,
 			_widgets as Bases,
 			_box as Box,

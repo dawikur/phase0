@@ -15,6 +15,15 @@ module Cache {
 		Application.Storage.setValue(_name + "_timestamp", now);
 	}
 
+	function refreshValue(_name as Lang.String) as Lang.Boolean {
+		if (Application.Storage.getValue(_name) == null) {
+			return false;
+		}
+
+		Application.Storage.setValue(_name + "_timestamp", Runtime.now.value());
+		return true;
+	}
+
 	function hasValue(
 		_name as Lang.String,
 		_ttl_in_hours as Lang.Number
@@ -26,11 +35,23 @@ module Cache {
 		_name as Lang.String,
 		_ttl_in_hours as Lang.Number
 	) as Data? {
+		var data_maybe = Application.Storage.getValue(_name);
+		var timestamp_maybe = Application.Storage.getValue(
+			_name + "_timestamp"
+		);
+
+		if (data_maybe == null and timestamp_maybe == null) {
+			return null;
+		}
+
+		if (data_maybe == null or timestamp_maybe == null) {
+			clearValue(_name);
+			return null;
+		}
+
 		try {
-			var data = Application.Storage.getValue(_name) as Data;
-			var timestamp =
-				Application.Storage.getValue(_name + "_timestamp") as
-				Lang.Number;
+			var data = data_maybe as Data;
+			var timestamp = timestamp_maybe as Lang.Number;
 
 			var data_age = Runtime.now.value() - timestamp;
 
@@ -39,8 +60,7 @@ module Cache {
 			}
 		} catch (ex instanceof Lang.UnexpectedTypeException) {}
 
-		Application.Storage.deleteValue(_name);
-		Application.Storage.deleteValue(_name + "_timestamp");
+		clearValue(_name);
 
 		return null;
 	}
@@ -103,6 +123,31 @@ module Cache {
 		assertNull_(Application.Storage.getValue(key));
 		assertNull_(Application.Storage.getValue(key + "_timestamp"));
 
+		Application.Storage.setValue(key, 88);
+		assertNull_(getValue(key, 1));
+		assertNull_(Application.Storage.getValue(key));
+		assertNull_(Application.Storage.getValue(key + "_timestamp"));
+
+		return true;
+	}
+
+	(:test)
+	function CacheRefreshValueTest(_logger as Test.Logger) as Lang.Boolean {
+		var key = "cache_test_refresh";
+		clearTestValue_(key);
+
+		Application.Storage.setValue(key, 123);
+		Application.Storage.setValue(key + "_timestamp", 1);
+		Test.assertEqual(refreshValue(key), true);
+
+		assertNumberEqual_(Application.Storage.getValue(key) as Lang.Number, 123);
+		Test.assertEqual(
+			(Application.Storage.getValue(key + "_timestamp") as Lang.Number) > 1,
+			true
+		);
+
+		clearTestValue_(key);
+		Test.assertEqual(refreshValue(key), false);
 		return true;
 	}
 } // module Cache

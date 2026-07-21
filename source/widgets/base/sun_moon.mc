@@ -145,12 +145,8 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
-			if (self.dawn_.length() == 0 or self.dusk_.length() == 0) {
-				self.refresh(_dc);
-			} else {
-				self.updateValueMode_();
-				self.updateSize_(_dc);
-			}
+			self.updateValueMode_();
+			self.updateSize_(_dc);
 
 			var pos_x = self.centerX();
 			var pos_y = self.pos_y;

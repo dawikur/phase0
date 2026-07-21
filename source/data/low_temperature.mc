@@ -13,6 +13,8 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_LOW_TEMPERATURE),
 				WeatherProvider.refresh_rate
 			);
+
+			WeatherProvider.register("low_temperature");
 		}
 
 		function get_() as Lang.Number? {

@@ -16,6 +16,9 @@ module Data {
 			);
 
 			self.icon = Fonts.ICON_NONE;
+
+			WeatherProvider.register("wind_bearing");
+			WeatherProvider.register("wind_speed");
 		}
 
 		function get_() as Lang.Number? {

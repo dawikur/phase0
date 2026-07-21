@@ -66,10 +66,6 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
-			if (self.value_.length() == 0) {
-				self.refresh(_dc);
-			}
-
 			// ---- header ----
 
 			var pos_x = self.anchorX_();

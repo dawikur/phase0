@@ -19,11 +19,11 @@ module Phase0 {
 		function onPowerBudgetExceeded(
 			_power_info as WatchUi.WatchFacePowerInfo
 		) as Void {
-			view_.onPowerBudgetExceeded();
+			view_.handlePowerBudgetExceeded();
 		}
 
 		function onPress(_click_event as WatchUi.ClickEvent) as Lang.Boolean {
-			return view_.onPress(_click_event);
+			return view_.handlePress(_click_event);
 		}
 	}
 } // module Phase0

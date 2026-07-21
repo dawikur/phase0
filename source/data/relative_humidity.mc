@@ -15,6 +15,8 @@ module Data {
 			);
 
 			self.value_max = 100;
+
+			WeatherProvider.register("relative_humidity");
 		}
 
 		function get_() as Lang.Number? {

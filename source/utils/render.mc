@@ -41,6 +41,27 @@ module Render {
 	const TOP as Lang.Boolean = true;
 	const BOTTOM as Lang.Boolean = false;
 
+	const NUMBER_BACKGROUNDS as Lang.Array<Lang.String> = [
+		"",
+		"0",
+		"00",
+		"000",
+		"0000",
+		"00000",
+		"000000",
+		"0000000",
+	];
+	const NUMBER_SUFFIXES as Lang.Array<Lang.String> = [
+		"k",
+		"M",
+		"G",
+		"T",
+		"P",
+		"E",
+		"Z",
+		"Y",
+	];
+
 	function fontFg_(_is_small as Lang.Boolean) as WatchUi.FontResource {
 		return _is_small ? FONT_SMALL : FONT_REGULAR;
 	}
@@ -167,32 +188,18 @@ module Render {
 
 	function numberBg_(_width as Lang.Number) as Lang.String {
 		if (_width <= 0) {
-			return "";
+			return NUMBER_BACKGROUNDS[0];
 		}
 
-		switch (_width) {
-			case 1:
-				return "0";
-			case 2:
-				return "00";
-			case 3:
-				return "000";
-			case 4:
-				return "0000";
-			case 5:
-				return "00000";
-			case 6:
-				return "000000";
-			case 7:
-				return "0000000";
-			default: {
-				var result = "0000000";
-				for (var i = 7; i < _width; ++i) {
-					result += "0";
-				}
-				return result;
-			}
+		if (_width < NUMBER_BACKGROUNDS.size()) {
+			return NUMBER_BACKGROUNDS[_width];
 		}
+
+		var result = NUMBER_BACKGROUNDS[NUMBER_BACKGROUNDS.size() - 1];
+		for (var i = result.length(); i < _width; ++i) {
+			result += "0";
+		}
+		return result;
 	}
 
 	function Number(
@@ -284,14 +291,13 @@ module Render {
 			return str;
 		}
 
-		var suffixes = ["k", "M", "G", "T", "P", "E", "Z", "Y"];
-		var suffixes_size = suffixes.size();
+		var suffixes_size = NUMBER_SUFFIXES.size();
 
 		var value = _number.toFloat();
 		for (var i = 0; i < suffixes_size; ++i) {
 			value /= 1000;
 
-			var suffix = suffixes[i];
+			var suffix = NUMBER_SUFFIXES[i];
 
 			str = value.format("%.1f") + suffix;
 			if (str.length() <= _width) {

@@ -15,6 +15,9 @@ module Widgets {
 			);
 
 			self.justify_ = Render.JUSTIFY_CENTER;
+
+			WeatherProvider.register("condition");
+			WeatherProvider.register("temperature");
 		}
 
 		function weatherValue_(

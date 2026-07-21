@@ -16,6 +16,8 @@ module Data {
 			);
 
 			self.icon = Fonts.ICON_NONE;
+
+			WeatherProvider.register("uv_index");
 		}
 
 		function get_() as Lang.Number? {
