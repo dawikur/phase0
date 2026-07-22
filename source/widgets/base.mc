@@ -117,5 +117,17 @@ module Widgets {
 
 		function render(_dc as Graphics.Dc) as Void {}
 		function renderMinimal(_dc as Graphics.Dc) as Void {}
+
+		function update(_dc as Graphics.Dc) as Void {
+			self.refresh(_dc);
+			self.clear(_dc);
+			self.render(_dc);
+		}
+
+		function updateMinimal(_dc as Graphics.Dc) as Void {
+			self.refresh(_dc);
+			self.clear(_dc);
+			self.renderMinimal(_dc);
+		}
 	}
 } // module Widgets

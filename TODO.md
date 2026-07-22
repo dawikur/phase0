@@ -12,4 +12,4 @@
 
 - [ ] verify on small screens
 - [ ] more icons
-- [ ] pre-render to buffer
+- [ ] don't keep global properties, changed-load-recreate-forget

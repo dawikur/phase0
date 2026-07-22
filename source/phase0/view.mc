@@ -31,6 +31,8 @@ module Phase0 {
 
 		hidden var needs_reposition_ as Lang.Boolean = false;
 
+		hidden var bitmap_ as Graphics.BufferedBitmap? = null;
+
 		// -- refresh --
 		hidden var last_refresh_min_ as Lang.Number = -1;
 		hidden var last_refresh_hour_ as Lang.Number = -1;
@@ -47,7 +49,6 @@ module Phase0 {
 		hidden var top_middle_ as Bases = [];
 		hidden var top_inner_ as Widgets.Base = Widgets.Base.None();
 
-		// TODO: Can this be Bases?
 		hidden var bottom_middle_ as Bases = [];
 		hidden var bottom_inner_date_ as Widgets.Base = Widgets.Base.None();
 		hidden var bottom_inner_am_pm_ as Widgets.Base = Widgets.Base.None();
@@ -138,6 +139,15 @@ module Phase0 {
 		function onLayout(_dc as Graphics.Dc) as Void {
 			var layout = new Layout(_dc);
 
+			self.bitmap_ = self.createBitmap_(
+				layout.screen_size_x,
+				layout.screen_size_y
+			);
+
+			if (self.bitmap_ != null) {
+				self.clear_(self.bitmap_.getDc());
+			}
+
 			// ---- top outer ----
 
 			self.layoutWidget_(_dc, self.top_outer_, layout.outer);
@@ -205,26 +215,7 @@ module Phase0 {
 
 			Runtime.refreshClock();
 
-			// ---- refresh ----
-
-			self.seconds_.refresh(_dc);
-
-			// ---- render ----
-
-			_dc.setClip(
-				self.seconds_.pos_x,
-				self.seconds_.pos_y,
-				self.seconds_.size_x + 2,
-				self.seconds_.size_y + 2
-			);
-
-			_dc.setColor(
-				Properties.general.background,
-				Properties.general.background
-			);
-			_dc.clear();
-
-			self.seconds_.render(_dc);
+			self.seconds_.update(_dc);
 		}
 
 		function onUpdate(_dc as Graphics.Dc) as Void {
@@ -240,7 +231,18 @@ module Phase0 {
 
 			if (self.last_refresh_min_ != Runtime.day_minute) {
 				Runtime.refreshCalendar();
-				self.is_night_mode_ = self.isNightMode_();
+				var is_night_mode = self.isNightMode_();
+
+				if (self.is_night_mode_ != is_night_mode) {
+					self.is_night_mode_ = is_night_mode;
+
+					self.last_refresh_min_ = -1;
+					self.last_refresh_hour_ = -1;
+
+					if (self.bitmap_ != null) {
+						self.clear_(self.bitmap_.getDc());
+					}
+				}
 			}
 
 			if (self.is_night_mode_) {
@@ -251,27 +253,32 @@ module Phase0 {
 		}
 
 		hidden function updateMinimal_(_dc as Graphics.Dc) as Void {
-			// ---- refresh ----
+			self.clear_(_dc);
+
+			if (self.bitmap_ != null) {
+				var dc = self.bitmap_.getDc();
+				dc.clearClip();
+
+				if (self.last_refresh_min_ != Runtime.day_minute) {
+					self.last_refresh_min_ = Runtime.day_minute;
+
+					self.clock_.updateMinimal(dc);
+				}
+
+				_dc.drawBitmap(0, 0, self.bitmap_ as Graphics.BufferedBitmap);
+			} else {
+				if (self.last_refresh_min_ != Runtime.day_minute) {
+					self.last_refresh_min_ = Runtime.day_minute;
+
+					self.clock_.refresh(_dc);
+				}
+
+				self.clock_.renderMinimal(_dc);
+			}
 
 			self.status_.refresh(_dc);
 			self.refreshWidgets_(_dc, self.batteries_);
 
-			if (self.last_refresh_min_ != Runtime.day_minute) {
-				self.last_refresh_min_ = Runtime.day_minute;
-
-				self.clock_.refresh(_dc);
-			}
-
-			// ---- render ----
-
-			_dc.clearClip();
-			_dc.setColor(
-				Properties.general.background,
-				Properties.general.background
-			);
-			_dc.clear();
-
-			self.clock_.renderMinimal(_dc);
 			self.status_.renderMinimal(_dc);
 
 			var batteries_size = self.batteries_.size();
@@ -283,40 +290,52 @@ module Phase0 {
 		hidden function updateNormal_(_dc as Graphics.Dc) as Void {
 			WeatherProvider.refresh();
 
+			if (self.bitmap_ != null) {
+				var dc = self.bitmap_.getDc();
+				dc.clearClip();
+
+				// refresh, clear &render
+
+				if (self.last_refresh_min_ != Runtime.day_minute) {
+					self.last_refresh_min_ = Runtime.day_minute;
+
+					self.updateWidgets_(dc, self.widgets_per_min_);
+				}
+				if (self.last_refresh_hour_ != Runtime.clock.hour) {
+					self.last_refresh_hour_ = Runtime.clock.hour;
+
+					self.updateWidgets_(dc, self.widgets_per_hour_);
+				}
+
+				_dc.clearClip();
+				_dc.drawBitmap(0, 0, self.bitmap_ as Graphics.BufferedBitmap);
+			} else {
+				if (self.last_refresh_min_ != Runtime.day_minute) {
+					self.last_refresh_min_ = Runtime.day_minute;
+
+					self.refreshWidgets_(_dc, self.widgets_per_min_);
+				}
+				if (self.last_refresh_hour_ != Runtime.clock.hour) {
+					self.last_refresh_hour_ = Runtime.clock.hour;
+
+					self.refreshWidgets_(_dc, self.widgets_per_hour_);
+				}
+
+				self.clear_(_dc);
+
+				self.renderWidgets_(_dc, self.widgets_per_min_);
+				self.renderWidgets_(_dc, self.widgets_per_hour_);
+			}
+
 			self.seconds_.refresh(_dc);
-
-			self.refreshWidgets_(_dc, self.widgets_per_sec_);
-
-			if (self.last_refresh_min_ != Runtime.day_minute) {
-				self.last_refresh_min_ = Runtime.day_minute;
-
-				self.refreshWidgets_(_dc, self.widgets_per_min_);
-			}
-			if (self.last_refresh_hour_ != Runtime.clock.hour) {
-				self.last_refresh_hour_ = Runtime.clock.hour;
-
-				self.refreshWidgets_(_dc, self.widgets_per_hour_);
-			}
-
-			// ---- render ----
-
-			_dc.clearClip();
-
-			_dc.setColor(
-				Properties.general.background,
-				Properties.general.background
-			);
-			_dc.clear();
-
 			if (self.is_high_power_) {
 				self.seconds_.render(_dc);
 			} else {
 				self.seconds_.renderMinimal(_dc);
 			}
 
+			self.refreshWidgets_(_dc, self.widgets_per_sec_);
 			self.renderWidgets_(_dc, self.widgets_per_sec_);
-			self.renderWidgets_(_dc, self.widgets_per_min_);
-			self.renderWidgets_(_dc, self.widgets_per_hour_);
 		}
 
 		hidden function rebuildWidgets_() as Void {
@@ -524,6 +543,34 @@ module Phase0 {
 			}
 		}
 
+		hidden function clear_(_dc as Graphics.Dc) as Void {
+			_dc.clearClip();
+			_dc.setColor(
+				Properties.general.background,
+				Properties.general.background
+			);
+			_dc.clear();
+		}
+
+		hidden function createBitmap_(
+			_size_x as Lang.Number,
+			_size_y as Lang.Number
+		) as Graphics.BufferedBitmap? {
+			var options = {:width => _size_x, :height => _size_y};
+
+			try {
+				if (Graphics has :createBufferedBitmap) {
+					return Graphics.createBufferedBitmap(options).get() as
+						Graphics.BufferedBitmap;
+				}
+				if (Graphics has :BufferedBitmap) {
+					return new Graphics.BufferedBitmap(options);
+				}
+			} catch (ex) {}
+
+			return null;
+		}
+
 		hidden static function createMetricWidgets_(
 			_properties as Lang.Array<Properties.Metric>,
 			_style as Lang.Number
@@ -635,6 +682,16 @@ module Phase0 {
 			var widgets_size = _widgets.size();
 			for (var i = 0; i < widgets_size; ++i) {
 				_widgets[i].render(_dc);
+			}
+		}
+
+		hidden function updateWidgets_(
+			_dc as Graphics.Dc,
+			_widgets as Bases
+		) as Void {
+			var widgets_size = _widgets.size();
+			for (var i = 0; i < widgets_size; ++i) {
+				_widgets[i].update(_dc);
 			}
 		}
 

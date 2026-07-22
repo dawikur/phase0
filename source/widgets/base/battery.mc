@@ -19,7 +19,10 @@ module Widgets {
 
 		function initialize(_properties as Properties.Widget) {
 			Base.initialize(
-				Complications.COMPLICATION_TYPE_BATTERY, RefreshRate.SEC
+				Toybox has :Complications
+					? Complications.COMPLICATION_TYPE_BATTERY
+					: null,
+				RefreshRate.SEC
 			);
 
 			self.properties = _properties;
