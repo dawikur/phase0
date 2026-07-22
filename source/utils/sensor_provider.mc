@@ -20,6 +20,11 @@ module SensorProvider {
 	var cache_refresh_seconds_ as Lang.Dictionary<Lang.String, Lang.Number> =
 		{};
 
+	function clearCache() as Void {
+		cache_values_ = {};
+		cache_refresh_seconds_ = {};
+	}
+
 	function get(
 		_name as Lang.String,
 		_iterator as SensorHistory.SensorHistoryIterator

@@ -12,4 +12,5 @@
 
 - [ ] verify on small screens
 - [ ] more icons
-- [ ] don't keep global properties, changed-load-recreate-forget
+
+Memory: 74.4

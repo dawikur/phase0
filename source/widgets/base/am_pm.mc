@@ -109,7 +109,7 @@ module Widgets {
 			if (self.mode_ == MODE_ICON and self.fallback_ != null) {
 				Render.Icons(
 					_dc,
-					Properties.general.foreground,
+					Render.foreground,
 					center_x,
 					center_y,
 					self.fallback_,
@@ -122,7 +122,7 @@ module Widgets {
 			if (self.mode_ == MODE_FULL) {
 				Render.Icons(
 					_dc,
-					Properties.general.foreground,
+					Render.foreground,
 					center_x,
 					center_y,
 					self.frame_,
@@ -133,7 +133,7 @@ module Widgets {
 
 			Render.Text(
 				_dc,
-				Properties.general.foreground,
+				Render.foreground,
 				center_x,
 				center_y - Render.SPACING,
 				Render.SIZE_SMALL,

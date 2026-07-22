@@ -76,7 +76,7 @@ module Widgets {
 			if (self.show_label_) {
 				Render.Label(
 					_dc,
-					Properties.general.accent,
+					Render.accent,
 					pos_x,
 					pos_y,
 					self.label_,
@@ -90,7 +90,7 @@ module Widgets {
 			if (self.value_ != null) {
 				Render.Text(
 					_dc,
-					Properties.general.foreground,
+					Render.foreground,
 					pos_x,
 					pos_y,
 					self.is_small_,

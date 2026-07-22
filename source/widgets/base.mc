@@ -108,8 +108,8 @@ module Widgets {
 			_dc.setClip(self.pos_x, self.pos_y, self.size_x, self.size_y);
 
 			_dc.setColor(
-				Properties.general.background,
-				Properties.general.background
+				Render.background,
+				Render.background
 			);
 
 			_dc.clear();

@@ -15,9 +15,9 @@ module Widgets {
 		var is_charging_ as Lang.Boolean = false;
 		var bar_all_count_ as Lang.Number = 0;
 
-		var properties as Properties.Widget;
+		hidden var mode_ as Lang.Number;
 
-		function initialize(_properties as Properties.Widget) {
+		function initialize(_mode as Lang.Number) {
 			Base.initialize(
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_BATTERY
@@ -25,7 +25,7 @@ module Widgets {
 				RefreshRate.SEC
 			);
 
-			self.properties = _properties;
+			self.mode_ = _mode;
 		}
 
 		function resize(
@@ -65,7 +65,7 @@ module Widgets {
 
 			self.value_ = "?";
 
-			switch (self.properties.data) {
+			switch (self.mode_) {
 				case Properties.BATTERY_DAYS_REMAINING:
 					var days = system_stats.batteryInDays;
 					if (1.0 <= days) {
@@ -92,11 +92,11 @@ module Widgets {
 			}
 
 			if (percentage < 10) {
-				self.color_ = Properties.general.accent;
+				self.color_ = Render.accent;
 			} else if (100 <= percentage) {
-				self.color_ = Properties.general.accent;
+				self.color_ = Render.accent;
 			} else {
-				self.color_ = Properties.general.foreground;
+				self.color_ = Render.foreground;
 			}
 		}
 
@@ -127,7 +127,7 @@ module Widgets {
 			var center_x = self.centerX();
 			var center_y = self.centerY();
 
-			if (self.properties.data == Properties.BATTERY_ICON) {
+			if (self.mode_ == Properties.BATTERY_ICON) {
 				Render.Icons(
 					_dc,
 					self.color_,
@@ -140,7 +140,7 @@ module Widgets {
 			} else {
 				Render.Text(
 					_dc,
-					Properties.general.foreground,
+					Render.foreground,
 					center_x,
 					center_y,
 					Render.SIZE_SMALL,
@@ -151,7 +151,7 @@ module Widgets {
 
 			Render.Icons(
 				_dc,
-				Properties.general.accent,
+				Render.accent,
 				center_x,
 				center_y,
 				_frame,
@@ -178,8 +178,7 @@ module Widgets {
 			_properties as Properties.Widget,
 			_on_top as Lang.Boolean
 		) {
-			_properties.data = Properties.BATTERY_ICON;
-			Battery.initialize(_properties);
+			Battery.initialize(Properties.BATTERY_ICON);
 		}
 	}
 
@@ -188,8 +187,7 @@ module Widgets {
 			_properties as Properties.Widget,
 			_on_top as Lang.Boolean
 		) {
-			_properties.data = Properties.BATTERY_PERCENTAGE;
-			Battery.initialize(_properties);
+			Battery.initialize(Properties.BATTERY_PERCENTAGE);
 		}
 	}
 
@@ -198,8 +196,7 @@ module Widgets {
 			_properties as Properties.Widget,
 			_on_top as Lang.Boolean
 		) {
-			_properties.data = Properties.BATTERY_DAYS_REMAINING;
-			Battery.initialize(_properties);
+			Battery.initialize(Properties.BATTERY_DAYS_REMAINING);
 		}
 	}
 } // module Widgets

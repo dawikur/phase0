@@ -14,11 +14,10 @@ class App extends Application.AppBase {
 	function initialize() {
 		AppBase.initialize();
 
-		Data.Units.refresh();
-		Properties.refresh();
-
 		self.view_ = new Phase0.View();
 		self.delegate_ = new Phase0.Delegate(view_);
+
+		self.onSettingsChanged();
 	}
 
 	function getInitialView() as $.InitialView {
@@ -27,9 +26,18 @@ class App extends Application.AppBase {
 
 	function onSettingsChanged() as Void {
 		Data.Units.refresh();
-		Properties.refresh();
 
-		self.view_.onSettingsChanged();
+		SensorProvider.clearCache();
+		WeatherProvider.clearCache();
+
+		var properties = new Properties();
+
+		Render.accent = properties.general.accent;
+		Render.foreground = properties.general.foreground;
+		Render.shade = properties.general.shade;
+		Render.background = properties.general.background;
+
+		self.view_.onSettingsChanged(properties);
 	}
 }
 

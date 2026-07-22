@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+import Toybox.Application;
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.Test;
@@ -7,6 +8,11 @@ import Toybox.Time;
 import Toybox.Weather;
 
 module WeatherProvider {
+	typedef ForecastSnapshot as Lang.Dictionary<
+		Application.Storage.KeyType,
+		Application.Storage.ValueType
+	>;
+
 	// Refresh policy:
 	// - Request current conditions immediately after fields are registered.
 	// - Retry them every minute while any registered field is missing from the
@@ -23,6 +29,7 @@ module WeatherProvider {
 	const FORECAST_CACHE_TTL_HOURS as Lang.Number = 12;
 	const FORECAST_MEMORY_THRESHOLD as Lang.Number = 100 * 1024;
 	const FORECAST_SNAPSHOT_KEY as Lang.String = "weather_forecast_snapshot";
+	const FORECAST_SNAPSHOT_HOUR_KEY as Lang.String = "snapshot_hour";
 	const RETRY_INTERVAL_SECONDS as Lang.Number = 60;
 	const CURRENT_CACHE_REFRESH_INTERVAL_SECONDS as Lang.Number = 60 * 60;
 	const SHOULD_USE_FORECAST =
@@ -48,6 +55,13 @@ module WeatherProvider {
 		}
 	}
 
+	function clearCache() as Void {
+		fields_ = {};
+		current_cache_values_ = {};
+		current_cache_refresh_seconds_ = {};
+		last_forecast_refresh_hour_ = -1;
+		next_refresh_seconds_ = 0;
+	}
 
 	function get(_key as Lang.String) as Lang.Number? {
 		return fields_.get(_key);
@@ -159,7 +173,7 @@ module WeatherProvider {
 			max_size = FORECAST_CACHE_TTL_HOURS;
 		}
 
-		clearForecast_();
+		var snapshot = newForecastSnapshot_(_now_hour);
 		var stored_count = 0;
 
 		for (var i = 0; i < max_size; ++i) {
@@ -182,7 +196,8 @@ module WeatherProvider {
 			var fields_size = _fields.size();
 			for (var j = 0; j < fields_size; ++j) {
 				var key = _fields[j];
-				storeForecastValue_(
+				storeForecastSnapshotValue_(
+					snapshot,
 					key,
 					forecast_hour,
 					weatherValue_(hourly_forecast, key)
@@ -194,7 +209,7 @@ module WeatherProvider {
 			return false;
 		}
 
-		Cache.setValue(FORECAST_SNAPSHOT_KEY, _now_hour);
+		storeForecastSnapshot_(snapshot);
 		return true;
 	}
 
@@ -202,7 +217,14 @@ module WeatherProvider {
 		_fields as Lang.Array<Lang.String>,
 		_now_hour as Lang.Number
 	) as Void {
-		if (!hasValidForecast_()) {
+		var snapshot = loadForecastSnapshot_();
+		if (
+			snapshot == null or
+			!isValidForecastSnapshot_(
+				snapshot as ForecastSnapshot,
+				_now_hour
+			)
+		) {
 			refreshCurrentCache_(_fields);
 			return;
 		}
@@ -211,7 +233,14 @@ module WeatherProvider {
 		for (var i = 0; i < fields_size; ++i) {
 			var key = _fields[i];
 
-			fields_.put(key, nextForecastValue_(key, _now_hour));
+			fields_.put(
+				key,
+				nextForecastValue_(
+					snapshot as ForecastSnapshot,
+					key,
+					_now_hour
+				)
+			);
 		}
 	}
 
@@ -275,21 +304,36 @@ module WeatherProvider {
 		return null;
 	}
 
-	function storeForecastValue_(
+	function newForecastSnapshot_(
+		_now_hour as Lang.Number
+	) as ForecastSnapshot {
+		var snapshot = {} as ForecastSnapshot;
+		snapshot.put(FORECAST_SNAPSHOT_HOUR_KEY, _now_hour);
+		return snapshot;
+	}
+
+	function storeForecastSnapshotValue_(
+		_snapshot as ForecastSnapshot,
 		_key as Lang.String,
 		_offset as Lang.Number,
 		_data_maybe as Lang.Numeric?
 	) as Void {
-		var key = forecastKey_(_key, _offset);
 		if (_data_maybe != null) {
-			Cache.setValue(key, (_data_maybe as Lang.Numeric).toNumber());
-			return;
+			_snapshot.put(
+				forecastKey_(_key, _offset),
+				(_data_maybe as Lang.Numeric).toNumber()
+			);
 		}
+	}
 
-		Cache.clearValue(key);
+	function storeForecastSnapshot_(
+		_snapshot as ForecastSnapshot
+	) as Void {
+		Application.Storage.setValue(FORECAST_SNAPSHOT_KEY, _snapshot);
 	}
 
 	function nextForecastValue_(
+		_snapshot as ForecastSnapshot,
 		_key as Lang.String,
 		_now_hour as Lang.Number
 	) as Lang.Number? {
@@ -298,12 +342,12 @@ module WeatherProvider {
 			forecast_hour <= _now_hour + FORECAST_CACHE_TTL_HOURS;
 			++forecast_hour
 		) {
-			var cached = Cache.getValue(
-				forecastKey_(_key, forecast_hour),
-				FORECAST_CACHE_TTL_HOURS
+			var value = snapshotValue_(
+				_snapshot,
+				forecastKey_(_key, forecast_hour)
 			);
-			if (cached != null) {
-				return cached as Lang.Number;
+			if (value != null) {
+				return value;
 			}
 		}
 
@@ -311,7 +355,35 @@ module WeatherProvider {
 	}
 
 	function hasValidForecast_() as Lang.Boolean {
-		return Cache.hasValue(FORECAST_SNAPSHOT_KEY, FORECAST_CACHE_TTL_HOURS);
+		var snapshot = loadForecastSnapshot_();
+		if (snapshot == null) {
+			return false;
+		}
+
+		var now_seconds = Runtime.now.value();
+		var now_hour = (now_seconds - (now_seconds % 3600)) / 3600;
+		return isValidForecastSnapshot_(
+			snapshot as ForecastSnapshot,
+			now_hour
+		);
+	}
+
+	function isValidForecastSnapshot_(
+		_snapshot as ForecastSnapshot,
+		_now_hour as Lang.Number
+	) as Lang.Boolean {
+		var snapshot_hour = snapshotValue_(
+			_snapshot,
+			FORECAST_SNAPSHOT_HOUR_KEY
+		);
+		if (snapshot_hour == null) {
+			return false;
+		}
+
+		return (
+			snapshot_hour <= _now_hour and
+			_now_hour < snapshot_hour + FORECAST_CACHE_TTL_HOURS
+		);
 	}
 
 	function weatherValue_(
@@ -387,49 +459,49 @@ module WeatherProvider {
 	}
 
 	function clearForecast_() as Void {
-		var snapshot = Cache.getValue(
-			FORECAST_SNAPSHOT_KEY,
-			FORECAST_CACHE_TTL_HOURS
+		Application.Storage.deleteValue(FORECAST_SNAPSHOT_KEY);
+	}
+
+	function loadForecastSnapshot_() as ForecastSnapshot? {
+		var stored_snapshot = Application.Storage.getValue(
+			FORECAST_SNAPSHOT_KEY
 		);
-		if (snapshot != null) {
-			var snapshot_hour = snapshot as Lang.Number;
-			var fields = fields_.keys();
-			var fields_size = fields.size();
-			for (
-				var forecast_hour = snapshot_hour + 1;
-				forecast_hour <= snapshot_hour + FORECAST_CACHE_TTL_HOURS;
-				++forecast_hour
-			) {
-				for (var i = 0; i < fields_size; ++i) {
-					Cache.clearValue(forecastKey_(fields[i], forecast_hour));
-				}
-			}
+		if (stored_snapshot == null) {
+			return null;
 		}
 
-		Cache.clearValue(FORECAST_SNAPSHOT_KEY);
+		try {
+			var snapshot = stored_snapshot as ForecastSnapshot;
+			if (snapshotValue_(snapshot, FORECAST_SNAPSHOT_HOUR_KEY) == null) {
+				return null;
+			}
+
+			return snapshot;
+		} catch (ex instanceof Lang.UnexpectedTypeException) {
+			return null;
+		}
+	}
+
+	function snapshotValue_(
+		_snapshot as ForecastSnapshot,
+		_key as Lang.String
+	) as Lang.Number? {
+		var value = _snapshot.get(_key);
+		if (value == null) {
+			return null;
+		}
+
+		try {
+			return value as Lang.Number;
+		} catch (ex instanceof Lang.UnexpectedTypeException) {
+			return null;
+		}
 	}
 
 	function clearWeatherProviderTestState_() as Void {
-		var test_fields = [
-			"weather_provider_test_condition",
-			"weather_provider_test_temperature",
-		];
-		var test_fields_size = test_fields.size();
-
-		for (var i = 0; i < test_fields_size; ++i) {
-			var field = test_fields[i];
-			Cache.clearValue(field);
-
-			for (
-				var forecast_hour = 0;
-				forecast_hour <= FORECAST_CACHE_TTL_HOURS + 2;
-				++forecast_hour
-			) {
-				Cache.clearValue(forecastKey_(field, forecast_hour));
-			}
-		}
-
-		Cache.clearValue(FORECAST_SNAPSHOT_KEY);
+		Cache.clearValue("weather_provider_test_condition");
+		Cache.clearValue("weather_provider_test_temperature");
+		clearForecast_();
 		fields_ = {};
 		current_cache_values_ = {};
 		current_cache_refresh_seconds_ = {};
@@ -474,9 +546,18 @@ module WeatherProvider {
 		_hour as Lang.Number,
 		_expected as Lang.Number?
 	) as Void {
-		assertCacheValueEqual_(
-			forecastKey_(_key, _hour),
-			FORECAST_CACHE_TTL_HOURS,
+		var snapshot = loadForecastSnapshot_();
+		if (_expected == null) {
+			if (snapshot == null) {
+				return;
+			}
+			assertNull_(snapshotValue_(snapshot as ForecastSnapshot, forecastKey_(_key, _hour)));
+			return;
+		}
+
+		Test.assertEqual(snapshot != null, true);
+		assertNumberEqual_(
+			snapshotValue_(snapshot as ForecastSnapshot, forecastKey_(_key, _hour)),
 			_expected
 		);
 	}
@@ -548,26 +629,30 @@ module WeatherProvider {
 
 		var condition = "weather_provider_test_condition";
 		var temperature = "weather_provider_test_temperature";
-		var now_hour = 10;
+		var now_seconds = Runtime.now.value();
+		var now_hour = (now_seconds - (now_seconds % 3600)) / 3600;
 
 		get(condition);
 		get(temperature);
 
-		storeForecastValue_(condition, now_hour + 1, 7);
-		storeForecastValue_(condition, now_hour + 3, 9);
-		storeForecastValue_(temperature, now_hour + 2, 21);
+		var snapshot = newForecastSnapshot_(now_hour);
+		storeForecastSnapshotValue_(snapshot, condition, now_hour + 1, 7);
+		storeForecastSnapshotValue_(snapshot, condition, now_hour + 3, 9);
+		storeForecastSnapshotValue_(snapshot, temperature, now_hour + 2, 21);
+		storeForecastSnapshot_(snapshot);
 
-		assertNumberEqual_(nextForecastValue_(condition, now_hour), 7);
-		assertNumberEqual_(nextForecastValue_(temperature, now_hour), 21);
-		assertNumberEqual_(nextForecastValue_(temperature, now_hour + 2), null);
+		assertNumberEqual_(nextForecastValue_(snapshot, condition, now_hour), 7);
+		assertNumberEqual_(nextForecastValue_(snapshot, temperature, now_hour), 21);
+		assertNumberEqual_(
+			nextForecastValue_(snapshot, temperature, now_hour + 2),
+			null
+		);
 
-		Cache.setValue(FORECAST_SNAPSHOT_KEY, now_hour);
 		refreshForecastFallback_([condition, temperature], now_hour);
 		assertNumberEqual_(get(condition), 7);
 		assertNumberEqual_(get(temperature), 21);
 
-		storeForecastValue_(condition, now_hour + 1, null);
-		assertForecastValue_(condition, now_hour + 1, null);
+		assertForecastValue_(temperature, now_hour + 1, null);
 
 		clearWeatherProviderTestState_();
 		return true;
@@ -581,22 +666,22 @@ module WeatherProvider {
 
 		var condition = "weather_provider_test_condition";
 		var temperature = "weather_provider_test_temperature";
-		var snapshot_hour = 20;
+		var now_seconds = Runtime.now.value();
+		var snapshot_hour =
+			(now_seconds - (now_seconds % 3600)) / 3600;
 
 		get(condition);
 		get(temperature);
 
-		Cache.setValue(FORECAST_SNAPSHOT_KEY, snapshot_hour);
-		storeForecastValue_(condition, snapshot_hour + 1, 1);
-		storeForecastValue_(condition, snapshot_hour + 2, 2);
-		storeForecastValue_(temperature, snapshot_hour + 1, 3);
+		var snapshot = newForecastSnapshot_(snapshot_hour);
+		storeForecastSnapshotValue_(snapshot, condition, snapshot_hour + 1, 1);
+		storeForecastSnapshotValue_(snapshot, condition, snapshot_hour + 2, 2);
+		storeForecastSnapshotValue_(snapshot, temperature, snapshot_hour + 1, 3);
+		storeForecastSnapshot_(snapshot);
 
 		clearForecast_();
 
-		Test.assertEqual(
-			Cache.hasValue(FORECAST_SNAPSHOT_KEY, FORECAST_CACHE_TTL_HOURS),
-			false
-		);
+		Test.assertEqual(loadForecastSnapshot_() == null, true);
 		assertForecastValue_(condition, snapshot_hour + 1, null);
 		assertForecastValue_(condition, snapshot_hour + 2, null);
 		assertForecastValue_(temperature, snapshot_hour + 1, null);

@@ -10,7 +10,7 @@ module Widgets {
 
 		hidden var value_ as Lang.Float? = null;
 
-		var properties as Properties.Gauge;
+		hidden var accent_ as Lang.Number;
 
 		function initialize(
 			_properties as Properties.Gauge,
@@ -19,7 +19,7 @@ module Widgets {
 			Base.initialize(_impl.type, _impl.refresh_rate);
 
 			self.impl_ = _impl;
-			self.properties = _properties;
+			self.accent_ = _properties.accent;
 
 			self.size_x = Render.SPACING;
 		}
@@ -43,7 +43,7 @@ module Widgets {
 			if (self.value_ != null) {
 				Render.Gauge(
 					_dc,
-					self.properties.accent,
+					self.accent_,
 					self.pos_x,
 					self.pos_y,
 					self.size_y,

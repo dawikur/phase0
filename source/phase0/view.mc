@@ -62,8 +62,6 @@ module Phase0 {
 
 		function initialize() {
 			WatchFace.initialize();
-
-			self.rebuildWidgets_();
 		}
 
 		function onShow() as Void {
@@ -86,8 +84,8 @@ module Phase0 {
 			WatchUi.requestUpdate();
 		}
 
-		function onSettingsChanged() as Void {
-			self.rebuildWidgets_();
+		function onSettingsChanged(_properties as Properties) as Void {
+			self.rebuildWidgets_(_properties);
 
 			WatchUi.requestUpdate();
 		}
@@ -145,7 +143,7 @@ module Phase0 {
 			);
 
 			if (self.bitmap_ != null) {
-				self.clear_(self.bitmap_.getDc());
+				Render.clear(self.bitmap_.getDc());
 			}
 
 			// ---- top outer ----
@@ -240,7 +238,7 @@ module Phase0 {
 					self.last_refresh_hour_ = -1;
 
 					if (self.bitmap_ != null) {
-						self.clear_(self.bitmap_.getDc());
+						Render.clear(self.bitmap_.getDc());
 					}
 				}
 			}
@@ -253,7 +251,7 @@ module Phase0 {
 		}
 
 		hidden function updateMinimal_(_dc as Graphics.Dc) as Void {
-			self.clear_(_dc);
+			Render.clear(_dc);
 
 			if (self.bitmap_ != null) {
 				var dc = self.bitmap_.getDc();
@@ -321,7 +319,7 @@ module Phase0 {
 					self.refreshWidgets_(_dc, self.widgets_per_hour_);
 				}
 
-				self.clear_(_dc);
+				Render.clear(_dc);
 
 				self.renderWidgets_(_dc, self.widgets_per_min_);
 				self.renderWidgets_(_dc, self.widgets_per_hour_);
@@ -338,7 +336,7 @@ module Phase0 {
 			self.renderWidgets_(_dc, self.widgets_per_sec_);
 		}
 
-		hidden function rebuildWidgets_() as Void {
+		hidden function rebuildWidgets_(_properties as Properties) as Void {
 			// ---- header ----
 
 			self.last_refresh_min_ = -1;
@@ -354,8 +352,8 @@ module Phase0 {
 
 			// ---- top outer ----
 
-			self.top_outer_ = Widgets.get(Properties.top_outer, Render.TOP);
-			if (self.isBatteryData_(Properties.top_outer.data)) {
+			self.top_outer_ = Widgets.get(_properties.top_outer, Render.TOP);
+			if (self.isBatteryData_(_properties.top_outer.data)) {
 				self.batteries_.add(self.top_outer_ as Widgets.Battery);
 			}
 			self.addWidget_(self.top_outer_);
@@ -363,7 +361,7 @@ module Phase0 {
 			// ---- top middle ----
 
 			self.top_middle_ = self.createMetricWidgets_(
-				Properties.top_middle,
+				_properties.top_middle,
 				Properties.ICON
 			);
 			self.addWidgets_(self.top_middle_);
@@ -375,16 +373,16 @@ module Phase0 {
 
 			// ---- main ----
 
-			self.status_ = new Widgets.Status(Properties.status);
+			self.status_ = new Widgets.Status(_properties.status);
 			self.addWidget_(self.status_);
 
-			self.clock_ = new Widgets.Clock(Properties.clock);
+			self.clock_ = new Widgets.Clock(_properties.clock);
 			self.addWidget_(self.clock_);
 
 			self.gauges_ = [];
-			var gauges_size = Properties.gauges.size();
+			var gauges_size = _properties.gauges.size();
 			for (var i = 0; i < gauges_size; ++i) {
-				var properties = Properties.gauges[i];
+				var properties = _properties.gauges[i];
 
 				var data = Data.get(properties.data);
 				if (data == null) {
@@ -399,7 +397,9 @@ module Phase0 {
 
 			self.bottom_inner_date_ = new Widgets.Date();
 			self.addWidget_(self.bottom_inner_date_);
-			if (!Data.Units.is_24_hour) {
+			if (Data.Units.is_24_hour) {
+				self.bottom_inner_am_pm_ = Widgets.Base.None();
+			} else {
 				self.bottom_inner_am_pm_ = new Widgets.AmPm();
 				self.addWidget_(self.bottom_inner_am_pm_);
 			}
@@ -409,7 +409,7 @@ module Phase0 {
 			// ---- bottom middle ----
 
 			self.bottom_middle_ = self.createMetricWidgets_(
-				Properties.bottom_middle,
+				_properties.bottom_middle,
 				Properties.GAUGE
 			);
 			self.addWidgets_(self.bottom_middle_);
@@ -417,10 +417,10 @@ module Phase0 {
 			// ---- bottom outer ----
 
 			self.bottom_outer_ = Widgets.get(
-				Properties.bottom_outer,
+				_properties.bottom_outer,
 				Render.BOTTOM
 			);
-			if (self.isBatteryData_(Properties.bottom_outer.data)) {
+			if (self.isBatteryData_(_properties.bottom_outer.data)) {
 				self.batteries_.add(self.bottom_outer_ as Widgets.Battery);
 			}
 			self.addWidget_(self.bottom_outer_);
@@ -541,15 +541,6 @@ module Phase0 {
 			for (var i = 0; i < widgets_size; ++i) {
 				self.addWidget_(_widgets[i]);
 			}
-		}
-
-		hidden function clear_(_dc as Graphics.Dc) as Void {
-			_dc.clearClip();
-			_dc.setColor(
-				Properties.general.background,
-				Properties.general.background
-			);
-			_dc.clear();
 		}
 
 		hidden function createBitmap_(

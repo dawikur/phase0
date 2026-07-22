@@ -48,7 +48,7 @@ module Widgets {
 
 			Render.Icons(
 				_dc,
-				Properties.general.foreground,
+				Render.foreground,
 				center_x,
 				center_y,
 				self.enabled_,
@@ -63,7 +63,7 @@ module Widgets {
 
 			Render.Icons(
 				_dc,
-				Properties.general.foreground,
+				Render.foreground,
 				center_x,
 				center_y,
 				self.enabled_,

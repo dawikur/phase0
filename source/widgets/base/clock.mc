@@ -12,7 +12,9 @@ module Widgets {
 		hidden var font_fg_ as WatchUi.FontResource;
 		hidden var font_bg_ as WatchUi.FontResource;
 
-		var properties as Properties.Clock;
+		hidden var foreground_ as Lang.Number;
+		hidden var background_ as Lang.Number;
+		hidden var height_ as Lang.Number;
 
 		function initialize(_properties as Properties.Clock) {
 			Base.initialize(null, RefreshRate.MIN);
@@ -24,7 +26,9 @@ module Widgets {
 				Application.loadResource(Rez.Fonts.DIGITS_REGULAR_THIN) as
 				WatchUi.FontResource;
 
-			self.properties = _properties;
+			self.foreground_ = _properties.foreground;
+			self.background_ = _properties.background;
+			self.height_ = _properties.height;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
@@ -43,7 +47,7 @@ module Widgets {
 		) as Void {
 			Base.resize(_dc, _size_x, _size_y);
 
-			if (self.properties.height != Properties.SMALL) {
+			if (self.height_ != Properties.SMALL) {
 				self.font_fg_ =
 					Application.loadResource(Rez.Fonts.DIGITS_REGULAR) as
 					WatchUi.FontResource;
@@ -77,8 +81,8 @@ module Widgets {
 
 			Render.Clock(
 				_dc,
-				self.properties.foreground,
-				self.properties.background,
+				self.foreground_,
+				self.background_,
 				center_x,
 				center_y,
 				self.font_fg_,
@@ -94,8 +98,8 @@ module Widgets {
 
 			Render.Clock(
 				_dc,
-				self.properties.foreground,
-				self.properties.background,
+				self.foreground_,
+				self.background_,
 				center_x,
 				center_y,
 				self.font_fg_,

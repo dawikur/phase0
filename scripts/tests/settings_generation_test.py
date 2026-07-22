@@ -73,10 +73,13 @@ def test_render_properties_mc_reuses_matching_property_classes() -> None:
     )
 
     assert mc.count("class Widget {") == 1
-    assert "var top as Widget = new Widget(" in mc
-    assert "var bottom as Widget = new Widget(" in mc
-    assert '"TopWidth") as Lang.Number;' in mc
-    assert '"BottomWidth") as Lang.Number;' in mc
+    assert "var top as Widget;" in mc
+    assert "var bottom as Widget;" in mc
+    assert "function initialize()" in mc
+    assert "self.top = new Widget(" in mc
+    assert "self.bottom = new Widget(" in mc
+    assert '"TopWidth") as Lang.Number' in mc
+    assert '"BottomWidth") as Lang.Number' in mc
 
 
 def test_hidden_settings_keep_defaults_without_generated_properties() -> None:
@@ -98,7 +101,7 @@ def test_hidden_settings_keep_defaults_without_generated_properties() -> None:
     assert "var icon as Lang.Boolean;" in mc
     assert "_icon as Lang.Boolean" in mc
     assert "true" in mc
-    assert '"MetricWidth") as Lang.Number;' in mc
+    assert '"MetricWidth") as Lang.Number' in mc
     assert '"MetricIcon") as Lang.Boolean;' not in mc
 
     assert '<property id="MetricWidth" type="Number">2</property>' in properties_xml

@@ -62,12 +62,26 @@ module Render {
 		"Y",
 	];
 
+	var accent as Lang.Number = 0;
+	var foreground as Lang.Number = 0;
+	var shade as Lang.Number = 0;
+	var background as Lang.Number = 0;
+
 	function fontFg_(_is_small as Lang.Boolean) as WatchUi.FontResource {
 		return _is_small ? FONT_SMALL : FONT_REGULAR;
 	}
 
 	function fontBg_(_is_small as Lang.Boolean) as WatchUi.FontResource {
 		return _is_small ? FONT_SMALL : FONT_REGULAR_THIN;
+	}
+
+	function clear(_dc as Graphics.Dc) as Void {
+		_dc.clearClip();
+		_dc.setColor(
+			Render.background,
+			Render.background
+		);
+		_dc.clear();
 	}
 
 	function Clock(
@@ -157,7 +171,7 @@ module Render {
 		if (_text.length() != 0) {
 			_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(_pos_x, _pos_y, fontFg_(_is_small), _text, _justify);
-			_dc.setColor(Properties.general.shade, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(Render.shade, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
 				_pos_x + SHADOW_OFFSET,
 				_pos_y + SHADOW_OFFSET,
@@ -228,14 +242,14 @@ module Render {
 	) as Void {
 		if (_bg.length() != 0) {
 			var font_shade = fontBg_(_is_small);
-			_dc.setColor(Properties.general.shade, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(Render.shade, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(_pos_x, _pos_y, font_shade, _bg, JUSTIFY_LEFT);
 		}
 
 		if (_fg.length() != 0) {
 			Text(
 				_dc,
-				Properties.general.foreground,
+				Render.foreground,
 				_pos_x + _bg_width,
 				_pos_y,
 				_is_small,
@@ -345,7 +359,7 @@ module Render {
 			_dc.fillRectangle(_pos_x, _pos_y, SPACING, _height);
 		}
 
-		_dc.setColor(Properties.general.shade, Graphics.COLOR_TRANSPARENT);
+		_dc.setColor(Render.shade, Graphics.COLOR_TRANSPARENT);
 		for (var i = 0; i < _height; i += 2 * SPACING) {
 			_dc.fillRectangle(_pos_x, _pos_y + i, 1, 1);
 		}
@@ -398,7 +412,7 @@ module Render {
 		}
 
 		if (_shade.length() != 0) {
-			_dc.setColor(Properties.general.shade, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(Render.shade, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
 				_pos_x + SHADOW_OFFSET,
 				_pos_y + SHADOW_OFFSET,

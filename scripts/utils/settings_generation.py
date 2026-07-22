@@ -69,9 +69,9 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
     doc = McDocument.create()
     doc.line("import Toybox.Application;")
     doc.line("import Toybox.Lang;")
-    with McScope(doc, "module Properties {") as _module:
+    with McScope(doc, "class Properties {") as _module:
         for opt in Options:
-            doc.line(f"const {opt.name.upper()} = {opt.value};")
+            doc.line(f"static const {opt.name.upper()} = {opt.value};")
 
         doc.line()
         doc.line("// fields")
@@ -117,65 +117,58 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
                             doc.line(f"self.{entry.variable} = _{entry.variable};")
 
             if isinstance(single_or_array, Single):
-                with McScope(
-                    doc,
-                    f"var {single_or_array.variable} as {single_or_array.klass} = "
-                    f"new {single_or_array.klass}(",
-                    ";",
-                ) as _field:
-                    for idx, entry in enumerate(single_or_array):
-                        comma = "," if idx != len(single_or_array) - 1 else ""
-                        doc.line(f"{str(entry.default).lower()}{comma}")
+                doc.line( f"var {single_or_array.variable} as {single_or_array.klass};")
                 continue
 
             if isinstance(single_or_array, Array):
-                with McScope(
-                    doc,
-                    f"var {single_or_array.variable} as Lang.Array<{single_or_array.klass}> = [",
-                    ";",
-                ) as _field:
-                    for idx, widget in enumerate(single_or_array):
-                        with McScope(
-                            doc,
-                            f"new {single_or_array.klass}(",
-                            "," if idx != len(single_or_array) - 1 else "",
-                        ) as _entry:
-                            for idx, entry in enumerate(widget):
-                                comma = "," if idx != len(widget) - 1 else ""
-                                doc.line(f"{str(entry.default).lower()}{comma}")
+                doc.line(f"var {single_or_array.variable} as Lang.Array<{single_or_array.klass}>;")
                 continue
 
             assert False, f"Unsupported type {type(single_or_array)}"
 
-        doc.line("// refresh")
-
-        with McScope(doc, "function refresh() as Void {") as _refresh:
+        with McScope(doc, "function initialize() {") as _refresh:
             for single_or_array in settings:
 
                 def render_widget(
-                    top: Top, widget: Widget, idx: int | None = None
+                    widget: Widget, idx: int | None = None
                 ) -> None:
-                    arr_id = f"[{idx}]" if idx is not None else ""
                     prop_id = f"{idx}" if idx is not None else ""
 
-                    for entry in widget:
-                        if entry.hidden:
-                            continue
+                    for idx, entry in enumerate(widget):
+                        comma = "," if idx != len(widget) - 1 else ""
 
-                        doc.line(
-                            f"self.{top.variable}{arr_id}.{entry.variable} = "
-                            "Application.Properties.getValue("
-                            f'"{top.id}{entry.id}{prop_id}") '
-                            f"as Lang.{entry.klass};"
-                        )
+                        if entry.hidden:
+                            doc.line(f"{str(entry.default).lower()}{comma}")
+                        else:
+                            doc.line(
+                                "Application.Properties.getValue("
+                                f'"{single_or_array.id}{entry.id}{prop_id}") '
+                                f"as Lang.{entry.klass}{comma}"
+                            )
 
                 if isinstance(single_or_array, Single):
-                    render_widget(single_or_array, single_or_array)
+                    with McScope(
+                        doc,
+                        f"self.{single_or_array.variable} = "
+                        f"new {single_or_array.klass}(",
+                        ";",
+                    ) as _field:
+                        render_widget(single_or_array)
                     continue
 
                 if isinstance(single_or_array, Array):
-                    for idx, widget in enumerate(single_or_array):
-                        render_widget(single_or_array, widget, idx)
+                    with McScope(
+                        doc,
+                        f"self.{single_or_array.variable} = [",
+                        ";",
+                    ) as _field:
+                        for idy, widget in enumerate(single_or_array):
+                            with McScope(
+                                doc,
+                                f"new {single_or_array.klass}(",
+                                "," if idy != len(single_or_array) - 1 else "",
+                            ) as _entry:
+                                render_widget(widget, idy)
                     continue
 
                 assert False, f"Unsupported type {type(single_or_array)}"

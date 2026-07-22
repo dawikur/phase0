@@ -44,10 +44,7 @@ module Widgets {
 		hidden var mode_ as Lang.Number;
 		hidden var on_top_ as Lang.Boolean;
 
-		var properties as Properties.Widget;
-
 		function initialize(
-			_properties as Properties.Widget,
 			_on_top as Lang.Boolean,
 			_mode as Lang.Number
 		) {
@@ -57,8 +54,6 @@ module Widgets {
 					: null,
 				RefreshRate.HOUR
 			);
-
-			self.properties = _properties;
 
 			self.mode_ = _mode;
 			self.on_top_ = _on_top;
@@ -280,7 +275,7 @@ module Widgets {
 				}
 				Render.Label(
 					_dc,
-					Properties.general.accent,
+					Render.accent,
 					CenterStart(_pos_x, content_width) + content_width / 2,
 					_pos_y,
 					label,
@@ -297,7 +292,7 @@ module Widgets {
 				pos_x += self.dawn_dusk_width_;
 				Render.Label(
 					_dc,
-					Properties.general.accent,
+					Render.accent,
 					pos_x + (self.has_icon_ ? Render.SPACING : 0),
 					_pos_y,
 					self.labelForValueMode_(left_value_mode),
@@ -310,7 +305,7 @@ module Widgets {
 			if (self.value_mode_ != left_value_mode) {
 				Render.Label(
 					_dc,
-					Properties.general.accent,
+					Render.accent,
 					pos_x - (self.has_icon_ ? Render.SPACING : 0),
 					_pos_y,
 					self.labelForValueMode_(right_value_mode),
@@ -326,8 +321,8 @@ module Widgets {
 		) as Void {
 			var color =
 				self.dawn_.length() != 0 and self.dusk_.length() != 0
-					? Properties.general.foreground
-					: Properties.general.shade;
+					? Render.foreground
+					: Render.shade;
 			var pos_x = CenterStart(_pos_x, self.size_x);
 			var left_value_mode = self.leftValueMode_();
 			var right_value_mode = self.rightValueMode_();
@@ -418,7 +413,7 @@ module Widgets {
 			if (is_new_moon) {
 				Render.Icons(
 					_dc,
-					Properties.general.foreground,
+					Render.foreground,
 					_pos_x,
 					pos_y,
 					"",
@@ -428,7 +423,7 @@ module Widgets {
 			} else if (is_full_moon) {
 				Render.Icons(
 					_dc,
-					Properties.general.foreground,
+					Render.foreground,
 					_pos_x,
 					pos_y,
 					"",
@@ -437,7 +432,7 @@ module Widgets {
 				);
 				Render.Icons(
 					_dc,
-					Properties.general.foreground,
+					Render.foreground,
 					_pos_x + 1,
 					pos_y + 1,
 					moon_icon,
@@ -447,7 +442,7 @@ module Widgets {
 			} else {
 				Render.Icons(
 					_dc,
-					Properties.general.foreground,
+					Render.foreground,
 					_pos_x,
 					pos_y,
 					moon_icon,
@@ -471,7 +466,7 @@ module Widgets {
 			if (value_mode == VALUE_DAWN) {
 				Render.Icons(
 					_dc,
-					Properties.general.foreground,
+					Render.foreground,
 					_pos_x,
 					pos_y,
 					Fonts.ICON_DAWN,
@@ -481,7 +476,7 @@ module Widgets {
 			} else {
 				Render.Icons(
 					_dc,
-					Properties.general.foreground,
+					Render.foreground,
 					_pos_x,
 					pos_y,
 					Fonts.ICON_DUSK,
@@ -606,7 +601,7 @@ module Widgets {
 			_properties as Properties.Widget,
 			_on_top as Lang.Boolean
 		) {
-			SunMoon.initialize(_properties, _on_top, SunMoon.MODE_AND);
+			SunMoon.initialize(_on_top, SunMoon.MODE_AND);
 		}
 	}
 
@@ -615,7 +610,7 @@ module Widgets {
 			_properties as Properties.Widget,
 			_on_top as Lang.Boolean
 		) {
-			SunMoon.initialize(_properties, _on_top, SunMoon.MODE_OR);
+			SunMoon.initialize(_on_top, SunMoon.MODE_OR);
 		}
 	}
 
@@ -625,7 +620,6 @@ module Widgets {
 			_on_top as Lang.Boolean
 		) {
 			SunMoon.initialize(
-				_properties,
 				_on_top,
 				SunMoon.MODE_AND | SunMoon.MODE_MOON
 			);
@@ -638,7 +632,6 @@ module Widgets {
 			_on_top as Lang.Boolean
 		) {
 			SunMoon.initialize(
-				_properties,
 				_on_top,
 				SunMoon.MODE_OR | SunMoon.MODE_MOON
 			);
@@ -651,7 +644,6 @@ module Widgets {
 			_on_top as Lang.Boolean
 		) {
 			SunMoon.initialize(
-				_properties,
 				_on_top,
 				SunMoon.MODE_AND | SunMoon.MODE_SUN
 			);
@@ -664,7 +656,6 @@ module Widgets {
 			_on_top as Lang.Boolean
 		) {
 			SunMoon.initialize(
-				_properties,
 				_on_top,
 				SunMoon.MODE_OR | SunMoon.MODE_SUN
 			);

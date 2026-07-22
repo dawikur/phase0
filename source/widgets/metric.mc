@@ -25,7 +25,7 @@ module Widgets {
 		hidden var value_offset_y_ as Lang.Number = 0;
 		hidden var value_text_ as Lang.String = "";
 
-		hidden var properties_ as Properties.Metric;
+		hidden var width_ as Lang.Number;
 
 		function initialize(
 			_properties as Properties.Metric,
@@ -35,7 +35,7 @@ module Widgets {
 			Base.initialize(_impl.type, _impl.refresh_rate);
 
 			self.impl_ = _impl;
-			self.properties_ = _properties;
+			self.width_ = _properties.width;
 			self.style_ = _style;
 		}
 		function resize(
@@ -43,7 +43,7 @@ module Widgets {
 			_size_x as Lang.Number,
 			_size_y as Lang.Number
 		) as Void {
-			var show_label = Properties.general.accent != Render.COLOR_NONE;
+			var show_label = Render.accent != Render.COLOR_NONE;
 			var show_icon = self.style_ == Properties.ICON;
 			var show_gauge = self.style_ == Properties.GAUGE;
 
@@ -94,11 +94,11 @@ module Widgets {
 			self.value_ = self.impl_.value;
 			self.value_max_ = self.impl_.value_max;
 			self.value_text_ = Render.NumberFormat(
-				self.properties_.width,
+				self.width_,
 				self.value_
 			);
 			self.value_bg_ = Render.NumberBgForText(
-				self.properties_.width,
+				self.width_,
 				self.value_text_
 			);
 			self.value_bg_width_ = Render.NumberBgWidth(
@@ -130,7 +130,7 @@ module Widgets {
 			if (self.show_icon_) {
 				Render.Icons(
 					_dc,
-					Properties.general.foreground,
+					Render.foreground,
 					pos_x,
 					pos_y,
 					self.icon_,
@@ -163,8 +163,8 @@ module Widgets {
 					Render.Gauge(
 						_dc,
 						value >= 1.0
-							? Properties.general.accent
-							: Properties.general.foreground,
+							? Render.accent
+							: Render.foreground,
 						pos_x,
 						value_pos_y + Render.SPACING,
 						self.gauge_height_,
@@ -180,7 +180,7 @@ module Widgets {
 			if (self.show_label_) {
 				Render.Label(
 					_dc,
-					Properties.general.accent,
+					Render.accent,
 					center_x,
 					self.pos_y,
 					self.impl_.name,
@@ -200,7 +200,7 @@ module Widgets {
 		) as Lang.Boolean {
 			var number_width = Render.NumberWidth(
 				_dc,
-				self.properties_.width,
+				self.width_,
 				_is_small
 			);
 			var number_height = Render.NumberHeight(_dc, _is_small);

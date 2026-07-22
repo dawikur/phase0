@@ -41,7 +41,7 @@ module Widgets {
 		function render(_dc as Graphics.Dc) as Void {
 			Render.Text(
 				_dc,
-				Properties.general.foreground,
+				Render.foreground,
 				self.pos_x,
 				self.pos_y,
 				self.is_small,
