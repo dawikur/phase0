@@ -94,7 +94,9 @@ module Phase0 {
 			self.is_high_power_ = false;
 		}
 
-		function handlePress(_click_event as WatchUi.ClickEvent) as Lang.Boolean {
+		function handlePress(
+			_click_event as WatchUi.ClickEvent
+		) as Lang.Boolean {
 			var coordinates = _click_event.getCoordinates();
 			var pos_x = coordinates[0];
 			var pos_y = coordinates[1];
@@ -440,17 +442,18 @@ module Phase0 {
 
 			var now = Runtime.now;
 			var midnight = Runtime.today;
-			var since_midnight = now.subtract(midnight) as Time.Duration;
+			var now_time = now.subtract(midnight) as Time.Duration;
 
-			if (sleep_time.greaterThan(wake_time)) {
+			if (wake_time.lessThan(sleep_time)) {
+				// wake < sleep
 				return (
-					!since_midnight.lessThan(sleep_time) or
-					!since_midnight.greaterThan(wake_time)
+					!now_time.lessThan(sleep_time) or // sleep <= now
+					now_time.lessThan(wake_time) // now < wake
 				);
 			}
 			return (
-				!since_midnight.lessThan(sleep_time) and
-				!since_midnight.greaterThan(wake_time)
+				!now_time.lessThan(sleep_time) and // sleep <= now
+				now_time.lessThan(wake_time) // now < wake
 			);
 		}
 
@@ -547,12 +550,14 @@ module Phase0 {
 			_size_x as Lang.Number,
 			_size_y as Lang.Number
 		) as Graphics.BufferedBitmap? {
-			var options = {:width => _size_x, :height => _size_y};
+			var options = { :width => _size_x, :height => _size_y };
 
 			try {
 				if (Graphics has :createBufferedBitmap) {
-					return Graphics.createBufferedBitmap(options).get() as
-						Graphics.BufferedBitmap;
+					return (
+						Graphics.createBufferedBitmap(options).get() as
+						Graphics.BufferedBitmap
+					);
 				}
 				if (Graphics has :BufferedBitmap) {
 					return new Graphics.BufferedBitmap(options);

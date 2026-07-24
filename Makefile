@@ -2,32 +2,48 @@
 
 # ---- arguments ----
 
-NAME   ?= phase0
-DEVICE ?= fr955
-MODE   ?= debug
-V      ?= 0
+# binary name
+NAME        ?= phase0
+# target device
+DEVICE      ?= fr955
+# build mode
+MODE        ?= debug
+# show commands
+V           ?= 0
+# developer key path
+PRIVATE_KEY ?= $(HOME)/Documents/developer_key
 
 # ---- options ----
 
+# development build
 NAME_SUFFIX.debug     :=
 FLAG_MONKEYC.debug    :=
 FLAG_SIMULATE.debug   :=
 
+# unit-test build
 NAME_SUFFIX.test      := _test
 FLAG_MONKEYC.test     := --unit-test
 FLAG_SIMULATE.test    := -t
 
+# build with an optimized output name
 NAME_SUFFIX.optimized   := _optimized
 FLAG_MONKEYC.optimized  :=
 FLAG_SIMULATE.optimized :=
 
+# signed release build
 NAME_SUFFIX.release   := _release
 FLAG_MONKEYC.release  := --release
 FLAG_SIMULATE.release :=
 
+NAME_SUFFIX   := $(NAME_SUFFIX.$(MODE))
+FLAG_MONKEYC  := $(FLAG_MONKEYC.$(MODE))
+FLAG_SIMULATE := $(FLAG_SIMULATE.$(MODE))
+
 Q.0 := @
 Q.1 :=
 Q   := $(Q.$(V))
+
+HELP_DESCRIPTION_COLUMN := 26
 
 # ---- variables ----
 
@@ -53,7 +69,7 @@ endif
 
 BUILD_DIR := build/
 DOCS_DIR  := docs/
-OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX.$(MODE))
+OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX)
 PRG       := $(BUILD_DIR)$(OUT).prg
 IQ        := $(BUILD_DIR)$(NAME).iq
 JUNGLE    := monkey.jungle
@@ -120,8 +136,8 @@ $(PRG): $(PRG_DEPS)
 		--device $(DEVICE) \
 		--output $@ \
 		--warn \
-		--private-key $(HOME)/Documents/developer_key \
-		$(FLAG_MONKEYC.$(MODE))
+		--private-key $(PRIVATE_KEY) \
+		$(FLAG_MONKEYC)
 
 $(IQ): $(PRG_DEPS)
 	$(Q)echo " [ $(@F) ]"
@@ -129,8 +145,8 @@ $(IQ): $(PRG_DEPS)
 		--jungles $< \
 		--output $@ \
 		--warn \
-		--private-key $(HOME)/Documents/developer_key \
-		$(FLAG_MONKEYC.$(MODE))
+		--private-key $(PRIVATE_KEY) \
+		$(FLAG_MONKEYC)
 
 $(FONTS): $(FONTS_DEPS)
 	$(Q)echo " [ $(@F) ]"
@@ -233,7 +249,7 @@ s simulate: build # run simulator
 		$(PRG) \
 		$(DEVICE) \
 		-a $(BUILD_DIR)$(OUT)-settings.json:GARMIN/Settings/$(OUT)-settings.json \
-		$(FLAG_SIMULATE.$(MODE))
+		$(FLAG_SIMULATE)
 
 	wait $$SIM_PID
 .PHONY: s simulate
@@ -313,8 +329,9 @@ h help: # print help message
 	printf " %bUsage%b\n" "$$B" "$$N"
 	printf "     %bmake%b [%btarget%b] [%barguments%b]...\n" "$$B" "$$N" "$$U" "$$N" "$$U" "$$N"
 	printf "\n"
+	# ---- targets ----
 	printf " %bTargets%b\n" "$$B" "$$N"
-	awk -F'#' '\
+	awk -v description_column=$(HELP_DESCRIPTION_COLUMN) -F'#' '\
 	/^[[:alnum:]_-]+([[:space:]][[:alnum:]_-]+)*:.*#/ { \
 		target_part = $$1; \
 		sub(/:.*/, "", target_part); \
@@ -335,23 +352,66 @@ h help: # print help message
 		padding = 3 - max_short; \
 	} \
 	END { \
+		description_width = description_column - 7; \
+		if (max_long > description_width) \
+			description_width = max_long; \
 		for (i = 1; i <= n; i++) \
-			printf "%" padding "s %" max_short "s %-" max_long "s %s\n", "", shorts[i], longs[i], desc[i]; \
+			printf "%" padding "s %" max_short "s %-" description_width "s %s\n", "", shorts[i], longs[i], desc[i]; \
 	}' $(MAKEFILE_LIST)
 	printf "\n"
+	# ---- arguments ----
 	printf " %bArguments%b\n" "$$B" "$$N"
-	printf "     NAME              (default: $(NAME))\n"
-	printf "     DEVICE            (default: $(DEVICE))\n"
-	printf "     MODE              (default: $(MODE))\n"
-	printf "     V                 (default: $(V))\n"
+	awk -v description_column=$(HELP_DESCRIPTION_COLUMN) '\
+	/^# ---- arguments ----$$/ { in_arguments = 1; next } \
+	in_arguments && /^# ----/ { exit } \
+	in_arguments && /^# / { description = substr($$0, 3); next } \
+	in_arguments && /^[[:alpha:]_][[:alnum:]_]*[[:space:]]*\?=/ { \
+		split($$0, assignment, "?="); \
+		name = assignment[1]; \
+		default_value = assignment[2]; \
+		gsub(/[[:space:]]/, "", name); \
+		sub(/^[[:space:]]*/, "", default_value); \
+		++n; \
+		names[n] = name; \
+		descriptions[n] = description; \
+		defaults[n] = default_value; \
+		if (length(name) > max_name) max_name = length(name); \
+		description = ""; \
+	} \
+	END { \
+		description_width = description_column - 6; \
+		if (max_name > description_width) \
+			description_width = max_name; \
+		for (i = 1; i <= n; i++) { \
+			printf "     %-" description_width "s %s\n", names[i], descriptions[i]; \
+			printf "%" description_column "s\033[3mdefault:\033[m %s\n", "", defaults[i]; \
+		} \
+	}' $(MAKEFILE_LIST)
 	printf "\n"
+	# ---- devices ----
 	printf " %bDevices%b\n" "$$B" "$$N"
 	sed -n 's/.*iq:product id="\(.*\)"\/>/     \1/p' ./manifest.xml
 	printf "\n"
+	# ---- modes ----
 	printf " %bModes%b\n" "$$B" "$$N"
-	printf "     debug\n"
-	printf "     test\n"
-	printf "     optmized\n"
-	printf "     release\n"
+	awk -v description_column=$(HELP_DESCRIPTION_COLUMN) '\
+	/^# ---- options ----$$/ { in_options = 1; next } \
+	in_options && /^# ----/ { exit } \
+	in_options && /^# / { description = substr($$0, 3); next } \
+	in_options && /^NAME_SUFFIX\.[[:alnum:]_-]+[[:space:]]*:=/ { \
+		split($$1, name_parts, "."); \
+		++n; \
+		modes[n] = name_parts[2]; \
+		descriptions[n] = description; \
+		if (length(modes[n]) > max_mode) max_mode = length(modes[n]); \
+		description = ""; \
+	} \
+	END { \
+		description_width = description_column - 6; \
+		if (max_mode > description_width) \
+			description_width = max_mode; \
+		for (i = 1; i <= n; i++) \
+			printf "     %-" description_width "s %s\n", modes[i], descriptions[i]; \
+	}' $(MAKEFILE_LIST)
 	printf "\n"
 .PHONY: help

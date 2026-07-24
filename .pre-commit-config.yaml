@@ -4,6 +4,14 @@ exclude: ^3rd_party/
 repos:
     - repo: local
       hooks:
+          - id: forbid-sensitive-files
+            name: Forbid sensitive files
+            entry: >-
+                bash -c 'printf "Sensitive file must not be committed: %s\n" "$@" >&2; exit 1' --
+            language: system
+            files: >-
+                (^|/)(developer_key|private_key|id_rsa|id_ed25519|id_ecdsa|\.env(\.(local|production))?|[^/]+\.(pem|key|p12|pfx|keystore))$
+
           - id: make-resource
             name: Generate resources
             entry: make resources

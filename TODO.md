@@ -12,5 +12,3 @@
 
 - [ ] verify on small screens
 - [ ] more icons
-
-Memory: 74.4

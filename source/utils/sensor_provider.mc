@@ -58,8 +58,7 @@ module SensorProvider {
 			Cache.setValue(_name, _value);
 		} else if (
 			last_refresh_seconds == null or
-			now_seconds - last_refresh_seconds >=
-				CACHE_REFRESH_INTERVAL_SECONDS
+			now_seconds - last_refresh_seconds >= CACHE_REFRESH_INTERVAL_SECONDS
 		) {
 			if (!Cache.refreshValue(_name)) {
 				Cache.setValue(_name, _value);
@@ -82,7 +81,10 @@ module SensorProvider {
 		cache_refresh_seconds_ = {};
 
 		storeCacheValue_(key, 12);
-		Test.assertEqual(Cache.getValue(key, CACHE_TTL_HOURS), 12);
+		Test.assertEqual(
+			Cache.getValue(key, CACHE_TTL_HOURS) as Lang.Number,
+			12
+		);
 
 		Cache.clearValue(key);
 		cache_refresh_seconds_.put(
@@ -90,7 +92,10 @@ module SensorProvider {
 			Runtime.now.value() - CACHE_REFRESH_INTERVAL_SECONDS
 		);
 		storeCacheValue_(key, 12);
-		Test.assertEqual(Cache.getValue(key, CACHE_TTL_HOURS), 12);
+		Test.assertEqual(
+			Cache.getValue(key, CACHE_TTL_HOURS) as Lang.Number,
+			12
+		);
 
 		Cache.clearValue(key);
 		cache_values_ = {};
