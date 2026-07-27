@@ -51,7 +51,15 @@ module Widgets {
 		}
 
 		function renderMinimal(_dc as Graphics.Dc) as Void {
-			Render.Number(_dc, self.pos_x, self.pos_y, null, 2, self.is_small);
+			Render.Text(
+				_dc,
+				Render.shade,
+				self.pos_x,
+				self.pos_y,
+				self.is_small,
+				"00",
+				Render.JUSTIFY_LEFT
+			);
 		}
 	}
 } // module Widgets

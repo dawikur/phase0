@@ -1,29 +1,28 @@
-# AGENTS.md
-
 # phase0
 
-`phase0` is a Garmin Connect IQ watch face focused on minimalism, performance and battery efficiency.
+`phase0` is a Garmin Connect IQ watch face focused on minimalism, performance
+and battery efficiency.
 
 This document describes how AI agents should work within this repository.
 
 ---
 
-# Project goals
+## Project goals
 
 Priority order:
 
 1. Correctness
-2. Rendering performance
-3. Battery life
-4. Maintainability
-5. Simplicity
-6. Small binary size
+1. Rendering performance
+1. Battery life
+1. Maintainability
+1. Simplicity
+1. Small binary size
 
 Never sacrifice performance for abstraction.
 
 ---
 
-# Technology
+## Technology
 
 - Garmin Connect IQ
 - Monkey C
@@ -35,7 +34,7 @@ Documentation is generated separately and copied into the website repository.
 
 ---
 
-# Repository map
+## Repository map
 
 - `source/phase0/` — application lifecycle, view and layout
 - `source/widgets/` — reusable watch-face UI components
@@ -43,6 +42,10 @@ Documentation is generated separately and copied into the website repository.
 - `source/utils/` — rendering, caching, runtime and data providers
 - `data/` — inputs for generated resources and settings
 - `resources/` — source resources and generated resource definitions
+- `README.md` — project entry point and links to project documents
+- `TODO.md` — compact product and technical backlog
+- `RELEASE.md` — release preparation and publishing checklist
+- `CHANGELOG.md` — release history
 
 Do not edit generated files by hand. In particular, treat
 `source/generated/`, `resources/generated/` and `docs/settings-data.js` as
@@ -50,7 +53,7 @@ build outputs; change their source data or generator instead.
 
 ---
 
-# Philosophy
+## Philosophy
 
 The watch face should feel native.
 
@@ -66,7 +69,7 @@ Prefer explicit code over clever code.
 
 ---
 
-# Rendering rules
+## Rendering rules
 
 Rendering is the most performance-critical part of the application.
 
@@ -96,7 +99,7 @@ or waking from sleep. They are not appropriate for routine clock updates.
 
 ---
 
-# Memory allocations
+## Memory allocations
 
 Avoid allocations inside rendering.
 
@@ -114,7 +117,7 @@ Prefer:
 
 ---
 
-# Architecture
+## Architecture
 
 Prefer small independent components.
 
@@ -133,7 +136,7 @@ Components should not know about each other.
 
 ---
 
-# Code style
+## Code style
 
 Prefer:
 
@@ -141,6 +144,10 @@ Prefer:
 - explicit naming
 - short functions
 - immutable values where practical
+
+For equality comparisons involving instance state, keep `self.<field>` on the
+left. For ordered comparisons, use only `<` or `<=`, with the larger value on
+the right.
 
 Avoid:
 
@@ -150,21 +157,21 @@ Avoid:
 
 ---
 
-# Optimisation policy
+## Optimisation policy
 
 Never optimise blindly.
 
 When suggesting optimisation:
 
 1. explain why
-2. estimate impact
-3. mention trade-offs
+1. estimate impact
+1. mention trade-offs
 
 Do not introduce complexity for negligible gains.
 
 ---
 
-# Garmin-specific considerations
+## Garmin-specific considerations
 
 Always remember:
 
@@ -183,7 +190,7 @@ consider at least one representative MIP and AMOLED device where applicable.
 
 ---
 
-# Documentation
+## Documentation
 
 Document features or changes that affect architecture, battery or rendering
 behaviour, settings, or user-visible behaviour.
@@ -197,7 +204,7 @@ Examples are preferred.
 
 ---
 
-# Testing
+## Testing
 
 When changing behaviour:
 
@@ -213,7 +220,7 @@ be run when relevant and when their dependencies are available.
 
 ---
 
-# Git
+## Git
 
 Prefer small commits.
 
@@ -223,7 +230,7 @@ Avoid large refactors mixed with feature work.
 
 ---
 
-# AI agent behaviour
+## AI agent behaviour
 
 Before implementing anything:
 
@@ -240,7 +247,7 @@ Always prefer incremental improvements.
 
 ---
 
-# Keeping these instructions current
+## Keeping these instructions current
 
 Treat this file as the durable, repository-wide record of working agreements.
 When a discussion or implementation establishes a clear rule that is likely to
@@ -254,7 +261,7 @@ adding it.
 
 ---
 
-# Performance review checklist
+## Performance review checklist
 
 Before submitting code, verify:
 
@@ -267,7 +274,7 @@ Before submitting code, verify:
 
 ---
 
-# Website
+## Website
 
 The repository documentation is published on the project website.
 
@@ -280,7 +287,7 @@ Documentation should therefore:
 
 ---
 
-# Build system
+## Build system
 
 The preferred build system is Makefile.
 
@@ -294,10 +301,9 @@ dependencies with `npm ci` before producing a release build.
 Do not run the project build or the Connect IQ simulator in this environment.
 Both are known to fail here, so they do not provide useful verification.
 
-
 ---
 
-# Communication
+## Communication
 
 When explaining code:
 

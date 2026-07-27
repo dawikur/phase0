@@ -9,6 +9,7 @@ module Widgets {
 		hidden var enabled_ as Lang.String = "";
 		hidden var all_ as Lang.String;
 		hidden var slots_ as Lang.Array<Lang.Number> = [];
+		hidden var state_ as Lang.Number = -1;
 
 		function initialize(_properties as Lang.Array<Properties.Status>) {
 			Base.initialize(null, RefreshRate.SEC);
@@ -29,6 +30,27 @@ module Widgets {
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			var device_settings = System.getDeviceSettings();
+			var state = 0;
+			if (0 < device_settings.alarmCount) {
+				state += 1;
+			}
+			if (device_settings.phoneConnected) {
+				state += 2;
+			}
+			if (
+				device_settings has :doNotDisturb and
+				device_settings.doNotDisturb
+			) {
+				state += 4;
+			}
+			if (0 < device_settings.notificationCount) {
+				state += 8;
+			}
+
+			if (self.state_ == state) {
+				return;
+			}
+			self.state_ = state;
 
 			self.enabled_ = "";
 			var slot_size = self.slots_.size();

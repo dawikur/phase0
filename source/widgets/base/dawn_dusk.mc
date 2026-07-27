@@ -9,7 +9,7 @@ import Toybox.Time;
 import Toybox.Weather;
 
 module Widgets {
-	class SunMoon extends Base {
+	class DawnDuskBase extends Base {
 		static const MOON_PHASES = 16;
 		static const CACHE_TTL_HOURS = 48;
 		static const CACHE_KEY_SUNRISE = "dawn_dusk_sunrise";
@@ -44,10 +44,7 @@ module Widgets {
 		hidden var mode_ as Lang.Number;
 		hidden var on_top_ as Lang.Boolean;
 
-		function initialize(
-			_on_top as Lang.Boolean,
-			_mode as Lang.Number
-		) {
+		function initialize(_on_top as Lang.Boolean, _mode as Lang.Number) {
 			Base.initialize(
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_SUNRISE
@@ -70,7 +67,7 @@ module Widgets {
 			self.sunset_seconds_ = null;
 			self.sunrise_before_sunset_ = true;
 
-			self.moon_phase_ = SunMoon.MoonPhase(Runtime.now);
+			self.moon_phase_ = DawnDuskBase.MoonPhase(Runtime.now);
 
 			var sunrise = null;
 			var sunset = null;
@@ -93,8 +90,8 @@ module Widgets {
 			}
 
 			if (sunrise == null or sunset == null) {
-				sunrise = self.loadSunTime_(SunMoon.CACHE_KEY_SUNRISE);
-				sunset = self.loadSunTime_(SunMoon.CACHE_KEY_SUNSET);
+				sunrise = self.loadSunTime_(DawnDuskBase.CACHE_KEY_SUNRISE);
+				sunset = self.loadSunTime_(DawnDuskBase.CACHE_KEY_SUNSET);
 			}
 
 			if (sunrise != null and sunset != null) {
@@ -206,10 +203,10 @@ module Widgets {
 			var sunrise_seconds = self.sunrise_seconds_ as Lang.Number;
 			var sunset_seconds = self.sunset_seconds_ as Lang.Number;
 			var dawn_end = self.dayWrap_(
-				sunrise_seconds + SunMoon.EVENT_DISPLAY_OFFSET_SECONDS
+				sunrise_seconds + DawnDuskBase.EVENT_DISPLAY_OFFSET_SECONDS
 			);
 			var dusk_end = self.dayWrap_(
-				sunset_seconds + SunMoon.EVENT_DISPLAY_OFFSET_SECONDS
+				sunset_seconds + DawnDuskBase.EVENT_DISPLAY_OFFSET_SECONDS
 			);
 
 			return self.isWithinDayRange_(now_seconds, dusk_end, dawn_end)
@@ -251,14 +248,17 @@ module Widgets {
 			_sunrise as Lang.Number,
 			_sunset as Lang.Number
 		) as Void {
-			Cache.setValue(SunMoon.CACHE_KEY_SUNRISE, _sunrise);
-			Cache.setValue(SunMoon.CACHE_KEY_SUNSET, _sunset);
+			Cache.setValue(DawnDuskBase.CACHE_KEY_SUNRISE, _sunrise);
+			Cache.setValue(DawnDuskBase.CACHE_KEY_SUNSET, _sunset);
 		}
 
 		hidden function loadSunTime_(
 			_cache_key as Lang.String
 		) as Lang.Number? {
-			var value = Cache.getValue(_cache_key, SunMoon.CACHE_TTL_HOURS);
+			var value = Cache.getValue(
+				_cache_key,
+				DawnDuskBase.CACHE_TTL_HOURS
+			);
 			return value != null ? value as Lang.Number : null;
 		}
 
@@ -404,7 +404,7 @@ module Widgets {
 			_pos_y as Lang.Number
 		) as Void {
 			var is_new_moon = self.moon_phase_ == 0;
-			var is_full_moon = self.moon_phase_ == SunMoon.MOON_PHASES / 2;
+			var is_full_moon = self.moon_phase_ == DawnDuskBase.MOON_PHASES / 2;
 			var moon_icon = (
 				Fonts.ICON_MOON_00.toCharArray()[0] + self.moon_phase_
 			).toString();
@@ -526,11 +526,11 @@ module Widgets {
 
 			// Center each phase in its bucket
 			var phaseIndex = Math.floor(
-				phase * SunMoon.MOON_PHASES + 0.5
+				phase * DawnDuskBase.MOON_PHASES + 0.5
 			).toNumber();
 
 			// Wrap just in case
-			if (phaseIndex == SunMoon.MOON_PHASES) {
+			if (phaseIndex == DawnDuskBase.MOON_PHASES) {
 				phaseIndex = 0;
 			}
 
@@ -586,7 +586,9 @@ module Widgets {
 					);
 
 					Test.assertEqual(
-						SunMoon.MoonPhase(new_moon.add(one_day.multiply(day))),
+						DawnDuskBase.MoonPhase(
+							new_moon.add(one_day.multiply(day))
+						),
 						moon_phase
 					);
 				}
@@ -596,68 +598,68 @@ module Widgets {
 		}
 	}
 
-	class DawnAndDusk extends SunMoon {
+	class DawnAndDusk extends DawnDuskBase {
 		function initialize(
 			_properties as Properties.Widget,
 			_on_top as Lang.Boolean
 		) {
-			SunMoon.initialize(_on_top, SunMoon.MODE_AND);
+			DawnDuskBase.initialize(_on_top, DawnDuskBase.MODE_AND);
 		}
 	}
 
-	class DawnOrDusk extends SunMoon {
+	class DawnOrDusk extends DawnDuskBase {
 		function initialize(
 			_properties as Properties.Widget,
 			_on_top as Lang.Boolean
 		) {
-			SunMoon.initialize(_on_top, SunMoon.MODE_OR);
+			DawnDuskBase.initialize(_on_top, DawnDuskBase.MODE_OR);
 		}
 	}
 
-	class DawnAndDuskMoon extends SunMoon {
+	class DawnAndDuskMoon extends DawnDuskBase {
 		function initialize(
 			_properties as Properties.Widget,
 			_on_top as Lang.Boolean
 		) {
-			SunMoon.initialize(
+			DawnDuskBase.initialize(
 				_on_top,
-				SunMoon.MODE_AND | SunMoon.MODE_MOON
+				DawnDuskBase.MODE_AND | DawnDuskBase.MODE_MOON
 			);
 		}
 	}
 
-	class DawnOrDuskMoon extends SunMoon {
+	class DawnOrDuskMoon extends DawnDuskBase {
 		function initialize(
 			_properties as Properties.Widget,
 			_on_top as Lang.Boolean
 		) {
-			SunMoon.initialize(
+			DawnDuskBase.initialize(
 				_on_top,
-				SunMoon.MODE_OR | SunMoon.MODE_MOON
+				DawnDuskBase.MODE_OR | DawnDuskBase.MODE_MOON
 			);
 		}
 	}
 
-	class DawnAndDuskSun extends SunMoon {
+	class DawnAndDuskSun extends DawnDuskBase {
 		function initialize(
 			_properties as Properties.Widget,
 			_on_top as Lang.Boolean
 		) {
-			SunMoon.initialize(
+			DawnDuskBase.initialize(
 				_on_top,
-				SunMoon.MODE_AND | SunMoon.MODE_SUN
+				DawnDuskBase.MODE_AND | DawnDuskBase.MODE_SUN
 			);
 		}
 	}
 
-	class DawnOrDuskSun extends SunMoon {
+	class DawnOrDuskSun extends DawnDuskBase {
 		function initialize(
 			_properties as Properties.Widget,
 			_on_top as Lang.Boolean
 		) {
-			SunMoon.initialize(
+			DawnDuskBase.initialize(
 				_on_top,
-				SunMoon.MODE_OR | SunMoon.MODE_SUN
+				DawnDuskBase.MODE_OR | DawnDuskBase.MODE_SUN
 			);
 		}
 	}

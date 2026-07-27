@@ -73,7 +73,7 @@ class Glyph:
         return self.__height
 
     def pixel(self, x: int, y: int) -> bool:
-        if x < 0 or x >= self.__width or y < 0 or y >= self.__height:
+        if x < 0 or self.__width <= x or y < 0 or self.__height <= y:
             return False
         return self.bitmap[y][x] == "1"
 

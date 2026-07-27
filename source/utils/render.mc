@@ -77,10 +77,7 @@ module Render {
 
 	function clear(_dc as Graphics.Dc) as Void {
 		_dc.clearClip();
-		_dc.setColor(
-			Render.background,
-			Render.background
-		);
+		_dc.setColor(Render.background, Render.background);
 		_dc.clear();
 	}
 
@@ -200,7 +197,7 @@ module Render {
 		return _dc.getFontHeight(fontFg_(_is_small)) + SHADOW_OFFSET;
 	}
 
-	function numberBg_(_width as Lang.Number) as Lang.String {
+	function NumberBg_(_width as Lang.Number) as Lang.String {
 		if (_width <= 0) {
 			return NUMBER_BACKGROUNDS[0];
 		}
@@ -225,7 +222,7 @@ module Render {
 		_is_small as Lang.Boolean
 	) as Void {
 		var fg = NumberFormat(_width, _number);
-		var bg = numberBg_(_width - fg.length());
+		var bg = NumberBg_(_width - fg.length());
 		var bg_width = NumberBgWidth(_dc, bg, _is_small);
 
 		NumberPrepared(_dc, _pos_x, _pos_y, bg, bg_width, fg, _is_small);
@@ -263,7 +260,7 @@ module Render {
 		_width as Lang.Number,
 		_fg as Lang.String
 	) as Lang.String {
-		return numberBg_(_width - _fg.length());
+		return NumberBg_(_width - _fg.length());
 	}
 
 	function NumberBgWidth(
@@ -280,7 +277,7 @@ module Render {
 		_is_small as Lang.Boolean
 	) as Lang.Number {
 		return (
-			_dc.getTextWidthInPixels(numberBg_(_width), fontFg_(_is_small)) +
+			_dc.getTextWidthInPixels(NumberBg_(_width), fontFg_(_is_small)) +
 			SHADOW_OFFSET
 		);
 	}

@@ -1,45 +1,11 @@
 # phase0
 
-## Release checklist
+phase0 is a minimal, battery-efficient Garmin Connect IQ watch face.
 
-Before publishing a release, complete and record the following checks.
+## Project documents
 
-### Watch face
+- [TODO.md](TODO.md) — compact product and technical backlog.
+- [RELEASE.md](RELEASE.md) — checklist for preparing and publishing a release.
+- [CHANGELOG.md](CHANGELOG.md) — release history.
 
-- [ ] Run `make test`.
-- [ ] Test the release build on representative devices: a small MIP display, a
-      larger MIP display and an AMOLED display.
-- [ ] Check normal mode, sleep/AoD mode, wake-up and power-budget fallback.
-- [ ] Check every supported language and settings screen for clipped or
-      unreadable text.
-- [ ] Check missing permissions, unavailable sensors, zero values and other
-      unavailable data cases.
-- [ ] Confirm that the supported products in `manifest.xml` are intentional.
-
-### Connect IQ Store
-
-- [ ] Build the final signed `.iq` package using the established developer key.
-- [ ] Keep the developer key safe; future Store updates must use the same key.
-- [ ] Prepare the Store description, screenshots and supported-device details.
-- [ ] Document the requested permissions and data handling. State explicitly
-      whether any data leaves the device.
-- [ ] Upload the package for Garmin review and test the Store preview.
-
-### Website
-
-- [ ] Run `make docs` before copying documentation to the website repository.
-      It generates `docs/settings-data.js`, the icon and device overlays, which
-      are intentionally not tracked in Git.
-- [ ] Check the deployed page on desktop and mobile in light and dark themes.
-- [ ] Check both Normal and AoD previews, feature hotspots, the MIP64 palette
-      page and every external link.
-- [ ] Replace the pending Connect IQ link with the Store listing after approval.
-- [ ] Provide a visible support route and privacy information.
-
-### Release record
-
-- [ ] Assign a version, create an annotated Git tag and publish release notes.
-- [ ] Record the tested devices, SDK/optimizer versions and known limitations.
-
-Release notes are maintained in [CHANGELOG.md](CHANGELOG.md). Use Semantic
-Versioning for release tags.
+The changelog starts with the first published release.

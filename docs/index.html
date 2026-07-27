@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-phase-view-control>
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,20 +11,20 @@
 </head>
 <body>
 	<main class="page">
+		<div class="controls" aria-label="Page controls">
+			<div class="theme-control" role="group" aria-label="Page theme">
+				<button class="theme-option" type="button" data-theme-mode="auto">Auto</button>
+				<button class="theme-option" type="button" data-theme-mode="light">Light</button>
+				<button class="theme-option" type="button" data-theme-mode="dark">Dark</button>
+			</div>
+			<div class="view-control" role="group" aria-label="Watch view">
+				<button class="view-option" type="button" data-watch-view="normal">Normal</button>
+				<button class="view-option" type="button" data-watch-view="aod">AoD</button>
+			</div>
+		</div>
 		<section class="hero" aria-labelledby="page-title">
 			<div class="product-copy">
-				<div class="controls">
-					<div class="theme-control" role="group" aria-label="Page theme">
-						<button class="theme-option" type="button" data-theme-mode="auto">Auto</button>
-						<button class="theme-option" type="button" data-theme-mode="light">Light</button>
-						<button class="theme-option" type="button" data-theme-mode="dark">Dark</button>
-					</div>
-					<div class="view-control" role="group" aria-label="Watch view">
-						<button class="view-option" type="button" data-watch-view="normal">Normal</button>
-						<button class="view-option" type="button" data-watch-view="aod">AoD</button>
-					</div>
-				</div>
-				<p class="eyebrow">Garmin Connect IQ watch face</p>
+				<p class="eyebrow"><a id="siteBack" href="../" hidden>← dawikur.dev</a><span id="siteBackSeparator" hidden> · </span>Garmin Connect IQ watch face</p>
 				<h1 id="page-title">phase0</h1>
 				<p class="lede" id="pageLede">
 					A dense digital watch face built around fast scanning: current time,

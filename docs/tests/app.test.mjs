@@ -38,6 +38,7 @@ class Element {
 		this.eventListeners = {};
 		this.innerHTML = "";
 		this.textContent = "";
+		this.hidden = false;
 		this.tabIndex = 0;
 		this.href = href;
 		this.src = "";
@@ -85,11 +86,11 @@ function makeElement(options) {
 	return new Element(options);
 }
 
-function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
+function createHarness({ hash = "", search = "", prefersDark = false, pathname = "/", protocol = "http:" } = {}) {
 	const ids = new Map();
 	const all = [];
 
-	const documentElement = makeElement();
+	const documentElement = makeElement({ dataset: { phaseViewControl: "" } });
 	const document = {
 		activeElement: null,
 		documentElement,
@@ -120,6 +121,8 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 	const pageLede = register(makeElement({ id: "pageLede" }));
 	const supportedDevices = register(makeElement({ id: "supportedDevices" }));
 	const supportedLanguages = register(makeElement({ id: "supportedLanguages" }));
+	const siteBack = register(makeElement({ id: "siteBack", tagName: "a", href: "http://example.test/" }));
+	const siteBackSeparator = register(makeElement({ id: "siteBackSeparator" }));
 
 	for (const feature of ["general", "top", "status", "clock", "gauges", "bottom", "battery"]) {
 		register(makeElement({
@@ -153,7 +156,7 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 		URL,
 		URLSearchParams,
 		window: {
-			location: { hash, search, pathname: "/", href: "http://example.test/" },
+			location: { hash, search, pathname, protocol, href: `http://example.test${pathname}` },
 			history: {
 				replaceState(...args) {
 					historyCalls.push(args);
@@ -230,10 +233,24 @@ function createHarness({ hash = "", search = "", prefersDark = false } = {}) {
 		pageLede,
 		supportedDevices,
 		supportedLanguages,
+		siteBack,
+		siteBackSeparator,
 		themeTransferLink,
 		watchFace,
 	};
 }
+
+test("shows a return link only when docs are hosted below the site root", () => {
+	const standalone = createHarness();
+	const embedded = createHarness({ pathname: "/phase0/" });
+	const localFile = createHarness({ pathname: "/tmp/phase0/docs/index.html", protocol: "file:" });
+
+	assert.equal(standalone.siteBack.hidden, true);
+	assert.equal(standalone.siteBackSeparator.hidden, true);
+	assert.equal(embedded.siteBack.hidden, false);
+	assert.equal(embedded.siteBackSeparator.hidden, false);
+	assert.equal(localFile.siteBack.hidden, true);
+});
 
 test("computes stable hotspot geometry from watch face regions", () => {
 	const { context } = createHarness();
@@ -288,19 +305,25 @@ test("applies theme mode and resolves auto from system preference", () => {
 	);
 });
 
-test("uses and removes the one-time theme parameter between pages", () => {
+test("keeps received parameters and removes defaults only from outgoing links", () => {
 	const { document, historyCalls } = createHarness({ search: "?theme=dark" });
 
 	assert.equal(document.documentElement.dataset.themeMode, "dark");
-	assert.deepEqual(historyCalls, [[null, "", "/"]]);
+	assert.deepEqual(historyCalls, []);
 });
 
-test("updates the palette link with the selected one-time theme", () => {
+test("updates the palette link without default state parameters", () => {
 	const { context, themeTransferLink } = createHarness();
 
 	context.applyTheme("dark");
 
-	assert.equal(themeTransferLink.href, "http://example.test/mip64-palette/?theme=dark&view=normal&sort=hue");
+	assert.equal(themeTransferLink.href, "http://example.test/mip64-palette/?theme=dark");
+});
+
+test("preserves unknown parameters while omitting phase defaults", () => {
+	const { themeTransferLink } = createHarness({ search: "?contrast=soft&future=enabled&theme=auto&view=normal" });
+
+	assert.equal(themeTransferLink.href, "http://example.test/mip64-palette/?contrast=soft&future=enabled");
 });
 
 test("switches to always-on view and hides unsupported hotspots", () => {

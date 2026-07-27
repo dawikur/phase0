@@ -2,13 +2,13 @@
 
 ## Layout
 
-- [ ] Status/Gauge can be swapped
+- [ ] Allow swapping the Status and Gauge positions.
 
 ## Display
 
-- [ ] burnout prevention
+- [ ] Add burn-in prevention if AMOLED support is added.
 
 ## General
 
-- [ ] verify on small screens
-- [ ] more icons
+- [ ] Verify layouts on the smallest supported 240×240 MIP displays.
+- [ ] Add metric-specific icons

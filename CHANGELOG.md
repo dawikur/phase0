@@ -1,16 +1,19 @@
 # Changelog
 
-All notable changes to phase0 are documented here.
+All notable changes to phase0 are documented in this file.
 
-The project uses [Semantic Versioning](https://semver.org/):
-
-- Increment the patch version for fixes that preserve settings and behaviour.
-- Increment the minor version for backwards-compatible features or settings.
-- Increment the major version when an upgrade requires user action or changes
-  existing behaviour incompatibly.
+The project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
 ### Added
 
 ### Changed
+
+### Fixed
+
+## [0.1.0] - YYYY-MM-DD
+
+### Initial release
+
+- Initial release.

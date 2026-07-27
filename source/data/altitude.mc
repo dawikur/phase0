@@ -22,7 +22,7 @@ module Data {
 		function get_() as Lang.Number? {
 			return SensorProvider.get(
 				self.name,
-				SensorHistory.getElevationHistory({ :period => 1 })
+				SensorHistory.getElevationHistory(SensorProvider.OPTIONS)
 			);
 		}
 	}

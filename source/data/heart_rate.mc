@@ -35,7 +35,7 @@ module Data {
 
 			return SensorProvider.get(
 				self.name,
-				SensorHistory.getHeartRateHistory({ :period => 1 })
+				SensorHistory.getHeartRateHistory(SensorProvider.OPTIONS)
 			);
 		}
 	}

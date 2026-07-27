@@ -8,12 +8,14 @@ import Toybox.System;
 
 module Widgets {
 	class Battery extends Base {
-		var color_ as Lang.Number = 0;
+		hidden var color_ as Lang.Number = 0;
 
-		var value_ as Lang.String = "";
-		var frame_ as Lang.String = "";
-		var is_charging_ as Lang.Boolean = false;
-		var bar_all_count_ as Lang.Number = 0;
+		hidden var value_ as Lang.String = "";
+		hidden var frame_ as Lang.String = "";
+		hidden var is_charging_ as Lang.Boolean = false;
+		hidden var bar_all_count_ as Lang.Number = 0;
+		hidden var last_value_ as Lang.Number = -1;
+		hidden var last_value_suffix_ as Lang.Char = ' ';
 
 		hidden var mode_ as Lang.Number;
 
@@ -61,33 +63,32 @@ module Widgets {
 			var system_stats = System.getSystemStats();
 
 			self.is_charging_ = system_stats.charging;
-			var percentage = system_stats.battery;
 
-			self.value_ = "?";
+			var percentage = system_stats.battery;
+			var value = percentage.toNumber();
+			var value_suffix = ' ';
 
 			switch (self.mode_) {
 				case Properties.BATTERY_DAYS_REMAINING:
 					var days = system_stats.batteryInDays;
 					if (1.0 <= days) {
-						self.value_ = days.toNumber().toString();
-						if (self.value_.length() < 3) {
-							self.value_ += "d";
-						}
+						value = days.toNumber();
+						value_suffix = 'd';
 					} else {
 						var hours = days * 24;
-						self.value_ = hours.toNumber().toString();
-						if (self.value_.length() < 3) {
-							self.value_ += "h";
+						if (1.0 <= hours) {
+							value = hours.toNumber();
+							value_suffix = 'h';
+						} else {
+							value = (hours * 60).toNumber();
+							value_suffix = 'm';
 						}
 					}
 					break;
-				case Properties.BATTERY_PERCENTAGE:
-					self.value_ = percentage.toNumber().toString();
-					break;
 				case Properties.BATTERY_ICON:
-					self.value_ = self.chargeString_(Math.round(
-						percentage / 100 * self.bar_all_count_
-					).toNumber());
+					value = Math.round(
+						(percentage / 100) * self.bar_all_count_
+					).toNumber();
 					break;
 			}
 
@@ -97,6 +98,31 @@ module Widgets {
 				self.color_ = Render.accent;
 			} else {
 				self.color_ = Render.foreground;
+			}
+
+			if (
+				self.last_value_ == value and
+				self.last_value_suffix_ == value_suffix
+			) {
+				return;
+			}
+
+			self.last_value_ = value;
+			self.last_value_suffix_ = value_suffix;
+
+			switch (self.mode_) {
+				case Properties.BATTERY_DAYS_REMAINING:
+					self.value_ = value.toString();
+					if (self.value_.length() < 3 and value_suffix != ' ') {
+						self.value_ += value_suffix;
+					}
+					break;
+				case Properties.BATTERY_PERCENTAGE:
+					self.value_ = value.toString();
+					break;
+				case Properties.BATTERY_ICON:
+					self.value_ = self.chargeString_(value);
+					break;
 			}
 		}
 

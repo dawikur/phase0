@@ -24,7 +24,7 @@ module Data {
 		function get_() as Lang.Number? {
 			return SensorProvider.get(
 				self.name,
-				SensorHistory.getPressureHistory({ :period => 1 })
+				SensorHistory.getPressureHistory(SensorProvider.OPTIONS)
 			);
 		}
 	}

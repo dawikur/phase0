@@ -22,7 +22,7 @@ module Data {
 		function get_() as Lang.Number? {
 			return SensorProvider.get(
 				self.name,
-				SensorHistory.getStressHistory({ :period => 1 })
+				SensorHistory.getStressHistory(SensorProvider.OPTIONS)
 			);
 		}
 	}

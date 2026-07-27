@@ -20,7 +20,7 @@ module Data {
 		function get_() as Lang.Number? {
 			return SensorProvider.get(
 				self.name,
-				SensorHistory.getTemperatureHistory({ :period => 1 })
+				SensorHistory.getTemperatureHistory(SensorProvider.OPTIONS)
 			);
 		}
 	}

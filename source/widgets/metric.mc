@@ -24,6 +24,7 @@ module Widgets {
 		hidden var value_max_ as Lang.Number? = null;
 		hidden var value_offset_y_ as Lang.Number = 0;
 		hidden var value_text_ as Lang.String = "";
+		hidden var is_value_prepared_ as Lang.Boolean = false;
 
 		hidden var width_ as Lang.Number;
 
@@ -91,21 +92,25 @@ module Widgets {
 		function refresh(_dc as Graphics.Dc) as Void {
 			self.impl_.refresh();
 
-			self.value_ = self.impl_.value;
+			var value = self.impl_.value;
+			if (!self.is_value_prepared_ or self.value_ != value) {
+				self.value_ = value;
+				self.value_text_ = Render.NumberFormat(
+					self.width_,
+					self.value_
+				);
+				self.value_bg_ = Render.NumberBgForText(
+					self.width_,
+					self.value_text_
+				);
+				self.value_bg_width_ = Render.NumberBgWidth(
+					_dc,
+					self.value_bg_,
+					self.is_small
+				);
+				self.is_value_prepared_ = true;
+			}
 			self.value_max_ = self.impl_.value_max;
-			self.value_text_ = Render.NumberFormat(
-				self.width_,
-				self.value_
-			);
-			self.value_bg_ = Render.NumberBgForText(
-				self.width_,
-				self.value_text_
-			);
-			self.value_bg_width_ = Render.NumberBgWidth(
-				_dc,
-				self.value_bg_,
-				self.is_small
-			);
 
 			if (self.show_icon_) {
 				var icon = self.impl_.icon;
@@ -162,9 +167,7 @@ module Widgets {
 
 					Render.Gauge(
 						_dc,
-						value >= 1.0
-							? Render.accent
-							: Render.foreground,
+						1.0 <= value ? Render.accent : Render.foreground,
 						pos_x,
 						value_pos_y + Render.SPACING,
 						self.gauge_height_,
@@ -198,11 +201,7 @@ module Widgets {
 			_available_x as Lang.Number,
 			_available_y as Lang.Number
 		) as Lang.Boolean {
-			var number_width = Render.NumberWidth(
-				_dc,
-				self.width_,
-				_is_small
-			);
+			var number_width = Render.NumberWidth(_dc, self.width_, _is_small);
 			var number_height = Render.NumberHeight(_dc, _is_small);
 			var icon_height = _show_icon ? Render.IconsHeight(_dc) : 0;
 			var icon_width = _show_icon
@@ -245,6 +244,7 @@ module Widgets {
 			self.size_x = size_x;
 			self.size_y = size_y;
 			self.value_offset_y_ = value_offset_y;
+			self.is_value_prepared_ = false;
 
 			self.is_small = _is_small;
 

@@ -24,7 +24,7 @@ module Data {
 		function get_() as Lang.Number? {
 			return SensorProvider.get(
 				self.name,
-				SensorHistory.getOxygenSaturationHistory({ :period => 1 })
+				SensorHistory.getOxygenSaturationHistory(SensorProvider.OPTIONS)
 			);
 		}
 	}

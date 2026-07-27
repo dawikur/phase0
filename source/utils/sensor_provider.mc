@@ -13,6 +13,8 @@ module SensorProvider {
 	// - refreshValue() verifies that persistent data still exists; if it does
 	//   not, write the value again instead of leaving a timestamp-only entry.
 
+	const OPTIONS = { :period => 1 };
+
 	const CACHE_TTL_HOURS as Lang.Number = 2;
 	const CACHE_REFRESH_INTERVAL_SECONDS as Lang.Number = 60 * 60;
 

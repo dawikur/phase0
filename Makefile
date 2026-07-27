@@ -170,7 +170,7 @@ $(DOCS_SETTINGS): $(DOCS_SETTINGS_DEPS)
 $(DOCS_ICON): $(ICON)
 	$(Q)echo " [ $(@F) ]"
 	mkdir -p $(@D)
-	cp $< $@
+	cp $(RESOURCES_GENERATED_DIR)icon.svg $@
 
 $(DOCS_DEVICE_OVERLAY_LIGHT): $(DEVICE_OVERLAY_SRC)
 	$(Q)echo " [ $(@F) ]"
@@ -234,7 +234,7 @@ bt build_test: # build project for device w/ tests
 
 bo build_optimized: # build project for device in optimized mode
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=optimized build
-.PHONY: b0 build_optimized
+.PHONY: bo build_optimized
 
 br build_release: # build project for device in release mode
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release build
@@ -264,18 +264,13 @@ so simulate_optimized: # run simulator width optimized build
 
 sr simulate_release: # run simulator with release build
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release simulate
-.PHONY: st simulate_test
+.PHONY: sr simulate_release
 
 r resources: $(RESOURCES) # generate resources
 .PHONY: r resources
 
 d docs: $(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS) # generate product page data
 .PHONY: d docs
-
-p preview: docs # preview docs locally
-	$(Q)echo " [ preview ]"
-	python3 -m http.server 8000 --directory "$(DOCS_DIR)"
-.PHONY: p preview
 
 t test: $(RESOURCES) # run test
 	$(Q)echo " [ test ]"

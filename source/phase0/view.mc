@@ -73,7 +73,8 @@ module Phase0 {
 		}
 
 		function onEnterSleep() as Void {
-			//self.is_high_power_ = false;
+			// TODO: Uncomment for amoled?
+			// self.is_high_power_ = false;
 
 			WatchUi.requestUpdate();
 		}
@@ -215,7 +216,12 @@ module Phase0 {
 
 			Runtime.refreshClock();
 
-			self.seconds_.update(_dc);
+			self.seconds_.refresh(_dc);
+			if (self.is_high_power_) {
+				self.seconds_.render(_dc);
+			} else {
+				self.seconds_.renderMinimal(_dc);
+			}
 		}
 
 		function onUpdate(_dc as Graphics.Dc) as Void {
