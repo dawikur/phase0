@@ -31,6 +31,8 @@ Never sacrifice performance for abstraction.
 - Cloudflare Pages documentation
 
 Documentation is generated separately and copied into the website repository.
+Keep `docs/` as the self-contained documentation module, including its tests
+and generator inputs; `make docs` writes the publishable subset to `build/docs/`.
 
 ---
 

@@ -69,6 +69,8 @@ endif
 
 BUILD_DIR := build/
 DOCS_DIR  := docs/
+DOCS_OUTPUT_DIR := $(BUILD_DIR)docs/
+DOCS_EXPORT_STAMP := $(BUILD_DIR).docs.stamp
 OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX)
 PRG       := $(BUILD_DIR)$(OUT).prg
 IQ        := $(BUILD_DIR)$(NAME).iq
@@ -128,6 +130,9 @@ SHELL := /bin/bash
 MAKEFLAGS += --no-print-directory
 
 # ---- targets ----
+
+FORCE:
+.PHONY: FORCE
 
 $(PRG): $(PRG_DEPS)
 	$(Q)echo " [ $(@F) ]"
@@ -269,7 +274,15 @@ sr simulate_release: # run simulator with release build
 r resources: $(RESOURCES) # generate resources
 .PHONY: r resources
 
-d docs: $(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS) # generate product page data
+$(DOCS_EXPORT_STAMP): FORCE $(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS)
+	$(Q)echo " [ docs ]"
+	rm -rf -- "$(DOCS_OUTPUT_DIR)"
+	mkdir -p -- "$(DOCS_OUTPUT_DIR)"
+	cp -R "$(DOCS_DIR)." "$(DOCS_OUTPUT_DIR)"
+	rm -rf -- "$(DOCS_OUTPUT_DIR)tests"
+	touch "$@"
+
+d docs: $(DOCS_EXPORT_STAMP) # build publishable documentation
 .PHONY: d docs
 
 t test: $(RESOURCES) # run test
