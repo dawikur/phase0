@@ -202,9 +202,7 @@ def test_all_date_abbreviations_contain_only_letters(
 
     assert not invalid_entries, (
         f"{prefix} abbreviations in {strings_xml} must contain only letters:\n"
-        + "\n".join(
-            f"  - {string_id}: {value}" for string_id, value in invalid_entries
-        )
+        + "\n".join(f"  - {string_id}: {value}" for string_id, value in invalid_entries)
     )
 
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+# Copyright (c) 2026 Dawid Kurek <contact@dawikur.dev>
 
 .build
 build
@@ -12,6 +12,7 @@ docs/settings-data.js
 
 .mypy_cache
 .venv
+.docs-venv
 .vscode
 
 __pycache__

@@ -67,7 +67,7 @@ class MetricStyle(IntEnum):
 
 def Settings(  # pylint: disable=invalid-name
     data: Data,
-) -> tuple[IntEnum, list[Single | Array]]:
+) -> tuple[type[IntEnum], list[Single | Array]]:
     DataWidget = cast(
         Any,
         IntEnum(

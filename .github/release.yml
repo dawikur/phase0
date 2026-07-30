@@ -1,6 +1,6 @@
 changelog:
-	exclude:
-		labels:
-			- skip-changelog
-		authors:
-			- dependabot
+  exclude:
+    labels:
+      - skip-changelog
+    authors:
+      - dependabot

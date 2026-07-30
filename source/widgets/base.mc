@@ -107,10 +107,7 @@ module Widgets {
 		function clear(_dc as Graphics.Dc) as Void {
 			_dc.setClip(self.pos_x, self.pos_y, self.size_x, self.size_y);
 
-			_dc.setColor(
-				Render.background,
-				Render.background
-			);
+			_dc.setColor(Render.background, Render.background);
 
 			_dc.clear();
 		}

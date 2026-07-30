@@ -8,10 +8,14 @@ NAME        ?= phase0
 DEVICE      ?= fr955
 # build mode
 MODE        ?= debug
-# show commands
-V           ?= 0
+# Python executable
+PYTHON      ?= python3
+# log tag prefix
+LOG_PREFIX  ?=
 # developer key path
 PRIVATE_KEY ?= $(HOME)/Documents/developer_key
+# show commands
+V           ?= 0
 
 # ---- options ----
 
@@ -47,6 +51,8 @@ HELP_DESCRIPTION_COLUMN := 26
 
 # ---- variables ----
 
+LOG_TAG = $(if $(LOG_PREFIX),$(LOG_PREFIX)-$(1),$(1))
+
 SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release w watch
 
 ifneq ($(strip $(MAKECMDGOALS)),)
@@ -71,6 +77,9 @@ BUILD_DIR := build/
 DOCS_DIR  := docs/
 DOCS_OUTPUT_DIR := $(BUILD_DIR)docs/
 DOCS_EXPORT_STAMP := $(BUILD_DIR).docs.stamp
+DOCS_VENV_DIR := .docs-venv
+DOCS_VENV_PYTHON := $(DOCS_VENV_DIR)/bin/python
+DOCS_VENV_STAMP := $(DOCS_VENV_DIR)/.installed.stamp
 OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX)
 PRG       := $(BUILD_DIR)$(OUT).prg
 IQ        := $(BUILD_DIR)$(NAME).iq
@@ -134,8 +143,13 @@ MAKEFLAGS += --no-print-directory
 FORCE:
 .PHONY: FORCE
 
+$(DOCS_VENV_STAMP): pyproject.toml
+	$(Q)python3 -m venv "$(DOCS_VENV_DIR)"
+	$(Q)$(DOCS_VENV_PYTHON) -m pip install .
+	touch "$@"
+
 $(PRG): $(PRG_DEPS)
-	$(Q)echo " [ $(@F) ]"
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	$(MONKEYC) \
 		--jungles $< \
 		--device $(DEVICE) \
@@ -145,7 +159,7 @@ $(PRG): $(PRG_DEPS)
 		$(FLAG_MONKEYC)
 
 $(IQ): $(PRG_DEPS)
-	$(Q)echo " [ $(@F) ]"
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	$(MONKEYC) \
 		--jungles $< \
 		--output $@ \
@@ -154,31 +168,31 @@ $(IQ): $(PRG_DEPS)
 		$(FLAG_MONKEYC)
 
 $(FONTS): $(FONTS_DEPS)
-	$(Q)echo " [ $(@F) ]"
-	PYTHONPATH=. $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
 $(ICON): $(ICON_DEPS)
-	$(Q)echo " [ $(@F) ]"
-	PYTHONPATH=. $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
 $(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA)
-	$(Q)echo " [ $(@F) ]"
-	PYTHONPATH=. $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
 $(DOCS_SETTINGS): $(DOCS_SETTINGS_DEPS)
-	$(Q)echo " [ $(@F) ]"
-	PYTHONPATH=. scripts/generate_docs_settings \
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+	PYTHONPATH=. $(PYTHON) scripts/generate_docs_settings \
 		--build $(BUILD_DIR) \
 		--resources $(RESOURCES_DIR) \
 		--source $(SOURCE_DIR)
 
 $(DOCS_ICON): $(ICON)
-	$(Q)echo " [ $(@F) ]"
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
 	cp $(RESOURCES_GENERATED_DIR)icon.svg $@
 
 $(DOCS_DEVICE_OVERLAY_LIGHT): $(DEVICE_OVERLAY_SRC)
-	$(Q)echo " [ $(@F) ]"
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
 	convert $< -alpha extract $@.orig-alpha.png
 	convert $< \
@@ -196,7 +210,7 @@ $(DOCS_DEVICE_OVERLAY_LIGHT): $(DEVICE_OVERLAY_SRC)
 	$(RM) $@.orig-alpha.png $@.bg-alpha.png $@.alpha.png
 
 $(DOCS_DEVICE_OVERLAY_DARK): $(DEVICE_OVERLAY_SRC)
-	$(Q)echo " [ $(@F) ]"
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
 	convert $< -alpha extract $@.orig-alpha.png
 	convert $< \
@@ -217,7 +231,7 @@ $(DOCS_DEVICE_OVERLAY_DARK): $(DEVICE_OVERLAY_SRC)
 	$(RM) $@.orig-alpha.png $@.external-alpha.png $@.alpha.png $@.external-dilate.png $@.edge-mask.png $@.edge-rgb.png
 
 $(BUILD_SOURCE_DIR):
-	$(Q)echo " [ $(@F) ]"
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $@
 
 # ---- aliases ----
@@ -246,7 +260,7 @@ br build_release: # build project for device in release mode
 .PHONY: br build_release
 
 s simulate: build # run simulator
-	$(Q)echo " [ simulate ] $(MODE)"
+	$(Q)echo " [ $(call LOG_TAG,simulate) ] $(MODE)"
 	$(CONNECTIQ)&
 	SIM_PID=$$!
 	sleep 3
@@ -274,8 +288,9 @@ sr simulate_release: # run simulator with release build
 r resources: $(RESOURCES) # generate resources
 .PHONY: r resources
 
-$(DOCS_EXPORT_STAMP): FORCE $(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS)
-	$(Q)echo " [ docs ]"
+$(DOCS_EXPORT_STAMP): PYTHON := $(DOCS_VENV_PYTHON)
+$(DOCS_EXPORT_STAMP): FORCE $(DOCS_VENV_STAMP) $(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS)
+	$(Q)echo " [ $(call LOG_TAG,docs) ]"
 	rm -rf -- "$(DOCS_OUTPUT_DIR)"
 	mkdir -p -- "$(DOCS_OUTPUT_DIR)"
 	cp -R "$(DOCS_DIR)." "$(DOCS_OUTPUT_DIR)"
@@ -286,7 +301,7 @@ d docs: $(DOCS_EXPORT_STAMP) # build publishable documentation
 .PHONY: d docs
 
 t test: $(RESOURCES) # run test
-	$(Q)echo " [ test ]"
+	$(Q)echo " [ $(call LOG_TAG,test) ]"
 	PYTHONPATH=. pytest
 	node --test docs/tests/*.test.mjs
 .PHONY: t test
@@ -299,13 +314,13 @@ w watch: build # deploy release binary to watch
 	$(Q)i=0; while ! gio mount -l | grep -q "mtp://091e_"; do
 		set -- ⠋ ⠙ ⠸ ⢰ ⣠ ⣄ ⡆  ⠇
 		shift $$((i % 8))
-		printf "\r [ watch ] %s" "$$1"
+		printf "\r [ $(call LOG_TAG,watch) ] %s" "$$1"
 		printf "\033[D"
 		i=$$((i+1))
 		sleep .1
 	done; printf "\r\033[K"
 
-	$(Q)echo " [ watch ]"
+	$(Q)echo " [ $(call LOG_TAG,watch) ]"
 	GVFS="/run/user/$$(id -u)/gvfs"
 	MOUNT="$$(ls "$$GVFS" | grep 'mtp:host=' | head -n1)"
 	TARGET="$$GVFS/$$MOUNT/Internal Storage/GARMIN/Apps"
@@ -314,17 +329,18 @@ endif
 .PHONY: w watch
 
 c clean: # remove build directory and files
-	$(Q)echo " [ clean ]"
+	$(Q)echo " [ $(call LOG_TAG,clean) ]"
 	$(RM) -r bin                                \
 		$(BUILD_DIR) $(SRCS_GENERATED_DIR)      \
 		$(RESOURCES) $(RESOURCES_GENERATED_DIR) \
-		$(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS)
+		$(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS) \
+		$(DOCS_VENV_DIR)
 .PHONY: c clean
 
 # ---- help ----
 
 h help: # print help message
-	$(Q)echo " [ help ]"
+	$(Q)echo " [ $(call LOG_TAG,help) ]"
 
 	N="\033[m"
 	B="\033[1m"
@@ -357,14 +373,13 @@ h help: # print help message
 		desc[n] = $$2; \
 		if (length(short) > max_short) max_short = length(short); \
 		if (length(long) > max_long) max_long = length(long); \
-		padding = 3 - max_short; \
 	} \
 	END { \
 		description_width = description_column - 7; \
 		if (max_long > description_width) \
 			description_width = max_long; \
 		for (i = 1; i <= n; i++) \
-			printf "%" padding "s %" max_short "s %-" description_width "s %s\n", "", shorts[i], longs[i], desc[i]; \
+			printf "     %" max_short "s %-" description_width "s %s\n", shorts[i], longs[i], desc[i]; \
 	}' $(MAKEFILE_LIST)
 	printf "\n"
 	# ---- arguments ----
@@ -392,7 +407,7 @@ h help: # print help message
 			description_width = max_name; \
 		for (i = 1; i <= n; i++) { \
 			printf "     %-" description_width "s %s\n", names[i], descriptions[i]; \
-			printf "%" description_column "s\033[3mdefault:\033[m %s\n", "", defaults[i]; \
+			printf "%" (description_width + 6) "s\033[3mdefault:\033[m %s\n", "", defaults[i]; \
 		} \
 	}' $(MAKEFILE_LIST)
 	printf "\n"

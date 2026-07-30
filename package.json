@@ -1,9 +1,9 @@
 {
-	"private": true,
-	"engines": {
-		"node": ">=22 <23"
-	},
-	"devDependencies": {
-		"@markw65/monkeyc-optimizer": "1.1.12"
-	}
+  "devDependencies": {
+    "@markw65/monkeyc-optimizer": "1.1.12"
+  },
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "private": true
 }

@@ -3,6 +3,7 @@
 [project]
 name = "phase"
 version = "0.1.0"
+dependencies = ["Pillow"]
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -23,6 +24,7 @@ disable = [
 	"missing-function-docstring",
 	"missing-module-docstring",
 	"duplicate-code",
+	"fixme",
 	"too-many-instance-attributes",
 ]
 

@@ -8,10 +8,11 @@ import Toybox.Time;
 import Toybox.Weather;
 
 module WeatherProvider {
-	typedef ForecastSnapshot as Lang.Dictionary<
-		Application.Storage.KeyType,
-		Application.Storage.ValueType
-	>;
+	typedef ForecastSnapshot as
+		Lang.Dictionary<
+			Application.Storage.KeyType,
+			Application.Storage.ValueType
+		>;
 
 	// Refresh policy:
 	// - Request current conditions immediately after fields are registered.
@@ -36,12 +37,9 @@ module WeatherProvider {
 		System.getSystemStats().totalMemory > FORECAST_MEMORY_THRESHOLD;
 
 	var fields_ as Lang.Dictionary<Lang.String, Lang.Number?> = {};
-	var current_cache_values_ as Lang.Dictionary<Lang.String, Lang.Number> =
-		{};
-	var current_cache_refresh_seconds_ as Lang.Dictionary<
-		Lang.String,
-		Lang.Number
-	> = {};
+	var current_cache_values_ as Lang.Dictionary<Lang.String, Lang.Number> = {};
+	var current_cache_refresh_seconds_ as
+		Lang.Dictionary<Lang.String, Lang.Number> = {};
 	var last_forecast_refresh_hour_ as Lang.Number = -1;
 	var next_refresh_seconds_ as Lang.Number = 0;
 
@@ -82,10 +80,7 @@ module WeatherProvider {
 		var weather = Weather.getCurrentConditions();
 		var had_valid_forecast = SHOULD_USE_FORECAST and hasValidForecast_();
 		var stored_forecast = false;
-		if (
-			SHOULD_USE_FORECAST and
-			last_forecast_refresh_hour_ != now_hour
-		) {
+		if (SHOULD_USE_FORECAST and last_forecast_refresh_hour_ != now_hour) {
 			stored_forecast = refreshForecast_(fields, now_hour);
 			last_forecast_refresh_hour_ = now_hour;
 		}
@@ -141,11 +136,7 @@ module WeatherProvider {
 
 			fields_.put(
 				key,
-				refreshCurrentValue_(
-					key,
-					weather_value,
-					_store_cache
-				)
+				refreshCurrentValue_(key, weather_value, _store_cache)
 			);
 		}
 
@@ -220,10 +211,7 @@ module WeatherProvider {
 		var snapshot = loadForecastSnapshot_();
 		if (
 			snapshot == null or
-			!isValidForecastSnapshot_(
-				snapshot as ForecastSnapshot,
-				_now_hour
-			)
+			!isValidForecastSnapshot_(snapshot as ForecastSnapshot, _now_hour)
 		) {
 			refreshCurrentCache_(_fields);
 			return;
@@ -235,11 +223,7 @@ module WeatherProvider {
 
 			fields_.put(
 				key,
-				nextForecastValue_(
-					snapshot as ForecastSnapshot,
-					key,
-					_now_hour
-				)
+				nextForecastValue_(snapshot as ForecastSnapshot, key, _now_hour)
 			);
 		}
 	}
@@ -307,7 +291,7 @@ module WeatherProvider {
 	function newForecastSnapshot_(
 		_now_hour as Lang.Number
 	) as ForecastSnapshot {
-		var snapshot = {} as ForecastSnapshot;
+		var snapshot = ({}) as ForecastSnapshot;
 		snapshot.put(FORECAST_SNAPSHOT_HOUR_KEY, _now_hour);
 		return snapshot;
 	}
@@ -326,9 +310,7 @@ module WeatherProvider {
 		}
 	}
 
-	function storeForecastSnapshot_(
-		_snapshot as ForecastSnapshot
-	) as Void {
+	function storeForecastSnapshot_(_snapshot as ForecastSnapshot) as Void {
 		Application.Storage.setValue(FORECAST_SNAPSHOT_KEY, _snapshot);
 	}
 
@@ -362,10 +344,7 @@ module WeatherProvider {
 
 		var now_seconds = Runtime.now.value();
 		var now_hour = (now_seconds - (now_seconds % 3600)) / 3600;
-		return isValidForecastSnapshot_(
-			snapshot as ForecastSnapshot,
-			now_hour
-		);
+		return isValidForecastSnapshot_(snapshot as ForecastSnapshot, now_hour);
 	}
 
 	function isValidForecastSnapshot_(
@@ -551,13 +530,21 @@ module WeatherProvider {
 			if (snapshot == null) {
 				return;
 			}
-			assertNull_(snapshotValue_(snapshot as ForecastSnapshot, forecastKey_(_key, _hour)));
+			assertNull_(
+				snapshotValue_(
+					snapshot as ForecastSnapshot,
+					forecastKey_(_key, _hour)
+				)
+			);
 			return;
 		}
 
 		Test.assertEqual(snapshot != null, true);
 		assertNumberEqual_(
-			snapshotValue_(snapshot as ForecastSnapshot, forecastKey_(_key, _hour)),
+			snapshotValue_(
+				snapshot as ForecastSnapshot,
+				forecastKey_(_key, _hour)
+			),
 			_expected
 		);
 	}
@@ -641,8 +628,14 @@ module WeatherProvider {
 		storeForecastSnapshotValue_(snapshot, temperature, now_hour + 2, 21);
 		storeForecastSnapshot_(snapshot);
 
-		assertNumberEqual_(nextForecastValue_(snapshot, condition, now_hour), 7);
-		assertNumberEqual_(nextForecastValue_(snapshot, temperature, now_hour), 21);
+		assertNumberEqual_(
+			nextForecastValue_(snapshot, condition, now_hour),
+			7
+		);
+		assertNumberEqual_(
+			nextForecastValue_(snapshot, temperature, now_hour),
+			21
+		);
 		assertNumberEqual_(
 			nextForecastValue_(snapshot, temperature, now_hour + 2),
 			null
@@ -667,8 +660,7 @@ module WeatherProvider {
 		var condition = "weather_provider_test_condition";
 		var temperature = "weather_provider_test_temperature";
 		var now_seconds = Runtime.now.value();
-		var snapshot_hour =
-			(now_seconds - (now_seconds % 3600)) / 3600;
+		var snapshot_hour = (now_seconds - (now_seconds % 3600)) / 3600;
 
 		get(condition);
 		get(temperature);
@@ -676,7 +668,12 @@ module WeatherProvider {
 		var snapshot = newForecastSnapshot_(snapshot_hour);
 		storeForecastSnapshotValue_(snapshot, condition, snapshot_hour + 1, 1);
 		storeForecastSnapshotValue_(snapshot, condition, snapshot_hour + 2, 2);
-		storeForecastSnapshotValue_(snapshot, temperature, snapshot_hour + 1, 3);
+		storeForecastSnapshotValue_(
+			snapshot,
+			temperature,
+			snapshot_hour + 1,
+			3
+		);
 		storeForecastSnapshot_(snapshot);
 
 		clearForecast_();

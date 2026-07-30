@@ -293,9 +293,16 @@ Documentation should therefore:
 
 The preferred build system is Makefile.
 
+Keep the `make help` target and argument formatting aligned with the website,
+CV, and chiroptera Makefiles; phase0 may extend the shared sections with its
+device and build-mode listings.
+
 Avoid introducing shell scripts unless they provide clear value.
 
 Keep build steps reproducible.
+
+`make docs` creates `.docs-venv` and installs the Python documentation
+dependencies declared in `pyproject.toml`; it is removed by `make clean`.
 
 The release optimizer is pinned in `package-lock.json`; install its Node
 dependencies with `npm ci` before producing a release build.

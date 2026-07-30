@@ -596,9 +596,9 @@ module Phase0 {
 			_data as Lang.Number
 		) as Lang.Boolean {
 			return (
-				_data == Properties.BATTERY_DAYS_REMAINING or
-				_data == Properties.BATTERY_ICON or
-				_data == Properties.BATTERY_PERCENTAGE
+				_data == Properties.DATA_BATTERY_DAYS_REMAINING or
+				_data == Properties.DATA_BATTERY_ICON or
+				_data == Properties.DATA_BATTERY_PERCENTAGE
 			);
 		}
 

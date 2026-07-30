@@ -3,6 +3,7 @@
 
 import textwrap
 from collections.abc import Sequence
+from enum import IntEnum
 from typing import Any
 
 from data.settings import Array, Boolean, Entry, Number, Options, Select, Single
@@ -31,7 +32,7 @@ def render_data_mc(data: Any) -> str:
     return doc.render()
 
 
-def render_widgets_mc(extra_data: Any) -> str:
+def render_widgets_mc(extra_data: type[IntEnum]) -> str:
     doc = McDocument.create()
     doc.line("import Toybox.Complications;")
     doc.line("import Toybox.Lang;")
@@ -52,7 +53,7 @@ def render_widgets_mc(extra_data: Any) -> str:
                         continue
 
                     doc.line(
-                        f"case {datum.value}: return new {datum_name}("
+                        f"case Properties.DATA_{datum.name.upper()}: return new {datum_name}("
                         f"_properties, _on_top"
                         ");"
                     )
@@ -65,13 +66,28 @@ def render_widgets_mc(extra_data: Any) -> str:
 
 def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     settings: Sequence[Single | Array],
+    extra_data: type[IntEnum],
 ) -> str:
     doc = McDocument.create()
     doc.line("import Toybox.Application;")
     doc.line("import Toybox.Lang;")
     with McScope(doc, "class Properties {") as _module:
+        doc.line()
+        doc.line("// options")
+        doc.line()
+
         for opt in Options:
             doc.line(f"static const {opt.name.upper()} = {opt.value};")
+
+        doc.line()
+        doc.line("// extra data")
+        doc.line()
+
+        for datum in extra_data:
+            if datum.name == "Disabled":
+                continue
+
+            doc.line(f"static const DATA_{datum.name.upper()} = {datum.value};")
 
         doc.line()
         doc.line("// fields")
@@ -117,11 +133,13 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
                             doc.line(f"self.{entry.variable} = _{entry.variable};")
 
             if isinstance(single_or_array, Single):
-                doc.line( f"var {single_or_array.variable} as {single_or_array.klass};")
+                doc.line(f"var {single_or_array.variable} as {single_or_array.klass};")
                 continue
 
             if isinstance(single_or_array, Array):
-                doc.line(f"var {single_or_array.variable} as Lang.Array<{single_or_array.klass}>;")
+                doc.line(
+                    f"var {single_or_array.variable} as Lang.Array<{single_or_array.klass}>;"
+                )
                 continue
 
             assert False, f"Unsupported type {type(single_or_array)}"
@@ -130,19 +148,19 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
             for single_or_array in settings:
 
                 def render_widget(
-                    widget: Widget, idx: int | None = None
+                    top: Top, widget: Widget, widget_idx: int | None = None
                 ) -> None:
-                    prop_id = f"{idx}" if idx is not None else ""
+                    prop_id = f"{widget_idx}" if widget_idx is not None else ""
 
-                    for idx, entry in enumerate(widget):
-                        comma = "," if idx != len(widget) - 1 else ""
+                    for entry_idx, entry in enumerate(widget):
+                        comma = "," if entry_idx != len(widget) - 1 else ""
 
                         if entry.hidden:
                             doc.line(f"{str(entry.default).lower()}{comma}")
                         else:
                             doc.line(
                                 "Application.Properties.getValue("
-                                f'"{single_or_array.id}{entry.id}{prop_id}") '
+                                f'"{top.id}{entry.id}{prop_id}") '
                                 f"as Lang.{entry.klass}{comma}"
                             )
 
@@ -153,7 +171,7 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
                         f"new {single_or_array.klass}(",
                         ";",
                     ) as _field:
-                        render_widget(single_or_array)
+                        render_widget(single_or_array, single_or_array)
                     continue
 
                 if isinstance(single_or_array, Array):
@@ -168,7 +186,7 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
                                 f"new {single_or_array.klass}(",
                                 "," if idy != len(single_or_array) - 1 else "",
                             ) as _entry:
-                                render_widget(widget, idy)
+                                render_widget(single_or_array, widget, idy)
                     continue
 
                 assert False, f"Unsupported type {type(single_or_array)}"

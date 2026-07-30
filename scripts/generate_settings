@@ -20,7 +20,7 @@ if __name__ == "__main__":
     folders.source("generated", "data.mc").write_text(render_data_mc(data))
     folders.source("generated", "widgets.mc").write_text(render_widgets_mc(extra_data))
     folders.source("generated", "properties.mc").write_text(
-        render_properties_mc(settings)
+        render_properties_mc(settings, extra_data)
     )
     folders.resources("generated", "properties.xml").write_text(
         render_properties_xml(settings)

@@ -15,6 +15,11 @@ class SampleOptions(IntEnum):
     LARGE = 2
 
 
+class SampleData(IntEnum):
+    DISABLED = 0
+    HEART_RATE = 1
+
+
 def test_render_properties_xml_handles_single_and_array_settings() -> None:
     xml = render_properties_xml(
         [
@@ -69,7 +74,8 @@ def test_render_properties_mc_reuses_matching_property_classes() -> None:
         [
             Single("top", "Widget", [Number("width", 2)]),
             Single("bottom", "Widget", [Number("width", 3)]),
-        ]
+        ],
+        SampleData,
     )
 
     assert mc.count("class Widget {") == 1
@@ -94,7 +100,7 @@ def test_hidden_settings_keep_defaults_without_generated_properties() -> None:
         )
     ]
 
-    mc = render_properties_mc(settings)
+    mc = render_properties_mc(settings, SampleData)
     properties_xml = render_properties_xml(settings)
     settings_xml = render_settings_xml(settings)
 

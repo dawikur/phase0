@@ -60,6 +60,7 @@ def test_docs_page_loads_assets_in_expected_order() -> None:
         "settings-data.js",
         "theme.js",
         "app.js",
+        "scroll-top.js",
     ]
     assert "styles.css" in values_for(parser, "link", "href")
     assert "assets/icon.svg" in values_for(parser, "link", "href")
@@ -67,6 +68,7 @@ def test_docs_page_loads_assets_in_expected_order() -> None:
     assert Path("docs/theme.js").is_file()
     assert Path("docs/styles.css").is_file()
     assert Path("docs/app.js").is_file()
+    assert Path("docs/scroll-top.js").is_file()
 
 
 def test_docs_page_links_to_mip64_palette() -> None:

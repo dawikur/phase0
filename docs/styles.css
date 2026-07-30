@@ -98,12 +98,11 @@
 	--watch-shadow: rgba(28, 26, 22, 0.36);
 	--border: rgba(176, 109, 16, 0.38);
 	--focus-ring: #704300;
+	--orange: #9a5b00;
+	--cyan: #087783;
+	--green: #4f6800;
+	--red: #a53628;
 	color-scheme: light;
-}
-
-html {
-	scrollbar-color: rgba(128, 128, 128, 0.72) rgba(255, 255, 255, 0.05);
-	scrollbar-width: thin;
 }
 
 * {
@@ -128,30 +127,51 @@ body {
 	color: var(--ink);
 }
 
-html::-webkit-scrollbar {
-	width: 12px;
-}
-
-html::-webkit-scrollbar-track {
-	background:
-		linear-gradient(180deg, rgba(242, 160, 31, 0.08), rgba(39, 200, 211, 0.06)),
-		var(--bg);
-}
-
-html::-webkit-scrollbar-thumb {
-	border: 3px solid transparent;
-	border-radius: 999px;
-	background: rgba(128, 128, 128, 0.72) border-box;
-	background-clip: padding-box;
-}
-
-html::-webkit-scrollbar-thumb:hover {
-	background: rgba(128, 128, 128, 0.9) border-box;
-	background-clip: padding-box;
-}
-
 button {
 	font: inherit;
+}
+
+.scroll-top {
+	position: fixed;
+	right: var(--space-3);
+	bottom: var(--space-3);
+	z-index: 20;
+	display: grid;
+	width: 42px;
+	height: 42px;
+	place-items: center;
+	border: 1px solid var(--chip-border);
+	border-radius: var(--radius);
+	padding: 0;
+	color: var(--chip-ink);
+	background: var(--panel-strong);
+	font-size: 1.2rem;
+	font-weight: 700;
+	cursor: pointer;
+	opacity: 0;
+	pointer-events: none;
+	transform: translateY(8px);
+	transition: background 140ms ease, opacity 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+.scroll-top.is-visible {
+	opacity: 1;
+	pointer-events: auto;
+	transform: translateY(0);
+}
+
+.scroll-top:hover {
+	background: var(--control-hover);
+}
+
+.scroll-top:active {
+	transform: translateY(1px) scale(0.98);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
+}
+
+.scroll-top:focus-visible {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 3px;
 }
 
 .page {
@@ -164,15 +184,13 @@ button {
 	display: grid;
 	grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
 	gap: var(--space-5);
-	align-items: start;
+	align-items: center;
 	min-height: min(730px, calc(100vh - 32px));
 }
 
 .product-copy {
 	--copy-width: 600px;
-	align-self: start;
 	min-width: 0;
-	padding-top: clamp(8px, 4vh, 38px);
 }
 
 .controls {
@@ -407,11 +425,11 @@ h1 {
 }
 
 .watch-zone {
-	position: relative;
+	/* Keep the device anchored while mode-specific copy changes height. */
 	align-self: start;
+	position: relative;
 	min-width: 0;
 	min-height: 720px;
-	padding-top: clamp(96px, 16vh, 124px);
 }
 
 .watch-stage {
@@ -874,6 +892,11 @@ h1 {
 }
 
 @media (max-width: 560px) {
+	.scroll-top {
+		right: var(--space-2);
+		bottom: var(--space-2);
+	}
+
 	.page {
 		width: calc(100% - 20px);
 		padding-top: 18px;
