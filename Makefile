@@ -179,7 +179,7 @@ $(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
-$(DOCS_SETTINGS): $(DOCS_SETTINGS_DEPS)
+$(DOCS_SETTINGS): $(DOCS_VENV_STAMP) $(DOCS_SETTINGS_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(PYTHON) scripts/generate_docs_settings \
 		--build $(BUILD_DIR) \

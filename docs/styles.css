@@ -177,7 +177,7 @@ button {
 .page {
 	width: min(1120px, calc(100% - 32px));
 	margin: 0 auto;
-	padding: var(--space-5) 0 var(--space-6);
+	padding: calc(var(--space-5) + 68px) 0 var(--space-6);
 }
 
 .hero {
@@ -197,11 +197,12 @@ button {
 	display: flex;
 	flex-wrap: wrap;
 	gap: var(--space-2);
-	position: sticky;
+	position: fixed;
 	top: var(--space-2);
-	z-index: 10;
+	left: calc(max(16px, (100% - 1120px) / 2) - 18px);
+	z-index: 20;
 	width: fit-content;
-	margin: -12px -18px var(--space-4);
+	margin: 0;
 	padding: 12px 18px;
 	background: radial-gradient(ellipse at center, color-mix(in srgb, var(--bg) 86%, transparent), transparent 72%);
 }
@@ -899,14 +900,18 @@ h1 {
 
 	.page {
 		width: calc(100% - 20px);
-		padding-top: 18px;
+		padding-top: calc(18px + 68px);
 	}
 
 	.supporting {
 		padding: var(--space-5) 0;
 	}
 
-	.controls,
+	.controls {
+		left: -8px;
+		width: calc(100% - 20px);
+	}
+
 	.lede,
 	.feature-strip,
 	.actions {
