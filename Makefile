@@ -167,15 +167,16 @@ $(IQ): $(PRG_DEPS)
 		--private-key $(PRIVATE_KEY) \
 		$(FLAG_MONKEYC)
 
-$(FONTS): $(FONTS_DEPS)
+$(FONTS): PYTHON := $(DOCS_VENV_PYTHON)
+$(FONTS): $(FONTS_DEPS) $(DOCS_VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
-$(ICON): $(ICON_DEPS)
+$(ICON): $(ICON_DEPS) $(DOCS_VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
-$(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA)
+$(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA) $(DOCS_VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
@@ -201,7 +202,7 @@ $(DOCS_DEVICE_OVERLAY_LIGHT): $(DEVICE_OVERLAY_SRC)
 		-border 1 \
 		-fill none \
 		-fuzz 10% \
-		-draw 'matte 0,0 floodfill' \
+		-draw 'color 0,0 floodfill' \
 		-shave 1x1 \
 		-alpha extract \
 		$@.bg-alpha.png
@@ -219,7 +220,7 @@ $(DOCS_DEVICE_OVERLAY_DARK): $(DEVICE_OVERLAY_SRC)
 		-border 1 \
 		-fill none \
 		-fuzz 36% \
-		-draw 'matte 0,0 floodfill' \
+		-draw 'color 0,0 floodfill' \
 		-shave 1x1 \
 		-alpha extract \
 		$@.external-alpha.png
