@@ -18,8 +18,8 @@ module Data {
 			self.value_max = ActivityMonitor.getInfo().pushGoal;
 		}
 
-		function get_() as Lang.Number? {
-			return ActivityMonitor.getInfo().pushes;
+		function refresh() as Void {
+			self.value = ActivityMonitor.getInfo().pushes;
 		}
 	}
 } // module Data

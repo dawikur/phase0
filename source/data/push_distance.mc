@@ -16,12 +16,12 @@ module Data {
 			);
 		}
 
-		function get_() as Lang.Number? {
+		function refresh() as Void {
 			var distance_cm = ActivityMonitor.getInfo().pushDistance;
-			if (distance_cm != null) {
-				return Units.convertDistance(distance_cm / 100);
-			}
-			return null;
+			self.value =
+				distance_cm != null
+					? Units.convertDistance(distance_cm / 100)
+					: null;
 		}
 	}
 } // module Data

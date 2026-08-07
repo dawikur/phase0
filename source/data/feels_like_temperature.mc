@@ -17,8 +17,8 @@ module Data {
 			WeatherProvider.register("feels_like_temperature");
 		}
 
-		function get_() as Lang.Number? {
-			return WeatherProvider.get("feels_like_temperature");
+		function refresh() as Void {
+			self.value = WeatherProvider.get("feels_like_temperature");
 		}
 	}
 } // module Data

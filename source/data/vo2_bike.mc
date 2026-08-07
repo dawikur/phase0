@@ -16,8 +16,8 @@ module Data {
 			);
 		}
 
-		function get_() as Lang.Number? {
-			return UserProfile.getProfile().vo2maxCycling;
+		function refresh() as Void {
+			self.value = UserProfile.getProfile().vo2maxCycling;
 		}
 	}
 } // module Data

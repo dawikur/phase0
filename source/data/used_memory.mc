@@ -19,8 +19,8 @@ module Data {
 			self.value_max = System.getSystemStats().totalMemory;
 		}
 
-		function get_() as Lang.Number? {
-			return System.getSystemStats().usedMemory;
+		function refresh() as Void {
+			self.value = System.getSystemStats().usedMemory;
 		}
 	}
 } // module Data

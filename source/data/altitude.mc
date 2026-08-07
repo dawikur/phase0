@@ -19,8 +19,8 @@ module Data {
 			);
 		}
 
-		function get_() as Lang.Number? {
-			return SensorProvider.get(
+		function refresh() as Void {
+			self.value = SensorProvider.get(
 				self.name,
 				SensorHistory.getElevationHistory(SensorProvider.OPTIONS)
 			);

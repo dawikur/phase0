@@ -16,8 +16,8 @@ module Data {
 			);
 		}
 
-		function get_() as Lang.Number? {
-			return System.getSystemStats().batteryInDays.toNumber();
+		function refresh() as Void {
+			self.value = System.getSystemStats().batteryInDays.toNumber();
 		}
 	}
 } // module Data

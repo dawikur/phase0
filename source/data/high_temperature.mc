@@ -17,8 +17,8 @@ module Data {
 			WeatherProvider.register("high_temperature");
 		}
 
-		function get_() as Lang.Number? {
-			return WeatherProvider.get("high_temperature");
+		function refresh() as Void {
+			self.value = WeatherProvider.get("high_temperature");
 		}
 	}
 } // module Data

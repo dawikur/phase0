@@ -25,18 +25,19 @@ module Data {
 			}
 		}
 
-		function get_() as Lang.Number? {
+		function refresh() as Void {
 			var activity_info = Activity.getActivityInfo();
-			if (activity_info != null) {
-				if (activity_info.currentHeartRate != null) {
-					return activity_info.currentHeartRate;
-				}
+			if (
+				activity_info != null and
+				activity_info.currentHeartRate != null
+			) {
+				self.value = activity_info.currentHeartRate;
+			} else {
+				self.value = SensorProvider.get(
+					self.name,
+					SensorHistory.getHeartRateHistory(SensorProvider.OPTIONS)
+				);
 			}
-
-			return SensorProvider.get(
-				self.name,
-				SensorHistory.getHeartRateHistory(SensorProvider.OPTIONS)
-			);
 		}
 	}
 } // module Data

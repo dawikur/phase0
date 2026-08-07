@@ -17,8 +17,8 @@ module Data {
 			);
 		}
 
-		function get_() as Lang.Number? {
-			return ActivityMonitor.getInfo().timeToRecovery;
+		function refresh() as Void {
+			self.value = ActivityMonitor.getInfo().timeToRecovery;
 		}
 	}
 } // module Data

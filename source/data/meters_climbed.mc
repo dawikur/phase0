@@ -16,12 +16,12 @@ module Data {
 			);
 		}
 
-		function get_() as Lang.Number? {
+		function refresh() as Void {
 			var meters_climbed = ActivityMonitor.getInfo().metersClimbed;
-			if (meters_climbed != null) {
-				return Units.convertElevation(meters_climbed as Lang.Number);
-			}
-			return null;
+			self.value =
+				meters_climbed != null
+					? Units.convertElevation(meters_climbed.toNumber())
+					: null;
 		}
 	}
 } // module Data

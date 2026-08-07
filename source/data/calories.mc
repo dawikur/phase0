@@ -16,8 +16,8 @@ module Data {
 			);
 		}
 
-		function get_() as Lang.Number? {
-			return ActivityMonitor.getInfo().calories;
+		function refresh() as Void {
+			self.value = ActivityMonitor.getInfo().calories;
 		}
 	}
 } // module Data

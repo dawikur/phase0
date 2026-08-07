@@ -16,12 +16,9 @@ module Data {
 			);
 		}
 
-		function get_() as Lang.Number? {
+		function refresh() as Void {
 			var active_minutes = ActivityMonitor.getInfo().activeMinutesDay;
-			if (active_minutes != null) {
-				return active_minutes.total;
-			}
-			return null;
+			self.value = active_minutes != null ? active_minutes.total : null;
 		}
 	}
 } // module Data

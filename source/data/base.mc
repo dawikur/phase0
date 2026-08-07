@@ -24,12 +24,6 @@ module Data {
 			self.refresh_rate = _refresh_rate;
 		}
 
-		function refresh() as Void {
-			self.value = self.get_();
-		}
-
-		function get_() as Lang.Number? {
-			return null;
-		}
+		function refresh() as Void {}
 	}
 } // module Data

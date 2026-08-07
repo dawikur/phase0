@@ -18,8 +18,8 @@ module Data {
 			self.value_max = ActivityMonitor.MOVE_BAR_LEVEL_MAX;
 		}
 
-		function get_() as Lang.Number? {
-			return ActivityMonitor.getInfo().moveBarLevel;
+		function refresh() as Void {
+			self.value = ActivityMonitor.getInfo().moveBarLevel;
 		}
 	}
 } // module Data

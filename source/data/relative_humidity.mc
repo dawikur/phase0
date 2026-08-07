@@ -19,8 +19,8 @@ module Data {
 			WeatherProvider.register("relative_humidity");
 		}
 
-		function get_() as Lang.Number? {
-			return WeatherProvider.get("relative_humidity");
+		function refresh() as Void {
+			self.value = WeatherProvider.get("relative_humidity");
 		}
 	}
 } // module Data

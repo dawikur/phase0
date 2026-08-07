@@ -18,12 +18,9 @@ module Data {
 			self.value_max = ActivityMonitor.getInfo().activeMinutesWeekGoal;
 		}
 
-		function get_() as Lang.Number? {
+		function refresh() as Void {
 			var active_minutes = ActivityMonitor.getInfo().activeMinutesWeek;
-			if (active_minutes != null) {
-				return active_minutes.total;
-			}
-			return null;
+			self.value = active_minutes != null ? active_minutes.total : null;
 		}
 	}
 } // module Data

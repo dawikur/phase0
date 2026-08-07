@@ -21,49 +21,48 @@ module Data {
 			WeatherProvider.register("wind_speed");
 		}
 
-		function get_() as Lang.Number? {
-			self.icon = Fonts.ICON_NONE;
-
+		function refresh() as Void {
 			var wind_bearing = WeatherProvider.get("wind_bearing");
-			if (wind_bearing != null) {
-				if (wind_bearing < 0 + 22.5) {
-					self.icon = Fonts.ICON_WIND_N_0;
-				} else if (wind_bearing < 45 + 22.5) {
-					self.icon = Fonts.ICON_WIND_NE_0;
-				} else if (wind_bearing < 90 + 22.5) {
-					self.icon = Fonts.ICON_WIND_E_0;
-				} else if (wind_bearing < 135 + 22.5) {
-					self.icon = Fonts.ICON_WIND_SE_0;
-				} else if (wind_bearing < 180 + 22.5) {
-					self.icon = Fonts.ICON_WIND_S_0;
-				} else if (wind_bearing < 225 + 22.5) {
-					self.icon = Fonts.ICON_WIND_SW_0;
-				} else if (wind_bearing < 270 + 22.5) {
-					self.icon = Fonts.ICON_WIND_W_0;
-				} else if (wind_bearing < 315 + 22.5) {
-					self.icon = Fonts.ICON_WIND_NW_0;
-				} else {
-					self.icon = Fonts.ICON_WIND_N_0;
-				}
+			if (wind_bearing == null) {
+				self.icon = Fonts.ICON_NONE;
+			} else if (wind_bearing < 0 + 22.5) {
+				self.icon = Fonts.ICON_WIND_N_0;
+			} else if (wind_bearing < 45 + 22.5) {
+				self.icon = Fonts.ICON_WIND_NE_0;
+			} else if (wind_bearing < 90 + 22.5) {
+				self.icon = Fonts.ICON_WIND_E_0;
+			} else if (wind_bearing < 135 + 22.5) {
+				self.icon = Fonts.ICON_WIND_SE_0;
+			} else if (wind_bearing < 180 + 22.5) {
+				self.icon = Fonts.ICON_WIND_S_0;
+			} else if (wind_bearing < 225 + 22.5) {
+				self.icon = Fonts.ICON_WIND_SW_0;
+			} else if (wind_bearing < 270 + 22.5) {
+				self.icon = Fonts.ICON_WIND_W_0;
+			} else if (wind_bearing < 315 + 22.5) {
+				self.icon = Fonts.ICON_WIND_NW_0;
+			} else {
+				self.icon = Fonts.ICON_WIND_N_0;
 			}
 
 			var wind_speed = WeatherProvider.get("wind_speed");
-			if (wind_speed != null) {
+			if (wind_speed == null) {
+				self.value = null;
+			} else {
+				self.value = wind_speed.toNumber();
+
 				if (self.icon != Fonts.ICON_NONE) {
-					var icon = self.icon as Lang.String;
-					if (wind_speed <= 2) {
+					var icon = (self.icon as Lang.String).toCharArray()[0];
+					if (self.value <= 2) {
 						// pass
-					} else if (wind_speed <= 6) {
-						self.icon = (icon.toCharArray()[0] + 1).toString();
+						// self.icon = (icon + 0).toString();
+					} else if (self.value <= 6) {
+						self.icon = (icon + 1).toString();
 					} else {
-						self.icon = (icon.toCharArray()[0] + 2).toString();
+						self.icon = (icon + 2).toString();
 					}
 				}
-
-				return wind_speed.toNumber();
 			}
-
-			return null;
 		}
 	}
 } // module Data

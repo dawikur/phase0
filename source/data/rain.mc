@@ -21,27 +21,20 @@ module Data {
 			WeatherProvider.register("precipitation_chance");
 		}
 
-		function get_() as Lang.Number? {
-			self.icon = Fonts.ICON_NONE;
+		function refresh() as Void {
+			self.value = WeatherProvider.get("precipitation_chance");
 
-			var precipitation_chance = WeatherProvider.get(
-				"precipitation_chance"
-			);
-			if (precipitation_chance != null) {
-				if (precipitation_chance <= 20) {
-					self.icon = Fonts.ICON_RAIN_0;
-				} else if (precipitation_chance <= 50) {
-					self.icon = Fonts.ICON_RAIN_1;
-				} else if (precipitation_chance <= 80) {
-					self.icon = Fonts.ICON_RAIN_2;
-				} else {
-					self.icon = Fonts.ICON_RAIN_3;
-				}
-
-				return precipitation_chance;
+			if (self.value == null) {
+				self.icon = Fonts.ICON_NONE;
+			} else if (self.value <= 20) {
+				self.icon = Fonts.ICON_RAIN_0;
+			} else if (self.value <= 50) {
+				self.icon = Fonts.ICON_RAIN_1;
+			} else if (self.value <= 80) {
+				self.icon = Fonts.ICON_RAIN_2;
+			} else {
+				self.icon = Fonts.ICON_RAIN_3;
 			}
-
-			return null;
 		}
 	}
 } // module Data

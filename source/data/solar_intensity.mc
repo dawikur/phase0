@@ -19,12 +19,9 @@ module Data {
 			self.value_max = 100;
 		}
 
-		function get_() as Lang.Number? {
+		function refresh() as Void {
 			var value = System.getSystemStats().solarIntensity;
-			if (value != null and 0 <= value) {
-				return value;
-			}
-			return null;
+			self.value = value != null and 0 <= value ? value : null;
 		}
 	}
 } // module Data

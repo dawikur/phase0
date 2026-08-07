@@ -20,27 +20,26 @@ module Data {
 			WeatherProvider.register("uv_index");
 		}
 
-		function get_() as Lang.Number? {
-			self.icon = Fonts.ICON_NONE;
-
+		function refresh() as Void {
 			var uv_index = WeatherProvider.get("uv_index");
-			if (uv_index != null) {
-				if (uv_index < 2) {
+			if (uv_index == null) {
+				self.value = null;
+				self.icon = Fonts.ICON_NONE;
+			} else {
+				self.value = uv_index.toNumber();
+
+				if (self.value < 2) {
 					self.icon = Fonts.ICON_UV_LOW;
-				} else if (uv_index < 5) {
+				} else if (self.value < 5) {
 					self.icon = Fonts.ICON_UV_MODERATE;
-				} else if (uv_index < 7) {
+				} else if (self.value < 7) {
 					self.icon = Fonts.ICON_UV_HIGH;
-				} else if (uv_index < 9) {
+				} else if (self.value < 9) {
 					self.icon = Fonts.ICON_UV_VERY_HIGH;
 				} else {
 					self.icon = Fonts.ICON_UV_EXTREME;
 				}
-
-				return uv_index.toNumber();
 			}
-
-			return null;
 		}
 	}
 } // module Data
