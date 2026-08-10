@@ -60,12 +60,13 @@ module Widgets {
 				Fonts.ICON_BATTERY_BEGIN +
 				Render.Repeat(Fonts.ICON_BATTERY_FRAME, self.bar_all_count_) +
 				Fonts.ICON_BATTERY_END;
+			self.is_dirty_ = true;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			var system_stats = System.getSystemStats();
 
-			self.is_charging_ = system_stats.charging;
+			var is_charging = system_stats.charging;
 
 			var percentage = system_stats.battery;
 			var value = percentage.toNumber();
@@ -95,13 +96,18 @@ module Widgets {
 					break;
 			}
 
+			var color = Render.foreground;
 			if (percentage < 10) {
-				self.color_ = Render.accent;
+				color = Render.accent;
 			} else if (100 <= percentage) {
-				self.color_ = Render.accent;
-			} else {
-				self.color_ = Render.foreground;
+				color = Render.accent;
 			}
+
+			if (self.is_charging_ != is_charging or self.color_ != color) {
+				self.is_dirty_ = true;
+			}
+			self.is_charging_ = is_charging;
+			self.color_ = color;
 
 			if (
 				self.last_value_ == value and
@@ -112,6 +118,7 @@ module Widgets {
 
 			self.last_value_ = value;
 			self.last_value_suffix_ = value_suffix;
+			self.is_dirty_ = true;
 
 			switch (self.data_) {
 				case Properties.DATA_BATTERY_DAYS_REMAINING:

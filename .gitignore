@@ -15,4 +15,6 @@ docs/settings-data.js
 .docs-venv
 .vscode
 
+phase.egg-info
+
 __pycache__

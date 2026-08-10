@@ -37,6 +37,7 @@ module Widgets {
 		var size_y as Lang.Number = 0;
 
 		var is_small as Lang.Boolean = false;
+		protected var is_dirty_ as Lang.Boolean = true;
 
 		var id as Complications.Id?;
 
@@ -103,6 +104,9 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {}
+		function invalidate() as Void {
+			self.is_dirty_ = true;
+		}
 
 		function clear(_dc as Graphics.Dc) as Void {
 			_dc.setClip(self.pos_x, self.pos_y, self.size_x, self.size_y);
@@ -117,14 +121,22 @@ module Widgets {
 
 		function update(_dc as Graphics.Dc) as Void {
 			self.refresh(_dc);
+			if (!self.is_dirty_) {
+				return;
+			}
 			self.clear(_dc);
 			self.render(_dc);
+			self.is_dirty_ = false;
 		}
 
 		function updateMinimal(_dc as Graphics.Dc) as Void {
 			self.refresh(_dc);
+			if (!self.is_dirty_) {
+				return;
+			}
 			self.clear(_dc);
 			self.renderMinimal(_dc);
+			self.is_dirty_ = false;
 		}
 	}
 } // module Widgets

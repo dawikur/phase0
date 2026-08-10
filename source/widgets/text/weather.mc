@@ -42,6 +42,8 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
+			self.is_dirty_ = true;
+
 			var condition = WeatherProvider.get("condition");
 			var temp = "";
 

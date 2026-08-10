@@ -87,13 +87,17 @@ module Widgets {
 				)
 			) {
 			}
+
+			self.is_dirty_ = true;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			self.impl_.refresh();
 
 			var value = self.impl_.value;
-			if (!self.is_value_prepared_ or self.value_ != value) {
+			var is_value_changed =
+				!self.is_value_prepared_ or self.value_ != value;
+			if (is_value_changed) {
 				self.value_ = value;
 				self.value_text_ = Render.NumberFormat(
 					self.width_,
@@ -110,15 +114,28 @@ module Widgets {
 				);
 				self.is_value_prepared_ = true;
 			}
-			self.value_max_ = self.impl_.value_max;
 
+			var value_max = self.impl_.value_max;
+			var is_value_max_changed = self.value_max_ != value_max;
+			self.value_max_ = value_max;
+
+			var is_icon_changed = false;
 			if (self.show_icon_) {
 				var icon = self.impl_.icon;
+				var value_icon = "";
 				if (icon != null) {
-					self.icon_ = icon;
-				} else {
-					self.icon_ = "";
+					value_icon = icon as Lang.String;
 				}
+				is_icon_changed = self.icon_ != value_icon;
+				self.icon_ = value_icon;
+			}
+
+			if (
+				is_value_changed or
+				(self.show_gauge_ and is_value_max_changed) or
+				is_icon_changed
+			) {
+				self.is_dirty_ = true;
 			}
 		}
 

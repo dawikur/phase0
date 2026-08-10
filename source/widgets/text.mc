@@ -59,10 +59,16 @@ module Widgets {
 				)
 			) {
 			}
+
+			self.is_dirty_ = true;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			self.value_ = self.getValue();
+			var value = self.getValue();
+			if (self.value_ != value) {
+				self.value_ = value;
+				self.is_dirty_ = true;
+			}
 		}
 
 		function render(_dc as Graphics.Dc) as Void {

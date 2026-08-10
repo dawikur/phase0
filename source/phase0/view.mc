@@ -145,9 +145,7 @@ module Phase0 {
 				layout.screen_size_y
 			);
 
-			if (self.bitmap_ != null) {
-				Render.clear(self.bitmap_.getDc());
-			}
+			self.invalidate_();
 
 			// ---- top outer ----
 
@@ -216,11 +214,10 @@ module Phase0 {
 
 			Runtime.refreshClock();
 
-			self.seconds_.refresh(_dc);
 			if (self.is_high_power_) {
-				self.seconds_.render(_dc);
+				self.seconds_.update(_dc);
 			} else {
-				self.seconds_.renderMinimal(_dc);
+				self.seconds_.updateMinimal(_dc);
 			}
 		}
 
@@ -242,12 +239,7 @@ module Phase0 {
 				if (self.is_night_mode_ != is_night_mode) {
 					self.is_night_mode_ = is_night_mode;
 
-					self.last_refresh_min_ = -1;
-					self.last_refresh_hour_ = -1;
-
-					if (self.bitmap_ != null) {
-						Render.clear(self.bitmap_.getDc());
-					}
+					self.invalidate_();
 				}
 			}
 
@@ -261,26 +253,15 @@ module Phase0 {
 		hidden function updateMinimal_(_dc as Graphics.Dc) as Void {
 			Render.clear(_dc);
 
-			if (self.bitmap_ != null) {
-				var dc = self.bitmap_.getDc();
-				dc.clearClip();
+			// The minimal face has little reusable content, so a full-screen bitmap
+			// copy costs more than rendering it directly.
+			if (self.last_refresh_min_ != Runtime.day_minute) {
+				self.last_refresh_min_ = Runtime.day_minute;
 
-				if (self.last_refresh_min_ != Runtime.day_minute) {
-					self.last_refresh_min_ = Runtime.day_minute;
-
-					self.clock_.updateMinimal(dc);
-				}
-
-				_dc.drawBitmap(0, 0, self.bitmap_ as Graphics.BufferedBitmap);
-			} else {
-				if (self.last_refresh_min_ != Runtime.day_minute) {
-					self.last_refresh_min_ = Runtime.day_minute;
-
-					self.clock_.refresh(_dc);
-				}
-
-				self.clock_.renderMinimal(_dc);
+				self.clock_.refresh(_dc);
 			}
+
+			self.clock_.renderMinimal(_dc);
 
 			self.status_.refresh(_dc);
 			self.refreshWidgets_(_dc, self.batteries_);
@@ -312,15 +293,19 @@ module Phase0 {
 
 					self.updateWidgets_(dc, self.widgets_per_hour_);
 				}
+				self.updateWidgets_(dc, self.widgets_per_sec_);
 
 				_dc.clearClip();
 				_dc.drawBitmap(0, 0, self.bitmap_ as Graphics.BufferedBitmap);
 			} else {
+				self.refreshWidgets_(_dc, self.widgets_per_sec_);
+
 				if (self.last_refresh_min_ != Runtime.day_minute) {
 					self.last_refresh_min_ = Runtime.day_minute;
 
 					self.refreshWidgets_(_dc, self.widgets_per_min_);
 				}
+
 				if (self.last_refresh_hour_ != Runtime.clock.hour) {
 					self.last_refresh_hour_ = Runtime.clock.hour;
 
@@ -329,6 +314,7 @@ module Phase0 {
 
 				Render.clear(_dc);
 
+				self.renderWidgets_(_dc, self.widgets_per_sec_);
 				self.renderWidgets_(_dc, self.widgets_per_min_);
 				self.renderWidgets_(_dc, self.widgets_per_hour_);
 			}
@@ -339,9 +325,6 @@ module Phase0 {
 			} else {
 				self.seconds_.renderMinimal(_dc);
 			}
-
-			self.refreshWidgets_(_dc, self.widgets_per_sec_);
-			self.renderWidgets_(_dc, self.widgets_per_sec_);
 		}
 
 		hidden function rebuildWidgets_(_properties as Properties) as Void {
@@ -694,6 +677,26 @@ module Phase0 {
 			var widgets_size = _widgets.size();
 			for (var i = 0; i < widgets_size; ++i) {
 				_widgets[i].update(_dc);
+			}
+		}
+
+		hidden function invalidateWidgets_(_widgets as Bases) as Void {
+			var widgets_size = _widgets.size();
+			for (var i = 0; i < widgets_size; ++i) {
+				_widgets[i].invalidate();
+			}
+		}
+
+		hidden function invalidate_() as Void {
+			self.last_refresh_min_ = -1;
+			self.last_refresh_hour_ = -1;
+
+			self.invalidateWidgets_(self.widgets_per_sec_);
+			self.invalidateWidgets_(self.widgets_per_min_);
+			self.invalidateWidgets_(self.widgets_per_hour_);
+
+			if (self.bitmap_ != null) {
+				Render.clear(self.bitmap_.getDc());
 			}
 		}
 

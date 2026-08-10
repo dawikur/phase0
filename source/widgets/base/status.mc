@@ -51,6 +51,7 @@ module Widgets {
 				return;
 			}
 			self.state_ = state;
+			self.is_dirty_ = true;
 
 			self.enabled_ = "";
 			var slot_size = self.slots_.size();

@@ -61,6 +61,8 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
+			self.is_dirty_ = true;
+
 			self.dawn_ = "";
 			self.dusk_ = "";
 			self.sunrise_seconds_ = null;
@@ -110,6 +112,7 @@ module Widgets {
 			var center_x = self.pos_x + _size_x / 2;
 			var center_y = self.pos_y + _size_y / 2;
 			Base.resize(_dc, _size_x, _size_y);
+			self.is_dirty_ = true;
 
 			self.dawn_dusk_width_ = Render.TextWidth(
 				_dc,

@@ -30,6 +30,7 @@ module Widgets {
 			_size_y as Lang.Number
 		) as Void {
 			Base.resize(_dc, _size_x, _size_y);
+			self.is_dirty_ = true;
 			self.mode_ = MODE_FULL;
 			if (_size_x <= 0 or _size_y <= 0) {
 				self.mode_ = MODE_HIDDEN;
@@ -66,6 +67,8 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
+			self.is_dirty_ = true;
+
 			self.label_ = Data.Units.getAmPm(Runtime.clock.hour);
 			if (self.label_.equals("am")) {
 				self.fallback_ = Fonts.ICON_DAWN;

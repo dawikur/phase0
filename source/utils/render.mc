@@ -34,6 +34,8 @@ module Render {
 	const SIZE_REGULAR as Lang.Boolean = false;
 
 	const JUSTIFY_LEFT as Lang.Number = Graphics.TEXT_JUSTIFY_LEFT;
+	const JUSTIFY_LEFT_VCENTER as Lang.Number =
+		Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER;
 	const JUSTIFY_CENTER as Lang.Number =
 		Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 	const JUSTIFY_RIGHT as Lang.Number = Graphics.TEXT_JUSTIFY_RIGHT;
@@ -99,7 +101,7 @@ module Render {
 				_pos_y,
 				_font_fg,
 				_clock,
-				Render.JUSTIFY_CENTER
+				Render.JUSTIFY_LEFT_VCENTER
 			);
 		}
 
@@ -110,7 +112,7 @@ module Render {
 				_pos_y + SHADOW_OFFSET,
 				_font_bg,
 				_shade,
-				Render.JUSTIFY_CENTER
+				Render.JUSTIFY_LEFT_VCENTER
 			);
 		}
 	}

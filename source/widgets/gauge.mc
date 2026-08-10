@@ -31,12 +31,17 @@ module Widgets {
 		) as Void {
 			self.size_x = Render.SPACING;
 			self.size_y = _size_y;
+			self.is_dirty_ = true;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			self.impl_.refresh();
 
-			self.value_ = Render.Ratio(self.impl_.value, self.impl_.value_max);
+			var value = Render.Ratio(self.impl_.value, self.impl_.value_max);
+			if (self.value_ != value) {
+				self.value_ = value;
+				self.is_dirty_ = true;
+			}
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
