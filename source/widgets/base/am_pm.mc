@@ -67,28 +67,21 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			self.is_dirty_ = true;
-
-			self.label_ = Data.Units.getAmPm(Runtime.clock.hour);
-			if (self.label_.equals("am")) {
-				self.fallback_ = Fonts.ICON_DAWN;
-			} else if (self.label_.equals("pm")) {
-				self.fallback_ = Fonts.ICON_DUSK;
-			} else {
-				self.fallback_ = null;
+			var label = Data.Units.getAmPm(Runtime.clock.hour);
+			var fallback = null;
+			if (label.equals("am")) {
+				fallback = Fonts.ICON_DAWN;
+			} else if (label.equals("pm")) {
+				fallback = Fonts.ICON_DUSK;
 			}
 
-			var label_width = Render.TextWidth(
-				_dc,
-				self.label_,
-				Render.SIZE_SMALL
-			);
+			var label_width = Render.TextWidth(_dc, label, Render.SIZE_SMALL);
 
 			var mode = self.base_mode_;
 			if (
 				self.size_x < label_width and
 				self.fallback_width_ <= self.size_x and
-				self.fallback_ != null
+				fallback != null
 			) {
 				mode = MODE_ICON;
 			} else if (
@@ -98,6 +91,16 @@ module Widgets {
 				mode = MODE_TEXT;
 			}
 
+			if (
+				self.label_ != label or
+				self.fallback_ != fallback or
+				self.mode_ != mode
+			) {
+				self.is_dirty_ = true;
+			}
+
+			self.label_ = label;
+			self.fallback_ = fallback;
 			self.mode_ = mode;
 		}
 

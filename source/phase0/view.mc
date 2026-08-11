@@ -149,25 +149,25 @@ module Phase0 {
 
 			// ---- top outer ----
 
-			self.layoutWidget_(_dc, self.top_outer_, layout.outer);
+			self.LayoutWidget_(_dc, self.top_outer_, layout.outer);
 
 			// ---- top middle ----
 
-			self.fitWidgetsInBox_(_dc, self.top_middle_, layout.middle);
+			self.FitWidgetsInBox_(_dc, self.top_middle_, layout.middle);
 
 			// ---- top inner ----
 
-			self.layoutWidget_(_dc, self.top_inner_, layout.inner);
+			self.LayoutWidget_(_dc, self.top_inner_, layout.inner);
 
 			// ---- main ----
 
 			// -- left --
 
-			self.layoutWidget_(_dc, self.status_, layout.left);
+			self.LayoutWidget_(_dc, self.status_, layout.left);
 
 			// -- clock --
 
-			self.layoutWidget_(_dc, self.clock_, layout.clock);
+			self.LayoutWidget_(_dc, self.clock_, layout.clock);
 
 			// -- right --
 
@@ -180,7 +180,7 @@ module Phase0 {
 					layout_right.size_y
 				);
 			}
-			self.distributeWidgetsInBox_(self.gauges_, layout_right);
+			self.DistributeWidgetsInBox_(self.gauges_, layout_right);
 
 			// ---- bottom inner ----
 
@@ -190,12 +190,12 @@ module Phase0 {
 			// ---- bottom middle ----
 
 			var bottom_middle = layout.bottomBox(layout.middle);
-			self.fitWidgetsInBox_(_dc, self.bottom_middle_, bottom_middle);
+			self.FitWidgetsInBox_(_dc, self.bottom_middle_, bottom_middle);
 
 			// ---- bottom outer ----
 
 			var bottom_outer = layout.bottomBox(layout.outer);
-			self.layoutWidget_(_dc, self.bottom_outer_, bottom_outer);
+			self.LayoutWidget_(_dc, self.bottom_outer_, bottom_outer);
 
 			// ---- footer ----
 
@@ -344,14 +344,14 @@ module Phase0 {
 			// ---- top outer ----
 
 			self.top_outer_ = Widgets.get(_properties.top_outer, Render.TOP);
-			if (self.isBatteryData_(_properties.top_outer.data)) {
+			if (self.IsBatteryData_(_properties.top_outer.data)) {
 				self.batteries_.add(self.top_outer_ as Widgets.Battery);
 			}
 			self.addWidget_(self.top_outer_);
 
 			// ---- top middle ----
 
-			self.top_middle_ = self.createMetricWidgets_(
+			self.top_middle_ = self.CreateMetricWidgets_(
 				_properties.top_middle,
 				Properties.ICON
 			);
@@ -399,7 +399,7 @@ module Phase0 {
 
 			// ---- bottom middle ----
 
-			self.bottom_middle_ = self.createMetricWidgets_(
+			self.bottom_middle_ = self.CreateMetricWidgets_(
 				_properties.bottom_middle,
 				Properties.GAUGE
 			);
@@ -411,7 +411,7 @@ module Phase0 {
 				_properties.bottom_outer,
 				Render.BOTTOM
 			);
-			if (self.isBatteryData_(_properties.bottom_outer.data)) {
+			if (self.IsBatteryData_(_properties.bottom_outer.data)) {
 				self.batteries_.add(self.bottom_outer_ as Widgets.Battery);
 			}
 			self.addWidget_(self.bottom_outer_);
@@ -556,7 +556,7 @@ module Phase0 {
 			return null;
 		}
 
-		hidden static function createMetricWidgets_(
+		hidden static function CreateMetricWidgets_(
 			_properties as Lang.Array<Properties.Metric>,
 			_style as Lang.Number
 		) as Bases {
@@ -575,7 +575,7 @@ module Phase0 {
 			return widgets;
 		}
 
-		hidden static function isBatteryData_(
+		hidden static function IsBatteryData_(
 			_data as Lang.Number
 		) as Lang.Boolean {
 			return (
@@ -585,7 +585,7 @@ module Phase0 {
 			);
 		}
 
-		hidden static function layoutWidget_(
+		hidden static function LayoutWidget_(
 			_dc as Graphics.Dc,
 			_widget as Widgets.Base,
 			_box as Box
@@ -595,7 +595,7 @@ module Phase0 {
 			_widget.resize(_dc, _box.size_x, _box.size_y);
 		}
 
-		hidden static function fitWidgetsInBox_(
+		hidden static function FitWidgetsInBox_(
 			_dc as Graphics.Dc,
 			_widgets as Bases,
 			_box as Box
@@ -606,33 +606,33 @@ module Phase0 {
 			}
 
 			if (
-				self.tryFitWidgets_(
+				self.TryFitWidgets_(
 					_dc,
 					_widgets,
 					_box,
 					_box.size_x,
 					Render.SIZE_REGULAR
 				) or
-				self.tryFitWidgets_(
+				self.TryFitWidgets_(
 					_dc,
 					_widgets,
 					_box,
 					_box.size_x,
 					Render.SIZE_SMALL
 				) or
-				self.tryFitWidgets_(
+				self.TryFitWidgets_(
 					_dc,
 					_widgets,
 					_box,
-					self.evenItemWidth_(widgets_size, _box.size_x),
+					self.EvenItemWidth_(widgets_size, _box.size_x),
 					Render.SIZE_SMALL
 				)
 			) {
 			}
-			self.distributeWidgetsInBox_(_widgets, _box);
+			self.DistributeWidgetsInBox_(_widgets, _box);
 		}
 
-		hidden static function tryFitWidgets_(
+		hidden static function TryFitWidgets_(
 			_dc as Graphics.Dc,
 			_widgets as Bases,
 			_box as Box,
@@ -647,7 +647,7 @@ module Phase0 {
 				widget.is_small = _is_small;
 			}
 
-			return self.distributedWidth_(_widgets) <= _box.size_x;
+			return self.DistributedWidth_(_widgets) <= _box.size_x;
 		}
 
 		hidden function refreshWidgets_(
@@ -700,7 +700,7 @@ module Phase0 {
 			}
 		}
 
-		hidden static function distributeWidgetsInBox_(
+		hidden static function DistributeWidgetsInBox_(
 			_widgets as Bases,
 			_box as Box
 		) as Void {
@@ -709,7 +709,7 @@ module Phase0 {
 				return;
 			}
 
-			var occupied_size_x = self.occupiedWidth_(_widgets);
+			var occupied_size_x = self.OccupiedWidth_(_widgets);
 			var gap_x = (_box.size_x - occupied_size_x) / widgets_size;
 			if (gap_x < 0) {
 				gap_x = 0;
@@ -726,7 +726,7 @@ module Phase0 {
 			}
 		}
 
-		hidden static function occupiedWidth_(
+		hidden static function OccupiedWidth_(
 			_widgets as Bases
 		) as Lang.Number {
 			var occupied_size_x = 0;
@@ -738,15 +738,15 @@ module Phase0 {
 			return occupied_size_x;
 		}
 
-		hidden static function distributedWidth_(
+		hidden static function DistributedWidth_(
 			_widgets as Bases
 		) as Lang.Number {
 			return (
-				self.occupiedWidth_(_widgets) + _widgets.size() * Render.SPACING
+				self.OccupiedWidth_(_widgets) + _widgets.size() * Render.SPACING
 			);
 		}
 
-		hidden static function evenItemWidth_(
+		hidden static function EvenItemWidth_(
 			_items_size as Lang.Number,
 			_size_x as Lang.Number
 		) as Lang.Number {

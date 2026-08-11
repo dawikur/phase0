@@ -14,7 +14,7 @@ module Widgets {
 			);
 		}
 
-		hidden function getValue() as Lang.String {
+		function getValue() as Lang.String {
 			var now = Runtime.now_info;
 
 			return Lang.format("$1$ $2$ $3$", [

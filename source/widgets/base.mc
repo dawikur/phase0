@@ -37,11 +37,11 @@ module Widgets {
 		var size_y as Lang.Number = 0;
 
 		var is_small as Lang.Boolean = false;
-		protected var is_dirty_ as Lang.Boolean = true;
-
-		var id as Complications.Id?;
 
 		var refresh_rate as Lang.Number;
+
+		hidden var id_ as Complications.Id?;
+		hidden var is_dirty_ as Lang.Boolean = true;
 
 		static function None() as Base {
 			return new Base(null, RefreshRate.NONE);
@@ -56,9 +56,9 @@ module Widgets {
 				_type != null and
 				_type != Complications.COMPLICATION_TYPE_INVALID
 			) {
-				self.id = new Complications.Id(_type);
+				self.id_ = new Complications.Id(_type);
 			} else {
-				self.id = null;
+				self.id_ = null;
 			}
 
 			self.refresh_rate = _refresh_rate;
@@ -94,8 +94,8 @@ module Widgets {
 		}
 
 		function open() as Lang.Boolean {
-			if (Toybox has :Complications and self.id != null) {
-				Complications.exitTo(self.id);
+			if (Toybox has :Complications and self.id_ != null) {
+				Complications.exitTo(self.id_);
 
 				return true;
 			}

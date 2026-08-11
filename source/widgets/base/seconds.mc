@@ -10,7 +10,6 @@ module Widgets {
 		hidden var second_ as Lang.Number = -1;
 		hidden var value_ as Lang.String = "";
 
-		hidden var is_small as Lang.Boolean = false;
 		hidden var is_minimal_ as Lang.Boolean = false;
 		hidden var digit_width_ as Lang.Number = -1;
 

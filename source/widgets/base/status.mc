@@ -20,10 +20,10 @@ module Widgets {
 			for (var i = 0; i < properties_size; ++i) {
 				var property = _properties[i];
 
-				var icon = self.getIcon_(property.data);
+				var icon = self.GetIcon_(property.data);
 				if (icon.length() != 0) {
 					self.slots_.add(property.data);
-					self.all_ = self.appendIcon_(self.all_, icon);
+					self.all_ = self.AppendIcon_(self.all_, icon);
 				}
 			}
 		}
@@ -58,9 +58,9 @@ module Widgets {
 			for (var i = 0; i < slot_size; ++i) {
 				var slot = self.slots_[i];
 
-				var icon = self.getStatus_(slot, device_settings);
+				var icon = self.GetStatus_(slot, device_settings);
 				if (icon.length() != 0) {
-					self.enabled_ = self.appendIcon_(self.enabled_, icon);
+					self.enabled_ = self.AppendIcon_(self.enabled_, icon);
 				}
 			}
 		}
@@ -95,14 +95,14 @@ module Widgets {
 			);
 		}
 
-		static function appendIcon_(
+		static function AppendIcon_(
 			_icons as Lang.String,
 			_icon as Lang.String
 		) as Lang.String {
 			return _icons.length() == 0 ? _icon : _icons + "\n" + _icon;
 		}
 
-		static function getIcon_(_id as Lang.Number) as Lang.String {
+		static function GetIcon_(_id as Lang.Number) as Lang.String {
 			switch (_id) {
 				case Properties.ALARM:
 					return Fonts.ICON_ALARM;
@@ -120,7 +120,7 @@ module Widgets {
 			return "";
 		}
 
-		static function getStatus_(
+		static function GetStatus_(
 			_id as Lang.Number,
 			_device_settings as System.DeviceSettings
 		) as Lang.String {

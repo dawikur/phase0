@@ -98,11 +98,11 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
-			self.render_(_dc, self.pos_x, self.time_, self.shade_);
+			self.render_(_dc, self.clockStartX_(), self.time_, self.shade_);
 		}
 
 		function renderMinimal(_dc as Graphics.Dc) as Void {
-			self.render_(_dc, self.pos_x, self.time_, "");
+			self.render_(_dc, self.clockStartX_(), self.time_, "");
 		}
 
 		function update(_dc as Graphics.Dc) as Void {
@@ -148,7 +148,7 @@ module Widgets {
 			if (2 < _start) {
 				offset_x += self.colon_width_ - self.digit_width_;
 			}
-			var pos_x = self.pos_x + offset_x;
+			var pos_x = self.clockStartX_() + offset_x;
 			var width =
 				4 * self.digit_width_ +
 				self.colon_width_ +
@@ -166,6 +166,12 @@ module Widgets {
 			}
 
 			self.render_(_dc, pos_x, time, shade);
+		}
+
+		hidden function clockStartX_() as Lang.Number {
+			return (
+				self.centerX() - (4 * self.digit_width_ + self.colon_width_) / 2
+			);
 		}
 
 		hidden function render_(

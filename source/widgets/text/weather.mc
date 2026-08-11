@@ -42,7 +42,8 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			self.is_dirty_ = true;
+			var previous_value = self.value_;
+			var previous_is_small = self.is_small_;
 
 			var condition = WeatherProvider.get("condition");
 			var temp = "";
@@ -85,6 +86,13 @@ module Widgets {
 					Render.SIZE_SMALL
 				)
 			) {
+			}
+
+			if (
+				previous_value != self.value_ or
+				previous_is_small != self.is_small_
+			) {
+				self.is_dirty_ = true;
 			}
 		}
 

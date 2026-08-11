@@ -61,7 +61,11 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			self.is_dirty_ = true;
+			var previous_dawn = self.dawn_;
+			var previous_dusk = self.dusk_;
+			var previous_moon_phase = self.moon_phase_;
+			var previous_sunrise_before_sunset = self.sunrise_before_sunset_;
+			var previous_value_mode = self.value_mode_;
 
 			self.dawn_ = "";
 			self.dusk_ = "";
@@ -101,6 +105,17 @@ module Widgets {
 					sunrise as Lang.Number,
 					sunset as Lang.Number
 				);
+			}
+
+			self.updateValueMode_();
+			if (
+				previous_dawn != self.dawn_ or
+				previous_dusk != self.dusk_ or
+				previous_moon_phase != self.moon_phase_ or
+				previous_sunrise_before_sunset != self.sunrise_before_sunset_ or
+				previous_value_mode != self.value_mode_
+			) {
+				self.is_dirty_ = true;
 			}
 		}
 
