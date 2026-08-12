@@ -25,8 +25,8 @@ Before publishing a release, complete and record the following checks.
 
 ## Website
 
-- [ ] Run `make docs` before copying documentation to the website repository.
-      It generates `docs/settings-data.js`, the icon and device overlays, which
+- [ ] Run `make site` before copying documentation to the website repository.
+      It generates `site/settings-data.js`, the icon and device overlays, which
       are intentionally not tracked in Git.
 - [ ] Check the deployed page on desktop and mobile in light and dark themes.
 - [ ] Check both Normal and AoD previews, feature hotspots, the MIP64 palette

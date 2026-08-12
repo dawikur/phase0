@@ -5,14 +5,15 @@ build
 bin
 generated
 
-docs/assets/fr955-dark.png
-docs/assets/fr955-light.png
-docs/assets/icon.svg
-docs/settings-data.js
+site/assets/fr955-dark.png
+site/assets/fr955-light.png
+site/assets/icon.svg
+site/settings-data.js
 
 .mypy_cache
 .venv
-.docs-venv
+.site-venv
+.site-ui/
 .vscode
 
 phase.egg-info

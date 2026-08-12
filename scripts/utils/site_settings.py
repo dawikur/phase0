@@ -226,10 +226,10 @@ def write_settings_js(data: dict[str, Any], output: Path) -> None:
     output.write_text(f"window.PHASE_SETTINGS = {payload};\n", encoding="utf-8")
 
 
-def build_docs_settings(
+def build_site_settings(
     resources_dir: Path = Path("resources"),
     settings_xml: Path = Path("resources/generated/settings.xml"),
     manifest_xml: Path = Path("manifest.xml"),
-    output: Path = Path("docs/settings-data.js"),
+    output: Path = Path("site/settings-data.js"),
 ) -> None:
     write_settings_js(parse_settings(settings_xml, resources_dir, manifest_xml), output)

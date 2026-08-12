@@ -50,7 +50,7 @@ const featureContent = {
 const panel = document.getElementById("detailPanel");
 const faceRing = document.getElementById("faceRing");
 const hotspots = Array.from(document.querySelectorAll(".hotspot"));
-const viewButtons = Array.from(document.querySelectorAll(".view-option"));
+const viewButtons = Array.from(document.querySelectorAll(".ui-view-option"));
 const watchFace = document.getElementById("watchFace");
 const pageLede = document.getElementById("pageLede");
 const supportedDevicesList = document.getElementById("supportedDevices");
@@ -169,6 +169,7 @@ function applyWatchView(view) {
 	activeView = nextView;
 	document.documentElement.dataset.phaseView = nextView;
 	window.phaseTheme.updateTransferLinks();
+	watchFace.classList.add("is-loading");
 	watchFace.dataset.fallbackApplied = "";
 	watchFace.src = config.src;
 	watchFace.alt = config.label;
@@ -195,6 +196,8 @@ function applyWatchView(view) {
 		activate(activeFeature, activeFeature !== "general");
 	}
 }
+
+watchFace.addEventListener("load", () => watchFace.classList.remove("is-loading"));
 
 watchFace.addEventListener("error", (event) => {
 	if (event.currentTarget.dataset.fallbackApplied) {
@@ -270,13 +273,13 @@ function alternativeNoteForFeature(feature) {
 
 function optionsMarkup(setting) {
 	if (setting.type === "boolean") {
-		return `<span class="boolean-toggle"><span>On</span><span>Off</span></span>`;
+		return `<span class="ui-toggle"><span>On</span><span>Off</span></span>`;
 	}
 
 	if (setting.type === "numeric") {
 		const min = setting.min ?? "0";
 		const max = setting.max ?? "10";
-		return `<span class="option-pill">Range ${escapeHtml(min)}-${escapeHtml(max)}</span>`;
+		return `<span class="ui-pill ui-pill--stacked-at-mobile">Range ${escapeHtml(min)}-${escapeHtml(max)}</span>`;
 	}
 
 	return (setting.options || []).map((option) => {
@@ -284,9 +287,9 @@ function optionsMarkup(setting) {
 			? colorFromValue(option.value)
 			: null;
 		if (color) {
-			return `<span class="option-pill is-color"><span class="swatch" style="background:${color}"></span>${escapeHtml(option.label)}</span>`;
+			return `<span class="ui-pill ui-pill--color ui-pill--stacked-at-mobile"><span class="ui-color-dot" style="background:${color}"></span>${escapeHtml(option.label)}</span>`;
 		}
-		return `<span class="option-pill">${escapeHtml(option.label)}</span>`;
+		return `<span class="ui-pill ui-pill--stacked-at-mobile">${escapeHtml(option.label)}</span>`;
 	}).join("");
 }
 

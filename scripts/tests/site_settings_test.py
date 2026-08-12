@@ -2,10 +2,10 @@
 
 from pathlib import Path
 
-from scripts.utils.docs_settings import parse_settings
+from scripts.utils.site_settings import parse_settings
 
 
-def test_docs_settings_resolves_labels_and_options() -> None:
+def test_site_settings_resolves_labels_and_options() -> None:
     data = parse_settings(
         Path("resources/generated/settings.xml"),
         Path("resources"),
@@ -31,7 +31,7 @@ def test_docs_settings_resolves_labels_and_options() -> None:
     ]
 
 
-def test_docs_settings_preserves_numeric_boolean_and_regions() -> None:
+def test_site_settings_preserves_numeric_boolean_and_regions() -> None:
     data = parse_settings(
         Path("resources/generated/settings.xml"),
         Path("resources"),
@@ -59,7 +59,7 @@ def test_docs_settings_preserves_numeric_boolean_and_regions() -> None:
     assert "Wind" in [option["label"] for option in settings["Data"]["options"]]
 
 
-def test_docs_settings_collapses_alternative_middle_groups(tmp_path: Path) -> None:
+def test_site_settings_collapses_alternative_middle_groups(tmp_path: Path) -> None:
     resources = tmp_path / "resources" / "base"
     resources.mkdir(parents=True)
     resources.joinpath("strings.xml").write_text(
@@ -122,7 +122,7 @@ def test_docs_settings_collapses_alternative_middle_groups(tmp_path: Path) -> No
     assert data["groups"][0]["hasAlternative"] is True
 
 
-def test_docs_settings_includes_supported_devices_and_languages(tmp_path: Path) -> None:
+def test_site_settings_includes_supported_devices_and_languages(tmp_path: Path) -> None:
     resources = tmp_path / "resources" / "base"
     resources.mkdir(parents=True)
     resources.joinpath("strings.xml").write_text("<resources />", encoding="utf-8")

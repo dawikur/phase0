@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 
 const palettePage = readFileSync(new URL("../mip64-palette/index.html", import.meta.url), "utf8");
+const paletteApp = readFileSync(new URL("../mip64-palette/app.js", import.meta.url), "utf8");
 const context = { window: {} };
 vm.createContext(context);
 vm.runInContext(
@@ -22,22 +23,23 @@ test("exports all 64 Garmin MIP color names", () => {
 
 test("palette page shows only color names supplied by settings data", () => {
 	assert.doesNotMatch(palettePage, /color-names\.js/);
-	assert.match(palettePage, /SETTING_COLOR_NAMES\.get\(hex\) \|\| ""/);
+	assert.match(palettePage, /<script src="app\.js"><\/script>/);
+	assert.match(paletteApp, /settingColorNamesByHex\.get\(hex\) \|\| ""/);
 });
 
 test("palette page offers accessible in-session sorting controls", () => {
 	assert.match(palettePage, /aria-label="Palette sort order"/);
-	assert.match(palettePage, /class="view-option" type="button" data-sort-mode="hue"/);
-	assert.doesNotMatch(palettePage, /class="theme-option" type="button" data-sort-mode=/);
+	assert.match(palettePage, /class="ui-segmented-option ui-sort-option" type="button" data-sort-mode="hue"/);
+	assert.doesNotMatch(palettePage, /class="ui-theme-option" type="button" data-sort-mode=/);
 	assert.match(palettePage, /data-sort-mode="hue" aria-pressed="true">Hue/);
 	assert.match(palettePage, /data-sort-mode="lightness" aria-pressed="false">Lightness/);
 	assert.match(palettePage, /data-sort-mode="rgb" aria-pressed="false">RGB/);
-	assert.match(palettePage, /sortPalette\(document\.documentElement\.dataset\.paletteSort \|\| "hue"\)/);
+	assert.match(paletteApp, /sortPalette\(document\.documentElement\.dataset\.paletteSort \|\| "hue"\)/);
 });
 
 test("palette page keeps deterministic ordering for each sort mode", () => {
-	assert.match(palettePage, /a\.h - b\.h \|\| a\.s - b\.s \|\| a\.l - b\.l/);
-	assert.match(palettePage, /a\.l - b\.l \|\| a\.h - b\.h \|\| a\.s - b\.s/);
-	assert.match(palettePage, /a\.r - b\.r \|\| a\.g - b\.g \|\| a\.b - b\.b/);
-	assert.match(palettePage, /palette\.appendChild\(color\.card\)/);
+	assert.match(paletteApp, /first\.hue - second\.hue \|\| first\.saturation - second\.saturation \|\| first\.lightness - second\.lightness/);
+	assert.match(paletteApp, /first\.lightness - second\.lightness \|\| first\.hue - second\.hue \|\| first\.saturation - second\.saturation/);
+	assert.match(paletteApp, /first\.red - second\.red \|\| first\.green - second\.green \|\| first\.blue - second\.blue/);
+	assert.match(paletteApp, /palette\.appendChild\(color\.card\)/);
 });

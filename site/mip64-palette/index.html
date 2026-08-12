@@ -1,0 +1,95 @@
+<!-- Copyright (c) 2025 Dawid Kurek <dawikur@gmail.com> -->
+
+<!doctype html>
+<html lang="en" data-palette-sort-control>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Garmin MIP64 Palette</title>
+    <link rel="icon" href="../assets/icon.svg" type="image/svg+xml" />
+    <script src="../settings-data.js"></script>
+    <script src="../assets/site-ui/theme.js"></script>
+    <script src="../theme.js"></script>
+    <link rel="stylesheet" href="../assets/site-ui/foundation.css" />
+    <link rel="stylesheet" href="../assets/site-ui/components.css" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      :root { --ui-card-border: var(--chip-border); --ui-card-bg: var(--panel); --ui-card-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 12px 30px rgba(0, 0, 0, .14); --ui-swatch-hover: rgba(242, 160, 31, .48); --ui-swatch-sample-border: rgba(255, 255, 255, .32); --ui-swatch-sample-shadow: inset 0 1px 0 rgba(255, 255, 255, .24), 0 6px 16px rgba(0, 0, 0, .3); --ui-swatch-label-ink: var(--ink); --ui-swatch-name-ink: #dfe5db; }
+      :root[data-theme="light"] { --ui-swatch-sample-border: rgba(19, 24, 21, .32); --ui-swatch-name-ink: #3b433f; }
+      .page { padding: calc(var(--space-5) + clamp(8px, 4vh, 38px)) 0 var(--space-6); }
+
+      h1 {
+        margin: 0;
+        max-width: none;
+        font-size: clamp(3.1rem, 9vw, 7.1rem);
+        line-height: 0.88;
+        letter-spacing: 0;
+      }
+
+      .lede {
+        max-width: 600px;
+        margin: 20px 0 0;
+        color: var(--copy);
+        font-size: clamp(1.02rem, 2vw, 1.22rem);
+        line-height: 1.55;
+      }
+
+      .palette-note {
+        margin: var(--space-4) 0 var(--space-5);
+      }
+
+      .palette {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: var(--space-2);
+      }
+
+      @media (max-width: 560px) {
+        .page {
+          width: calc(100% - 20px);
+          padding-top: 18px;
+        }
+
+        .palette {
+          grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+          gap: 8px;
+        }
+
+      }
+
+      @media (min-width: 561px) and (max-width: 960px) {
+        .palette {
+          grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="controls">
+        <div class="ui-segmented ui-theme-control" role="group" aria-label="Page theme">
+          <button class="ui-segmented-option ui-theme-option" type="button" data-theme-mode="auto">Auto</button>
+          <button class="ui-segmented-option ui-theme-option" type="button" data-theme-mode="light">Light</button>
+          <button class="ui-segmented-option ui-theme-option" type="button" data-theme-mode="dark">Dark</button>
+        </div>
+        <div class="ui-segmented ui-sort-control" role="group" aria-label="Palette sort order">
+          <button class="ui-segmented-option ui-sort-option" type="button" data-sort-mode="hue" aria-pressed="true">Hue</button>
+          <button class="ui-segmented-option ui-sort-option" type="button" data-sort-mode="lightness" aria-pressed="false">Lightness</button>
+          <button class="ui-segmented-option ui-sort-option" type="button" data-sort-mode="rgb" aria-pressed="false">RGB</button>
+        </div>
+      </div>
+		<p class="eyebrow"><a class="ui-back-link" href="../" data-site-back data-state-transfer>← phase0</a><span data-site-back-separator> · </span>Garmin display reference</p>
+      <h1>Garmin MIP64 Palette</h1>
+      <p class="lede">
+        A compact reference for the 64-color MIP palette. Select any swatch to
+        copy its RGB value in Garmin-friendly hexadecimal notation.
+      </p>
+      <p class="palette-note ui-tag">64 colors · click a swatch to copy</p>
+      <div class="palette" id="palette"></div>
+    </main>
+
+	<button class="ui-scroll-top scroll-top" type="button" hidden aria-label="Scroll to top">↑</button>
+	<script src="../assets/site-ui/scroll-top.js"></script>
+	<script src="app.js"></script>
+  </body>
+</html>

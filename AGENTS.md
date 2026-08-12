@@ -31,8 +31,8 @@ Never sacrifice performance for abstraction.
 - Cloudflare Pages documentation
 
 Documentation is generated separately and copied into the website repository.
-Keep `docs/` as the self-contained documentation module, including its tests
-and generator inputs; `make docs` writes the publishable subset to `build/docs/`.
+Keep `site/` as the self-contained website module, including its tests
+and generator inputs; `make site` writes the publishable subset to `build/site/`.
 
 ---
 
@@ -50,7 +50,7 @@ and generator inputs; `make docs` writes the publishable subset to `build/docs/`
 - `CHANGELOG.md` — release history
 
 Do not edit generated files by hand. In particular, treat
-`source/generated/`, `resources/generated/` and `docs/settings-data.js` as
+`source/generated/`, `resources/generated/` and `site/settings-data.js` as
 build outputs; change their source data or generator instead.
 
 ---
@@ -301,7 +301,7 @@ Avoid introducing shell scripts unless they provide clear value.
 
 Keep build steps reproducible.
 
-`make docs` creates `.docs-venv` and installs the Python documentation
+`make site` creates `.site-venv` and installs the Python website
 dependencies declared in `pyproject.toml`; it is removed by `make clean`.
 
 The release optimizer is pinned in `package-lock.json`; install its Node

@@ -4,13 +4,13 @@
 from pathlib import Path
 
 from scripts.utils.args_parse import parse_folders
-from scripts.utils.docs_settings import build_docs_settings
+from scripts.utils.site_settings import build_site_settings
 
 if __name__ == "__main__":
     folders = parse_folders()
-    build_docs_settings(
+    build_site_settings(
         resources_dir=Path(folders.resources()),
         settings_xml=Path(folders.resources("generated", "settings.xml")),
         manifest_xml=Path("manifest.xml"),
-        output=Path("docs/settings-data.js"),
+        output=Path("site/settings-data.js"),
     )

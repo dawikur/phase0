@@ -98,8 +98,8 @@ function createHarness({ hash = "", search = "", prefersDark = false, pathname =
 			return ids.get(id);
 		},
 		querySelectorAll(selector) {
-			if (selector === "a[data-theme-transfer]") {
-				return all.filter((element) => element.tagName === "A" && "themeTransfer" in element.dataset);
+			if (selector === "a[data-state-transfer]") {
+				return all.filter((element) => element.tagName === "A" && "stateTransfer" in element.dataset);
 			}
 			const className = selector.startsWith(".") ? selector.slice(1) : selector;
 			return all.filter((element) => element.classList.contains(className));
@@ -121,8 +121,6 @@ function createHarness({ hash = "", search = "", prefersDark = false, pathname =
 	const pageLede = register(makeElement({ id: "pageLede" }));
 	const supportedDevices = register(makeElement({ id: "supportedDevices" }));
 	const supportedLanguages = register(makeElement({ id: "supportedLanguages" }));
-	const siteBack = register(makeElement({ id: "siteBack", tagName: "a", href: "http://example.test/" }));
-	const siteBackSeparator = register(makeElement({ id: "siteBackSeparator" }));
 
 	for (const feature of ["general", "top", "status", "clock", "gauges", "bottom", "battery"]) {
 		register(makeElement({
@@ -133,15 +131,15 @@ function createHarness({ hash = "", search = "", prefersDark = false, pathname =
 	}
 
 	for (const mode of ["auto", "light", "dark"]) {
-		register(makeElement({ classes: ["theme-option"], dataset: { themeMode: mode } }));
+		register(makeElement({ classes: ["ui-theme-option"], dataset: { themeMode: mode } }));
 	}
 
 	for (const view of ["normal", "aod"]) {
-		register(makeElement({ classes: ["view-option"], dataset: { watchView: view } }));
+		register(makeElement({ classes: ["ui-view-option"], dataset: { watchView: view } }));
 	}
-	const themeTransferLink = register(makeElement({
+	const stateTransferLink = register(makeElement({
 		tagName: "a",
-		dataset: { themeTransfer: "" },
+		dataset: { stateTransfer: "" },
 		href: "http://example.test/mip64-palette/",
 	}));
 
@@ -215,6 +213,42 @@ function createHarness({ hash = "", search = "", prefersDark = false, pathname =
 		},
 	};
 
+	const updateStateTransferLinks = () => {
+		for (const link of all.filter((element) => element.tagName === "A" && "stateTransfer" in element.dataset)) {
+			const target = new URL(link.href, context.window.location.href);
+			target.search = context.window.location.search;
+			link.href = target.href;
+		}
+	};
+	const setOwnedParameter = (name, value, defaultValue) => {
+		const parameters = new URLSearchParams(context.window.location.search);
+		if (value == null || value === defaultValue) parameters.delete(name);
+		else parameters.set(name, value);
+		context.window.location.search = parameters.toString() ? `?${parameters}` : "";
+		updateStateTransferLinks();
+	};
+	const setOwnedParameters = (parameters) => {
+		parameters.forEach(({ name, value, defaultValue }) => setOwnedParameter(name, value, defaultValue));
+	};
+	context.window.SiteUi = {
+		theme: {
+			applyTheme(mode, { updateUrl = true } = {}) {
+				const nextMode = ["auto", "light", "dark"].includes(mode) ? mode : "auto";
+				documentElement.dataset.themeMode = nextMode;
+				documentElement.dataset.theme = nextMode === "auto" ? (prefersDark ? "dark" : "light") : nextMode;
+				all.filter((element) => element.classList.contains("ui-theme-option")).forEach((button) => {
+					button.setAttribute("aria-pressed", String(button.dataset.themeMode === nextMode));
+				});
+				if (updateUrl) setOwnedParameter("theme", nextMode, "auto");
+			},
+			resolveTheme(mode) {
+				return mode === "auto" ? (prefersDark ? "dark" : "light") : mode;
+			},
+		},
+		url: { setOwnedParameter, setOwnedParameters, updateTransferLinks: updateStateTransferLinks },
+	};
+	context.window.SiteUi.theme.applyTheme(new URLSearchParams(search).get("theme"), { updateUrl: false });
+
 	for (const element of all) {
 		element.ownerDocument = document;
 	}
@@ -233,24 +267,10 @@ function createHarness({ hash = "", search = "", prefersDark = false, pathname =
 		pageLede,
 		supportedDevices,
 		supportedLanguages,
-		siteBack,
-		siteBackSeparator,
-		themeTransferLink,
+		stateTransferLink,
 		watchFace,
 	};
 }
-
-test("shows a return link only when docs are hosted below the site root", () => {
-	const standalone = createHarness();
-	const embedded = createHarness({ pathname: "/phase0/" });
-	const localFile = createHarness({ pathname: "/tmp/phase0/docs/index.html", protocol: "file:" });
-
-	assert.equal(standalone.siteBack.hidden, true);
-	assert.equal(standalone.siteBackSeparator.hidden, true);
-	assert.equal(embedded.siteBack.hidden, false);
-	assert.equal(embedded.siteBackSeparator.hidden, false);
-	assert.equal(localFile.siteBack.hidden, true);
-});
 
 test("computes stable hotspot geometry from watch face regions", () => {
 	const { context } = createHarness();
@@ -313,17 +333,17 @@ test("keeps received parameters and removes defaults only from outgoing links", 
 });
 
 test("updates the palette link without default state parameters", () => {
-	const { context, themeTransferLink } = createHarness();
+	const { context, stateTransferLink } = createHarness();
 
 	context.applyTheme("dark");
 
-	assert.equal(themeTransferLink.href, "http://example.test/mip64-palette/?theme=dark");
+	assert.equal(stateTransferLink.href, "http://example.test/mip64-palette/?theme=dark");
 });
 
 test("preserves unknown parameters while omitting phase defaults", () => {
-	const { themeTransferLink } = createHarness({ search: "?contrast=soft&future=enabled&theme=auto&view=normal" });
+	const { stateTransferLink } = createHarness({ search: "?contrast=soft&future=enabled&theme=auto&view=normal" });
 
-	assert.equal(themeTransferLink.href, "http://example.test/mip64-palette/?contrast=soft&future=enabled");
+	assert.equal(stateTransferLink.href, "http://example.test/mip64-palette/?contrast=soft&future=enabled");
 });
 
 test("switches to always-on view and hides unsupported hotspots", () => {
@@ -421,7 +441,7 @@ test("falls back to normal view for unknown view names", () => {
 test("renders setting option markup for boolean numeric and color settings", () => {
 	const { context } = createHarness();
 
-	assert.match(context.optionsMarkup({ type: "boolean" }), /boolean-toggle/);
+	assert.match(context.optionsMarkup({ type: "boolean" }), /ui-toggle/);
 	assert.match(context.optionsMarkup({ type: "numeric", min: "2", max: "8" }), /Range 2-8/);
 	assert.match(
 		context.optionsMarkup({
@@ -465,7 +485,7 @@ test("middle metric feature copy matches exposed settings", () => {
 	}
 });
 
-test("renders supported devices and languages from generated docs data", () => {
+test("renders supported devices and languages from generated site data", () => {
 	const { supportedDevices, supportedLanguages } = createHarness();
 
 	assert.match(supportedDevices.innerHTML, /Forerunner 255/);

@@ -17,9 +17,9 @@ class DocsParser(HTMLParser):
         self.tags.append((tag, dict(attrs)))
 
 
-def parse_docs_page() -> DocsParser:
+def parse_site_page() -> DocsParser:
     parser = DocsParser()
-    parser.feed(Path("docs/index.html").read_text(encoding="utf-8"))
+    parser.feed(Path("site/index.html").read_text(encoding="utf-8"))
     return parser
 
 
@@ -53,34 +53,37 @@ def values_for(
     ]
 
 
-def test_docs_page_loads_assets_in_expected_order() -> None:
-    parser = parse_docs_page()
+def test_site_page_loads_assets_in_expected_order() -> None:
+    parser = parse_site_page()
 
     assert values_for(parser, "script", "src") == [
         "settings-data.js",
+        "assets/site-ui/theme.js",
         "theme.js",
         "app.js",
-        "scroll-top.js",
+        "assets/site-ui/scroll-top.js",
     ]
-    assert "styles.css" in values_for(parser, "link", "href")
+    assert values_for(parser, "link", "href") == [
+        "assets/icon.svg",
+        "assets/site-ui/foundation.css",
+        "assets/site-ui/components.css",
+        "styles.css",
+    ]
     assert "assets/icon.svg" in values_for(parser, "link", "href")
 
-    assert Path("docs/theme.js").is_file()
-    assert Path("docs/styles.css").is_file()
-    assert Path("docs/app.js").is_file()
-    assert Path("docs/scroll-top.js").is_file()
+    assert Path("site/theme.js").is_file()
+    assert Path("site/styles.css").is_file()
+    assert Path("site/app.js").is_file()
 
 
-def test_docs_page_links_to_mip64_palette() -> None:
-    parser = parse_docs_page()
+def test_site_page_links_to_mip64_palette() -> None:
+    parser = parse_site_page()
 
-    assert attrs_for(parser, "a", "href", "mip64-palette/")["class"] == (
-        "action-link action-link--primary"
-    )
+    assert attrs_for(parser, "a", "href", "mip64-palette/")["class"] == ("ui-action")
 
 
-def test_docs_page_exposes_theme_view_and_accessible_regions() -> None:
-    parser = parse_docs_page()
+def test_site_page_exposes_theme_view_and_accessible_regions() -> None:
+    parser = parse_site_page()
 
     assert values_for(parser, "button", "data-theme-mode") == [
         "auto",
@@ -94,8 +97,16 @@ def test_docs_page_exposes_theme_view_and_accessible_regions() -> None:
     )
     assert attrs_for(parser, "p", "id", "pageLede")["class"] == "lede"
     assert attrs_for(parser, "aside", "id", "detailPanel").get("aria-live") is None
-    assert attrs_for(parser, "div", "class", "theme-control")["role"] == "group"
-    assert attrs_for(parser, "div", "class", "view-control")["role"] == "group"
+    assert (
+        attrs_for(parser, "div", "class", "ui-segmented ui-theme-control")["role"]
+        == "group"
+    )
+    assert (
+        attrs_for(
+            parser, "div", "class", "ui-segmented ui-view-control ui-segmented--two"
+        )["role"]
+        == "group"
+    )
     assert attrs_for(parser, "article", "id", "supportCard")["class"] == "support-card"
     assert "support-list" in (
         attrs_for(parser, "ul", "id", "supportedDevices")["class"] or ""
@@ -108,8 +119,8 @@ def test_docs_page_exposes_theme_view_and_accessible_regions() -> None:
     )
 
 
-def test_docs_page_hotspots_match_documented_features() -> None:
-    parser = parse_docs_page()
+def test_site_page_hotspots_match_documented_features() -> None:
+    parser = parse_site_page()
 
     assert values_for(parser, "button", "data-feature") == [
         "general",
@@ -130,8 +141,8 @@ def test_docs_page_hotspots_match_documented_features() -> None:
         assert hotspot["aria-controls"] == "detailPanel"
 
 
-def test_docs_page_watch_images_have_stable_ids_sources_and_alt_text() -> None:
-    parser = parse_docs_page()
+def test_site_page_watch_images_have_stable_ids_sources_and_alt_text() -> None:
+    parser = parse_site_page()
 
     watch_face = attrs_for(parser, "img", "id", "watchFace")
     assert watch_face["src"] == "assets/normal.png"
@@ -149,7 +160,7 @@ def test_docs_page_watch_images_have_stable_ids_sources_and_alt_text() -> None:
     }
 
 
-def test_docs_alternative_metric_copy_matches_source_wiring() -> None:
-    docs_js = Path("docs/app.js").read_text(encoding="utf-8")
+def test_site_alternative_metric_copy_matches_source_wiring() -> None:
+    site_js = Path("site/app.js").read_text(encoding="utf-8")
 
-    assert "long-pressing the clock switches" in docs_js
+    assert "long-pressing the clock switches" in site_js

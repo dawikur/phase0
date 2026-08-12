@@ -74,12 +74,17 @@ MONKEYC   := node scripts/optimizedc.mjs
 endif
 
 BUILD_DIR := build/
-DOCS_DIR  := docs/
-DOCS_OUTPUT_DIR := $(BUILD_DIR)docs/
-DOCS_EXPORT_STAMP := $(BUILD_DIR).docs.stamp
-DOCS_VENV_DIR := .docs-venv
-DOCS_VENV_PYTHON := $(DOCS_VENV_DIR)/bin/python
-DOCS_VENV_STAMP := $(DOCS_VENV_DIR)/.installed.stamp
+SITE_DIR  := site/
+SITE_OUTPUT_DIR := $(BUILD_DIR)site/
+SITE_EXPORT_STAMP := $(BUILD_DIR).site.stamp
+SITE_VENV_DIR := .site-venv
+SITE_VENV_PYTHON := $(SITE_VENV_DIR)/bin/python
+SITE_VENV_STAMP := $(SITE_VENV_DIR)/.installed.stamp
+SITE_UI_DIR := .site-ui
+SITE_UI_STAMP := $(SITE_UI_DIR)/.fetch.stamp
+SITE_UI_ASSETS := foundation.css components.css theme.js scroll-top.js
+SITE_UI_REMOTE_REPOSITORY := https://github.com/dawikur/site-ui.git
+SITE_UI_REPOSITORY ?= $(if $(shell test -d "$(CURDIR)/../site-ui/.git" && actual="$$(git -C "$(CURDIR)/../site-ui" remote get-url origin 2>/dev/null | sed -E 's|^git@github.com:|https://github.com/|; s|^ssh://git@github.com/|https://github.com/|; s|\.git$$||')" && expected="$$(printf '%s' "$(SITE_UI_REMOTE_REPOSITORY)" | sed -E 's|^git@github.com:|https://github.com/|; s|^ssh://git@github.com/|https://github.com/|; s|\.git$$||')" && test "$$actual" = "$$expected" && printf yes),$(CURDIR)/../site-ui,$(SITE_UI_REMOTE_REPOSITORY))
 OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX)
 PRG       := $(BUILD_DIR)$(OUT).prg
 IQ        := $(BUILD_DIR)$(NAME).iq
@@ -113,16 +118,16 @@ SETTINGS_DEPS      := scripts/generate_settings                  \
                       $(shell find data/fonts -type f)           \
                       $(shell find data/settings -type f)
 SETTINGS           := $(RESOURCES_GENERATED_DIR)settings.xml
-DOCS_SETTINGS_DEPS := scripts/generate_docs_settings             \
-                      scripts/utils/docs_settings.py             \
+SITE_SETTINGS_DEPS := scripts/generate_site_settings             \
+			      scripts/utils/site_settings.py             \
                       $(SETTINGS)                                \
                       $(shell find resources -name strings.xml)
-DOCS_SETTINGS       := $(DOCS_DIR)settings-data.js
-DOCS_ICON           := $(DOCS_DIR)assets/icon.svg
-DEVICE_OVERLAY_SRC  := $(DOCS_DIR)assets/fr955.png
-DOCS_DEVICE_OVERLAY_LIGHT := $(DOCS_DIR)assets/fr955-light.png
-DOCS_DEVICE_OVERLAY_DARK  := $(DOCS_DIR)assets/fr955-dark.png
-DOCS_DEVICE_OVERLAYS := $(DOCS_DEVICE_OVERLAY_LIGHT) $(DOCS_DEVICE_OVERLAY_DARK)
+SITE_SETTINGS       := $(SITE_DIR)settings-data.js
+SITE_ICON           := $(SITE_DIR)assets/icon.svg
+DEVICE_OVERLAY_SRC  := $(SITE_DIR)assets/fr955.png
+SITE_DEVICE_OVERLAY_LIGHT := $(SITE_DIR)assets/fr955-light.png
+SITE_DEVICE_OVERLAY_DARK  := $(SITE_DIR)assets/fr955-dark.png
+SITE_DEVICE_OVERLAYS := $(SITE_DEVICE_OVERLAY_LIGHT) $(SITE_DEVICE_OVERLAY_DARK)
 
 RESOURCES := $(ICON) $(FONTS) $(SETTINGS)
 
@@ -143,9 +148,18 @@ MAKEFLAGS += --no-print-directory
 FORCE:
 .PHONY: FORCE
 
-$(DOCS_VENV_STAMP): pyproject.toml
-	$(Q)python3 -m venv "$(DOCS_VENV_DIR)"
-	$(Q)$(DOCS_VENV_PYTHON) -m pip install .
+$(SITE_UI_STAMP): FORCE
+	$(Q)echo " [ $(call LOG_TAG,fetch-site-ui) ]"
+	tmp_home="$$(mktemp -d /tmp/site-ui-home.XXXXXX)"
+	trap 'rm -rf -- "$$tmp_home"' EXIT
+	if [ ! -d "$(SITE_UI_DIR)/.git" ]; then git clone --no-checkout -- "$(SITE_UI_REPOSITORY)" "$(SITE_UI_DIR)"; fi
+	git -C "$(SITE_UI_DIR)" fetch --prune origin main
+	git -C "$(SITE_UI_DIR)" checkout --detach FETCH_HEAD
+	touch "$@"
+
+$(SITE_VENV_STAMP): pyproject.toml
+	$(Q)python3 -m venv "$(SITE_VENV_DIR)"
+	$(Q)$(SITE_VENV_PYTHON) -m pip install .
 	touch "$@"
 
 $(PRG): $(PRG_DEPS)
@@ -167,32 +181,32 @@ $(IQ): $(PRG_DEPS)
 		--private-key $(PRIVATE_KEY) \
 		$(FLAG_MONKEYC)
 
-$(FONTS): PYTHON := $(DOCS_VENV_PYTHON)
-$(FONTS): $(FONTS_DEPS) $(DOCS_VENV_STAMP)
+$(FONTS): PYTHON := $(SITE_VENV_PYTHON)
+$(FONTS): $(FONTS_DEPS) $(SITE_VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
-$(ICON): $(ICON_DEPS) $(DOCS_VENV_STAMP)
+$(ICON): $(ICON_DEPS) $(SITE_VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
-$(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA) $(DOCS_VENV_STAMP)
+$(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA) $(SITE_VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
-$(DOCS_SETTINGS): $(DOCS_VENV_STAMP) $(DOCS_SETTINGS_DEPS)
+$(SITE_SETTINGS): $(SITE_VENV_STAMP) $(SITE_SETTINGS_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	PYTHONPATH=. $(PYTHON) scripts/generate_docs_settings \
+	PYTHONPATH=. $(PYTHON) scripts/generate_site_settings \
 		--build $(BUILD_DIR) \
 		--resources $(RESOURCES_DIR) \
 		--source $(SOURCE_DIR)
 
-$(DOCS_ICON): $(ICON)
+$(SITE_ICON): $(ICON)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
 	cp $(RESOURCES_GENERATED_DIR)icon.svg $@
 
-$(DOCS_DEVICE_OVERLAY_LIGHT): $(DEVICE_OVERLAY_SRC)
+$(SITE_DEVICE_OVERLAY_LIGHT): $(DEVICE_OVERLAY_SRC)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
 	convert $< -alpha extract $@.orig-alpha.png
@@ -210,7 +224,7 @@ $(DOCS_DEVICE_OVERLAY_LIGHT): $(DEVICE_OVERLAY_SRC)
 	convert $< $@.alpha.png -alpha off -compose CopyOpacity -composite $@
 	$(RM) $@.orig-alpha.png $@.bg-alpha.png $@.alpha.png
 
-$(DOCS_DEVICE_OVERLAY_DARK): $(DEVICE_OVERLAY_SRC)
+$(SITE_DEVICE_OVERLAY_DARK): $(DEVICE_OVERLAY_SRC)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
 	convert $< -alpha extract $@.orig-alpha.png
@@ -289,22 +303,24 @@ sr simulate_release: # run simulator with release build
 r resources: $(RESOURCES) # generate resources
 .PHONY: r resources
 
-$(DOCS_EXPORT_STAMP): PYTHON := $(DOCS_VENV_PYTHON)
-$(DOCS_EXPORT_STAMP): FORCE $(DOCS_VENV_STAMP) $(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS)
-	$(Q)echo " [ $(call LOG_TAG,docs) ]"
-	rm -rf -- "$(DOCS_OUTPUT_DIR)"
-	mkdir -p -- "$(DOCS_OUTPUT_DIR)"
-	cp -R "$(DOCS_DIR)." "$(DOCS_OUTPUT_DIR)"
-	rm -rf -- "$(DOCS_OUTPUT_DIR)tests"
+$(SITE_EXPORT_STAMP): PYTHON := $(SITE_VENV_PYTHON)
+$(SITE_EXPORT_STAMP): FORCE $(SITE_VENV_STAMP) $(SITE_SETTINGS) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI_STAMP)
+	$(Q)echo " [ $(call LOG_TAG,site) ]"
+	rm -rf -- "$(SITE_OUTPUT_DIR)"
+	mkdir -p -- "$(SITE_OUTPUT_DIR)"
+	cp -R "$(SITE_DIR)." "$(SITE_OUTPUT_DIR)"
+	mkdir -p "$(SITE_OUTPUT_DIR)assets/site-ui"
+	cp $(addprefix $(SITE_UI_DIR)/,$(SITE_UI_ASSETS)) "$(SITE_OUTPUT_DIR)assets/site-ui/"
+	rm -rf -- "$(SITE_OUTPUT_DIR)tests"
 	touch "$@"
 
-d docs: $(DOCS_EXPORT_STAMP) # build publishable documentation
-.PHONY: d docs
+s site: $(SITE_EXPORT_STAMP) # build publishable site
+.PHONY: s site
 
 t test: $(RESOURCES) # run test
 	$(Q)echo " [ $(call LOG_TAG,test) ]"
 	PYTHONPATH=. pytest
-	node --test docs/tests/*.test.mjs
+	node --test site/tests/*.test.mjs
 .PHONY: t test
 
 ifneq ($(MODE),release)
@@ -334,8 +350,8 @@ c clean: # remove build directory and files
 	$(RM) -r bin                                \
 		$(BUILD_DIR) $(SRCS_GENERATED_DIR)      \
 		$(RESOURCES) $(RESOURCES_GENERATED_DIR) \
-		$(DOCS_SETTINGS) $(DOCS_ICON) $(DOCS_DEVICE_OVERLAYS) \
-		$(DOCS_VENV_DIR)
+		$(SITE_SETTINGS) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) \
+		$(SITE_VENV_DIR)
 .PHONY: c clean
 
 # ---- help ----
