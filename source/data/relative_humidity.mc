@@ -8,11 +8,12 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Toybox has :Complications
-					? Complications.COMPLICATION_TYPE_INVALID
+					? Complications.COMPLICATION_TYPE_CURRENT_WEATHER
 					: null,
 				Resources.get(Rez.Strings.LABEL_RELATIVE_HUMIDITY),
 				WeatherProvider.refresh_rate
 			);
+			self.uses_weather = true;
 
 			self.value_max = 100;
 

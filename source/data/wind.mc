@@ -9,11 +9,12 @@ module Data {
 		function initialize() {
 			Base.initialize(
 				Toybox has :Complications
-					? Complications.COMPLICATION_TYPE_INVALID
+					? Complications.COMPLICATION_TYPE_CURRENT_WEATHER
 					: null,
 				Resources.get(Rez.Strings.LABEL_WIND),
 				WeatherProvider.refresh_rate
 			);
+			self.uses_weather = true;
 
 			self.icon = Fonts.ICON_NONE;
 

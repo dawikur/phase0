@@ -6,6 +6,8 @@ import Toybox.Lang;
 
 module Widgets {
 	class Weather extends Text {
+		hidden var refresh_revision_ as Lang.Number = -1;
+
 		function initialize() {
 			Text.initialize(
 				Toybox has :Complications
@@ -94,6 +96,12 @@ module Widgets {
 			) {
 				self.is_dirty_ = true;
 			}
+
+			self.refresh_revision_ = WeatherProvider.revision;
+		}
+
+		function needsRefresh() as Lang.Boolean {
+			return self.refresh_revision_ != WeatherProvider.revision;
 		}
 
 		hidden function tryApplyWeatherCandidate_(

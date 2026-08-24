@@ -7,7 +7,8 @@ import Toybox.System;
 
 module Widgets {
 	class Seconds extends Base {
-		hidden var second_ as Lang.Number = -1;
+		hidden var rendered_second_ as Lang.Number = -1;
+		hidden var prepared_second_ as Lang.Number = -1;
 		hidden var value_ as Lang.String = "";
 
 		hidden var is_minimal_ as Lang.Boolean = false;
@@ -18,8 +19,8 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			self.second_ = Runtime.clock.sec;
-			self.value_ = self.second_.format("%02d");
+			self.prepared_second_ = Runtime.clock.sec;
+			self.value_ = self.prepared_second_.format("%02d");
 		}
 
 		function resize(
@@ -28,7 +29,7 @@ module Widgets {
 			_size_y as Lang.Number
 		) as Void {
 			Base.resize(_dc, _size_x, _size_y);
-			self.second_ = -1;
+			self.rendered_second_ = -1;
 			self.is_minimal_ = false;
 			self.is_dirty_ = true;
 			self.is_small = Render.SIZE_REGULAR;
@@ -51,6 +52,7 @@ module Widgets {
 		function render(_dc as Graphics.Dc) as Void {
 			self.is_minimal_ = false;
 			self.render_(_dc, self.pos_x, self.value_, Render.foreground);
+			self.rendered_second_ = self.prepared_second_;
 		}
 
 		function renderMinimal(_dc as Graphics.Dc) as Void {
@@ -59,18 +61,18 @@ module Widgets {
 		}
 
 		function update(_dc as Graphics.Dc) as Void {
-			var previous_second = self.second_;
+			var previous_second = self.rendered_second_;
 			var was_minimal = self.is_minimal_;
-
-			self.refresh(_dc);
 
 			if (was_minimal or previous_second < 0) {
 				self.updateRange_(_dc, 0);
-			} else if (previous_second / 10 != self.second_ / 10) {
+			} else if (previous_second / 10 != self.prepared_second_ / 10) {
 				self.updateRange_(_dc, 0);
-			} else if (previous_second != self.second_) {
+			} else if (previous_second != self.prepared_second_) {
 				self.updateRange_(_dc, 1);
 			}
+
+			self.rendered_second_ = self.prepared_second_;
 		}
 
 		function updateMinimal(_dc as Graphics.Dc) as Void {
@@ -81,7 +83,7 @@ module Widgets {
 		}
 
 		function invalidate() as Void {
-			self.second_ = -1;
+			self.rendered_second_ = -1;
 			self.is_minimal_ = false;
 			self.is_dirty_ = true;
 		}

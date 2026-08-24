@@ -82,6 +82,18 @@ def test_site_page_links_to_mip64_palette() -> None:
     assert attrs_for(parser, "a", "href", "mip64-palette/")["class"] == ("ui-action")
 
 
+def test_site_page_links_to_device_reference() -> None:
+    parser = parse_site_page()
+
+    assert attrs_for(parser, "a", "href", "devices/")["class"] == "ui-action"
+
+
+def test_site_page_orders_device_reference_before_mip64_palette() -> None:
+    page = Path("site/index.html").read_text(encoding="utf-8")
+
+    assert page.index('href="devices/"') < page.index('href="mip64-palette/"')
+
+
 def test_site_page_exposes_theme_view_and_accessible_regions() -> None:
     parser = parse_site_page()
 

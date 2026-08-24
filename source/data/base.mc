@@ -13,6 +13,7 @@ module Data {
 		var icon as Lang.String? = null;
 		var value as Lang.Number? = null;
 		var value_max as Lang.Number? = null;
+		var uses_weather as Lang.Boolean = false;
 
 		function initialize(
 			_type as Complications.Type?,
@@ -25,5 +26,9 @@ module Data {
 		}
 
 		function refresh() as Void {}
+
+		function refreshRevision() as Lang.Number? {
+			return self.uses_weather ? WeatherProvider.revision : null;
+		}
 	}
 } // module Data

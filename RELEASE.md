@@ -5,8 +5,8 @@ Before publishing a release, complete and record the following checks.
 ## Watch face
 
 - [ ] Run `make test`.
-- [ ] Test the release build on representative devices: a small MIP display
-      and larger MIP display.
+- [ ] Test the release build on representative devices: a small MIP64 display
+      and larger MIP64 display.
 - [ ] Check normal mode, sleep/AoD mode, wake-up and power-budget fallback.
 - [ ] Check every supported language and settings screen for clipped or
       unreadable text.

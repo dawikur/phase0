@@ -160,21 +160,9 @@ body {
 	min-width: 0;
 }
 
-.controls {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-2);
-	position: fixed;
-	top: var(--space-2);
-	left: calc(max(16px, (100% - 1120px) / 2) - 18px);
-	z-index: 20;
-	width: fit-content;
-	margin: 0;
-	padding: 12px 18px;
-	background: radial-gradient(ellipse at center, color-mix(in srgb, var(--bg) 86%, transparent), transparent 72%);
-}
+.ui-control-dock { --ui-control-dock-bg: radial-gradient(ellipse at center, color-mix(in srgb, var(--bg) 86%, transparent), transparent 72%); }
 
-.controls > .ui-segmented { --ui-control-bg: var(--panel-strong); }
+.ui-control-dock > .ui-segmented { --ui-control-bg: var(--panel-strong); }
 
 .eyebrow {
 	margin: 0 0 var(--space-1);
@@ -702,11 +690,6 @@ h1 {
 
 	.supporting {
 		padding: var(--space-5) 0;
-	}
-
-	.controls {
-		left: -8px;
-		width: calc(100% - 20px);
 	}
 
 	.lede,

@@ -18,6 +18,8 @@ class App extends Application.AppBase {
 		self.delegate_ = new Phase0.Delegate(view_);
 
 		self.onSettingsChanged();
+
+		System.println("Phase0 initialized");
 	}
 
 	function getInitialView() as $.InitialView {

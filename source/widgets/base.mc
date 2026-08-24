@@ -104,6 +104,9 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {}
+		function needsRefresh() as Lang.Boolean {
+			return false;
+		}
 		function invalidate() as Void {
 			self.is_dirty_ = true;
 		}
@@ -120,7 +123,6 @@ module Widgets {
 		function renderMinimal(_dc as Graphics.Dc) as Void {}
 
 		function update(_dc as Graphics.Dc) as Void {
-			self.refresh(_dc);
 			if (!self.is_dirty_) {
 				return;
 			}
@@ -130,7 +132,6 @@ module Widgets {
 		}
 
 		function updateMinimal(_dc as Graphics.Dc) as Void {
-			self.refresh(_dc);
 			if (!self.is_dirty_) {
 				return;
 			}

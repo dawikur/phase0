@@ -50,7 +50,8 @@ and generator inputs; `make site` writes the publishable subset to `build/site/`
 - `CHANGELOG.md` — release history
 
 Do not edit generated files by hand. In particular, treat
-`source/generated/`, `resources/generated/` and `site/settings-data.js` as
+`source/generated/`, `resources/generated/`, `site/settings-data.js` and
+`site/devices-data.js` as
 build outputs; change their source data or generator instead.
 
 ---
@@ -181,14 +182,14 @@ Always remember:
 - Draw calls are expensive.
 - Memory is limited.
 - Some devices have different display sizes.
-- AMOLED and MIP displays may behave differently.
+- AMOLED and MIP64 displays may behave differently.
 - Connect IQ APIs vary between SDK versions.
 
 If proposing API usage, verify compatibility.
 
 The manifest supports multiple device families and has a minimum API level of
 3.4.0. Changes to layout or API usage must preserve that compatibility and
-consider at least one representative MIP and AMOLED device where applicable.
+consider at least one representative MIP64 and AMOLED device where applicable.
 
 ---
 
@@ -301,8 +302,9 @@ Avoid introducing shell scripts unless they provide clear value.
 
 Keep build steps reproducible.
 
-`make site` creates `.site-venv` and installs the Python website
-dependencies declared in `pyproject.toml`; it is removed by `make clean`.
+`make site` creates `.site-venv` and installs the Python development
+requirements for the resource and website generators; it is removed by
+`make clean`.
 
 The release optimizer is pinned in `package-lock.json`; install its Node
 dependencies with `npm ci` before producing a release build.

@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+from pathlib import Path
+
+from scripts.utils.site_devices import build_site_devices
+
+if __name__ == "__main__":
+    build_site_devices(
+        manifest_xml=Path("manifest.xml"),
+        output=Path("site/devices-data.js"),
+    )

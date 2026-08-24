@@ -25,6 +25,7 @@ module Widgets {
 		hidden var value_offset_y_ as Lang.Number = 0;
 		hidden var value_text_ as Lang.String = "";
 		hidden var is_value_prepared_ as Lang.Boolean = false;
+		hidden var refresh_revision_ as Lang.Number? = null;
 
 		hidden var width_ as Lang.Number;
 
@@ -93,6 +94,7 @@ module Widgets {
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			self.impl_.refresh();
+			self.refresh_revision_ = self.impl_.refreshRevision();
 
 			var value = self.impl_.value;
 			var is_value_changed =
@@ -137,6 +139,11 @@ module Widgets {
 			) {
 				self.is_dirty_ = true;
 			}
+		}
+
+		function needsRefresh() as Lang.Boolean {
+			var revision = self.impl_.refreshRevision();
+			return revision != null and self.refresh_revision_ != revision;
 		}
 
 		function render(_dc as Graphics.Dc) as Void {

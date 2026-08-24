@@ -9,6 +9,7 @@ module Widgets {
 		hidden var impl_ as Data.Base;
 
 		hidden var value_ as Lang.Float? = null;
+		hidden var refresh_revision_ as Lang.Number? = null;
 
 		hidden var accent_ as Lang.Number;
 
@@ -36,12 +37,18 @@ module Widgets {
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			self.impl_.refresh();
+			self.refresh_revision_ = self.impl_.refreshRevision();
 
 			var value = Render.Ratio(self.impl_.value, self.impl_.value_max);
 			if (self.value_ != value) {
 				self.value_ = value;
 				self.is_dirty_ = true;
 			}
+		}
+
+		function needsRefresh() as Lang.Boolean {
+			var revision = self.impl_.refreshRevision();
+			return revision != null and self.refresh_revision_ != revision;
 		}
 
 		function render(_dc as Graphics.Dc) as Void {

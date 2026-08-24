@@ -113,17 +113,21 @@ def setting_summary(group_id: str) -> str:
     )
 
 
-def supported_devices(manifest_xml: Path) -> list[str]:
+def supported_connect_iq_ids(manifest_xml: Path) -> list[str]:
     root = ET.parse(manifest_xml).getroot()
-    products = [
+    return [
         product.get("id", "")
         for product in root.findall(".//iq:products/iq:product", CONNECT_IQ_NAMESPACE)
         if product.get("id")
     ]
+
+
+def supported_devices(manifest_xml: Path) -> list[str]:
+    products = supported_connect_iq_ids(manifest_xml)
     by_connect_iq_id = {
-        connect_iq_id: device.product_id
+        device.connect_iq_id: device.product_id
         for device in DEVICES
-        for connect_iq_id in device.connect_iq_ids
+        if device.connect_iq_id
     }
 
     return [by_connect_iq_id.get(product_id, product_id) for product_id in products]

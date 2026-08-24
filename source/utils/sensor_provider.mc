@@ -27,17 +27,27 @@ module SensorProvider {
 		cache_refresh_seconds_ = {};
 	}
 
-	function get(
-		_name as Lang.String,
+	function getRaw(
 		_iterator as SensorHistory.SensorHistoryIterator
 	) as Lang.Number? {
 		if (_iterator != null) {
 			var data_maybe = _iterator.next();
 			if (data_maybe != null and data_maybe.data != null) {
-				var data = (data_maybe.data as Lang.Numeric).toNumber();
-				storeCacheValue_(_name, data);
-				return data;
+				return (data_maybe.data as Lang.Numeric).toNumber();
 			}
+		}
+
+		return null;
+	}
+
+	function get(
+		_name as Lang.String,
+		_iterator as SensorHistory.SensorHistoryIterator
+	) as Lang.Number? {
+		var data_maybe = SensorProvider.getRaw(_iterator);
+		if (data_maybe != null) {
+			storeCacheValue_(_name, data_maybe);
+			return data_maybe;
 		}
 
 		var cached = Cache.getValue(_name, CACHE_TTL_HOURS);

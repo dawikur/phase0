@@ -16,7 +16,6 @@ LOG_PREFIX  ?=
 PRIVATE_KEY ?= $(HOME)/Documents/developer_key
 # show commands
 V           ?= 0
-
 # ---- options ----
 
 # development build
@@ -66,11 +65,10 @@ endif
 SDK_DIR   := $(patsubst %/,%,$(SDK_DIR))/
 MONKEYDO  := $(SDK_DIR)bin/monkeydo
 CONNECTIQ := $(SDK_DIR)bin/connectiq
-
-ifneq ($(MODE),release)
-MONKEYC   := $(SDK_DIR)bin/monkeyc
-else
+ifneq ($(filter $(MODE),optimized release),)
 MONKEYC   := node scripts/optimizedc.mjs
+else
+MONKEYC   := $(SDK_DIR)bin/monkeyc
 endif
 
 BUILD_DIR := build/
@@ -123,6 +121,11 @@ SITE_SETTINGS_DEPS := scripts/generate_site_settings             \
                       $(SETTINGS)                                \
                       $(shell find resources -name strings.xml)
 SITE_SETTINGS       := $(SITE_DIR)settings-data.js
+SITE_DEVICES_DEPS  := scripts/generate_site_devices              \
+                      scripts/utils/site_devices.py              \
+                      manifest.xml                                \
+                      $(shell find data/devices -type f)
+SITE_DEVICES       := $(SITE_DIR)devices-data.js
 SITE_ICON           := $(SITE_DIR)assets/icon.svg
 DEVICE_OVERLAY_SRC  := $(SITE_DIR)assets/fr955.png
 SITE_DEVICE_OVERLAY_LIGHT := $(SITE_DIR)assets/fr955-light.png
@@ -157,9 +160,9 @@ $(SITE_UI_STAMP): FORCE
 	git -C "$(SITE_UI_DIR)" checkout --detach FETCH_HEAD
 	touch "$@"
 
-$(SITE_VENV_STAMP): pyproject.toml
+$(SITE_VENV_STAMP): requirements-dev.txt
 	$(Q)python3 -m venv "$(SITE_VENV_DIR)"
-	$(Q)$(SITE_VENV_PYTHON) -m pip install .
+	$(Q)$(SITE_VENV_PYTHON) -m pip install -r requirements-dev.txt
 	touch "$@"
 
 $(PRG): $(PRG_DEPS)
@@ -200,6 +203,10 @@ $(SITE_SETTINGS): $(SITE_VENV_STAMP) $(SITE_SETTINGS_DEPS)
 		--build $(BUILD_DIR) \
 		--resources $(RESOURCES_DIR) \
 		--source $(SOURCE_DIR)
+
+$(SITE_DEVICES): $(SITE_VENV_STAMP) $(SITE_DEVICES_DEPS)
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+	PYTHONPATH=. $(PYTHON) scripts/generate_site_devices
 
 $(SITE_ICON): $(ICON)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
@@ -276,16 +283,29 @@ br build_release: # build project for device in release mode
 
 s simulate: build # run simulator
 	$(Q)echo " [ $(call LOG_TAG,simulate) ] $(MODE)"
+	cleanup() {
+		if [[ -n "$$SIM_PID" ]] && kill -0 "$$SIM_PID" 2>/dev/null; then
+			kill "$$SIM_PID"
+			wait "$$SIM_PID" || true
+		fi
+	}
+	trap cleanup EXIT
 	$(CONNECTIQ)&
 	SIM_PID=$$!
 	sleep 3
+	if ! kill -0 "$$SIM_PID" 2>/dev/null; then
+		wait "$$SIM_PID"
+		exit 1
+	fi
 	$(MONKEYDO) \
 		$(PRG) \
 		$(DEVICE) \
 		-a $(BUILD_DIR)$(OUT)-settings.json:GARMIN/Settings/$(OUT)-settings.json \
 		$(FLAG_SIMULATE)
 
-	wait $$SIM_PID
+	wait "$$SIM_PID"
+	SIM_PID=
+	trap - EXIT
 .PHONY: s simulate
 
 st simulate_test: # run simulator w/ tests
@@ -304,7 +324,7 @@ r resources: $(RESOURCES) # generate resources
 .PHONY: r resources
 
 $(SITE_EXPORT_STAMP): PYTHON := $(SITE_VENV_PYTHON)
-$(SITE_EXPORT_STAMP): FORCE $(SITE_VENV_STAMP) $(SITE_SETTINGS) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI_STAMP)
+$(SITE_EXPORT_STAMP): FORCE $(SITE_VENV_STAMP) $(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,site) ]"
 	rm -rf -- "$(SITE_OUTPUT_DIR)"
 	mkdir -p -- "$(SITE_OUTPUT_DIR)"
@@ -314,7 +334,7 @@ $(SITE_EXPORT_STAMP): FORCE $(SITE_VENV_STAMP) $(SITE_SETTINGS) $(SITE_ICON) $(S
 	rm -rf -- "$(SITE_OUTPUT_DIR)tests"
 	touch "$@"
 
-s site: $(SITE_EXPORT_STAMP) # build publishable site
+site: $(SITE_EXPORT_STAMP) # build publishable site
 .PHONY: s site
 
 t test: $(RESOURCES) # run test
@@ -350,7 +370,7 @@ c clean: # remove build directory and files
 	$(RM) -r bin                                \
 		$(BUILD_DIR) $(SRCS_GENERATED_DIR)      \
 		$(RESOURCES) $(RESOURCES_GENERATED_DIR) \
-		$(SITE_SETTINGS) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) \
+		$(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) \
 		$(SITE_VENV_DIR)
 .PHONY: c clean
 
@@ -388,15 +408,19 @@ h help: # print help message
 		shorts[n] = short; \
 		longs[n] = long; \
 		desc[n] = $$2; \
-		if (length(short) > max_short) max_short = length(short); \
-		if (length(long) > max_long) max_long = length(long); \
 	} \
 	END { \
-		description_width = description_column - 7; \
-		if (max_long > description_width) \
-			description_width = max_long; \
-		for (i = 1; i <= n; i++) \
-			printf "     %" max_short "s %-" description_width "s %s\n", shorts[i], longs[i], desc[i]; \
+		for (i = 1; i <= n; i++) { \
+			label = shorts[i]; \
+			indent = 5; \
+			if (longs[i] != "") { \
+				label = label " " longs[i]; \
+				indent = 4 - length(shorts[i]); \
+			} \
+			padding = description_column - indent - length(label) - 1; \
+			if (padding < 1) padding = 1; \
+			printf "%*s%s%*s%s\n", indent, "", label, padding, "", desc[i]; \
+		} \
 	}' $(MAKEFILE_LIST)
 	printf "\n"
 	# ---- arguments ----

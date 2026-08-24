@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+
+import argparse
+import sys
+from collections.abc import Sequence
+from pathlib import Path
+
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+# The repository root must be on sys.path when this extensionless script runs directly.
+# pylint: disable=wrong-import-position
+from scripts.utils.smoke import run_smoke_test
+
+
+def parse_arguments(arguments: Sequence[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Smoke-test the release watch face on every supported device"
+    )
+    parser.add_argument(
+        "--manifest", type=Path, default=Path("manifest.xml"), help="Manifest path"
+    )
+    parser.add_argument("--make", default="make", help="Make executable")
+    parser.add_argument("--name", default="phase0", help="Application name")
+    parser.add_argument(
+        "--build-dir", type=Path, default=Path("build"), help="Build directory"
+    )
+    parser.add_argument("--sdk-dir", type=Path, help="Connect IQ SDK directory")
+    parser.add_argument(
+        "--simulator-duration",
+        type=float,
+        default=10,
+        help="Seconds to run each simulator (default: 10)",
+    )
+    return parser.parse_args(arguments)
+
+
+def main() -> int:
+    args = parse_arguments()
+    try:
+        run_smoke_test(
+            manifest=args.manifest,
+            make=args.make,
+            name=args.name,
+            build_dir=args.build_dir,
+            sdk_dir=args.sdk_dir,
+            simulator_duration=args.simulator_duration,
+        )
+    except KeyboardInterrupt:
+        print("Smoke test interrupted.", file=sys.stderr)
+        return 130
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

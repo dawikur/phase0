@@ -26,15 +26,20 @@ module Data {
 		}
 
 		function refresh() as Void {
+			// Heart rate represents a live reading; never show a persisted value
+			// after the sensor stops reporting.
+			self.value = null;
+
 			var activity_info = Activity.getActivityInfo();
 			if (
 				activity_info != null and
-				activity_info.currentHeartRate != null
+				activity_info.currentHeartRate != null and
+				activity_info.currentHeartRate !=
+					ActivityMonitor.INVALID_HR_SAMPLE
 			) {
 				self.value = activity_info.currentHeartRate;
 			} else {
-				self.value = SensorProvider.get(
-					self.name,
+				self.value = SensorProvider.getRaw(
 					SensorHistory.getHeartRateHistory(SensorProvider.OPTIONS)
 				);
 			}

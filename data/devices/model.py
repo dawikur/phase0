@@ -6,7 +6,7 @@ from typing import Iterator, overload
 
 
 class ScreenType(str, Enum):
-    MIP = "MIP"
+    MIP64 = "MIP64"
     AMOLED = "AMOLED"
 
 
@@ -21,7 +21,8 @@ class Device:
     product_id: str
     resolution: Resolution
     screen_type: ScreenType
-    connect_iq_ids: tuple[str, ...] = ()
+    connect_iq_id: str = ""
+    total_memory: int = -1
 
 
 class Devices:
@@ -35,8 +36,8 @@ class Devices:
         return self.__items
 
     @property
-    def mip(self) -> tuple[Device, ...]:
-        return self.__with_screen_type(ScreenType.MIP)
+    def mip64(self) -> tuple[Device, ...]:
+        return self.__with_screen_type(ScreenType.MIP64)
 
     @property
     def amoled(self) -> tuple[Device, ...]:

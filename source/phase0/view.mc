@@ -22,10 +22,17 @@ module Phase0 {
 
 		typedef Bases as Lang.Array<Widgets.Base>;
 
+		static const UPDATE_MODE_HIGH_POWER = 0;
+		static const UPDATE_MODE_LOW_POWER = 1;
+		static const UPDATE_MODE_LIMITED_POWER = 2;
+
 		// ---- fields ----
 
 		// -- base --
-		hidden var is_high_power_ as Lang.Boolean = true;
+		// The device may still provide partial updates in low-power mode. This
+		// becomes exhausted only when Garmin reports its partial-update budget
+		// has been exceeded.
+		hidden var update_mode_ as Lang.Number = UPDATE_MODE_HIGH_POWER;
 		hidden var is_night_mode_ as Lang.Boolean = false;
 		hidden var is_visible_ as Lang.Boolean = false;
 
@@ -54,9 +61,9 @@ module Phase0 {
 		hidden var bottom_inner_am_pm_ as Widgets.Base = Widgets.Base.None();
 		hidden var bottom_outer_ as Widgets.Base = Widgets.Base.None();
 
-		hidden var widgets_per_sec_ as Bases = [];
-		hidden var widgets_per_min_ as Bases = [];
 		hidden var widgets_per_hour_ as Bases = [];
+		hidden var widgets_per_min_ as Bases = [];
+		hidden var widgets_per_sec_ as Bases = [];
 
 		// ---- methods ----
 
@@ -66,6 +73,7 @@ module Phase0 {
 
 		function onShow() as Void {
 			self.is_visible_ = true;
+			self.invalidate_();
 		}
 
 		function onHide() as Void {
@@ -73,14 +81,13 @@ module Phase0 {
 		}
 
 		function onEnterSleep() as Void {
-			// TODO: Uncomment for amoled?
-			// self.is_high_power_ = false;
+			self.update_mode_ = UPDATE_MODE_LOW_POWER;
 
 			WatchUi.requestUpdate();
 		}
 
 		function onExitSleep() as Void {
-			self.is_high_power_ = true;
+			self.update_mode_ = UPDATE_MODE_HIGH_POWER;
 
 			WatchUi.requestUpdate();
 		}
@@ -92,7 +99,9 @@ module Phase0 {
 		}
 
 		function handlePowerBudgetExceeded() as Void {
-			self.is_high_power_ = false;
+			self.update_mode_ = UPDATE_MODE_LIMITED_POWER;
+
+			WatchUi.requestUpdate();
 		}
 
 		function handlePress(
@@ -109,9 +118,9 @@ module Phase0 {
 			}
 
 			if (!self.is_night_mode_) {
-				var widgets_per_sec_size = self.widgets_per_sec_.size();
-				for (var i = 0; i < widgets_per_sec_size; ++i) {
-					var widget = self.widgets_per_sec_[i];
+				var widgets_per_hour_size = self.widgets_per_hour_.size();
+				for (var i = 0; i < widgets_per_hour_size; ++i) {
+					var widget = self.widgets_per_hour_[i];
 					if (widget.contains(pos_x, pos_y)) {
 						return widget.open();
 					}
@@ -125,9 +134,9 @@ module Phase0 {
 					}
 				}
 
-				var widgets_per_hour_size = self.widgets_per_hour_.size();
-				for (var i = 0; i < widgets_per_hour_size; ++i) {
-					var widget = self.widgets_per_hour_[i];
+				var widgets_per_sec_size = self.widgets_per_sec_.size();
+				for (var i = 0; i < widgets_per_sec_size; ++i) {
+					var widget = self.widgets_per_sec_[i];
 					if (widget.contains(pos_x, pos_y)) {
 						return widget.open();
 					}
@@ -140,10 +149,17 @@ module Phase0 {
 		function onLayout(_dc as Graphics.Dc) as Void {
 			var layout = new Layout(_dc);
 
-			self.bitmap_ = self.createBitmap_(
-				layout.screen_size_x,
-				layout.screen_size_y
-			);
+			// 40Kb is empirically tested and seems to be working
+			if (40 * 1024 < System.getSystemStats().freeMemory) {
+				self.bitmap_ = self.createBitmap_(
+					layout.screen_size_x,
+					layout.screen_size_y
+				);
+
+				if (self.bitmap_ != null) {
+					System.println("Using buffered bitmap");
+				}
+			}
 
 			self.invalidate_();
 
@@ -214,7 +230,8 @@ module Phase0 {
 
 			Runtime.refreshClock();
 
-			if (self.is_high_power_) {
+			self.seconds_.refresh(_dc);
+			if (self.update_mode_ != UPDATE_MODE_LIMITED_POWER) {
 				self.seconds_.update(_dc);
 			} else {
 				self.seconds_.updateMinimal(_dc);
@@ -253,19 +270,18 @@ module Phase0 {
 		hidden function updateMinimal_(_dc as Graphics.Dc) as Void {
 			Render.clear(_dc);
 
-			// The minimal face has little reusable content, so a full-screen bitmap
-			// copy costs more than rendering it directly.
+			// The minimal face has little reusable content, so a full-screen
+			// bitmap copy costs more than rendering it directly.
+
 			if (self.last_refresh_min_ != Runtime.day_minute) {
 				self.last_refresh_min_ = Runtime.day_minute;
 
 				self.clock_.refresh(_dc);
 			}
-
-			self.clock_.renderMinimal(_dc);
-
 			self.status_.refresh(_dc);
 			self.refreshWidgets_(_dc, self.batteries_);
 
+			self.clock_.renderMinimal(_dc);
 			self.status_.renderMinimal(_dc);
 
 			var batteries_size = self.batteries_.size();
@@ -277,50 +293,40 @@ module Phase0 {
 		hidden function updateNormal_(_dc as Graphics.Dc) as Void {
 			WeatherProvider.refresh();
 
+			if (self.last_refresh_hour_ != Runtime.clock.hour) {
+				self.last_refresh_hour_ = Runtime.clock.hour;
+				self.refreshWidgets_(_dc, self.widgets_per_hour_);
+			}
+			if (self.last_refresh_min_ != Runtime.day_minute) {
+				self.last_refresh_min_ = Runtime.day_minute;
+				self.refreshWidgets_(_dc, self.widgets_per_min_);
+			}
+			self.refreshWidgets_(_dc, self.widgets_per_sec_);
+
+			self.refreshChangedWidgets_(_dc, self.widgets_per_hour_);
+			self.refreshChangedWidgets_(_dc, self.widgets_per_min_);
+			self.refreshChangedWidgets_(_dc, self.widgets_per_sec_);
+
 			if (self.bitmap_ != null) {
 				var dc = self.bitmap_.getDc();
 				dc.clearClip();
 
-				// refresh, clear &render
-
-				if (self.last_refresh_min_ != Runtime.day_minute) {
-					self.last_refresh_min_ = Runtime.day_minute;
-
-					self.updateWidgets_(dc, self.widgets_per_min_);
-				}
-				if (self.last_refresh_hour_ != Runtime.clock.hour) {
-					self.last_refresh_hour_ = Runtime.clock.hour;
-
-					self.updateWidgets_(dc, self.widgets_per_hour_);
-				}
+				self.updateWidgets_(dc, self.widgets_per_hour_);
+				self.updateWidgets_(dc, self.widgets_per_min_);
 				self.updateWidgets_(dc, self.widgets_per_sec_);
 
 				_dc.clearClip();
 				_dc.drawBitmap(0, 0, self.bitmap_ as Graphics.BufferedBitmap);
 			} else {
-				self.refreshWidgets_(_dc, self.widgets_per_sec_);
-
-				if (self.last_refresh_min_ != Runtime.day_minute) {
-					self.last_refresh_min_ = Runtime.day_minute;
-
-					self.refreshWidgets_(_dc, self.widgets_per_min_);
-				}
-
-				if (self.last_refresh_hour_ != Runtime.clock.hour) {
-					self.last_refresh_hour_ = Runtime.clock.hour;
-
-					self.refreshWidgets_(_dc, self.widgets_per_hour_);
-				}
-
 				Render.clear(_dc);
 
-				self.renderWidgets_(_dc, self.widgets_per_sec_);
-				self.renderWidgets_(_dc, self.widgets_per_min_);
 				self.renderWidgets_(_dc, self.widgets_per_hour_);
+				self.renderWidgets_(_dc, self.widgets_per_min_);
+				self.renderWidgets_(_dc, self.widgets_per_sec_);
 			}
 
 			self.seconds_.refresh(_dc);
-			if (self.is_high_power_) {
+			if (self.update_mode_ != UPDATE_MODE_LIMITED_POWER) {
 				self.seconds_.render(_dc);
 			} else {
 				self.seconds_.renderMinimal(_dc);
@@ -337,9 +343,9 @@ module Phase0 {
 
 			self.batteries_ = [];
 
-			self.widgets_per_sec_ = [];
-			self.widgets_per_min_ = [];
 			self.widgets_per_hour_ = [];
+			self.widgets_per_min_ = [];
+			self.widgets_per_sec_ = [];
 
 			// ---- top outer ----
 
@@ -511,16 +517,16 @@ module Phase0 {
 				case RefreshRate.NONE:
 					break;
 
-				case RefreshRate.SEC:
-					self.widgets_per_sec_.add(_widget);
+				case RefreshRate.HOUR:
+					self.widgets_per_hour_.add(_widget);
 					break;
 
 				case RefreshRate.MIN:
 					self.widgets_per_min_.add(_widget);
 					break;
 
-				case RefreshRate.HOUR:
-					self.widgets_per_hour_.add(_widget);
+				case RefreshRate.SEC:
+					self.widgets_per_sec_.add(_widget);
 					break;
 
 				default:
@@ -660,6 +666,19 @@ module Phase0 {
 			}
 		}
 
+		hidden function refreshChangedWidgets_(
+			_dc as Graphics.Dc,
+			_widgets as Bases
+		) as Void {
+			var widgets_size = _widgets.size();
+			for (var i = 0; i < widgets_size; ++i) {
+				var widget = _widgets[i];
+				if (widget.needsRefresh()) {
+					widget.refresh(_dc);
+				}
+			}
+		}
+
 		hidden function renderWidgets_(
 			_dc as Graphics.Dc,
 			_widgets as Bases
@@ -691,9 +710,9 @@ module Phase0 {
 			self.last_refresh_min_ = -1;
 			self.last_refresh_hour_ = -1;
 
-			self.invalidateWidgets_(self.widgets_per_sec_);
-			self.invalidateWidgets_(self.widgets_per_min_);
 			self.invalidateWidgets_(self.widgets_per_hour_);
+			self.invalidateWidgets_(self.widgets_per_min_);
+			self.invalidateWidgets_(self.widgets_per_sec_);
 
 			if (self.bitmap_ != null) {
 				Render.clear(self.bitmap_.getDc());

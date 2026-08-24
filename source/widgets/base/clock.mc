@@ -7,8 +7,10 @@ import Toybox.WatchUi;
 
 module Widgets {
 	class Clock extends Base {
-		hidden var hour_ as Lang.Number = -1;
-		hidden var min_ as Lang.Number = -1;
+		hidden var rendered_hour_ as Lang.Number = -1;
+		hidden var rendered_min_ as Lang.Number = -1;
+		hidden var prepared_hour_ as Lang.Number = -1;
+		hidden var prepared_min_ as Lang.Number = -1;
 		hidden var time_ as Lang.String = "";
 		hidden var shade_ as Lang.String = "88:88";
 
@@ -38,11 +40,11 @@ module Widgets {
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			self.hour_ = Data.Units.convertHour(Runtime.clock.hour);
-			self.min_ = Runtime.clock.min;
+			self.prepared_hour_ = Data.Units.convertHour(Runtime.clock.hour);
+			self.prepared_min_ = Runtime.clock.min;
 			self.time_ = Lang.format("$1$:$2$", [
-				self.hour_.format("%02d"),
-				self.min_.format("%02d"),
+				self.prepared_hour_.format("%02d"),
+				self.prepared_min_.format("%02d"),
 			]);
 		}
 
@@ -52,8 +54,8 @@ module Widgets {
 			_size_y as Lang.Number
 		) as Void {
 			Base.resize(_dc, _size_x, _size_y);
-			self.hour_ = -1;
-			self.min_ = -1;
+			self.rendered_hour_ = -1;
+			self.rendered_min_ = -1;
 			self.is_dirty_ = true;
 			if (self.height_ != Properties.SMALL) {
 				self.font_fg_ =
@@ -99,10 +101,12 @@ module Widgets {
 
 		function render(_dc as Graphics.Dc) as Void {
 			self.render_(_dc, self.clockStartX_(), self.time_, self.shade_);
+			self.saveRenderedTime_();
 		}
 
 		function renderMinimal(_dc as Graphics.Dc) as Void {
 			self.render_(_dc, self.clockStartX_(), self.time_, "");
+			self.saveRenderedTime_();
 		}
 
 		function update(_dc as Graphics.Dc) as Void {
@@ -114,8 +118,8 @@ module Widgets {
 		}
 
 		function invalidate() as Void {
-			self.hour_ = -1;
-			self.min_ = -1;
+			self.rendered_hour_ = -1;
+			self.rendered_min_ = -1;
 			self.is_dirty_ = true;
 		}
 
@@ -123,20 +127,27 @@ module Widgets {
 			_dc as Graphics.Dc,
 			_shade as Lang.String
 		) as Void {
-			var previous_hour = self.hour_;
-			var previous_min = self.min_;
-
-			self.refresh(_dc);
+			var previous_hour = self.rendered_hour_;
+			var previous_min = self.rendered_min_;
 
 			if (previous_hour < 0 or previous_min < 0) {
 				self.updateRange_(_dc, 0, _shade);
-			} else if (previous_hour != self.hour_) {
-				var start = previous_hour / 10 == self.hour_ / 10 ? 1 : 0;
+			} else if (previous_hour != self.prepared_hour_) {
+				var start =
+					previous_hour / 10 == self.prepared_hour_ / 10 ? 1 : 0;
 				self.updateRange_(_dc, start, _shade);
-			} else if (previous_min != self.min_) {
-				var start = previous_min / 10 == self.min_ / 10 ? 4 : 3;
+			} else if (previous_min != self.prepared_min_) {
+				var start =
+					previous_min / 10 == self.prepared_min_ / 10 ? 4 : 3;
 				self.updateRange_(_dc, start, _shade);
 			}
+
+			self.saveRenderedTime_();
+		}
+
+		hidden function saveRenderedTime_() as Void {
+			self.rendered_hour_ = self.prepared_hour_;
+			self.rendered_min_ = self.prepared_min_;
 		}
 
 		hidden function updateRange_(

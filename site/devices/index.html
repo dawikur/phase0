@@ -1,0 +1,58 @@
+<!-- Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com> -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>phase0 Device Reference</title>
+    <link rel="icon" href="../assets/icon.svg" type="image/svg+xml" />
+    <script src="../assets/site-ui/theme.js"></script>
+    <script src="../theme.js"></script>
+    <script src="../devices-data.js"></script>
+    <link rel="stylesheet" href="../assets/site-ui/foundation.css" />
+    <link rel="stylesheet" href="../assets/site-ui/components.css" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page devices-page">
+      <div class="controls ui-control-dock">
+        <div class="ui-segmented ui-theme-control" role="group" aria-label="Page theme">
+          <button class="ui-segmented-option ui-theme-option" type="button" data-theme-mode="auto">Auto</button>
+          <button class="ui-segmented-option ui-theme-option" type="button" data-theme-mode="light">Light</button>
+          <button class="ui-segmented-option ui-theme-option" type="button" data-theme-mode="dark">Dark</button>
+        </div>
+      </div>
+      <p class="eyebrow"><a class="ui-back-link" href="../" data-site-back data-state-transfer>← phase0</a><span data-site-back-separator> · </span>Garmin Connect IQ reference</p>
+      <h1>Device Reference</h1>
+      <p class="lede">Display characteristics and measured runtime memory for devices supported by phase0. Select a column heading to sort the table.</p>
+      <p class="devices-summary ui-tag" id="devicesSummary"></p>
+      <div class="devices-table-wrap ui-card">
+        <table class="devices-table">
+          <thead>
+            <tr>
+              <th scope="col" aria-sort="ascending"><button type="button" data-sort-column="productId">Device</button></th>
+              <th scope="col" aria-sort="none"><button type="button" data-sort-column="resolution">Resolution</button></th>
+              <th scope="col" aria-sort="none"><button type="button" data-sort-column="screenType">Screen</button></th>
+              <th scope="col" aria-sort="none"><button type="button" data-sort-column="connectIqId">Connect IQ ID</button></th>
+              <th scope="col" aria-sort="none"><button type="button" data-sort-column="totalMemory">Total memory</button></th>
+            </tr>
+            <tr class="devices-table-filters">
+              <th scope="col"><label><span class="ui-visually-hidden">Filter device</span><input type="search" data-filter-column="productId" placeholder="Filter devices" /></label></th>
+              <th scope="col"><label><span class="ui-visually-hidden">Filter resolution</span><select data-filter-column="resolution"><option value="">All</option></select></label></th>
+              <th scope="col"><label><span class="ui-visually-hidden">Filter screen type</span><select data-filter-column="screenType"><option value="">All</option></select></label></th>
+              <th scope="col"><label><span class="ui-visually-hidden">Filter Connect IQ ID</span><input type="search" data-filter-column="connectIqId" placeholder="Filter IDs" /></label></th>
+              <th scope="col"><label><span class="ui-visually-hidden">Filter total memory</span><select data-filter-column="totalMemory"><option value="">All</option><option value="measured">Measured</option><option value="unknown">Unknown</option></select></label></th>
+            </tr>
+          </thead>
+          <tbody id="devicesTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+
+    <button class="ui-scroll-top scroll-top" type="button" hidden aria-label="Scroll to top">↑</button>
+    <script src="../assets/site-ui/scroll-top.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
