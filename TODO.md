@@ -6,6 +6,7 @@
 
 ## Display
 
+- [ ] Fr255s - render is simply wrong
 - [ ] Add burn-in prevention if AMOLED support is added.
 
 ## General

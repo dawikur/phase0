@@ -12,7 +12,7 @@ def test_site_devices_include_device_display_and_memory_data() -> None:
         device["connectIqId"]: device for device in devices if device["connectIqId"]
     }
 
-    assert len(devices) == 31
+    assert len(devices) == 35
     assert by_connect_iq_id["fenix7"] == {
         "connectIqId": "fenix7",
         "productId": "Fenix 7 / quatix 7",

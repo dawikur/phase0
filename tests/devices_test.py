@@ -7,15 +7,16 @@ from data.devices import DEVICES, Device, Devices, Resolution, ScreenType
 
 def test_devices_contains_all_converted_rows() -> None:
     assert isinstance(DEVICES, Devices)
-    assert len(DEVICES) == 62
-    assert len(DEVICES.all) == 62
+    assert len(DEVICES) == 80
+    assert len(DEVICES.all) == 80
 
 
 def test_devices_preserve_source_order_and_representative_values() -> None:
     assert DEVICES[0] == Device(
-        "Forerunner 745",
-        Resolution(240, 240),
-        ScreenType.MIP64,
+        "Approach S50",
+        Resolution(390, 390),
+        ScreenType.AMOLED,
+        "approachs50",
     )
     assert (
         Device(
@@ -28,9 +29,10 @@ def test_devices_preserve_source_order_and_representative_values() -> None:
         in DEVICES.all
     )
     assert DEVICES[-1] == Device(
-        "Venu 4 45mm",
-        Resolution(454, 454),
+        "vívoactive 6",
+        Resolution(390, 390),
         ScreenType.AMOLED,
+        "vivoactive6",
     )
 
 
@@ -84,27 +86,30 @@ def test_devices_record_total_memory_when_measured() -> None:
 
 
 def test_devices_filter_by_screen_type() -> None:
-    assert len(DEVICES.mip64) == 32
-    assert len(DEVICES.amoled) == 30
+    assert len(DEVICES.mip64) == 35
+    assert len(DEVICES.amoled) == 45
     assert all(device.screen_type == ScreenType.MIP64 for device in DEVICES.mip64)
     assert all(device.screen_type == ScreenType.AMOLED for device in DEVICES.amoled)
 
 
 def test_devices_expose_known_resolutions() -> None:
     assert DEVICES.resolutions == (
+        Resolution(218, 218),
         Resolution(240, 240),
         Resolution(260, 260),
         Resolution(280, 280),
+        Resolution(360, 360),
         Resolution(390, 390),
         Resolution(416, 416),
         Resolution(454, 454),
+        Resolution(466, 466),
     )
-    assert len(DEVICES.resolution_240x240) == 15
-    assert len(DEVICES.resolution_260x260) == 9
-    assert len(DEVICES.resolution_280x280) == 8
-    assert len(DEVICES.resolution_390x390) == 11
-    assert len(DEVICES.resolution_416x416) == 9
-    assert len(DEVICES.resolution_454x454) == 10
+    assert len(DEVICES.resolution_240x240) == 14
+    assert len(DEVICES.resolution_260x260) == 10
+    assert len(DEVICES.resolution_280x280) == 9
+    assert len(DEVICES.resolution_390x390) == 16
+    assert len(DEVICES.resolution_416x416) == 12
+    assert len(DEVICES.resolution_454x454) == 14
 
 
 def test_manifest_products_match_supported_connect_iq_ids() -> None:

@@ -72,24 +72,46 @@ MONKEYC   := $(SDK_DIR)bin/monkeyc
 endif
 
 BUILD_DIR := build/
-SITE_DIR  := site/
-SITE_OUTPUT_DIR := $(BUILD_DIR)site/
-SITE_EXPORT_STAMP := $(BUILD_DIR).site.stamp
-SITE_VENV_DIR := .site-venv
-SITE_VENV_PYTHON := $(SITE_VENV_DIR)/bin/python
-SITE_VENV_STAMP := $(SITE_VENV_DIR)/.installed.stamp
-SITE_UI_DIR := .site-ui
-SITE_UI_STAMP := $(SITE_UI_DIR)/.fetch.stamp
-SITE_UI_ASSETS := foundation.css components.css theme.js scroll-top.js
-SITE_UI_REMOTE_REPOSITORY := https://github.com/dawikur/site-ui.git
-SITE_UI_REPOSITORY ?= $(if $(shell test -d "$(CURDIR)/../site-ui/.git" && actual="$$(git -C "$(CURDIR)/../site-ui" remote get-url origin 2>/dev/null | sed -E 's|^git@github.com:|https://github.com/|; s|^ssh://git@github.com/|https://github.com/|; s|\.git$$||')" && expected="$$(printf '%s' "$(SITE_UI_REMOTE_REPOSITORY)" | sed -E 's|^git@github.com:|https://github.com/|; s|^ssh://git@github.com/|https://github.com/|; s|\.git$$||')" && test "$$actual" = "$$expected" && printf yes),$(CURDIR)/../site-ui,$(SITE_UI_REMOTE_REPOSITORY))
-OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX)
-PRG       := $(BUILD_DIR)$(OUT).prg
 IQ        := $(BUILD_DIR)$(NAME).iq
 JUNGLE    := monkey.jungle
+MANIFEST  := manifest.xml
+OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX)
+PRG       := $(BUILD_DIR)$(OUT).prg
+RSCS      := $(shell find resources -type f)
 SRCS      := $(shell find source -type f)
 SRCS_DATA := $(shell find source/data -type f)
-RSCS      := $(shell find resources -type f)
+
+SITE_DIR  := site/
+SITE_EXPORT_STAMP := $(BUILD_DIR).site.stamp
+SITE_OUTPUT_DIR := $(BUILD_DIR)site/
+SITE_UI_ASSETS := foundation.css components.css theme.js scroll-top.js
+SITE_UI_DIR := .site-ui
+SITE_UI_REMOTE_REPOSITORY := https://github.com/dawikur/site-ui.git
+SITE_UI_STAMP    := $(SITE_UI_DIR)/.fetch.stamp
+SITE_VENV_DIR    := .site-venv
+SITE_VENV_PYTHON := $(SITE_VENV_DIR)/bin/python
+SITE_VENV_STAMP  := $(SITE_VENV_DIR)/.installed.stamp
+
+ifndef SITE_UI_REPOSITORY
+SITE_UI_REPOSITORY := $(SITE_UI_REMOTE_REPOSITORY)
+
+ifneq ($(wildcard $(CURDIR)/../site-ui/.git),)
+SITE_UI_LOCAL_REMOTE := $(shell \
+  git -C "$(CURDIR)/../site-ui" remote get-url origin 2>/dev/null \
+    | sed -E 's|^git@github.com:|https://github.com/|; \
+              s|^ssh://git@github.com/|https://github.com/|; \
+              s|\.git$$||')
+SITE_UI_EXPECTED_REMOTE := $(shell \
+  printf '%s' "$(SITE_UI_REMOTE_REPOSITORY)" \
+    | sed -E 's|^git@github.com:|https://github.com/|; \
+              s|^ssh://git@github.com/|https://github.com/|; \
+              s|\.git$$||')
+
+ifeq ($(SITE_UI_LOCAL_REMOTE),$(SITE_UI_EXPECTED_REMOTE))
+SITE_UI_REPOSITORY := $(CURDIR)/../site-ui
+endif
+endif
+endif
 
 SRCS_GENERATED_DIR  := source/generated/
 
@@ -97,35 +119,35 @@ RESOURCES_DIR           := resources/
 RESOURCES_BASE_DIR      := $(RESOURCES_DIR)base/
 RESOURCES_GENERATED_DIR := $(RESOURCES_DIR)generated/
 
-SOURCE_DIR         := source/
+SOURCE_DIR          := source/
 
-SCRIPT_DEPS        := $(shell find scripts/utils -type f)
+SCRIPT_DEPS         := $(shell find scripts/utils -type f)
 
-ICON_DEPS          := scripts/generate_icon                      \
-                      $(SCRIPT_DEPS)                             \
-                      $(shell find data/fonts -type f)           \
-                      $(shell find resources -name strings.xml)
-ICON               := $(RESOURCES_GENERATED_DIR)icon.xml
-FONTS_DEPS         := scripts/generate_fonts                     \
-                      $(SCRIPT_DEPS)                             \
-                      $(shell find data/fonts -type f)           \
-                      $(shell find resources -name strings.xml)
-FONTS              := $(RESOURCES_GENERATED_DIR)fonts.xml
-SETTINGS_DEPS      := scripts/generate_settings                  \
-                      $(SCRIPT_DEPS)                             \
-                      $(shell find data/fonts -type f)           \
-                      $(shell find data/settings -type f)
-SETTINGS           := $(RESOURCES_GENERATED_DIR)settings.xml
-SITE_SETTINGS_DEPS := scripts/generate_site_settings             \
-			      scripts/utils/site_settings.py             \
-                      $(SETTINGS)                                \
-                      $(shell find resources -name strings.xml)
+ICON_DEPS           := scripts/generate_icon                      \
+                       $(SCRIPT_DEPS)                             \
+                       $(shell find data/fonts -type f)           \
+                       $(shell find resources -name strings.xml)
+ICON                := $(RESOURCES_GENERATED_DIR)icon.xml
+FONTS_DEPS          := scripts/generate_fonts                     \
+                       $(SCRIPT_DEPS)                             \
+                       $(shell find data/fonts -type f)           \
+                       $(shell find resources -name strings.xml)
+FONTS               := $(RESOURCES_GENERATED_DIR)fonts.xml
+SETTINGS_DEPS       := scripts/generate_settings                  \
+                       $(SCRIPT_DEPS)                             \
+                       $(shell find data/fonts -type f)           \
+                       $(shell find data/settings -type f)
+SETTINGS            := $(RESOURCES_GENERATED_DIR)settings.xml
+SITE_SETTINGS_DEPS  := scripts/generate_site_settings             \
+                       scripts/utils/site_settings.py             \
+                       $(SETTINGS)                                \
+                       $(shell find resources -name strings.xml)
 SITE_SETTINGS       := $(SITE_DIR)settings-data.js
-SITE_DEVICES_DEPS  := scripts/generate_site_devices              \
-                      scripts/utils/site_devices.py              \
-                      manifest.xml                                \
-                      $(shell find data/devices -type f)
-SITE_DEVICES       := $(SITE_DIR)devices-data.js
+SITE_DEVICES_DEPS   := scripts/generate_site_devices              \
+                       scripts/utils/site_devices.py              \
+                       $(MANIFEST)                                \
+                       $(shell find data/devices -type f)
+SITE_DEVICES        := $(SITE_DIR)devices-data.js
 SITE_ICON           := $(SITE_DIR)assets/icon.svg
 DEVICE_OVERLAY_SRC  := $(SITE_DIR)assets/fr955.png
 SITE_DEVICE_OVERLAY_LIGHT := $(SITE_DIR)assets/fr955-light.png
@@ -343,6 +365,10 @@ t test: $(RESOURCES) # run test
 	node --test site/tests/*.test.mjs
 .PHONY: t test
 
+smoke: # run smoke test
+	$(Q)scripts/smoke
+.PHONY: smoke
+
 ifneq ($(MODE),release)
 w watch:
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release watch
@@ -454,7 +480,7 @@ h help: # print help message
 	printf "\n"
 	# ---- devices ----
 	printf " %bDevices%b\n" "$$B" "$$N"
-	sed -n 's/.*iq:product id="\(.*\)"\/>/     \1/p' ./manifest.xml
+	sed -n 's/.*iq:product id="\(.*\)"\/>/     \1/p' $(MANIFEST)
 	printf "\n"
 	# ---- modes ----
 	printf " %bModes%b\n" "$$B" "$$N"
