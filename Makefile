@@ -52,6 +52,10 @@ HELP_DESCRIPTION_COLUMN := 26
 
 LOG_TAG = $(if $(LOG_PREFIX),$(LOG_PREFIX)-$(1),$(1))
 
+PYTHON_FILES := $(shell rg --files -g '*.py') \
+	scripts/generate_fonts scripts/generate_icon scripts/generate_settings \
+	scripts/generate_site_devices scripts/generate_site_settings scripts/smoke
+
 SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release w watch
 
 ifneq ($(strip $(MAKECMDGOALS)),)
@@ -364,6 +368,13 @@ t test: $(RESOURCES) # run test
 	PYTHONPATH=. pytest
 	node --test site/tests/*.test.mjs
 .PHONY: t test
+
+l lint: # run static checks
+	$(Q)$(PYTHON) -m isort $(PYTHON_FILES)
+	$(Q)$(PYTHON) -m black $(PYTHON_FILES)
+	$(Q)$(PYTHON) -m basedpyright $(PYTHON_FILES)
+	$(Q)$(PYTHON) -m pylint $(PYTHON_FILES)
+.PHONY: l lint
 
 smoke: # run smoke test
 	$(Q)scripts/smoke

@@ -15,8 +15,8 @@ from scripts.utils.xml_document import XmlDocument
 
 
 class Atlas:
-    img: Image
-    draw: ImageDraw
+    img: Image.Image
+    draw: ImageDraw.ImageDraw
 
     pos_x: int
     pos_y: int
@@ -172,7 +172,7 @@ def parse_typeface_and_style(  # pylint:disable=too-many-locals, too-many-branch
     styles: fonts.Style | list[fonts.Style],
     name: str | None = None,
     required_glyphs: str | None = None,
-) -> tuple[str, Image, str, dict[str, str]]:
+) -> tuple[str, Image.Image, str, dict[str, str]]:
     if not isinstance(typefaces, list):
         typefaces = [typefaces]
     if not isinstance(styles, list):
@@ -293,7 +293,7 @@ def generate_fonts(  # pylint: disable=too-many-locals
     fonts_xml = XmlDocument.resource("fonts")
     fonts_mc = McDocument.create()
 
-    def __store_font(font_name: str, atlas: Image, fnt: str) -> None:
+    def __store_font(font_name: str, atlas: Image.Image, fnt: str) -> None:
         font_png = folders.resources("generated", f"{font_name}.png")
         atlas.save(font_png)
 
@@ -346,8 +346,10 @@ def generate_fonts(  # pylint: disable=too-many-locals
                 ":8",
             ),
         ]:
-            *artefacts, names_comments = parse_typeface_and_style(*digits_meta_data)
-            __store_font(*artefacts)
+            name, atlas, fnt, names_comments = parse_typeface_and_style(
+                *digits_meta_data
+            )
+            __store_font(name, atlas, fnt)
 
         # #########################################################################
         # Dots
@@ -358,10 +360,10 @@ def generate_fonts(  # pylint: disable=too-many-locals
             (fonts.TYPEFACE_DOT, fonts.STYLE_SMALL),
             (fonts.TYPEFACE_DOT, fonts.STYLE_TINY),
         ]:
-            *artefacts, names_comments = parse_typeface_and_style(
+            name, atlas, fnt, names_comments = parse_typeface_and_style(
                 *dot_meta_data, required_glyphs=required_glyphs
             )
-            __store_font(*artefacts)
+            __store_font(name, atlas, fnt)
 
         # #########################################################################
         # Icons
@@ -372,8 +374,8 @@ def generate_fonts(  # pylint: disable=too-many-locals
         for icon_meta_data in [
             (fonts.TYPEFACE_ICONS, fonts.STYLE_SMALL, "icons"),
         ]:
-            *artefacts, names_comments = parse_typeface_and_style(*icon_meta_data)
-            __store_font(*artefacts)
+            name, atlas, fnt, names_comments = parse_typeface_and_style(*icon_meta_data)
+            __store_font(name, atlas, fnt)
 
             fonts_mc.line()
             fonts_mc.line('const ICON_NONE = "";')

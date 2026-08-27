@@ -1,2 +1,3 @@
+basedpyright
 Pillow
 pytest

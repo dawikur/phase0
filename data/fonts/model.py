@@ -19,18 +19,18 @@ class Glyph:
     xoffset: int = 0
     yoffset: int = 0
 
-    __width: int = 0
-    __xempty: int = 0
+    _width: int = 0
+    _xempty: int = 0
 
-    __height: int = 0
-    __yempty: int = 0
+    _height: int = 0
+    _yempty: int = 0
 
     def __post_init__(self) -> None:
         if self.name in ("'", "\\"):
             self.name = f"\\{self.name}"
 
-        self.__height = len(self.bitmap)
-        self.__width = len(self.bitmap[0]) if self.__height else 0
+        self._height = len(self.bitmap)
+        self._width = len(self.bitmap[0]) if self._height else 0
 
         idx = 0
         for row in self.bitmap:
@@ -45,44 +45,44 @@ class Glyph:
         while self.is_column_empty_(self.xoffset):
             self.xoffset += 1
 
-        while self.is_column_empty_(self.__width - self.__xempty - 1):
-            self.__xempty += 1
+        while self.is_column_empty_(self._width - self._xempty - 1):
+            self._xempty += 1
 
         while self.is_row_empty_(self.yoffset):
             self.yoffset += 1
 
-        while self.is_row_empty_(self.__height - self.__yempty - 1):
-            self.__yempty += 1
+        while self.is_row_empty_(self._height - self._yempty - 1):
+            self._yempty += 1
 
     @property
     def width(self) -> int:
-        result = self.__width - self.xoffset - self.__xempty
+        result = self._width - self.xoffset - self._xempty
         return 0 if result < 0 else result
 
     @property
     def height(self) -> int:
-        result = self.__height - self.yoffset - self.__yempty
+        result = self._height - self.yoffset - self._yempty
         return 0 if result < 0 else result
 
     @property
     def xadvance(self) -> int:
-        return self.__width
+        return self._width
 
     @property
     def yadvance(self) -> int:
-        return self.__height
+        return self._height
 
     def pixel(self, x: int, y: int) -> bool:
-        if x < 0 or self.__width <= x or y < 0 or self.__height <= y:
+        if x < 0 or self._width <= x or y < 0 or self._height <= y:
             return False
         return self.bitmap[y][x] == "1"
 
     def blure(self) -> "Glyph":
         bitmap = []
 
-        for y in range(self.__height):
+        for y in range(self._height):
             row = ""
-            for x in range(self.__width):
+            for x in range(self._width):
                 neighbors = [
                     (x, y),  # self
                     (x - 1, y),  # left
@@ -102,20 +102,20 @@ class Glyph:
         )
 
     def is_column_empty_(self, x: int) -> bool:
-        if x < 0 or self.__width <= x:
+        if x < 0 or self._width <= x:
             return False
 
-        for y in range(self.__height):
+        for y in range(self._height):
             if self.pixel(x, y):
                 return False
 
         return True
 
     def is_row_empty_(self, y: int) -> bool:
-        if y < 0 or self.__height <= y:
+        if y < 0 or self._height <= y:
             return False
 
-        for x in range(self.__width):
+        for x in range(self._width):
             if self.pixel(x, y):
                 return False
 

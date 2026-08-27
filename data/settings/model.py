@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 from dataclasses import dataclass
-from enum import EnumType
-from typing import Any, Iterator
+from enum import Enum
+from typing import Iterator
 
 
 @dataclass(order=True)
@@ -64,21 +64,18 @@ class Boolean(Token):
 @dataclass
 class Select(Token):
     default: str
-    options: dict[Token, str]
     hidden: bool
 
     def __init__(
         self,
         name: str,
-        default: Any,
-        options: EnumType | None = None,
+        default: Enum,
+        option_type: type[Enum] | None = None,
         hidden: bool = False,
     ):
         super().__init__(name, "Number")
-        self.options: dict[Token, str] = {
-            Token(option.name): str(option.value)
-            for option in (options or type(default))
-        }
+        option_enum: type[Enum] = option_type or type(default)
+        self.options = {Token(option.name): str(option.value) for option in option_enum}
         self.default = self.options[Token(default.name)]
         self.hidden = hidden
 
