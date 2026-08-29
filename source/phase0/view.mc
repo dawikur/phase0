@@ -189,14 +189,17 @@ module Phase0 {
 
 			var layout_right = layout.rightBox(layout.left_raw);
 			var gauges_size = self.gauges_.size();
-			for (var i = 0; i < gauges_size; ++i) {
-				self.gauges_[i].resize(
-					_dc,
-					layout_right.size_x,
-					layout_right.size_y
-				);
+			if (layout.show_right) {
+				for (var i = 0; i < gauges_size; ++i) {
+					self.gauges_[i].resize(
+						_dc,
+						layout_right.size_x,
+						layout_right.size_y
+					);
+				}
+				self.DistributeWidgetsInBox_(self.gauges_, layout_right);
+			} else {
 			}
-			self.DistributeWidgetsInBox_(self.gauges_, layout_right);
 
 			// ---- bottom inner ----
 
@@ -649,8 +652,8 @@ module Phase0 {
 			for (var i = 0; i < widgets_size; ++i) {
 				var widget = _widgets[i];
 
-				widget.resize(_dc, _size_x, _box.size_y);
 				widget.is_small = _is_small;
+				widget.resize(_dc, _size_x, _box.size_y);
 			}
 
 			return self.DistributedWidth_(_widgets) <= _box.size_x;

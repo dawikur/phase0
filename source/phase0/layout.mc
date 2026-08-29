@@ -17,6 +17,7 @@ module Phase0 {
 
 		var left as Box = new Box(0, 0, 0, 0);
 		var left_raw as Box = new Box(0, 0, 0, 0);
+		var show_right as Lang.Boolean = true;
 
 		function initialize(_dc as Graphics.Dc) {
 			if (
@@ -25,44 +26,78 @@ module Phase0 {
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
-					Render.SIZE_REGULAR
+					Render.SIZE_REGULAR,
+					true,
+					true
 				) or
 				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
-					Render.SIZE_REGULAR
+					Render.SIZE_REGULAR,
+					true,
+					true
+				) or
+				self.tryApplyCandidate_(
+					_dc,
+					Render.SIZE_SMALL,
+					Render.SIZE_REGULAR,
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+					true,
+					true
 				) or
 				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
-					Render.SIZE_SMALL
-				) or
-				self.tryApplyCandidate_(
-					_dc,
 					Render.SIZE_SMALL,
-					Render.SIZE_REGULAR,
-					Render.SIZE_SMALL,
-					Render.SIZE_SMALL
+					true,
+					true
 				) or
 				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
 					Render.SIZE_REGULAR,
-					Render.SIZE_SMALL
+					Render.SIZE_SMALL,
+					true,
+					true
 				) or
 				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
-					Render.SIZE_SMALL
+					Render.SIZE_SMALL,
+					true,
+					true
+				) or
+				// Keep the left side before the right side when only one can fit.
+				self.tryApplyCandidate_(
+					_dc,
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+					true,
+					false
+				) or
+				// FR255S is too narrow for the clock and both side areas.
+				self.tryApplyCandidate_(
+					_dc,
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+					Render.SIZE_SMALL,
+					false,
+					false
 				)
 			) {
+			} else {
+				self.applyFallback_(_dc);
 			}
 		}
 
@@ -89,7 +124,9 @@ module Phase0 {
 			_clock_is_small as Lang.Boolean,
 			_inner_is_small as Lang.Boolean,
 			_middle_is_small as Lang.Boolean,
-			_outer_is_small as Lang.Boolean
+			_outer_is_small as Lang.Boolean,
+			_show_left as Lang.Boolean,
+			_show_right as Lang.Boolean
 		) as Lang.Boolean {
 			self.screen_size_x = _dc.getWidth();
 			self.screen_size_y = _dc.getHeight();
@@ -106,7 +143,7 @@ module Phase0 {
 
 			var line_inner_height = Render.TextHeight(_dc, _inner_is_small);
 			var line_middle_height = _middle_is_small
-				? Render.TextHeight(_dc, Render.SIZE_REGULAR)
+				? Render.TextHeight(_dc, Render.SIZE_SMALL)
 				: Render.LabelHeight(_dc) +
 					Render.SPACING +
 					Render.TextHeight(_dc, Render.SIZE_REGULAR);
@@ -116,11 +153,26 @@ module Phase0 {
 					Render.SPACING +
 					Render.TextHeight(_dc, Render.SIZE_SMALL);
 
-			var side_size_x = Render.IconsWidth(_dc, " ");
-			var side_size_raw_x = Render.IconsRawWidth(_dc, " ");
+			var side_size_x = 0;
+			var side_size_raw_x = 0;
 			var side_size_raw_y = _dc.getFontHeight(clock_font);
-			var gap_x =
-				((self.screen_size_x - clock_size_x) / 2 - side_size_x) / 2;
+
+			self.show_right = _show_right;
+
+			if (_show_left) {
+				side_size_x = Render.IconsWidth(_dc, " ");
+			}
+			if (_show_right) {
+				side_size_raw_x = Render.IconsRawWidth(_dc, " ");
+			}
+
+			var gap_x = 0;
+			if (_show_left) {
+				gap_x =
+					((self.screen_size_x - clock_size_x) / 2 - side_size_x) / 2;
+			} else {
+				gap_x = (self.screen_size_x - clock_size_x) / 4;
+			}
 
 			var content_height =
 				clock_size_y +
@@ -134,6 +186,18 @@ module Phase0 {
 			}
 
 			var pos_y = gap_y;
+			var layout_end_y =
+				pos_y +
+				line_outer_height +
+				gap_y +
+				line_middle_height +
+				gap_y +
+				line_inner_height +
+				gap_y +
+				clock_size_y;
+			if (pos_y < 0 or self.screen_size_y < layout_end_y) {
+				return false;
+			}
 
 			self.outer = Box.ForY(self.screen_size_y, pos_y, line_outer_height);
 			pos_y = self.outer.end_y + gap_y;
@@ -170,6 +234,31 @@ module Phase0 {
 			);
 
 			return true;
+		}
+
+		hidden function applyFallback_(_dc as Graphics.Dc) as Void {
+			self.screen_size_x = _dc.getWidth();
+			self.screen_size_y = _dc.getHeight();
+
+			var clock_font =
+				Application.loadResource(Rez.Fonts.DIGITS_SMALL) as
+				WatchUi.FontResource;
+			var clock_size_x = Render.ClockWidth(_dc, "00:00", clock_font);
+			var clock_size_y = Render.ClockHeight(_dc, clock_font);
+
+			// Keep the clock visible even if a future font or device is smaller
+			// than the normal candidate matrix can handle.
+			self.clock = new Box(
+				(self.screen_size_x - clock_size_x) / 2,
+				(self.screen_size_y - clock_size_y) / 2,
+				clock_size_x,
+				clock_size_y
+			);
+			self.left = new Box(0, 0, 0, 0);
+			self.left_raw = new Box(0, 0, 0, 0);
+			self.outer = new Box(0, 0, 0, 0);
+			self.middle = new Box(0, 0, 0, 0);
+			self.inner = new Box(0, 0, 0, 0);
 		}
 	}
 } // module Phase0

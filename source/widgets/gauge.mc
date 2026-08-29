@@ -52,7 +52,7 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
-			if (self.value_ != null) {
+			if (self.value_ != null and 0 < self.size_y) {
 				Render.Gauge(
 					_dc,
 					self.accent_,
