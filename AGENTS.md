@@ -31,8 +31,8 @@ Never sacrifice performance for abstraction.
 - Cloudflare Pages documentation
 
 Documentation is generated separately and copied into the website repository.
-Keep `site/` as the self-contained website module, including its tests
-and generator inputs; `make site` writes the publishable subset to `build/site/`.
+Keep `site/` as the website source module, including its tests and generator
+inputs; `make site` copies it to `build/site/` and adds generated data there.
 
 ---
 
@@ -50,8 +50,8 @@ and generator inputs; `make site` writes the publishable subset to `build/site/`
 - `CHANGELOG.md` — release history
 
 Do not edit generated files by hand. In particular, treat
-`source/generated/`, `resources/generated/`, `site/settings-data.js` and
-`site/devices-data.js` as
+`source/generated/`, `resources/generated/`, `build/site/settings-data.js` and
+`build/site/devices-data.js` as
 build outputs; change their source data or generator instead.
 
 ---
@@ -302,9 +302,10 @@ Avoid introducing shell scripts unless they provide clear value.
 
 Keep build steps reproducible.
 
-`make site` creates `.site-venv` and installs the Python development
-requirements for the resource and website generators; it is removed by
-`make clean`.
+All Python-based targets use one `.venv` and install the complete
+`requirements.txt` dependency set. `make clean` removes the build and site
+outputs, fetched site UI cache, virtual environments, Python caches, and root-level
+`*.egg-info` metadata.
 
 The release optimizer is pinned in `package-lock.json`; install its Node
 dependencies with `npm ci` before producing a release build.

@@ -9,6 +9,7 @@ const columnLabels = {
 	resolution: "Resolution",
 	screenType: "Screen",
 	totalMemory: "Total memory",
+	apiVersion: "API version",
 };
 let sortColumn = "productId";
 let sortDirection = "ascending";
@@ -29,6 +30,8 @@ function compareDevices(first, second) {
 		result = first.resolution.width - second.resolution.width || first.resolution.height - second.resolution.height;
 	} else if (sortColumn === "totalMemory") {
 		result = compareMemory(first.totalMemory, second.totalMemory);
+	} else if (sortColumn === "apiVersion") {
+		result = Number(first.apiVersion) - Number(second.apiVersion);
 	} else if (sortColumn === "connectIqId") {
 		result = compareText(first.connectIqId, second.connectIqId);
 	} else {
@@ -88,6 +91,7 @@ function render() {
 			cell(device.screenType),
 			cell(device.connectIqId || "—"),
 			cell(formatMemory(device.totalMemory)),
+			cell(device.apiVersion),
 		);
 		return row;
 	}));

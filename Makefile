@@ -8,8 +8,6 @@ NAME        ?= phase0
 DEVICE      ?= fr955
 # build mode
 MODE        ?= debug
-# Python executable
-PYTHON      ?= python3
 # log tag prefix
 LOG_PREFIX  ?=
 # developer key path
@@ -88,13 +86,14 @@ SRCS_DATA := $(shell find source/data -type f)
 SITE_DIR  := site/
 SITE_EXPORT_STAMP := $(BUILD_DIR).site.stamp
 SITE_OUTPUT_DIR := $(BUILD_DIR)site/
+SITE_COPY_STAMP := $(SITE_OUTPUT_DIR).source.stamp
 SITE_UI_ASSETS := foundation.css components.css theme.js scroll-top.js
 SITE_UI_DIR := .site-ui
 SITE_UI_REMOTE_REPOSITORY := https://github.com/dawikur/site-ui.git
 SITE_UI_STAMP    := $(SITE_UI_DIR)/.fetch.stamp
-SITE_VENV_DIR    := .site-venv
-SITE_VENV_PYTHON := $(SITE_VENV_DIR)/bin/python
-SITE_VENV_STAMP  := $(SITE_VENV_DIR)/.installed.stamp
+VENV_DIR    := .venv
+VENV_PYTHON := $(VENV_DIR)/bin/python
+VENV_STAMP  := $(VENV_DIR)/.installed.stamp
 
 ifndef SITE_UI_REPOSITORY
 SITE_UI_REPOSITORY := $(SITE_UI_REMOTE_REPOSITORY)
@@ -146,12 +145,12 @@ SITE_SETTINGS_DEPS  := scripts/generate_site_settings             \
                        scripts/utils/site_settings.py             \
                        $(SETTINGS)                                \
                        $(shell find resources -name strings.xml)
-SITE_SETTINGS       := $(SITE_DIR)settings-data.js
+SITE_SETTINGS       := $(SITE_OUTPUT_DIR)settings-data.js
 SITE_DEVICES_DEPS   := scripts/generate_site_devices              \
                        scripts/utils/site_devices.py              \
                        $(MANIFEST)                                \
                        $(shell find data/devices -type f)
-SITE_DEVICES        := $(SITE_DIR)devices-data.js
+SITE_DEVICES        := $(SITE_OUTPUT_DIR)devices-data.js
 SITE_ICON           := $(SITE_DIR)assets/icon.svg
 DEVICE_OVERLAY_SRC  := $(SITE_DIR)assets/fr955.png
 SITE_DEVICE_OVERLAY_LIGHT := $(SITE_DIR)assets/fr955-light.png
@@ -186,9 +185,9 @@ $(SITE_UI_STAMP): FORCE
 	git -C "$(SITE_UI_DIR)" checkout --detach FETCH_HEAD
 	touch "$@"
 
-$(SITE_VENV_STAMP): requirements-dev.txt
-	$(Q)python3 -m venv "$(SITE_VENV_DIR)"
-	$(Q)$(SITE_VENV_PYTHON) -m pip install -r requirements-dev.txt
+$(VENV_STAMP): requirements.txt
+	$(Q)python3 -m venv "$(VENV_DIR)"
+	$(Q)$(VENV_PYTHON) -m pip install -r requirements.txt
 	touch "$@"
 
 $(PRG): $(PRG_DEPS)
@@ -210,29 +209,30 @@ $(IQ): $(PRG_DEPS)
 		--private-key $(PRIVATE_KEY) \
 		$(FLAG_MONKEYC)
 
-$(FONTS): PYTHON := $(SITE_VENV_PYTHON)
-$(FONTS): $(FONTS_DEPS) $(SITE_VENV_STAMP)
+$(FONTS): $(FONTS_DEPS) $(VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	PYTHONPATH=. $(VENV_PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
-$(ICON): $(ICON_DEPS) $(SITE_VENV_STAMP)
+$(ICON): $(ICON_DEPS) $(VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	PYTHONPATH=. $(VENV_PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
-$(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA) $(SITE_VENV_STAMP)
+$(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA) $(VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	PYTHONPATH=. $(PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	PYTHONPATH=. $(VENV_PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
-$(SITE_SETTINGS): $(SITE_VENV_STAMP) $(SITE_SETTINGS_DEPS)
+$(SITE_SETTINGS): $(VENV_STAMP) $(SITE_SETTINGS_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	PYTHONPATH=. $(PYTHON) scripts/generate_site_settings \
+	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_settings \
 		--build $(BUILD_DIR) \
 		--resources $(RESOURCES_DIR) \
-		--source $(SOURCE_DIR)
+		--source $(SOURCE_DIR) \
+		--output $(SITE_SETTINGS)
 
-$(SITE_DEVICES): $(SITE_VENV_STAMP) $(SITE_DEVICES_DEPS)
+$(SITE_DEVICES): $(VENV_STAMP) $(SITE_DEVICES_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	PYTHONPATH=. $(PYTHON) scripts/generate_site_devices
+	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_devices \
+		--output $(SITE_DEVICES)
 
 $(SITE_ICON): $(ICON)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
@@ -286,24 +286,30 @@ $(BUILD_SOURCE_DIR):
 
 ifneq ($(MODE),release)
 iq:
+	$(Q)echo " [ $(call LOG_TAG,iq) ]"
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release iq
 else
 iq: $(IQ) # build iq project
+	$(Q)echo " [ $(call LOG_TAG,iq) ]"
 endif
 .PHONY: iq
 
 b build: $(PRG) # build project for device
+	$(Q)echo " [ $(call LOG_TAG,build) ]"
 .PHONY: b build
 
 bt build_test: # build project for device w/ tests
+	$(Q)echo " [ $(call LOG_TAG,build_test) ]"
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test build
 .PHONY: bt build_test
 
 bo build_optimized: # build project for device in optimized mode
+	$(Q)echo " [ $(call LOG_TAG,build_optimized) ]"
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=optimized build
 .PHONY: bo build_optimized
 
 br build_release: # build project for device in release mode
+	$(Q)echo " [ $(call LOG_TAG,build_release) ]"
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release build
 .PHONY: br build_release
 
@@ -335,23 +341,26 @@ s simulate: build # run simulator
 .PHONY: s simulate
 
 st simulate_test: # run simulator w/ tests
+	$(Q)echo " [ $(call LOG_TAG,simulate_test) ]"
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test simulate
 .PHONY: st simulate_test
 
 so simulate_optimized: # run simulator width optimized build
+	$(Q)echo " [ $(call LOG_TAG,simulate_optimized) ]"
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=optimized simulate
 .PHONY: so simulate_optimized
 
 sr simulate_release: # run simulator with release build
+	$(Q)echo " [ $(call LOG_TAG,simulate_release) ]"
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release simulate
 .PHONY: sr simulate_release
 
 r resources: $(RESOURCES) # generate resources
+	$(Q)echo " [ $(call LOG_TAG,resources) ]"
 .PHONY: r resources
 
-$(SITE_EXPORT_STAMP): PYTHON := $(SITE_VENV_PYTHON)
-$(SITE_EXPORT_STAMP): FORCE $(SITE_VENV_STAMP) $(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI_STAMP)
-	$(Q)echo " [ $(call LOG_TAG,site) ]"
+$(SITE_COPY_STAMP): FORCE $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI_STAMP)
+	$(Q)echo " [ $(call LOG_TAG,site-copy) ]"
 	rm -rf -- "$(SITE_OUTPUT_DIR)"
 	mkdir -p -- "$(SITE_OUTPUT_DIR)"
 	cp -R "$(SITE_DIR)." "$(SITE_OUTPUT_DIR)"
@@ -360,28 +369,36 @@ $(SITE_EXPORT_STAMP): FORCE $(SITE_VENV_STAMP) $(SITE_SETTINGS) $(SITE_DEVICES) 
 	rm -rf -- "$(SITE_OUTPUT_DIR)tests"
 	touch "$@"
 
+$(SITE_EXPORT_STAMP): FORCE $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SETTINGS) $(SITE_DEVICES)
+	$(Q)echo " [ $(call LOG_TAG,site) ]"
+	touch "$@"
+
 site: $(SITE_EXPORT_STAMP) # build publishable site
+	$(Q)echo " [ $(call LOG_TAG,site) ]"
 .PHONY: s site
 
-t test: $(RESOURCES) # run test
+t test: $(RESOURCES) $(VENV_STAMP) # run test
 	$(Q)echo " [ $(call LOG_TAG,test) ]"
-	PYTHONPATH=. pytest
+	PYTHONPATH=. $(VENV_PYTHON) -m pytest
 	node --test site/tests/*.test.mjs
 .PHONY: t test
 
-l lint: # run static checks
-	$(Q)$(PYTHON) -m isort $(PYTHON_FILES)
-	$(Q)$(PYTHON) -m black $(PYTHON_FILES)
-	$(Q)$(PYTHON) -m basedpyright $(PYTHON_FILES)
-	$(Q)$(PYTHON) -m pylint $(PYTHON_FILES)
+l lint: $(VENV_STAMP) # run static checks
+	$(Q)echo " [ $(call LOG_TAG,lint) ]"
+	$(Q)$(VENV_PYTHON) -m isort $(PYTHON_FILES)
+	$(Q)$(VENV_PYTHON) -m black $(PYTHON_FILES)
+	$(Q)$(VENV_PYTHON) -m basedpyright $(PYTHON_FILES)
+	$(Q)$(VENV_PYTHON) -m pylint $(PYTHON_FILES)
 .PHONY: l lint
 
-smoke: # run smoke test
-	$(Q)scripts/smoke
+smoke: $(VENV_STAMP) # run smoke test
+	$(Q)echo " [ $(call LOG_TAG,smoke) ]"
+	$(Q)$(VENV_PYTHON) scripts/smoke
 .PHONY: smoke
 
 ifneq ($(MODE),release)
 w watch:
+	$(Q)echo " [ $(call LOG_TAG,watch) ]"
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release watch
 else
 w watch: build # deploy release binary to watch
@@ -407,8 +424,10 @@ c clean: # remove build directory and files
 	$(RM) -r bin                                \
 		$(BUILD_DIR) $(SRCS_GENERATED_DIR)      \
 		$(RESOURCES) $(RESOURCES_GENERATED_DIR) \
-		$(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) \
-		$(SITE_VENV_DIR)
+		$(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_DIR)settings-data.js $(SITE_DIR)devices-data.js \
+		$(SITE_ICON) $(SITE_DEVICE_OVERLAYS) \
+		$(VENV_DIR) .build-venv .dev-venv .site-venv $(SITE_UI_DIR) \
+		.mypy_cache .pytest_cache $(wildcard *.egg-info)
 .PHONY: c clean
 
 # ---- help ----

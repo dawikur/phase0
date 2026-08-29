@@ -1,3 +1,6 @@
 basedpyright
+black
+isort
 Pillow
+pylint
 pytest

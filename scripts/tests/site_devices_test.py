@@ -19,6 +19,7 @@ def test_site_devices_include_device_display_and_memory_data() -> None:
         "resolution": {"height": 260, "width": 260},
         "screenType": "MIP64",
         "totalMemory": 126792,
+        "apiVersion": "5.2",
     }
     assert by_connect_iq_id["fenix7spro"]["totalMemory"] == 126792
     assert "Forerunner 745" not in [device["productId"] for device in devices]

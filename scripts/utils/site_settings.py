@@ -234,6 +234,6 @@ def build_site_settings(
     resources_dir: Path = Path("resources"),
     settings_xml: Path = Path("resources/generated/settings.xml"),
     manifest_xml: Path = Path("manifest.xml"),
-    output: Path = Path("site/settings-data.js"),
+    output: Path = Path("build/site/settings-data.js"),
 ) -> None:
     write_settings_js(parse_settings(settings_xml, resources_dir, manifest_xml), output)

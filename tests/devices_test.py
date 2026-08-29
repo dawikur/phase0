@@ -17,6 +17,7 @@ def test_devices_preserve_source_order_and_representative_values() -> None:
         Resolution(390, 390),
         ScreenType.AMOLED,
         "approachs50",
+        api_version="5.1",
     )
     assert (
         Device(
@@ -25,6 +26,7 @@ def test_devices_preserve_source_order_and_representative_values() -> None:
             ScreenType.MIP64,
             "fenix7x",
             total_memory=126792,
+            api_version="5.2",
         )
         in DEVICES.all
     )
@@ -33,6 +35,7 @@ def test_devices_preserve_source_order_and_representative_values() -> None:
         Resolution(390, 390),
         ScreenType.AMOLED,
         "vivoactive6",
+        api_version="6.0",
     )
 
 
@@ -83,6 +86,18 @@ def test_devices_record_total_memory_when_measured() -> None:
     assert memory_by_connect_iq_id["marqdriver"] == 94024
     assert memory_by_connect_iq_id["marqexpedition"] == 94024
     assert memory_by_connect_iq_id["marqgolfer"] == 94024
+
+
+def test_devices_record_garmin_api_version() -> None:
+    api_by_connect_iq_id = {
+        device.connect_iq_id: device.api_version
+        for device in DEVICES
+        if device.connect_iq_id
+    }
+
+    assert api_by_connect_iq_id["fenix7"] == "5.2"
+    assert api_by_connect_iq_id["fenix9pro51mm"] == "6.0"
+    assert api_by_connect_iq_id["fr945lte"] == "3.4"
 
 
 def test_devices_filter_by_screen_type() -> None:

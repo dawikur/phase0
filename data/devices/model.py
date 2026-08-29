@@ -23,6 +23,7 @@ class Device:
     screen_type: ScreenType
     connect_iq_id: str = ""
     total_memory: int = -1
+    api_version: str = ""
 
 
 class Devices:

@@ -13,11 +13,13 @@ test("device reference loads generated device data and provides sortable columns
 	assert.match(page, /data-sort-column="screenType"/);
 	assert.match(page, /data-sort-column="connectIqId"/);
 	assert.match(page, /data-sort-column="totalMemory"/);
+	assert.match(page, /data-sort-column="apiVersion"/);
 	assert.match(page, /data-filter-column="productId"/);
 	assert.match(page, /data-filter-column="resolution"/);
 	assert.match(page, /data-filter-column="screenType"/);
 	assert.match(page, /data-filter-column="connectIqId"/);
 	assert.match(page, /data-filter-column="totalMemory"/);
+	assert.match(page, /data-filter-column="apiVersion"/);
 	assert.match(app, /button\.closest\("th"\)\.setAttribute\("aria-sort"/);
 	assert.match(app, /function matchesFilters\(device\)/);
 	assert.match(app, /filter\.addEventListener\("input", render\)/);

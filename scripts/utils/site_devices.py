@@ -20,6 +20,7 @@ def device_data(manifest_xml: Path = Path("manifest.xml")) -> list[dict[str, obj
             },
             "screenType": device.screen_type.value,
             "totalMemory": device.total_memory,
+            "apiVersion": device.api_version,
         }
         for device in DEVICES
         if device.connect_iq_id in supported_ids
@@ -37,6 +38,6 @@ def write_devices_js(
 
 def build_site_devices(
     manifest_xml: Path = Path("manifest.xml"),
-    output: Path = Path("site/devices-data.js"),
+    output: Path = Path("build/site/devices-data.js"),
 ) -> None:
     write_devices_js(device_data(manifest_xml), output)
