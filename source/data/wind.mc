@@ -14,8 +14,6 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_WIND),
 				WeatherProvider.refresh_rate
 			);
-			self.uses_weather = true;
-
 			self.icon = Fonts.ICON_NONE;
 
 			WeatherProvider.register("wind_bearing");
@@ -64,6 +62,10 @@ module Data {
 					}
 				}
 			}
+		}
+
+		function refreshRevision() as Lang.Number? {
+			return WeatherProvider.revision;
 		}
 	}
 } // module Data

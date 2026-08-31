@@ -56,9 +56,9 @@ module Phase0 {
 		hidden var top_middle_ as Bases = [];
 		hidden var top_inner_ as Widgets.Base = Widgets.Base.None();
 
-		hidden var bottom_middle_ as Bases = [];
 		hidden var bottom_inner_date_ as Widgets.Base = Widgets.Base.None();
 		hidden var bottom_inner_am_pm_ as Widgets.Base = Widgets.Base.None();
+		hidden var bottom_middle_ as Bases = [];
 		hidden var bottom_outer_ as Widgets.Base = Widgets.Base.None();
 
 		hidden var widgets_per_hour_ as Bases = [];
@@ -165,15 +165,15 @@ module Phase0 {
 
 			// ---- top outer ----
 
-			self.LayoutWidget_(_dc, self.top_outer_, layout.outer);
+			self.LayoutWidget_(_dc, self.top_outer_, layout.top_outer);
 
 			// ---- top middle ----
 
-			self.FitWidgetsInBox_(_dc, self.top_middle_, layout.middle);
+			self.FitWidgetsInBox_(_dc, self.top_middle_, layout.top_middle);
 
 			// ---- top inner ----
 
-			self.LayoutWidget_(_dc, self.top_inner_, layout.inner);
+			self.LayoutWidget_(_dc, self.top_inner_, layout.top_inner);
 
 			// ---- main ----
 
@@ -189,31 +189,28 @@ module Phase0 {
 
 			var layout_right = layout.rightBox(layout.left_raw);
 			var gauges_size = self.gauges_.size();
-			if (layout.show_right) {
-				for (var i = 0; i < gauges_size; ++i) {
-					self.gauges_[i].resize(
-						_dc,
-						layout_right.size_x,
-						layout_right.size_y
-					);
-				}
-				self.DistributeWidgetsInBox_(self.gauges_, layout_right);
-			} else {
+			for (var i = 0; i < gauges_size; ++i) {
+				self.gauges_[i].resize(
+					_dc,
+					layout_right.size_x,
+					layout_right.size_y
+				);
 			}
+			self.DistributeWidgetsInBox_(self.gauges_, layout_right);
 
 			// ---- bottom inner ----
 
-			var bottom_inner = layout.bottomBox(layout.inner);
+			var bottom_inner = layout.bottomBox(layout.top_inner);
 			self.layoutBottomInner_(_dc, bottom_inner);
 
 			// ---- bottom middle ----
 
-			var bottom_middle = layout.bottomBox(layout.middle);
+			var bottom_middle = layout.bottomBox(layout.top_middle);
 			self.FitWidgetsInBox_(_dc, self.bottom_middle_, bottom_middle);
 
 			// ---- bottom outer ----
 
-			var bottom_outer = layout.bottomBox(layout.outer);
+			var bottom_outer = layout.bottomBox(layout.top_outer);
 			self.LayoutWidget_(_dc, self.bottom_outer_, bottom_outer);
 
 			// ---- footer ----
@@ -343,6 +340,7 @@ module Phase0 {
 			self.last_refresh_hour_ = -1;
 
 			self.needs_reposition_ = true;
+			self.bitmap_ = null;
 
 			self.batteries_ = [];
 

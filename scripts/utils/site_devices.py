@@ -2,33 +2,50 @@
 
 import json
 from pathlib import Path
+from typing import TypedDict
 
 from data.devices import DEVICES
 from scripts.utils.site_settings import supported_connect_iq_ids
 
 
-def device_data(manifest_xml: Path = Path("manifest.xml")) -> list[dict[str, object]]:
+class DeviceMemoryData(TypedDict):
+    watchFace: int
+
+
+class DeviceData(TypedDict):
+    connectIqId: str
+    productId: str
+    supported: bool
+    resolution: dict[str, int]
+    screenType: str
+    memory: DeviceMemoryData
+    apiVersion: str
+
+
+def device_data(manifest_xml: Path = Path("manifest.xml")) -> list[DeviceData]:
     supported_ids = set(supported_connect_iq_ids(manifest_xml))
 
     return [
         {
             "connectIqId": device.connect_iq_id,
             "productId": device.product_id,
+            "supported": device.connect_iq_id in supported_ids,
             "resolution": {
                 "height": device.resolution.height,
                 "width": device.resolution.width,
             },
             "screenType": device.screen_type.value,
-            "totalMemory": device.total_memory,
+            "memory": {
+                "watchFace": device.memory.watch_face,
+            },
             "apiVersion": device.api_version,
         }
         for device in DEVICES
-        if device.connect_iq_id in supported_ids
     ]
 
 
 def write_devices_js(
-    devices: list[dict[str, object]],
+    devices: list[DeviceData],
     output: Path,
 ) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)

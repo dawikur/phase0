@@ -54,7 +54,7 @@ PYTHON_FILES := $(shell rg --files -g '*.py') \
 	scripts/generate_fonts scripts/generate_icon scripts/generate_settings \
 	scripts/generate_site_devices scripts/generate_site_settings scripts/smoke
 
-SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release w watch
+SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release w deploy
 
 ifneq ($(strip $(MAKECMDGOALS)),)
 ifneq ($(filter $(SDK_TARGETS),$(MAKECMDGOALS)),)
@@ -221,7 +221,7 @@ $(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA) $(VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 
-$(SITE_SETTINGS): $(VENV_STAMP) $(SITE_SETTINGS_DEPS)
+$(SITE_SETTINGS): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SETTINGS_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_settings \
 		--build $(BUILD_DIR) \
@@ -229,7 +229,7 @@ $(SITE_SETTINGS): $(VENV_STAMP) $(SITE_SETTINGS_DEPS)
 		--source $(SOURCE_DIR) \
 		--output $(SITE_SETTINGS)
 
-$(SITE_DEVICES): $(VENV_STAMP) $(SITE_DEVICES_DEPS)
+$(SITE_DEVICES): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_DEVICES_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_devices \
 		--output $(SITE_DEVICES)
@@ -397,27 +397,27 @@ smoke: $(VENV_STAMP) # run smoke test
 .PHONY: smoke
 
 ifneq ($(MODE),release)
-w watch:
-	$(Q)echo " [ $(call LOG_TAG,watch) ]"
-	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release watch
+d deploy:
+	$(Q)echo " [ $(call LOG_TAG,deploy) ]"
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release deploy
 else
-w watch: build # deploy release binary to watch
+d deploy: build # deploy release binary to watch
 	$(Q)i=0; while ! gio mount -l | grep -q "mtp://091e_"; do
 		set -- ⠋ ⠙ ⠸ ⢰ ⣠ ⣄ ⡆  ⠇
 		shift $$((i % 8))
-		printf "\r [ $(call LOG_TAG,watch) ] %s" "$$1"
+		printf "\r [ $(call LOG_TAG,deploy) ] %s" "$$1"
 		printf "\033[D"
 		i=$$((i+1))
 		sleep .1
 	done; printf "\r\033[K"
 
-	$(Q)echo " [ $(call LOG_TAG,watch) ]"
+	$(Q)echo " [ $(call LOG_TAG,deploy) ]"
 	GVFS="/run/user/$$(id -u)/gvfs"
 	MOUNT="$$(ls "$$GVFS" | grep 'mtp:host=' | head -n1)"
 	TARGET="$$GVFS/$$MOUNT/Internal Storage/GARMIN/Apps"
 	gio copy $(PRG) "$$TARGET/"
 endif
-.PHONY: w watch
+.PHONY: d deploy
 
 c clean: # remove build directory and files
 	$(Q)echo " [ $(call LOG_TAG,clean) ]"

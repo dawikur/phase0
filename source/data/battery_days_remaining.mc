@@ -19,5 +19,9 @@ module Data {
 		function refresh() as Void {
 			self.value = System.getSystemStats().batteryInDays.toNumber();
 		}
+
+		function refreshRate() as Lang.Number {
+			return RefreshRate.SEC;
+		}
 	}
 } // module Data

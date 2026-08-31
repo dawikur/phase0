@@ -12,20 +12,22 @@ def test_site_devices_include_device_display_and_memory_data() -> None:
         device["connectIqId"]: device for device in devices if device["connectIqId"]
     }
 
-    assert len(devices) == 35
+    assert len(devices) == 125
     assert by_connect_iq_id["fenix7"] == {
         "connectIqId": "fenix7",
         "productId": "Fenix 7 / quatix 7",
+        "supported": True,
         "resolution": {"height": 260, "width": 260},
         "screenType": "MIP64",
-        "totalMemory": 126792,
+        "memory": {"watchFace": 131072},
         "apiVersion": "5.2",
     }
-    assert by_connect_iq_id["fenix7spro"]["totalMemory"] == 126792
-    assert "Forerunner 745" not in [device["productId"] for device in devices]
-    assert {
-        device["connectIqId"] for device in devices if device["connectIqId"]
-    } == set(supported_connect_iq_ids(Path("manifest.xml")))
+    assert by_connect_iq_id["fenix7spro"]["memory"]["watchFace"] == 131072
+    assert by_connect_iq_id["fr745"]["supported"] is False
+    assert "Forerunner 745" in [device["productId"] for device in devices]
+    assert {device["connectIqId"] for device in devices if device["supported"]} == set(
+        supported_connect_iq_ids(Path("manifest.xml"))
+    )
 
 
 def test_site_devices_writer_exposes_data_on_window(tmp_path: Path) -> None:

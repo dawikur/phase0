@@ -112,9 +112,6 @@ def Settings(  # pylint: disable=invalid-name
                 [
                     Select("data", Status.NOTIFICATIONS),
                 ],
-                [
-                    Select("data", Status.DISABLED),
-                ],
             ],
         ),
         Array(
@@ -132,10 +129,6 @@ def Settings(  # pylint: disable=invalid-name
                 [
                     Select("data", DataWithValueMax.MOVE_BAR),
                     Select("accent", Colors.RED),
-                ],
-                [
-                    Select("data", DataWithValueMax.DISABLED),
-                    Select("accent", Colors.MAGENTA),
                 ],
             ],
         ),
@@ -162,10 +155,6 @@ def Settings(  # pylint: disable=invalid-name
                     Select("data", DataWithIcon.WIND),
                     Number("width", 2),
                 ],
-                [
-                    Select("data", DataWithIcon.DISABLED),
-                    Number("width", 2),
-                ],
             ],
         ),
         Array(
@@ -182,10 +171,6 @@ def Settings(  # pylint: disable=invalid-name
                 ],
                 [
                     Select("data", DataAll.FLOORS_CLIMBED),
-                    Number("width", 3),
-                ],
-                [
-                    Select("data", DataAll.DISABLED),
                     Number("width", 3),
                 ],
             ],

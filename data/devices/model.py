@@ -17,12 +17,17 @@ class Resolution:
 
 
 @dataclass(frozen=True)
+class Memory:
+    watch_face: int = -1
+
+
+@dataclass(frozen=True)
 class Device:
     product_id: str
     resolution: Resolution
     screen_type: ScreenType
     connect_iq_id: str = ""
-    total_memory: int = -1
+    memory: Memory = Memory()
     api_version: str = ""
 
 

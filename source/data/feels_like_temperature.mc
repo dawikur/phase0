@@ -13,13 +13,16 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_FEELS_LIKE_TEMPERATURE),
 				WeatherProvider.refresh_rate
 			);
-			self.uses_weather = true;
 
 			WeatherProvider.register("feels_like_temperature");
 		}
 
 		function refresh() as Void {
 			self.value = WeatherProvider.get("feels_like_temperature");
+		}
+
+		function refreshRevision() as Lang.Number? {
+			return WeatherProvider.revision;
 		}
 	}
 } // module Data

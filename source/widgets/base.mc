@@ -40,7 +40,7 @@ module Widgets {
 
 		var refresh_rate as Lang.Number;
 
-		hidden var id_ as Complications.Id?;
+		hidden var type_ as Complications.Type?;
 		hidden var is_dirty_ as Lang.Boolean = true;
 
 		static function None() as Base {
@@ -51,16 +51,7 @@ module Widgets {
 			_type as Complications.Type?,
 			_refresh_rate as Lang.Number
 		) {
-			if (
-				Toybox has :Complications and
-				_type != null and
-				_type != Complications.COMPLICATION_TYPE_INVALID
-			) {
-				self.id_ = new Complications.Id(_type);
-			} else {
-				self.id_ = null;
-			}
-
+			self.type_ = _type;
 			self.refresh_rate = _refresh_rate;
 		}
 
@@ -94,8 +85,14 @@ module Widgets {
 		}
 
 		function open() as Lang.Boolean {
-			if (Toybox has :Complications and self.id_ != null) {
-				Complications.exitTo(self.id_);
+			if (
+				Toybox has :Complications and
+				self.type_ != null and
+				self.type_ != Complications.COMPLICATION_TYPE_INVALID
+			) {
+				var id = new Complications.Id(self.type_);
+
+				Complications.exitTo(id);
 
 				return true;
 			}

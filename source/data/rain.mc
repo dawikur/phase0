@@ -14,7 +14,6 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_RAIN),
 				WeatherProvider.refresh_rate
 			);
-			self.uses_weather = true;
 
 			self.icon = Fonts.ICON_NONE;
 			self.value_max = 100;
@@ -36,6 +35,10 @@ module Data {
 			} else {
 				self.icon = Fonts.ICON_RAIN_3;
 			}
+		}
+
+		function refreshRevision() as Lang.Number? {
+			return WeatherProvider.revision;
 		}
 	}
 } // module Data

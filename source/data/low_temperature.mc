@@ -13,13 +13,16 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_LOW_TEMPERATURE),
 				WeatherProvider.refresh_rate
 			);
-			self.uses_weather = true;
 
 			WeatherProvider.register("low_temperature");
 		}
 
 		function refresh() as Void {
 			self.value = WeatherProvider.get("low_temperature");
+		}
+
+		function refreshRevision() as Lang.Number? {
+			return WeatherProvider.revision;
 		}
 	}
 } // module Data

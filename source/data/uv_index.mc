@@ -14,8 +14,6 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_UV_INDEX),
 				WeatherProvider.refresh_rate
 			);
-			self.uses_weather = true;
-
 			self.icon = Fonts.ICON_NONE;
 
 			WeatherProvider.register("uv_index");
@@ -41,6 +39,10 @@ module Data {
 					self.icon = Fonts.ICON_UV_EXTREME;
 				}
 			}
+		}
+
+		function refreshRevision() as Lang.Number? {
+			return WeatherProvider.revision;
 		}
 	}
 } // module Data

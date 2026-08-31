@@ -6,10 +6,11 @@
 
 ## Display
 
-- [ ] Fr255s - render is simply wrong
+- [ ] Allow for layout box'es to dissapear when empty.
 - [ ] Add burn-in prevention if AMOLED support is added.
 
 ## General
 
 - [ ] Verify layouts on the smallest supported 240×240 MIP64 displays.
 - [ ] Add more metric-specific icons
+- [ ] Every widget can go anywhere

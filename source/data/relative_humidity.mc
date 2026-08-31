@@ -13,8 +13,6 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_RELATIVE_HUMIDITY),
 				WeatherProvider.refresh_rate
 			);
-			self.uses_weather = true;
-
 			self.value_max = 100;
 
 			WeatherProvider.register("relative_humidity");
@@ -22,6 +20,10 @@ module Data {
 
 		function refresh() as Void {
 			self.value = WeatherProvider.get("relative_humidity");
+		}
+
+		function refreshRevision() as Lang.Number? {
+			return WeatherProvider.revision;
 		}
 	}
 } // module Data

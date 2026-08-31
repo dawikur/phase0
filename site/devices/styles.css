@@ -2,7 +2,16 @@
 
 .devices-page h1 { max-width: none; }
 
+.devices-table-toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-3);
+}
+
 .devices-summary { margin: var(--space-4) 0 var(--space-2); }
+
+.devices-scope-control { flex: 0 0 auto; }
 
 .devices-table-wrap { overflow-x: auto; padding: 0; }
 
@@ -70,6 +79,7 @@
 
 @media (max-width: 560px) {
 	.devices-page { width: calc(100% - 20px); }
+	.devices-table-toolbar { align-items: flex-start; flex-direction: column; }
 	.devices-table th,
 	.devices-table td { padding: 12px; }
 }

@@ -109,7 +109,7 @@ def test_weather_changes_refresh_dependent_widgets_outside_their_schedule() -> N
     ):
         weather_data = source(path)
         assert "Base.initialize(" in weather_data
-        assert "self.uses_weather = true;" in weather_data
+        assert "function refreshRevision() as Lang.Number?" in weather_data
 
     refresh_position = view.index("self.refreshWidgets_(_dc, self.widgets_per_sec_);")
     changed_position = view.index("self.refreshChangedWidgets_", refresh_position)

@@ -11,13 +11,13 @@ module Phase0 {
 		var screen_size_y as Lang.Number = 0;
 
 		var clock as Box = new Box(0, 0, 0, 0);
-		var inner as Box = new Box(0, 0, 0, 0);
-		var middle as Box = new Box(0, 0, 0, 0);
-		var outer as Box = new Box(0, 0, 0, 0);
+
+		var top_outer as Box = new Box(0, 0, 0, 0);
+		var top_middle as Box = new Box(0, 0, 0, 0);
+		var top_inner as Box = new Box(0, 0, 0, 0);
 
 		var left as Box = new Box(0, 0, 0, 0);
 		var left_raw as Box = new Box(0, 0, 0, 0);
-		var show_right as Lang.Boolean = true;
 
 		function initialize(_dc as Graphics.Dc) {
 			if (
@@ -157,8 +157,6 @@ module Phase0 {
 			var side_size_raw_x = 0;
 			var side_size_raw_y = _dc.getFontHeight(clock_font);
 
-			self.show_right = _show_right;
-
 			if (_show_left) {
 				side_size_x = Render.IconsWidth(_dc, " ");
 			}
@@ -199,18 +197,26 @@ module Phase0 {
 				return false;
 			}
 
-			self.outer = Box.ForY(self.screen_size_y, pos_y, line_outer_height);
-			pos_y = self.outer.end_y + gap_y;
+			self.top_outer = Box.ForY(
+				self.screen_size_y,
+				pos_y,
+				line_outer_height
+			);
+			pos_y = self.top_outer.end_y + gap_y;
 
-			self.middle = Box.ForY(
+			self.top_middle = Box.ForY(
 				self.screen_size_y,
 				pos_y,
 				line_middle_height
 			);
-			pos_y = self.middle.end_y + gap_y;
+			pos_y = self.top_middle.end_y + gap_y;
 
-			self.inner = Box.ForY(self.screen_size_y, pos_y, line_inner_height);
-			pos_y = self.inner.end_y + gap_y;
+			self.top_inner = Box.ForY(
+				self.screen_size_y,
+				pos_y,
+				line_inner_height
+			);
+			pos_y = self.top_inner.end_y + gap_y;
 
 			self.clock = new Box(
 				(self.screen_size_x - clock_size_x) / 2,
@@ -246,8 +252,6 @@ module Phase0 {
 			var clock_size_x = Render.ClockWidth(_dc, "00:00", clock_font);
 			var clock_size_y = Render.ClockHeight(_dc, clock_font);
 
-			// Keep the clock visible even if a future font or device is smaller
-			// than the normal candidate matrix can handle.
 			self.clock = new Box(
 				(self.screen_size_x - clock_size_x) / 2,
 				(self.screen_size_y - clock_size_y) / 2,
@@ -256,9 +260,10 @@ module Phase0 {
 			);
 			self.left = new Box(0, 0, 0, 0);
 			self.left_raw = new Box(0, 0, 0, 0);
-			self.outer = new Box(0, 0, 0, 0);
-			self.middle = new Box(0, 0, 0, 0);
-			self.inner = new Box(0, 0, 0, 0);
+
+			self.top_outer = new Box(0, 0, 0, 0);
+			self.top_middle = new Box(0, 0, 0, 0);
+			self.top_inner = new Box(0, 0, 0, 0);
 		}
 	}
 } // module Phase0

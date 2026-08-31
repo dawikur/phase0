@@ -3,16 +3,18 @@ const tableBody = document.getElementById("devicesTableBody");
 const summary = document.getElementById("devicesSummary");
 const sortButtons = Array.from(document.querySelectorAll("[data-sort-column]"));
 const filters = Array.from(document.querySelectorAll("[data-filter-column]"));
+const scopeButtons = Array.from(document.querySelectorAll("[data-device-scope]"));
 const columnLabels = {
 	connectIqId: "Connect IQ ID",
 	productId: "Device",
 	resolution: "Resolution",
 	screenType: "Screen",
-	totalMemory: "Total memory",
+	watchFaceMemory: "Watch face memory",
 	apiVersion: "API version",
 };
 let sortColumn = "productId";
 let sortDirection = "ascending";
+let deviceScope = "supported";
 
 function compareText(first, second) {
 	return String(first).localeCompare(String(second));
@@ -28,8 +30,8 @@ function compareDevices(first, second) {
 	let result;
 	if (sortColumn === "resolution") {
 		result = first.resolution.width - second.resolution.width || first.resolution.height - second.resolution.height;
-	} else if (sortColumn === "totalMemory") {
-		result = compareMemory(first.totalMemory, second.totalMemory);
+	} else if (sortColumn === "watchFaceMemory") {
+		result = compareMemory(first.memory.watchFace, second.memory.watchFace);
 	} else if (sortColumn === "apiVersion") {
 		result = Number(first.apiVersion) - Number(second.apiVersion);
 	} else if (sortColumn === "connectIqId") {
@@ -37,7 +39,7 @@ function compareDevices(first, second) {
 	} else {
 		result = compareText(first[sortColumn], second[sortColumn]);
 	}
-	const direction = sortColumn === "totalMemory" || sortDirection === "ascending" ? 1 : -1;
+	const direction = sortColumn === "watchFaceMemory" || sortDirection === "ascending" ? 1 : -1;
 	return result * direction || compareText(first.productId, second.productId);
 }
 
@@ -67,14 +69,15 @@ function populateFilters() {
 }
 
 function matchesFilters(device) {
+	if (deviceScope === "supported" && !device.supported) return false;
 	return filters.every((filter) => {
 		const value = filter.value.trim().toLowerCase();
 		if (!value) return true;
 		if (filter.dataset.filterColumn === "resolution") {
 			return `${device.resolution.width} × ${device.resolution.height}` === filter.value;
 		}
-		if (filter.dataset.filterColumn === "totalMemory") {
-			return value === "measured" ? device.totalMemory >= 0 : device.totalMemory < 0;
+		if (filter.dataset.filterColumn === "watchFaceMemory") {
+			return value === "documented" ? device.memory.watchFace >= 0 : device.memory.watchFace < 0;
 		}
 		const deviceValue = device[filter.dataset.filterColumn];
 		return deviceValue.toLowerCase().includes(value);
@@ -82,7 +85,8 @@ function matchesFilters(device) {
 }
 
 function render() {
-	const visibleDevices = devices.filter(matchesFilters).sort(compareDevices);
+	const scopedDevices = devices.filter((device) => deviceScope === "all" || device.supported);
+	const visibleDevices = scopedDevices.filter(matchesFilters).sort(compareDevices);
 	tableBody.replaceChildren(...visibleDevices.map((device) => {
 		const row = document.createElement("tr");
 		row.append(
@@ -90,17 +94,18 @@ function render() {
 			cell(`${device.resolution.width} × ${device.resolution.height}`),
 			cell(device.screenType),
 			cell(device.connectIqId || "—"),
-			cell(formatMemory(device.totalMemory)),
+			cell(formatMemory(device.memory.watchFace)),
 			cell(device.apiVersion),
 		);
 		return row;
 	}));
-	summary.textContent = `${visibleDevices.length} of ${devices.length} devices · ${devices.filter((device) => device.totalMemory >= 0).length} measured`;
+	summary.textContent = `${visibleDevices.length} of ${scopedDevices.length} devices · ${scopedDevices.filter((device) => device.memory.watchFace >= 0).length} documented`;
 	sortButtons.forEach((button) => {
 		const active = button.dataset.sortColumn === sortColumn;
 		button.closest("th").setAttribute("aria-sort", active ? sortDirection : "none");
 		button.textContent = `${columnLabels[button.dataset.sortColumn]}${active ? (sortDirection === "ascending" ? " ↑" : " ↓") : ""}`;
 	});
+	scopeButtons.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.deviceScope === deviceScope)));
 }
 
 sortButtons.forEach((button) => button.addEventListener("click", () => {
@@ -114,5 +119,9 @@ filters.forEach((filter) => {
 	filter.addEventListener("input", render);
 	filter.addEventListener("change", render);
 });
+scopeButtons.forEach((button) => button.addEventListener("click", () => {
+	deviceScope = button.dataset.deviceScope;
+	render();
+}));
 populateFilters();
 render();
