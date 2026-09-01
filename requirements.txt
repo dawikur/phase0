@@ -4,3 +4,4 @@ isort
 Pillow
 pylint
 pytest
+pytest-cov

@@ -87,11 +87,11 @@ class Devices:
 
     @overload
     def __getitem__(self, idx: int) -> Device:
-        pass
+        pass  # pragma: no cover
 
     @overload
     def __getitem__(self, idx: slice) -> tuple[Device, ...]:
-        pass
+        pass  # pragma: no cover
 
     def __getitem__(self, idx: int | slice) -> Device | tuple[Device, ...]:
         return self.__items[idx]

@@ -1,12 +1,18 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
 from enum import IntEnum
+from types import SimpleNamespace
+from typing import Any
+
+import pytest
 
 from data.settings import Array, Boolean, Number, Select, Single
 from scripts.utils.settings_generation import (
+    render_data_mc,
     render_properties_mc,
     render_properties_xml,
     render_settings_xml,
+    render_widgets_mc,
 )
 
 
@@ -69,6 +75,13 @@ def test_render_settings_xml_includes_setting_config_by_entry_type() -> None:
     assert '<settingConfig type="boolean" required="true" />' in xml
 
 
+def test_render_settings_xml_handles_array_settings() -> None:
+    xml = render_settings_xml([Array("status", "Status", [[Number("width", 2)]])])
+
+    assert '<group id="Status0"' in xml
+    assert 'propertyKey="@Properties.StatusWidth0"' in xml
+
+
 def test_render_properties_mc_reuses_matching_property_classes() -> None:
     mc = render_properties_mc(
         [
@@ -86,6 +99,58 @@ def test_render_properties_mc_reuses_matching_property_classes() -> None:
     assert "self.bottom = new Widget(" in mc
     assert '"TopWidth") as Lang.Number' in mc
     assert '"BottomWidth") as Lang.Number' in mc
+
+
+def test_render_properties_mc_handles_array_settings() -> None:
+    mc = render_properties_mc(
+        [Array("status", "Status", [[Number("width", 2)]])],
+        SampleData,
+    )
+
+    assert "var status as Lang.Array<Status>;" in mc
+    assert "self.status = [" in mc
+
+
+def test_render_properties_mc_skips_disabled_extra_data() -> None:
+    extra_data = [
+        SimpleNamespace(name="Disabled", value=0),
+        SimpleNamespace(name="HeartRate", value=1),
+    ]
+    mc = render_properties_mc([], extra_data)  # type: ignore[arg-type]
+
+    assert "DATA_HEARTRATE" in mc
+    assert "DATA_DISABLED" not in mc
+
+
+def test_render_generators_reject_unsupported_types() -> None:
+    unsupported = SimpleNamespace(klass="Unsupported")
+
+    with pytest.raises(AssertionError, match="Unsupported type"):
+        render_properties_mc([unsupported], SampleData)  # type: ignore[list-item]
+    with pytest.raises(AssertionError, match="Unsupported type"):
+        render_properties_xml([unsupported])  # type: ignore[list-item]
+    with pytest.raises(AssertionError, match="Unsupported type"):
+        render_settings_xml([unsupported])  # type: ignore[list-item]
+
+    class ChangesBetweenPasses:  # pylint: disable=too-few-public-methods
+        def __init__(self) -> None:
+            self.pass_number = 0
+
+        def __iter__(self):
+            self.pass_number += 1
+            if self.pass_number == 1:
+                return iter([Single("sample", "Sample", [])])
+            return iter([object()])
+
+    with pytest.raises(AssertionError, match="Unsupported type"):
+        render_properties_mc(ChangesBetweenPasses(), SampleData)  # type: ignore[arg-type]
+
+
+def test_render_settings_xml_rejects_unsupported_entry_type() -> None:
+    unsupported: Any = SimpleNamespace(hidden=False, label="UNKNOWN", id="Unknown")
+
+    with pytest.raises(AssertionError, match="Unsupported type"):
+        render_settings_xml([Single("sample", "Sample", [unsupported])])
 
 
 def test_hidden_settings_keep_defaults_without_generated_properties() -> None:
@@ -116,3 +181,18 @@ def test_hidden_settings_keep_defaults_without_generated_properties() -> None:
     assert 'propertyKey="@Properties.MetricWidth"' in settings_xml
     assert "MetricIcon" not in settings_xml
     assert "SET_ICON" not in settings_xml
+
+
+def test_render_data_and_widgets_mc_include_cases_and_default() -> None:
+    data = [
+        SimpleNamespace(name="heart_rate", value=1),
+        SimpleNamespace(name="steps", value=2),
+    ]
+    data_mc = render_data_mc(data)
+    widgets_mc = render_widgets_mc(SampleData)
+
+    assert "case 1: return new HeartRate();" in data_mc
+    assert "case 2: return new Steps();" in data_mc
+    assert "default: return null;" in data_mc
+    assert "case Properties.DATA_HEART_RATE: return new HeartRate(" in widgets_mc
+    assert "default: return Widgets.Base.None();" in widgets_mc

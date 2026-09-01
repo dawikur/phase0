@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from scripts.utils.site_devices import device_data, write_devices_js
+from scripts.utils.site_devices import build_site_devices, device_data, write_devices_js
 from scripts.utils.site_settings import supported_connect_iq_ids
 
 
@@ -35,4 +35,13 @@ def test_site_devices_writer_exposes_data_on_window(tmp_path: Path) -> None:
 
     write_devices_js(device_data()[:1], output)
 
+    assert output.read_text(encoding="utf-8").startswith("window.PHASE_DEVICES = [")
+
+
+def test_site_devices_builder_writes_default_data(tmp_path: Path) -> None:
+    output = tmp_path / "nested" / "devices-data.js"
+
+    build_site_devices(Path("manifest.xml"), output)
+
+    assert output.exists()
     assert output.read_text(encoding="utf-8").startswith("window.PHASE_DEVICES = [")

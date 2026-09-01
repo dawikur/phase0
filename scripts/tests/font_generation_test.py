@@ -1,8 +1,19 @@
 # Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
 
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+
 from data.fonts.model import Glyph as SourceGlyph
 from data.fonts.model import Style, Typeface
-from scripts.utils.font_generation import Fnt, parse_typeface_and_style
+from scripts.utils.args_parse import Folders, parse_folders
+from scripts.utils.font_generation import (
+    Fnt,
+    generate_fonts,
+    get_required_glyphs,
+    parse_typeface_and_style,
+)
 
 
 def test_fnt_omits_empty_glyph_dimensions_but_keeps_advance() -> None:
@@ -44,3 +55,70 @@ def test_parse_typeface_and_style_filters_required_glyphs() -> None:
     assert "char id=66" in fnt
     assert "char id=65" not in fnt
     assert comments == {"B": ""}
+
+
+def test_parse_typeface_and_style_supports_empty_and_multiple_typefaces() -> None:
+    style = Style("Regular", size=1, weight=1)
+
+    name, atlas, fnt, comments = parse_typeface_and_style([], [], name="Empty")
+
+    assert (name, atlas.size, comments) == ("empty", (0, 0), {})
+    assert "chars count=0" in fnt
+
+    typeface = Typeface("Sample", [SourceGlyph("A", ["1"])])
+    with pytest.raises(AssertionError, match="Name is required"):
+        parse_typeface_and_style([typeface, typeface], [style, style])
+
+
+def test_generate_fonts_writes_all_generated_outputs(tmp_path) -> None:
+    resources = tmp_path / "resources"
+    resources.joinpath("base").mkdir(parents=True)
+    resources.joinpath("base/strings.xml").write_text(
+        '<resources><string id="HELLO">Hi</string></resources>',
+        encoding="utf-8",
+    )
+    folders = Folders(tmp_path / "build", resources, tmp_path / "source")
+
+    required_glyphs = get_required_glyphs(folders)
+    generate_fonts(folders, required_glyphs)
+
+    assert folders.source("generated", "fonts.mc").exists()
+    assert folders.resources("generated", "fonts.xml").exists()
+
+
+def test_folders_and_parse_folders_resolve_output_paths(tmp_path, monkeypatch) -> None:
+    folders = Folders(tmp_path / "build", tmp_path / "resources", tmp_path / "source")
+
+    assert folders.build() == tmp_path / "build"
+    assert folders.resources("generated", "fonts.xml") == (
+        tmp_path / "resources" / "generated" / "fonts.xml"
+    )
+    assert folders.source("data") == tmp_path / "source" / "data"
+
+    monkeypatch.setattr(
+        "sys.argv",
+        ["generate", "--build", "b", "--resources", "r", "--source", "s"],
+    )
+    assert parse_folders().build_ == Path("b")
+
+
+def test_required_glyphs_reports_invalid_and_missing_strings(tmp_path, capsys) -> None:
+    resources = tmp_path / "resources" / "base"
+    resources.mkdir(parents=True)
+    resources.joinpath("strings.xml").write_text(
+        '<resources><string id="A">🦄</string></resources>', encoding="utf-8"
+    )
+    folders = Folders(tmp_path / "build", tmp_path / "resources", tmp_path / "source")
+
+    get_required_glyphs(folders)
+    assert "Missing glyphs" in capsys.readouterr().out
+
+    resources.joinpath("strings.xml").write_text("<resources>", encoding="utf-8")
+    get_required_glyphs(folders)
+    assert "XML parse error" in capsys.readouterr().out
+
+    with patch(
+        "scripts.utils.font_generation.ET.parse", side_effect=RuntimeError("boom")
+    ):
+        get_required_glyphs(folders)
+    assert "Error reading" in capsys.readouterr().out

@@ -2,7 +2,86 @@
 
 from pathlib import Path
 
-from scripts.utils.site_settings import parse_settings
+from scripts.utils.site_settings import (
+    build_site_settings,
+    display_group_id,
+    is_alternative_group,
+    parse_settings,
+    resolve_property,
+    resolve_text,
+    setting_region,
+    setting_summary,
+    write_settings_js,
+)
+
+
+def test_site_settings_resolvers_handle_references_and_fallbacks() -> None:
+    strings = {"KNOWN": "Known label"}
+
+    assert resolve_text(None, strings) == ""
+    assert resolve_text("", strings) == ""
+    assert resolve_text("@Strings.KNOWN", strings) == "Known label"
+    assert resolve_text("@Strings.UNKNOWN_VALUE", strings) == "Unknown Value"
+    assert resolve_text("Plain text", strings) == "Plain text"
+    assert resolve_property(None) == ""
+    assert resolve_property("@Properties.Width") == "Width"
+    assert resolve_property("Width") == "Width"
+
+
+def test_site_settings_maps_regions_and_alternative_groups() -> None:
+    assert display_group_id("TopMiddleAlternative0") == "TopMiddle"
+    assert display_group_id("Custom") == "Custom"
+    assert is_alternative_group("StatusAlt0")
+    assert is_alternative_group("GaugesAlternative1")
+    assert not is_alternative_group("Status0")
+    assert setting_region("General") == "theme"
+    assert setting_region("Status0") == "status"
+    assert setting_region("Unknown") == "other"
+    assert setting_summary("status") == "Small system indicators shown near the clock."
+    assert setting_summary("Unknown") == "Configurable watch face area."
+
+
+def test_site_settings_handles_empty_and_unknown_languages(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.xml"
+    manifest.write_text(
+        '<iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq">'
+        "<iq:application><iq:languages>"
+        "<iq:language> </iq:language><iq:language>zzz</iq:language>"
+        "</iq:languages></iq:application></iq:manifest>",
+        encoding="utf-8",
+    )
+    resources = tmp_path / "resources" / "base"
+    resources.mkdir(parents=True)
+    resources.joinpath("strings.xml").write_text("<resources />", encoding="utf-8")
+    settings = tmp_path / "settings.xml"
+    settings.write_text("<settings />", encoding="utf-8")
+
+    data = parse_settings(settings, tmp_path / "resources", manifest)
+
+    assert data["supportedLanguages"] == [{"code": "zzz", "name": "ZZZ"}]
+
+
+def test_site_settings_writers_create_javascript_outputs(tmp_path: Path) -> None:
+    data = {"groups": [], "supportedDevices": [], "supportedLanguages": []}
+    output = tmp_path / "nested" / "settings-data.js"
+
+    write_settings_js(data, output)
+    resources = tmp_path / "resources" / "base"
+    resources.mkdir(parents=True)
+    resources.joinpath("strings.xml").write_text("<resources />", encoding="utf-8")
+    settings = tmp_path / "settings.xml"
+    settings.write_text("<settings />", encoding="utf-8")
+    manifest = tmp_path / "manifest.xml"
+    manifest.write_text(
+        '<iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq">'
+        "<iq:application /></iq:manifest>",
+        encoding="utf-8",
+    )
+    built = tmp_path / "built.js"
+    build_site_settings(resources.parent, settings, manifest, built)
+
+    assert "window.PHASE_SETTINGS = {" in output.read_text(encoding="utf-8")
+    assert built.read_text(encoding="utf-8").startswith("window.PHASE_SETTINGS = {")
 
 
 def test_site_settings_resolves_labels_and_options() -> None:

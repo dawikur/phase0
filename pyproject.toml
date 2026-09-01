@@ -17,6 +17,10 @@ pythonVersion = "3.12"
 typeCheckingMode = "basic"
 reportImplicitOverride = "none"
 
+[tool.coverage.run]
+source = ["data", "scripts"]
+omit = ["scripts/tests/*"]
+
 [tool.pylint.messages_control]
 disable = [
 	"missing-class-docstring",

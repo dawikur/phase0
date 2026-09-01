@@ -9,17 +9,22 @@ from io import StringIO
 from pathlib import Path
 from threading import Event, Thread
 from types import ModuleType
+from typing import Any
 from unittest.mock import MagicMock, call, patch
 
 import pytest
 
 from scripts.utils.smoke import (
     ApplicationCrashError,
+    ApplicationStartError,
     Simulator,
     SmokeSignals,
     _check_simulator,
+    _stop_process,
     _wait_for_crash,
+    _wait_for_watch_face,
     _watch_simulator_output,
+    connect_iq_sdk_dir,
     run_smoke_test,
     supported_devices,
 )
@@ -78,6 +83,43 @@ def test_smoke_cli_handles_keyboard_interrupt(
         assert cli.main() == 130
 
     assert capsys.readouterr().err == "Smoke test interrupted.\n"
+
+
+def test_smoke_cli_returns_zero_when_run_succeeds() -> None:
+    cli = load_smoke_cli()
+    arguments = Namespace(
+        manifest=Path("manifest.xml"),
+        make="make",
+        name="phase0",
+        build_dir=Path("build"),
+        sdk_dir=Path("sdk"),
+        simulator_duration=10,
+    )
+
+    with (
+        patch.object(cli, "parse_arguments", return_value=arguments),
+        patch.object(cli, "run_smoke_test") as run,
+    ):
+        assert cli.main() == 0
+
+    run.assert_called_once_with(
+        manifest=arguments.manifest,
+        make=arguments.make,
+        name=arguments.name,
+        build_dir=arguments.build_dir,
+        sdk_dir=arguments.sdk_dir,
+        simulator_duration=arguments.simulator_duration,
+    )
+
+
+def test_smoke_parser_uses_defaults() -> None:
+    cli = load_smoke_cli()
+
+    arguments = cli.parse_arguments([])
+
+    assert arguments.manifest == Path("manifest.xml")
+    assert arguments.build_dir == Path("build")
+    assert arguments.simulator_duration == 10
 
 
 @patch("scripts.utils.smoke.time.sleep")
@@ -228,3 +270,41 @@ def test_simulator_output_marks_watch_face_ready() -> None:
     _watch_simulator_output(StringIO("Phase0 initialized\n"), signals)
 
     assert signals.ready is not None and signals.ready.is_set()
+
+
+def test_smoke_helpers_handle_missing_ready_output_and_process_failures(
+    tmp_path,
+) -> None:
+    config = tmp_path / ".Garmin" / "ConnectIQ" / "current-sdk.cfg"
+    config.parent.mkdir(parents=True)
+    config.write_text("/opt/connectiq\n", encoding="utf-8")
+    with patch("scripts.utils.smoke.Path.home", return_value=tmp_path):
+        assert connect_iq_sdk_dir() == Path("/opt/connectiq")
+
+    signals = SmokeSignals(Event())
+    _watch_simulator_output(None, signals)
+    process: Any = MagicMock()
+    simulator = Simulator(process, signals, Thread(target=lambda: None))
+    with pytest.raises(ApplicationStartError, match="initialization on fr255"):
+        _wait_for_watch_face(simulator, "fr255")
+
+    process.poll.return_value = 2
+    with pytest.raises(subprocess.CalledProcessError):
+        _check_simulator(simulator)
+
+    process.poll.return_value = None
+    simulator.signals.ready = Event()
+    simulator.signals.ready.set()
+    _wait_for_watch_face(simulator, "fr255")
+
+
+def test_stop_process_kills_process_after_timeout() -> None:
+    process = MagicMock()
+    process.poll.return_value = None
+    process.wait.side_effect = [subprocess.TimeoutExpired("connectiq", 3), None]
+
+    _stop_process(process)
+
+    process.terminate.assert_called_once_with()
+    process.kill.assert_called_once_with()
+    assert process.wait.call_count == 2

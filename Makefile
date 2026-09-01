@@ -379,7 +379,10 @@ site: $(SITE_EXPORT_STAMP) # build publishable site
 
 t test: $(RESOURCES) $(VENV_STAMP) # run test
 	$(Q)echo " [ $(call LOG_TAG,test) ]"
-	PYTHONPATH=. $(VENV_PYTHON) -m pytest
+	PYTHONPATH=. $(VENV_PYTHON) -m pytest \
+		--cov \
+		--cov-report=term-missing \
+		--cov-fail-under=100
 	node --test site/tests/*.test.mjs
 .PHONY: t test
 
@@ -427,7 +430,7 @@ c clean: # remove build directory and files
 		$(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_DIR)settings-data.js $(SITE_DIR)devices-data.js \
 		$(SITE_ICON) $(SITE_DEVICE_OVERLAYS) \
 		$(VENV_DIR) .build-venv .dev-venv .site-venv $(SITE_UI_DIR) \
-		.mypy_cache .pytest_cache $(wildcard *.egg-info)
+		.mypy_cache .pytest_cache .coverage $(wildcard *.egg-info)
 .PHONY: c clean
 
 # ---- help ----
