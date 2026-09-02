@@ -1,4 +1,4 @@
-# Copyright (c) 2026 Dawid Kurek <dawikur@gmail.com>
+# Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 import os
 import re
 import xml.etree.ElementTree as ET
