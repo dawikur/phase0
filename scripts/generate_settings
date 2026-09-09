@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
-from data.settings import Data, Settings
+from data.settings import Data, Widgets
+from data.settings import settings as Settings
 from scripts.utils.args_parse import parse_folders
 from scripts.utils.settings_generation import (
     render_data_mc,
@@ -15,16 +16,22 @@ if __name__ == "__main__":
     folders = parse_folders()
 
     data = Data(folders.source("data"))
-    extra_data, settings = Settings(data)
-
     folders.source("generated", "data.mc").write_text(render_data_mc(data))
-    folders.source("generated", "widgets.mc").write_text(render_widgets_mc(extra_data))
-    folders.source("generated", "properties.mc").write_text(
-        render_properties_mc(settings, extra_data)
-    )
-    folders.resources("generated", "properties.xml").write_text(
-        render_properties_xml(settings)
-    )
-    folders.resources("generated", "settings.xml").write_text(
-        render_settings_xml(settings)
-    )
+
+    widgets = Widgets(data)
+    folders.source("generated", "widgets.mc").write_text(render_widgets_mc(widgets))
+
+    for settings, annotation in [
+        (Settings.MemoryLow(data, widgets), "low"),
+        (Settings.MemoryMedium(data, widgets), "medium"),
+        (Settings.MemoryHigh(data, widgets), "high"),
+    ]:
+        folders.source("generated", f"properties_memory_{annotation}.mc").write_text(
+            render_properties_mc(settings, widgets, f"memory_{annotation}")
+        )
+        folders.resources(
+            f"memory/{annotation}/generated", "properties.xml"
+        ).write_text(render_properties_xml(settings))
+        folders.resources(f"memory/{annotation}/generated", "settings.xml").write_text(
+            render_settings_xml(settings)
+        )

@@ -147,6 +147,7 @@
 	<string id="SET_DAWN_OR_DUSK_SUN">Aube ou crépuscule, soleil</string>
 	<string id="SET_DISABLED">Désactivé</string>
 	<string id="SET_DISTANCE">Distance</string>
+	<!-- string id="SET_EMPTY">Vide</string -->
 	<string id="SET_FEELS_LIKE_TEMPERATURE">Température ressentie</string>
 	<string id="SET_FLOORS_CLIMBED">Étages gravis</string>
 	<string id="SET_FLOORS_DESCENDED">Étages descendus</string>
@@ -175,6 +176,7 @@
 	<string id="SET_METERS_DESCENDED">Mètres descendus</string>
 	<string id="SET_MOVE_BAR">Barre de mouvement</string>
 	<string id="SET_NOTIFICATIONS">Notifications</string>
+	<string id="SET_NONE">Aucun</string>
 	<string id="SET_ORANGE">Orange</string>
 	<string id="SET_PINK">Rose</string>
 	<string id="SET_PRESSURE">Pression</string>

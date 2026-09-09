@@ -7,8 +7,8 @@ from scripts.utils.icon_generation import render_svg, render_xml
 if __name__ == "__main__":
     folders = parse_folders()
 
-    icon_svg = folders.resources("generated", "icon.svg")
+    icon_svg = folders.resources("base/generated", "icon.svg")
     icon_svg.write_text(render_svg())
 
-    icon_xml = folders.resources("generated", "icon.xml")
+    icon_xml = folders.resources("base/generated", "icon.xml")
     icon_xml.write_text(render_xml(icon_svg))

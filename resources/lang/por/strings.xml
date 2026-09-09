@@ -147,6 +147,7 @@
 	<string id="SET_DAWN_OR_DUSK_SUN">Amanhecer ou anoitecer, sol</string>
 	<string id="SET_DISABLED">Desativado</string>
 	<string id="SET_DISTANCE">Distância</string>
+	<!-- string id="SET_EMPTY">Vazio</string -->
 	<string id="SET_FEELS_LIKE_TEMPERATURE">Sensação térmica</string>
 	<string id="SET_FLOORS_CLIMBED">Pisos Subidos</string>
 	<string id="SET_FLOORS_DESCENDED">Andares Descidos</string>
@@ -175,6 +176,7 @@
 	<string id="SET_METERS_DESCENDED">Metros Descidos</string>
 	<string id="SET_MOVE_BAR">Barra de movimento</string>
 	<string id="SET_NOTIFICATIONS">Notificações</string>
+	<string id="SET_NONE">Nenhum</string>
 	<string id="SET_ORANGE">Laranja</string>
 	<string id="SET_PINK">Rosa</string>
 	<string id="SET_PRESSURE">Pressão</string>

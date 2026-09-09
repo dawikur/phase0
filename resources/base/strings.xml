@@ -147,6 +147,7 @@
 	<string id="SET_DAWN_OR_DUSK_SUN">Dawn or Dusk, Sun</string>
 	<string id="SET_DISABLED">Disabled</string>
 	<string id="SET_DISTANCE">Distance</string>
+	<!-- string id="SET_EMPTY">Empty</string -->
 	<string id="SET_FEELS_LIKE_TEMPERATURE">Feels Like Temperature</string>
 	<string id="SET_FLOORS_CLIMBED">Floors Climbed</string>
 	<string id="SET_FLOORS_DESCENDED">Floors Descended</string>
@@ -175,6 +176,7 @@
 	<string id="SET_METERS_DESCENDED">Meters Descended</string>
 	<string id="SET_MOVE_BAR">Move Bar</string>
 	<string id="SET_NOTIFICATIONS">Notifications</string>
+	<string id="SET_NONE">None</string>
 	<string id="SET_ORANGE">Orange</string>
 	<string id="SET_PINK">Pink</string>
 	<string id="SET_PRESSURE">Pressure</string>

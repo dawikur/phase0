@@ -50,9 +50,17 @@ inputs; `make site` copies it to `build/site/` and adds generated data there.
 - `CHANGELOG.md` — release history
 
 Do not edit generated files by hand. In particular, treat
-`source/generated/`, `resources/generated/`, `build/site/settings-data.js` and
+`source/generated/`, `resources/base/generated/`, `build/site/settings-data.js` and
 `build/site/devices-data.js` as
 build outputs; change their source data or generator instead.
+
+Memory-specific resources belong in `resources/memory/low/`,
+`resources/memory/medium/` or `resources/memory/high/`. Their device mapping and
+`memory_low`, `memory_medium` and `memory_high` source exclusions are generated
+from `manifest.xml` and `data/devices`; inverse annotations
+`memory_not_low`, `memory_not_medium` and `memory_not_high` are also generated
+so a declaration can be included in every profile except one. Monkey C
+annotation names use underscores because hyphens are not valid in annotations.
 
 ---
 

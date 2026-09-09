@@ -232,7 +232,7 @@ def write_settings_js(data: dict[str, Any], output: Path) -> None:
 
 def build_site_settings(
     resources_dir: Path = Path("resources"),
-    settings_xml: Path = Path("resources/generated/settings.xml"),
+    settings_xml: Path = Path("resources/base/generated/settings.xml"),
     manifest_xml: Path = Path("manifest.xml"),
     output: Path = Path("build/site/settings-data.js"),
 ) -> None:

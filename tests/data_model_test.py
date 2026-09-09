@@ -6,7 +6,18 @@ from typing import Any
 
 import pytest
 
-from data.settings import Array, Boolean, Data, Number, Select, Settings, Single, Token
+from data.settings import (
+    Array,
+    Boolean,
+    Data,
+    Number,
+    Select,
+    Settings,
+    Single,
+    Token,
+    Widgets,
+)
+from data.settings.settings import MemoryHigh, MemoryLow, MemoryMedium
 
 
 class Options(IntEnum):
@@ -74,18 +85,32 @@ def test_data_reads_metrics_and_filters_their_features(tmp_path: Path) -> None:
         ("BATTERY", 1),
         ("STEPS", 2),
     ]
-    assert [item.name for item in data.all] == ["DISABLED", "BATTERY", "STEPS"]
-    assert [item.name for item in data.with_icon] == ["DISABLED", "STEPS"]
-    assert [item.name for item in data.with_value_max] == ["DISABLED", "STEPS"]
+    assert [item.name for item in data.all] == ["NONE", "BATTERY", "STEPS"]
+    assert [item.name for item in data.with_icon] == ["NONE", "STEPS"]
+    assert [item.name for item in data.with_value_max] == ["NONE", "STEPS"]
     assert data.STEPS == 2
     with pytest.raises(AttributeError, match="UNKNOWN"):
         _ = data.UNKNOWN
 
 
 def test_settings_builds_data_widget_values_from_data() -> None:
-    data_widget, settings = Settings(Data(Path("source/data")))
-    data_widget_any: Any = data_widget
+    data = Data(Path("source/data"))
+    data_widget: Any = Widgets(data)
 
-    assert data_widget_any.DISABLED == len(Data(Path("source/data"))) + 1
-    assert data_widget_any.BATTERY_DAYS_REMAINING > data_widget_any.DISABLED
-    assert settings
+    assert data_widget.NONE == len(data) + 1
+    assert data_widget.BATTERY_DAYS_REMAINING > data_widget.NONE
+    assert MemoryLow(data, data_widget)
+    assert MemoryMedium(data, data_widget)
+    assert MemoryHigh(data, data_widget)
+
+
+def test_settings_supports_indexed_and_named_access() -> None:
+    clock = Single("clock", "Clock", [])
+    settings = Settings(clock)
+
+    assert settings[0] is clock
+    assert settings["clock"] is clock
+    assert settings.get("clock") is clock
+    assert settings.get("missing") is None
+    assert list(settings) == [clock]
+    assert len(settings) == 1

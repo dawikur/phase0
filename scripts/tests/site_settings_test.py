@@ -86,7 +86,7 @@ def test_site_settings_writers_create_javascript_outputs(tmp_path: Path) -> None
 
 def test_site_settings_resolves_labels_and_options() -> None:
     data = parse_settings(
-        Path("resources/generated/settings.xml"),
+        Path("resources/memory/high/generated/settings.xml"),
         Path("resources"),
         Path("manifest.xml"),
     )
@@ -112,7 +112,7 @@ def test_site_settings_resolves_labels_and_options() -> None:
 
 def test_site_settings_preserves_numeric_boolean_and_regions() -> None:
     data = parse_settings(
-        Path("resources/generated/settings.xml"),
+        Path("resources/memory/high/generated/settings.xml"),
         Path("resources"),
         Path("manifest.xml"),
     )
@@ -134,7 +134,7 @@ def test_site_settings_preserves_numeric_boolean_and_regions() -> None:
     assert settings["Width"]["min"] == "0"
     assert settings["Width"]["max"] == "10"
     assert settings["Data"]["options"]
-    assert settings["Data"]["options"][0]["label"] == "Disabled"
+    assert settings["Data"]["options"][0]["label"] == "None"
     assert "Wind" in [option["label"] for option in settings["Data"]["options"]]
 
 

@@ -83,15 +83,15 @@ def test_generate_fonts_writes_all_generated_outputs(tmp_path) -> None:
     generate_fonts(folders, required_glyphs)
 
     assert folders.source("generated", "fonts.mc").exists()
-    assert folders.resources("generated", "fonts.xml").exists()
+    assert folders.resources("base/generated", "fonts.xml").exists()
 
 
 def test_folders_and_parse_folders_resolve_output_paths(tmp_path, monkeypatch) -> None:
     folders = Folders(tmp_path / "build", tmp_path / "resources", tmp_path / "source")
 
     assert folders.build() == tmp_path / "build"
-    assert folders.resources("generated", "fonts.xml") == (
-        tmp_path / "resources" / "generated" / "fonts.xml"
+    assert folders.resources("base/generated", "fonts.xml") == (
+        tmp_path / "resources" / "base" / "generated" / "fonts.xml"
     )
     assert folders.source("data") == tmp_path / "source" / "data"
 

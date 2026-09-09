@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from data.settings import Array, Boolean, Number, Select, Single
+from data.settings import Array, Boolean, Number, Select, Settings, Single
 from scripts.utils.settings_generation import (
     render_data_mc,
     render_properties_mc,
@@ -22,7 +22,7 @@ class SampleOptions(IntEnum):
 
 
 class SampleData(IntEnum):
-    DISABLED = 0
+    NONE = 0
     HEART_RATE = 1
 
 
@@ -89,6 +89,7 @@ def test_render_properties_mc_reuses_matching_property_classes() -> None:
             Single("bottom", "Widget", [Number("width", 3)]),
         ],
         SampleData,
+        "memory_annotation",
     )
 
     assert mc.count("class Widget {") == 1
@@ -105,6 +106,7 @@ def test_render_properties_mc_handles_array_settings() -> None:
     mc = render_properties_mc(
         [Array("status", "Status", [[Number("width", 2)]])],
         SampleData,
+        "memory_annotation",
     )
 
     assert "var status as Lang.Array<Status>;" in mc
@@ -116,7 +118,7 @@ def test_render_properties_mc_skips_disabled_extra_data() -> None:
         SimpleNamespace(name="Disabled", value=0),
         SimpleNamespace(name="HeartRate", value=1),
     ]
-    mc = render_properties_mc([], extra_data)  # type: ignore[arg-type]
+    mc = render_properties_mc([], extra_data, "memory_annotation")  # type: ignore[arg-type]
 
     assert "DATA_HEARTRATE" in mc
     assert "DATA_DISABLED" not in mc
@@ -126,7 +128,11 @@ def test_render_generators_reject_unsupported_types() -> None:
     unsupported = SimpleNamespace(klass="Unsupported")
 
     with pytest.raises(AssertionError, match="Unsupported type"):
-        render_properties_mc([unsupported], SampleData)  # type: ignore[list-item]
+        render_properties_mc(
+            [unsupported],  # type: ignore[arg-type]
+            SampleData,
+            "memory_annotation",
+        )
     with pytest.raises(AssertionError, match="Unsupported type"):
         render_properties_xml([unsupported])  # type: ignore[list-item]
     with pytest.raises(AssertionError, match="Unsupported type"):
@@ -143,7 +149,11 @@ def test_render_generators_reject_unsupported_types() -> None:
             return iter([object()])
 
     with pytest.raises(AssertionError, match="Unsupported type"):
-        render_properties_mc(ChangesBetweenPasses(), SampleData)  # type: ignore[arg-type]
+        render_properties_mc(
+            ChangesBetweenPasses(),  # type: ignore[arg-type]
+            SampleData,
+            "memory_annotation",
+        )
 
 
 def test_render_settings_xml_rejects_unsupported_entry_type() -> None:
@@ -165,7 +175,7 @@ def test_hidden_settings_keep_defaults_without_generated_properties() -> None:
         )
     ]
 
-    mc = render_properties_mc(settings, SampleData)
+    mc = render_properties_mc(settings, SampleData, "memory_annotation")
     properties_xml = render_properties_xml(settings)
     settings_xml = render_settings_xml(settings)
 
@@ -181,6 +191,24 @@ def test_hidden_settings_keep_defaults_without_generated_properties() -> None:
     assert 'propertyKey="@Properties.MetricWidth"' in settings_xml
     assert "MetricIcon" not in settings_xml
     assert "SET_ICON" not in settings_xml
+
+
+def test_settings_extend_appends_array_entries() -> None:
+    settings = Settings(Array("status", "Status", [[Number("width", 2)]]))
+
+    extended = settings.extend("status", [Number("width", 4)])
+
+    assert extended is settings
+    status = settings["status"]
+    assert isinstance(status, Array)
+    assert [row[0].default for row in status] == [2, 4]
+
+
+def test_settings_extend_rejects_non_array_settings() -> None:
+    settings = Settings(Single("clock", "Clock", [Number("width", 2)]))
+
+    with pytest.raises(ValueError, match="is not an array"):
+        settings.extend("clock", [Number("width", 4)])
 
 
 def test_render_data_and_widgets_mc_include_cases_and_default() -> None:

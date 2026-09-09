@@ -2,7 +2,7 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
 import textwrap
-from collections.abc import Sequence
+from collections.abc import Iterable
 from enum import IntEnum
 from typing import Any
 
@@ -49,7 +49,7 @@ def render_widgets_mc(extra_data: type[IntEnum]) -> str:
                         part.capitalize() for part in datum.name.split("_")
                     )
 
-                    if datum_name == "Disabled":
+                    if datum_name == "None":
                         continue
 
                     doc.line(
@@ -65,12 +65,15 @@ def render_widgets_mc(extra_data: type[IntEnum]) -> str:
 
 
 def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,too-many-statements
-    settings: Sequence[Single | Array],
+    settings: Iterable[Single | Array],
     extra_data: type[IntEnum],
+    annotation: str,
 ) -> str:
     doc = McDocument.create()
     doc.line("import Toybox.Application;")
     doc.line("import Toybox.Lang;")
+    doc.line()
+    doc.line(f"(:{annotation})")
     with McScope(doc, "class Properties {") as _module:
         doc.line()
         doc.line("// options")
@@ -194,7 +197,7 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
     return doc.render()
 
 
-def render_properties_xml(settings: Sequence[Single | Array]) -> str:
+def render_properties_xml(settings: Iterable[Single | Array]) -> str:
     root = XmlDocument.resource("properties")
 
     for single_or_array in settings:
@@ -228,7 +231,7 @@ def render_properties_xml(settings: Sequence[Single | Array]) -> str:
     return root.render()
 
 
-def render_settings_xml(settings: Sequence[Single | Array]) -> str:
+def render_settings_xml(settings: Iterable[Single | Array]) -> str:
     root = XmlDocument.resource("settings")
 
     for single_or_array in settings:

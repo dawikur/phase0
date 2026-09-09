@@ -22,7 +22,7 @@ def test_render_svg_contains_svg_rectangles() -> None:
 
 
 def test_render_xml_references_generated_icon() -> None:
-    xml = render_xml(Path("resources/generated/icon.svg"))
+    xml = render_xml(Path("resources/base/generated/icon.svg"))
 
     assert '<bitmap id="ICON"' in xml
     assert 'filename="icon.svg"' in xml

@@ -150,3 +150,37 @@ class Array(Token):
 
     def __getitem__(self, idx: int) -> list[Entry]:
         return self.entries[idx]
+
+
+class Settings:
+    def __init__(self, *items: Single | Array):
+        self._items = list(items)
+        self._by_name = {item.name: item for item in self._items}
+
+    def __getitem__(self, key: int | str) -> Single | Array:
+        if isinstance(key, int):
+            return self._items[key]
+
+        return self._by_name[key]
+
+    def get(
+        self,
+        name: str,
+        default: Single | Array | None = None,
+    ) -> Single | Array | None:
+        return self._by_name.get(name, default)
+
+    def extend(self, name: str, *entries: list[Entry]) -> "Settings":
+        current = self.get(name)
+        if not isinstance(current, Array):
+            raise ValueError(f"Setting '{name}' is not an array")
+
+        current.entries.extend(entries)
+
+        return self
+
+    def __iter__(self) -> Iterator[Single | Array]:
+        return iter(self._items)
+
+    def __len__(self) -> int:
+        return len(self._items)

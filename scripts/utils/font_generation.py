@@ -294,10 +294,10 @@ def generate_fonts(  # pylint: disable=too-many-locals
     fonts_mc = McDocument.create()
 
     def __store_font(font_name: str, atlas: Image.Image, fnt: str) -> None:
-        font_png = folders.resources("generated", f"{font_name}.png")
+        font_png = folders.resources("base/generated", f"{font_name}.png")
         atlas.save(font_png)
 
-        font_fnt = folders.resources("generated", f"{font_name}.fnt")
+        font_fnt = folders.resources("base/generated", f"{font_name}.fnt")
         font_fnt.write_text(fnt)
 
         font_name = font_name.upper()
@@ -406,4 +406,4 @@ def generate_fonts(  # pylint: disable=too-many-locals
     # Write
 
     folders.source("generated", "fonts.mc").write_text(fonts_mc.render())
-    folders.resources("generated", "fonts.xml").write_text(fonts_xml.render())
+    folders.resources("base/generated", "fonts.xml").write_text(fonts_xml.render())

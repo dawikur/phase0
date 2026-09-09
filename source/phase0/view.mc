@@ -147,18 +147,24 @@ module Phase0 {
 		}
 
 		function onLayout(_dc as Graphics.Dc) as Void {
-			var layout = new Layout(_dc);
+			var layout = new Layout(
+				_dc,
+				!self.top_outer_.isEmpty(),
+				0 < self.top_middle_.size(),
+				!self.top_inner_.isEmpty(),
+				!self.bottom_inner_date_.isEmpty() or
+					!self.bottom_inner_am_pm_.isEmpty(),
+				0 < self.bottom_middle_.size(),
+				!self.bottom_outer_.isEmpty()
+			);
 
-			// 40Kb is empirically tested and seems to be working
-			if (40 * 1024 < System.getSystemStats().freeMemory) {
-				self.bitmap_ = self.createBitmap_(
-					layout.screen_size_x,
-					layout.screen_size_y
-				);
+			self.bitmap_ = self.createBitmap_(
+				layout.screen_size_x,
+				layout.screen_size_y
+			);
 
-				if (self.bitmap_ != null) {
-					System.println("Using buffered bitmap");
-				}
+			if (self.bitmap_ != null) {
+				System.println("Using buffered bitmap");
 			}
 
 			self.invalidate_();
@@ -187,31 +193,31 @@ module Phase0 {
 
 			// -- right --
 
-			var layout_right = layout.rightBox(layout.left_raw);
 			var gauges_size = self.gauges_.size();
 			for (var i = 0; i < gauges_size; ++i) {
 				self.gauges_[i].resize(
 					_dc,
-					layout_right.size_x,
-					layout_right.size_y
+					layout.right.size_x,
+					layout.right.size_y
 				);
 			}
-			self.DistributeWidgetsInBox_(self.gauges_, layout_right);
+			self.DistributeWidgetsInBox_(self.gauges_, layout.right);
 
 			// ---- bottom inner ----
 
-			var bottom_inner = layout.bottomBox(layout.top_inner);
-			self.layoutBottomInner_(_dc, bottom_inner);
+			self.layoutBottomInner_(_dc, layout.bottom_inner);
 
 			// ---- bottom middle ----
 
-			var bottom_middle = layout.bottomBox(layout.top_middle);
-			self.FitWidgetsInBox_(_dc, self.bottom_middle_, bottom_middle);
+			self.FitWidgetsInBox_(
+				_dc,
+				self.bottom_middle_,
+				layout.bottom_middle
+			);
 
 			// ---- bottom outer ----
 
-			var bottom_outer = layout.bottomBox(layout.top_outer);
-			self.LayoutWidget_(_dc, self.bottom_outer_, bottom_outer);
+			self.LayoutWidget_(_dc, self.bottom_outer_, layout.bottom_outer);
 
 			// ---- footer ----
 
@@ -542,11 +548,25 @@ module Phase0 {
 			}
 		}
 
+		(:memory_low)
+		hidden function createBitmap_(
+			_size_x as Lang.Number,
+			_size_y as Lang.Number
+		) as Graphics.BufferedBitmap? {
+			return null;
+		}
+
+		(:memory_not_low)
 		hidden function createBitmap_(
 			_size_x as Lang.Number,
 			_size_y as Lang.Number
 		) as Graphics.BufferedBitmap? {
 			var options = { :width => _size_x, :height => _size_y };
+
+			// 40Kb is empirically tested and seems to be working
+			if (System.getSystemStats().freeMemory <= 40 * 1024) {
+				return null;
+			}
 
 			try {
 				if (Graphics has :createBufferedBitmap) {

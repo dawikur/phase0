@@ -147,6 +147,7 @@
 	<string id="SET_DAWN_OR_DUSK_SUN">Wschód albo Zachód, Słońce</string>
 	<string id="SET_DISABLED">Wyłączone</string>
 	<string id="SET_DISTANCE">Dystans</string>
+	<!-- string id="SET_EMPTY">Puste</string -->
 	<string id="SET_FEELS_LIKE_TEMPERATURE">Temperatura odczuwalna</string>
 	<string id="SET_FLOORS_CLIMBED">Piętra w górę</string>
 	<string id="SET_FLOORS_DESCENDED">Piętra w dół</string>
@@ -175,6 +176,7 @@
 	<string id="SET_METERS_DESCENDED">Metry w dół</string>
 	<string id="SET_MOVE_BAR">Pasek ruchu</string>
 	<string id="SET_NOTIFICATIONS">Powiadomienia</string>
+	<string id="SET_NONE">Brak</string>
 	<string id="SET_ORANGE">Pomarańczowy</string>
 	<string id="SET_PINK">Różowy</string>
 	<string id="SET_PRESSURE">Ciśnienie</string>

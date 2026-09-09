@@ -15,11 +15,39 @@ module Phase0 {
 		var top_outer as Box = new Box(0, 0, 0, 0);
 		var top_middle as Box = new Box(0, 0, 0, 0);
 		var top_inner as Box = new Box(0, 0, 0, 0);
+		var bottom_inner as Box = new Box(0, 0, 0, 0);
+		var bottom_middle as Box = new Box(0, 0, 0, 0);
+		var bottom_outer as Box = new Box(0, 0, 0, 0);
 
 		var left as Box = new Box(0, 0, 0, 0);
-		var left_raw as Box = new Box(0, 0, 0, 0);
+		var right as Box = new Box(0, 0, 0, 0);
 
-		function initialize(_dc as Graphics.Dc) {
+		hidden var show_top_outer_ as Lang.Boolean = false;
+		hidden var show_top_middle_ as Lang.Boolean = false;
+		hidden var show_top_inner_ as Lang.Boolean = false;
+		hidden var show_bottom_inner_ as Lang.Boolean = false;
+		hidden var show_bottom_middle_ as Lang.Boolean = false;
+		hidden var show_bottom_outer_ as Lang.Boolean = false;
+
+		function initialize(
+			_dc as Graphics.Dc,
+			_show_top_outer as Lang.Boolean,
+			_show_top_middle as Lang.Boolean,
+			_show_top_inner as Lang.Boolean,
+			_show_bottom_inner as Lang.Boolean,
+			_show_bottom_middle as Lang.Boolean,
+			_show_bottom_outer as Lang.Boolean
+		) {
+			self.screen_size_x = _dc.getWidth();
+			self.screen_size_y = _dc.getHeight();
+
+			self.show_top_outer_ = _show_top_outer;
+			self.show_top_middle_ = _show_top_middle;
+			self.show_top_inner_ = _show_top_inner;
+			self.show_bottom_inner_ = _show_bottom_inner;
+			self.show_bottom_middle_ = _show_bottom_middle;
+			self.show_bottom_outer_ = _show_bottom_outer;
+
 			if (
 				self.tryApplyCandidate_(
 					_dc,
@@ -101,24 +129,6 @@ module Phase0 {
 			}
 		}
 
-		function bottomBox(_box as Box) as Box {
-			return new Box(
-				_box.pos_x,
-				self.screen_size_y - _box.end_y,
-				_box.size_x,
-				_box.size_y
-			);
-		}
-
-		function rightBox(_box as Box) as Box {
-			return new Box(
-				self.screen_size_x - _box.end_x,
-				_box.pos_y,
-				_box.size_x,
-				_box.size_y
-			);
-		}
-
 		hidden function tryApplyCandidate_(
 			_dc as Graphics.Dc,
 			_clock_is_small as Lang.Boolean,
@@ -128,9 +138,6 @@ module Phase0 {
 			_show_left as Lang.Boolean,
 			_show_right as Lang.Boolean
 		) as Lang.Boolean {
-			self.screen_size_x = _dc.getWidth();
-			self.screen_size_y = _dc.getHeight();
-
 			var clock_font =
 				Application.loadResource(
 					_clock_is_small
@@ -141,7 +148,10 @@ module Phase0 {
 			var clock_size_x = Render.ClockWidth(_dc, "00:00", clock_font);
 			var clock_size_y = Render.ClockHeight(_dc, clock_font);
 
-			var line_inner_height = Render.TextHeight(_dc, _inner_is_small);
+			var line_inner_height =
+				self.show_top_inner_ or self.show_bottom_inner_
+					? Render.TextHeight(_dc, _inner_is_small)
+					: 0;
 			var line_middle_height = _middle_is_small
 				? Render.TextHeight(_dc, Render.SIZE_SMALL)
 				: Render.LabelHeight(_dc) +
@@ -152,6 +162,12 @@ module Phase0 {
 				: Render.LabelHeight(_dc) +
 					Render.SPACING +
 					Render.TextHeight(_dc, Render.SIZE_SMALL);
+			if (!self.show_top_middle_ and !self.show_bottom_middle_) {
+				line_middle_height = 0;
+			}
+			if (!self.show_top_outer_ and !self.show_bottom_outer_) {
+				line_outer_height = 0;
+			}
 
 			var side_size_x = 0;
 			var side_size_raw_x = 0;
@@ -172,55 +188,67 @@ module Phase0 {
 				gap_x = (self.screen_size_x - clock_size_x) / 4;
 			}
 
-			var content_height =
-				clock_size_y +
-				2 * line_inner_height +
-				2 * line_middle_height +
-				2 * line_outer_height;
-			var gap_y = (self.screen_size_y - content_height) / 8;
+			var clock_pos_y = (self.screen_size_y - clock_size_y) / 2;
+			var top_content_height =
+				(self.show_top_inner_ ? line_inner_height : 0) +
+				(self.show_top_middle_ ? line_middle_height : 0) +
+				(self.show_top_outer_ ? line_outer_height : 0);
+			var bottom_content_height =
+				(self.show_bottom_inner_ ? line_inner_height : 0) +
+				(self.show_bottom_middle_ ? line_middle_height : 0) +
+				(self.show_bottom_outer_ ? line_outer_height : 0);
+			var top_line_count =
+				(self.show_top_inner_ ? 1 : 0) +
+				(self.show_top_middle_ ? 1 : 0) +
+				(self.show_top_outer_ ? 1 : 0);
+			var bottom_line_count =
+				(self.show_bottom_inner_ ? 1 : 0) +
+				(self.show_bottom_middle_ ? 1 : 0) +
+				(self.show_bottom_outer_ ? 1 : 0);
+			var top_gap_y =
+				(clock_pos_y - top_content_height) / (top_line_count + 1);
+			var bottom_gap_y =
+				(self.screen_size_y -
+					clock_pos_y -
+					clock_size_y -
+					bottom_content_height) /
+				(bottom_line_count + 1);
 
-			if (gap_x < 1 or gap_y < 1) {
+			if (gap_x < 1 or top_gap_y < 1 or bottom_gap_y < 1) {
 				return false;
 			}
 
-			var pos_y = gap_y;
-			var layout_end_y =
-				pos_y +
-				line_outer_height +
-				gap_y +
-				line_middle_height +
-				gap_y +
-				line_inner_height +
-				gap_y +
-				clock_size_y;
-			if (pos_y < 0 or self.screen_size_y < layout_end_y) {
-				return false;
+			var pos_y = top_gap_y;
+			self.top_outer = new Box(0, 0, 0, 0);
+			self.top_middle = new Box(0, 0, 0, 0);
+			self.top_inner = new Box(0, 0, 0, 0);
+			if (self.show_top_outer_) {
+				self.top_outer = Box.ForY(
+					self.screen_size_y,
+					pos_y,
+					line_outer_height
+				);
+				pos_y = self.top_outer.end_y + top_gap_y;
 			}
-
-			self.top_outer = Box.ForY(
-				self.screen_size_y,
-				pos_y,
-				line_outer_height
-			);
-			pos_y = self.top_outer.end_y + gap_y;
-
-			self.top_middle = Box.ForY(
-				self.screen_size_y,
-				pos_y,
-				line_middle_height
-			);
-			pos_y = self.top_middle.end_y + gap_y;
-
-			self.top_inner = Box.ForY(
-				self.screen_size_y,
-				pos_y,
-				line_inner_height
-			);
-			pos_y = self.top_inner.end_y + gap_y;
+			if (self.show_top_middle_) {
+				self.top_middle = Box.ForY(
+					self.screen_size_y,
+					pos_y,
+					line_middle_height
+				);
+				pos_y = self.top_middle.end_y + top_gap_y;
+			}
+			if (self.show_top_inner_) {
+				self.top_inner = Box.ForY(
+					self.screen_size_y,
+					pos_y,
+					line_inner_height
+				);
+			}
 
 			self.clock = new Box(
 				(self.screen_size_x - clock_size_x) / 2,
-				pos_y,
+				clock_pos_y,
 				clock_size_x,
 				clock_size_y
 			);
@@ -232,12 +260,40 @@ module Phase0 {
 				clock_size_y
 			);
 
-			self.left_raw = new Box(
-				2 * gap_x,
+			self.right = new Box(
+				self.screen_size_x - 2 * gap_x - side_size_raw_x,
 				self.clock.pos_y + Render.SPACING,
 				side_size_raw_x,
 				side_size_raw_y - Render.SPACING
 			);
+
+			var bottom_pos_y = self.screen_size_y - bottom_gap_y;
+			self.bottom_inner = new Box(0, 0, 0, 0);
+			self.bottom_middle = new Box(0, 0, 0, 0);
+			self.bottom_outer = new Box(0, 0, 0, 0);
+			if (self.show_bottom_outer_) {
+				self.bottom_outer = Box.ForY(
+					self.screen_size_y,
+					bottom_pos_y,
+					-line_outer_height
+				);
+				bottom_pos_y = self.bottom_outer.pos_y - bottom_gap_y;
+			}
+			if (self.show_bottom_middle_) {
+				self.bottom_middle = Box.ForY(
+					self.screen_size_y,
+					bottom_pos_y,
+					-line_middle_height
+				);
+				bottom_pos_y = self.bottom_middle.pos_y - bottom_gap_y;
+			}
+			if (self.show_bottom_inner_) {
+				self.bottom_inner = Box.ForY(
+					self.screen_size_y,
+					bottom_pos_y,
+					-line_inner_height
+				);
+			}
 
 			return true;
 		}
@@ -259,11 +315,14 @@ module Phase0 {
 				clock_size_y
 			);
 			self.left = new Box(0, 0, 0, 0);
-			self.left_raw = new Box(0, 0, 0, 0);
+			self.right = new Box(0, 0, 0, 0);
 
 			self.top_outer = new Box(0, 0, 0, 0);
 			self.top_middle = new Box(0, 0, 0, 0);
 			self.top_inner = new Box(0, 0, 0, 0);
+			self.bottom_inner = new Box(0, 0, 0, 0);
+			self.bottom_middle = new Box(0, 0, 0, 0);
+			self.bottom_outer = new Box(0, 0, 0, 0);
 		}
 	}
 } // module Phase0

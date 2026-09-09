@@ -10,10 +10,13 @@ DEVICE      ?= fr955
 MODE        ?= debug
 # log tag prefix
 LOG_PREFIX  ?=
-# developer key path
-PRIVATE_KEY ?= $(HOME)/Documents/developer_key
 # show commands
 V           ?= 0
+
+# developer key path (provided through the environment or make arguments)
+# CONNECTIQ_DEVELOPER_KEY
+MONKEYC_PRIVATE_KEY := $(if $(strip $(CONNECTIQ_DEVELOPER_KEY)),--private-key $(CONNECTIQ_DEVELOPER_KEY))
+
 # ---- options ----
 
 # development build
@@ -52,7 +55,7 @@ LOG_TAG = $(if $(LOG_PREFIX),$(LOG_PREFIX)-$(1),$(1))
 
 PYTHON_FILES := $(shell rg --files -g '*.py') \
 	scripts/generate_fonts scripts/generate_icon scripts/generate_settings \
-	scripts/generate_site_devices scripts/generate_site_settings scripts/smoke
+	scripts/generate_site_devices scripts/generate_site_settings scripts/generate_memory_jungle scripts/smoke
 
 SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release w deploy
 
@@ -76,6 +79,8 @@ endif
 BUILD_DIR := build/
 IQ        := $(BUILD_DIR)$(NAME).iq
 JUNGLE    := monkey.jungle
+MEMORY_JUNGLE := $(BUILD_DIR)memory.jungle
+JUNGLES   := $(JUNGLE);$(MEMORY_JUNGLE)
 MANIFEST  := manifest.xml
 OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX)
 PRG       := $(BUILD_DIR)$(OUT).prg
@@ -120,7 +125,7 @@ SRCS_GENERATED_DIR  := source/generated/
 
 RESOURCES_DIR           := resources/
 RESOURCES_BASE_DIR      := $(RESOURCES_DIR)base/
-RESOURCES_GENERATED_DIR := $(RESOURCES_DIR)generated/
+RESOURCES_GENERATED_DIR := $(RESOURCES_BASE_DIR)generated/
 
 SOURCE_DIR          := source/
 
@@ -159,7 +164,12 @@ SITE_DEVICE_OVERLAYS := $(SITE_DEVICE_OVERLAY_LIGHT) $(SITE_DEVICE_OVERLAY_DARK)
 
 RESOURCES := $(ICON) $(FONTS) $(SETTINGS)
 
-PRG_DEPS := $(JUNGLE) $(SRCS) $(RSCS) $(RESOURCES) $(SETTINGS)
+MEMORY_JUNGLE_DEPS := scripts/generate_memory_jungle \
+                      scripts/utils/memory_jungle.py \
+                      $(MANIFEST) \
+                      $(shell find data/devices -type f -name '*.py')
+
+PRG_DEPS := $(JUNGLE) $(MEMORY_JUNGLE) $(SRCS) $(RSCS) $(RESOURCES) $(SETTINGS)
 
 # ---- settings ----
 
@@ -193,20 +203,20 @@ $(VENV_STAMP): requirements.txt
 $(PRG): $(PRG_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	$(MONKEYC) \
-		--jungles $< \
+		--jungles "$(JUNGLES)" \
 		--device $(DEVICE) \
 		--output $@ \
 		--warn \
-		--private-key $(PRIVATE_KEY) \
+		$(MONKEYC_PRIVATE_KEY) \
 		$(FLAG_MONKEYC)
 
 $(IQ): $(PRG_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	$(MONKEYC) \
-		--jungles $< \
+		--jungles "$(JUNGLES)" \
 		--output $@ \
 		--warn \
-		--private-key $(PRIVATE_KEY) \
+		$(MONKEYC_PRIVATE_KEY) \
 		$(FLAG_MONKEYC)
 
 $(FONTS): $(FONTS_DEPS) $(VENV_STAMP)
@@ -220,6 +230,10 @@ $(ICON): $(ICON_DEPS) $(VENV_STAMP)
 $(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA) $(VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+
+$(MEMORY_JUNGLE): $(MEMORY_JUNGLE_DEPS)
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+	PYTHONPATH=. python3 scripts/generate_memory_jungle --output $@
 
 $(SITE_SETTINGS): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SETTINGS_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"

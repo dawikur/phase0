@@ -17,7 +17,7 @@ module Widgets {
 		hidden var show_gauge_ as Lang.Boolean = false;
 		hidden var show_icon_ as Lang.Boolean = false;
 		hidden var show_label_ as Lang.Boolean = true;
-		hidden var style_ as Lang.Number = Properties.DISABLED;
+		hidden var style_ as Lang.Number = Properties.NONE;
 		hidden var value_ as Lang.Number? = null;
 		hidden var value_bg_ as Lang.String = "";
 		hidden var value_bg_width_ as Lang.Number = 0;

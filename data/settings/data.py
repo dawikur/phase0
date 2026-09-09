@@ -89,7 +89,7 @@ class Data:
             IntEnum(
                 name,
                 {
-                    "DISABLED": 0,
+                    "NONE": 0,
                     **{
                         datum.name: datum.value
                         for datum in self.__items

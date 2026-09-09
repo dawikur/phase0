@@ -3,9 +3,9 @@
 import re
 import xml.etree.ElementTree as ET
 
-PROPERTIES_XML = "resources/generated/properties.xml"
-SETTINGS_XML = "resources/generated/settings.xml"
-PROPERTIES_MC = "source/generated/properties.mc"
+PROPERTIES_XML = "resources/memory/high/generated/properties.xml"
+SETTINGS_XML = "resources/memory/high/generated/settings.xml"
+PROPERTIES_MC = "source/generated/properties_memory_high.mc"
 
 SETTINGS_PROPERTY_RE = re.compile(r"@Properties\.([A-Za-z0-9_]+)\b")
 MC_PROPERTY_RE = re.compile(r'Application\.Properties\.getValue\("([A-Za-z0-9_]+)"\)')

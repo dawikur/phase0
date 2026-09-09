@@ -35,8 +35,13 @@ for (let i = 0; i < args.length; i++) {
       parsed.device = args[++i];
       break;
     case "--jungles":
-      parsed.jungleFiles = path.resolve(args[++i]);
-      parsed.workspace = path.dirname(parsed.jungleFiles);
+      {
+        const jungleFiles = args[++i]
+          .split(";")
+          .map((jungle) => path.resolve(cwd, jungle));
+        parsed.jungleFiles = jungleFiles.join(";");
+        parsed.workspace = path.dirname(jungleFiles[0]);
+      }
       break;
     case "--private-key" :
       parsed.developerKeyPath = path.resolve(args[++i]);

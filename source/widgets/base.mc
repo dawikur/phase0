@@ -47,6 +47,10 @@ module Widgets {
 			return new Base(null, RefreshRate.NONE);
 		}
 
+		function isEmpty() as Lang.Boolean {
+			return self.refresh_rate == RefreshRate.NONE;
+		}
+
 		function initialize(
 			_type as Complications.Type?,
 			_refresh_rate as Lang.Number

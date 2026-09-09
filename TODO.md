@@ -11,6 +11,5 @@
 
 ## General
 
-- [ ] Verify layouts on the smallest supported 240×240 MIP64 displays.
 - [ ] Add more metric-specific icons
 - [ ] Every widget can go anywhere
