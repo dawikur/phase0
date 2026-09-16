@@ -243,7 +243,7 @@ def render_settings_xml(settings: Iterable[Single | Array]) -> str:
                 root.root,
                 "group",
                 id=f"{top.id}{prop_id}",
-                title=f"@Strings.{top.label}",
+                title=f"@Strings.{top.setting}",
             )
 
             for entry in widget:
@@ -254,7 +254,7 @@ def render_settings_xml(settings: Iterable[Single | Array]) -> str:
                     group_xml,
                     "setting",
                     propertyKey=f"@Properties.{top.id}{entry.id}{prop_id}",
-                    title=f"@Strings.{entry.label}",
+                    title=f"@Strings.{entry.setting}",
                 )
 
                 if isinstance(entry, Select):
@@ -271,7 +271,7 @@ def render_settings_xml(settings: Iterable[Single | Array]) -> str:
                             "listEntry",
                             value=value,
                         )
-                        list_entry.text = f"@Strings.{option.label}"
+                        list_entry.text = f"@Strings.{option.setting}"
                     continue
 
                 if isinstance(entry, Number):

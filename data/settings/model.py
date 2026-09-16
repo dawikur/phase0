@@ -27,8 +27,8 @@ class Token:
         return "_".join(part.lower() for part in self.parts)
 
     @property
-    def label(self) -> str:
-        return f"SET_{'_'.join(part.upper() for part in self.parts)}"
+    def setting(self) -> str:
+        return f"SETTING_{'_'.join(part.upper() for part in self.parts)}"
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Token):

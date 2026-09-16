@@ -70,7 +70,7 @@ def test_render_settings_xml_includes_setting_config_by_entry_type() -> None:
     )
 
     assert '<settingConfig type="list" required="true">' in xml
-    assert '<listEntry value="1">@Strings.SET_AUTO</listEntry>' in xml
+    assert '<listEntry value="1">@Strings.SETTING_AUTO</listEntry>' in xml
     assert '<settingConfig type="numeric" min="0" max="10" required="true" />' in xml
     assert '<settingConfig type="boolean" required="true" />' in xml
 
@@ -157,7 +157,7 @@ def test_render_generators_reject_unsupported_types() -> None:
 
 
 def test_render_settings_xml_rejects_unsupported_entry_type() -> None:
-    unsupported: Any = SimpleNamespace(hidden=False, label="UNKNOWN", id="Unknown")
+    unsupported: Any = SimpleNamespace(hidden=False, setting="UNKNOWN", id="Unknown")
 
     with pytest.raises(AssertionError, match="Unsupported type"):
         render_settings_xml([Single("sample", "Sample", [unsupported])])
@@ -190,7 +190,7 @@ def test_hidden_settings_keep_defaults_without_generated_properties() -> None:
 
     assert 'propertyKey="@Properties.MetricWidth"' in settings_xml
     assert "MetricIcon" not in settings_xml
-    assert "SET_ICON" not in settings_xml
+    assert "SETTING_ICON" not in settings_xml
 
 
 def test_settings_extend_appends_array_entries() -> None:

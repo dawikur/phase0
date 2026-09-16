@@ -30,7 +30,7 @@ def test_token_exposes_derived_names_and_compares_by_name() -> None:
 
     assert token.id == "HeartRate"
     assert token.variable == "heart_rate"
-    assert token.label == "SET_HEART_RATE"
+    assert token.setting == "SETTING_HEART_RATE"
     assert token == Token("heart rate", "OtherClass")
     assert token != Token("steps")
     assert token != "heart rate"

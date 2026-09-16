@@ -33,6 +33,8 @@ Never sacrifice performance for abstraction.
 Documentation is generated separately and copied into the website repository.
 Keep `site/` as the website source module, including its tests and generator
 inputs; `make site` copies it to `build/site/` and adds generated data there.
+`make site` is incremental; use `make site-update` when the shared `site-ui`
+repository should be fetched before rebuilding the site.
 
 ---
 

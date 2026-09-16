@@ -13,7 +13,7 @@ RESOURCES_DIR = "resources"
 
 MC_LABEL_RE = re.compile(r"\bRez\.Strings\.(LABEL_[A-Za-z0-9_]+)\b")
 RESOURCES_LABEL_RE = re.compile(r"@Strings\.(LABEL_[A-Za-z0-9_]+)\b")
-RESOURCES_SET_RE = re.compile(r"@Strings\.(SET_[A-Za-z0-9_]+)\b")
+RESOURCES_SETTING_RE = re.compile(r"@Strings\.(SETTING_[A-Za-z0-9_]+)\b")
 
 
 def get_strings_xml_files() -> list[Path]:
@@ -215,30 +215,34 @@ def test_all_referenced_watchface_label_strings_are_defined() -> None:
     assert (
         not undefined
     ), "Undefined watchface LABEL_ strings referenced:\n" + "\n".join(
-        f"  - {label}" for label in undefined
+        f"  - {setting}" for setting in undefined
     )
 
 
 @pytest.mark.parametrize("strings_xml", get_strings_xml_files(), ids=str)
 def test_all_settings_strings_are_used_by_resources(strings_xml: Path) -> None:
-    defined = get_defined_strings(strings_xml, "SET_")
-    used = get_used_resource_strings(RESOURCES_SET_RE)
+    defined = get_defined_strings(strings_xml, "SETTING_")
+    used = get_used_resource_strings(RESOURCES_SETTING_RE)
 
     unused = sorted(defined - used)
 
-    assert not unused, f"Unused settings SET_ strings in {strings_xml}:\n" + "\n".join(
-        f"  - {label}" for label in unused
+    assert (
+        not unused
+    ), f"Unused settings SETTING_ strings in {strings_xml}:\n" + "\n".join(
+        f"  - {setting}" for setting in unused
     )
 
 
 def test_all_referenced_settings_strings_are_defined() -> None:
-    used = get_used_resource_strings(RESOURCES_SET_RE)
-    defined = get_all_defined_strings("SET_")
+    used = get_used_resource_strings(RESOURCES_SETTING_RE)
+    defined = get_all_defined_strings("SETTING_")
 
     undefined = sorted(used - defined)
 
-    assert not undefined, "Undefined settings SET_ strings referenced:\n" + "\n".join(
-        f"  - {label}" for label in undefined
+    assert (
+        not undefined
+    ), "Undefined settings SETTING_ strings referenced:\n" + "\n".join(
+        f"  - {setting}" for setting in undefined
     )
 
 
@@ -257,5 +261,5 @@ def test_settings_xml_does_not_use_watchface_labels() -> None:
     assert (
         not used
     ), "Watchface LABEL_ strings referenced from resources:\n" + "\n".join(
-        f"  - {label}" for label in sorted(used)
+        f"  - {setting}" for setting in sorted(used)
     )

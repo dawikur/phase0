@@ -13,6 +13,11 @@ LOG_PREFIX  ?=
 # show commands
 V           ?= 0
 
+VALID_MODES := debug test optimized release
+ifneq ($(filter $(MODE),$(VALID_MODES)),$(MODE))
+$(error Unsupported MODE='$(MODE)'; choose one of: $(VALID_MODES))
+endif
+
 # developer key path (provided through the environment or make arguments)
 # CONNECTIQ_DEVELOPER_KEY
 MONKEYC_PRIVATE_KEY := $(if $(strip $(CONNECTIQ_DEVELOPER_KEY)),--private-key $(CONNECTIQ_DEVELOPER_KEY))
@@ -57,7 +62,7 @@ PYTHON_FILES := $(shell rg --files -g '*.py') \
 	scripts/generate_fonts scripts/generate_icon scripts/generate_settings \
 	scripts/generate_site_devices scripts/generate_site_settings scripts/generate_memory_jungle scripts/smoke
 
-SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release w deploy
+SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release deploy
 
 ifneq ($(strip $(MAKECMDGOALS)),)
 ifneq ($(filter $(SDK_TARGETS),$(MAKECMDGOALS)),)
@@ -76,17 +81,17 @@ else
 MONKEYC   := $(SDK_DIR)bin/monkeyc
 endif
 
-BUILD_DIR := build/
-IQ        := $(BUILD_DIR)$(NAME).iq
-JUNGLE    := monkey.jungle
+BUILD_DIR     := build/
+IQ            := $(BUILD_DIR)$(NAME).iq
+JUNGLE        := monkey.jungle
 MEMORY_JUNGLE := $(BUILD_DIR)memory.jungle
-JUNGLES   := $(JUNGLE);$(MEMORY_JUNGLE)
-MANIFEST  := manifest.xml
-OUT       := $(NAME)-$(DEVICE)$(NAME_SUFFIX)
-PRG       := $(BUILD_DIR)$(OUT).prg
-RSCS      := $(shell find resources -type f)
-SRCS      := $(shell find source -type f)
-SRCS_DATA := $(shell find source/data -type f)
+JUNGLES       := $(JUNGLE);$(MEMORY_JUNGLE)
+MANIFEST      := manifest.xml
+OUT           := $(NAME)-$(DEVICE)$(NAME_SUFFIX)
+PRG           := $(BUILD_DIR)$(OUT).prg
+RSCS          := $(shell find resources/base resources/lang resources/memory -type f ! -path '*/__pycache__/*')
+SRCS          := $(shell find source -type f ! -path '*/__pycache__/*')
+SRCS_DATA     := $(shell find source/data -type f ! -path '*/__pycache__/*')
 
 SITE_DIR  := site/
 SITE_EXPORT_STAMP := $(BUILD_DIR).site.stamp
@@ -96,6 +101,12 @@ SITE_UI_ASSETS := foundation.css components.css theme.js scroll-top.js
 SITE_UI_DIR := .site-ui
 SITE_UI_REMOTE_REPOSITORY := https://github.com/dawikur/site-ui.git
 SITE_UI_STAMP    := $(SITE_UI_DIR)/.fetch.stamp
+SITE_FILES := $(shell find site -type f \
+	! -name 'icon.svg' \
+	! -name 'fr955-light.png' \
+	! -name 'fr955-dark.png' \
+	! -name 'settings-data.js' \
+	! -name 'devices-data.js')
 VENV_DIR    := .venv
 VENV_PYTHON := $(VENV_DIR)/bin/python
 VENV_STAMP  := $(VENV_DIR)/.installed.stamp
@@ -129,32 +140,36 @@ RESOURCES_GENERATED_DIR := $(RESOURCES_BASE_DIR)generated/
 
 SOURCE_DIR          := source/
 
-SCRIPT_DEPS         := $(shell find scripts/utils -type f)
+SCRIPT_DEPS         := $(shell find scripts/utils -type f -name '*.py')
+DATA_FONTS_DEPS     := $(shell find data/fonts -type f ! -path '*/__pycache__/*')
+DATA_SETTINGS_DEPS  := $(shell find data/settings -type f ! -path '*/__pycache__/*')
+DATA_DEVICES_DEPS   := $(shell find data/devices -type f -name '*.py')
+RESOURCE_STRINGS    := $(shell find resources -name strings.xml -type f)
 
 ICON_DEPS           := scripts/generate_icon                      \
                        $(SCRIPT_DEPS)                             \
-                       $(shell find data/fonts -type f)           \
-                       $(shell find resources -name strings.xml)
-ICON                := $(RESOURCES_GENERATED_DIR)icon.xml
+                       $(DATA_FONTS_DEPS)                         \
+                       $(RESOURCE_STRINGS)
+ICON_STAMP          := $(BUILD_DIR).icon.stamp
 FONTS_DEPS          := scripts/generate_fonts                     \
                        $(SCRIPT_DEPS)                             \
-                       $(shell find data/fonts -type f)           \
-                       $(shell find resources -name strings.xml)
-FONTS               := $(RESOURCES_GENERATED_DIR)fonts.xml
+                       $(DATA_FONTS_DEPS)                          \
+                       $(RESOURCE_STRINGS)
+FONTS_STAMP         := $(BUILD_DIR).fonts.stamp
 SETTINGS_DEPS       := scripts/generate_settings                  \
                        $(SCRIPT_DEPS)                             \
-                       $(shell find data/fonts -type f)           \
-                       $(shell find data/settings -type f)
-SETTINGS            := $(RESOURCES_GENERATED_DIR)settings.xml
+                       $(DATA_FONTS_DEPS)                          \
+                       $(DATA_SETTINGS_DEPS)
+SETTINGS_STAMP      := $(BUILD_DIR).settings.stamp
 SITE_SETTINGS_DEPS  := scripts/generate_site_settings             \
                        scripts/utils/site_settings.py             \
-                       $(SETTINGS)                                \
-                       $(shell find resources -name strings.xml)
+                       $(SETTINGS_STAMP)                           \
+                       $(RESOURCE_STRINGS)
 SITE_SETTINGS       := $(SITE_OUTPUT_DIR)settings-data.js
 SITE_DEVICES_DEPS   := scripts/generate_site_devices              \
                        scripts/utils/site_devices.py              \
                        $(MANIFEST)                                \
-                       $(shell find data/devices -type f)
+                       $(DATA_DEVICES_DEPS)
 SITE_DEVICES        := $(SITE_OUTPUT_DIR)devices-data.js
 SITE_ICON           := $(SITE_DIR)assets/icon.svg
 DEVICE_OVERLAY_SRC  := $(SITE_DIR)assets/fr955.png
@@ -162,14 +177,18 @@ SITE_DEVICE_OVERLAY_LIGHT := $(SITE_DIR)assets/fr955-light.png
 SITE_DEVICE_OVERLAY_DARK  := $(SITE_DIR)assets/fr955-dark.png
 SITE_DEVICE_OVERLAYS := $(SITE_DEVICE_OVERLAY_LIGHT) $(SITE_DEVICE_OVERLAY_DARK)
 
-RESOURCES := $(ICON) $(FONTS) $(SETTINGS)
+RESOURCES := $(ICON_STAMP) $(FONTS_STAMP) $(SETTINGS_STAMP)
 
 MEMORY_JUNGLE_DEPS := scripts/generate_memory_jungle \
                       scripts/utils/memory_jungle.py \
                       $(MANIFEST) \
-                      $(shell find data/devices -type f -name '*.py')
+                      $(DATA_DEVICES_DEPS)
 
-PRG_DEPS := $(JUNGLE) $(MEMORY_JUNGLE) $(SRCS) $(RSCS) $(RESOURCES) $(SETTINGS)
+MONKEYC_DEPS := $(if $(filter optimized release,$(MODE)),scripts/optimizedc.mjs,)
+MONKEYC_KEY_DEPS := $(if $(filter release,$(MODE)),$(strip $(CONNECTIQ_DEVELOPER_KEY)),)
+
+PRG_DEPS := $(JUNGLE) $(MEMORY_JUNGLE) $(MONKEYC_DEPS) $(MONKEYC_KEY_DEPS) $(SRCS) $(RSCS) \
+            $(ICON_STAMP) $(FONTS_STAMP) $(SETTINGS_STAMP)
 
 # ---- settings ----
 
@@ -183,13 +202,15 @@ MAKEFLAGS += --no-print-directory
 
 # ---- targets ----
 
-FORCE:
-.PHONY: FORCE
+ifneq ($(strip $(SITE_UI_REFRESH)),)
+$(SITE_UI_STAMP): FORCE_SITE_UI
+endif
 
-$(SITE_UI_STAMP): FORCE
+FORCE_SITE_UI:
+.PHONY: FORCE_SITE_UI
+
+$(SITE_UI_STAMP):
 	$(Q)echo " [ $(call LOG_TAG,fetch-site-ui) ]"
-	tmp_home="$$(mktemp -d /tmp/site-ui-home.XXXXXX)"
-	trap 'rm -rf -- "$$tmp_home"' EXIT
 	if [ ! -d "$(SITE_UI_DIR)/.git" ]; then git clone --no-checkout -- "$(SITE_UI_REPOSITORY)" "$(SITE_UI_DIR)"; fi
 	git -C "$(SITE_UI_DIR)" fetch --prune origin main
 	git -C "$(SITE_UI_DIR)" checkout --detach FETCH_HEAD
@@ -219,17 +240,23 @@ $(IQ): $(PRG_DEPS)
 		$(MONKEYC_PRIVATE_KEY) \
 		$(FLAG_MONKEYC)
 
-$(FONTS): $(FONTS_DEPS) $(VENV_STAMP)
-	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+$(FONTS_STAMP): $(FONTS_DEPS) $(VENV_STAMP)
+	$(Q)echo " [ $(call LOG_TAG,fonts) ]"
+	mkdir -p "$(@D)"
 	PYTHONPATH=. $(VENV_PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	touch "$@"
 
-$(ICON): $(ICON_DEPS) $(VENV_STAMP)
-	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+$(ICON_STAMP): $(ICON_DEPS) $(VENV_STAMP)
+	$(Q)echo " [ $(call LOG_TAG,icons) ]"
+	mkdir -p "$(@D)"
 	PYTHONPATH=. $(VENV_PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	touch "$@"
 
-$(SETTINGS): $(SETTINGS_DEPS) $(SRCS_DATA) $(VENV_STAMP)
-	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+$(SETTINGS_STAMP): $(SETTINGS_DEPS) $(SRCS_DATA) $(VENV_STAMP)
+	$(Q)echo " [ $(call LOG_TAG,settings) ]"
+	mkdir -p "$(@D)"
 	PYTHONPATH=. $(VENV_PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
+	touch "$@"
 
 $(MEMORY_JUNGLE): $(MEMORY_JUNGLE_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
@@ -248,7 +275,7 @@ $(SITE_DEVICES): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_DEVICES_DEPS)
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_devices \
 		--output $(SITE_DEVICES)
 
-$(SITE_ICON): $(ICON)
+$(SITE_ICON): $(ICON_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
 	cp $(RESOURCES_GENERATED_DIR)icon.svg $@
@@ -291,10 +318,6 @@ $(SITE_DEVICE_OVERLAY_DARK): $(DEVICE_OVERLAY_SRC)
 	convert $< \( +clone -fill '#1d2020' -colorize 100 \) $@.edge-mask.png -compose Over -composite $@.edge-rgb.png
 	convert $@.edge-rgb.png $@.alpha.png -alpha off -compose CopyOpacity -composite $@
 	$(RM) $@.orig-alpha.png $@.external-alpha.png $@.alpha.png $@.external-dilate.png $@.edge-mask.png $@.edge-rgb.png
-
-$(BUILD_SOURCE_DIR):
-	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	mkdir -p $@
 
 # ---- aliases ----
 
@@ -373,7 +396,7 @@ r resources: $(RESOURCES) # generate resources
 	$(Q)echo " [ $(call LOG_TAG,resources) ]"
 .PHONY: r resources
 
-$(SITE_COPY_STAMP): FORCE $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI_STAMP)
+$(SITE_COPY_STAMP): $(SITE_FILES) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,site-copy) ]"
 	rm -rf -- "$(SITE_OUTPUT_DIR)"
 	mkdir -p -- "$(SITE_OUTPUT_DIR)"
@@ -383,13 +406,17 @@ $(SITE_COPY_STAMP): FORCE $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI_STAMP)
 	rm -rf -- "$(SITE_OUTPUT_DIR)tests"
 	touch "$@"
 
-$(SITE_EXPORT_STAMP): FORCE $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SETTINGS) $(SITE_DEVICES)
+$(SITE_EXPORT_STAMP): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SETTINGS) $(SITE_DEVICES)
 	$(Q)echo " [ $(call LOG_TAG,site) ]"
 	touch "$@"
 
 site: $(SITE_EXPORT_STAMP) # build publishable site
 	$(Q)echo " [ $(call LOG_TAG,site) ]"
 .PHONY: s site
+
+site-update: # fetch the latest site UI and rebuild the site
+	$(Q)$(MAKE) SITE_UI_REFRESH=1 site
+.PHONY: site-update
 
 t test: $(RESOURCES) $(VENV_STAMP) # run test
 	$(Q)echo " [ $(call LOG_TAG,test) ]"
@@ -441,6 +468,10 @@ c clean: # remove build directory and files
 	$(RM) -r bin                                \
 		$(BUILD_DIR) $(SRCS_GENERATED_DIR)      \
 		$(RESOURCES) $(RESOURCES_GENERATED_DIR) \
+		$(RESOURCES_DIR)generated                \
+		$(RESOURCES_DIR)memory/low/generated    \
+		$(RESOURCES_DIR)memory/medium/generated \
+		$(RESOURCES_DIR)memory/high/generated   \
 		$(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_DIR)settings-data.js $(SITE_DIR)devices-data.js \
 		$(SITE_ICON) $(SITE_DEVICE_OVERLAYS) \
 		$(VENV_DIR) .build-venv .dev-venv .site-venv $(SITE_UI_DIR) \

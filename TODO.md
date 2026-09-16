@@ -6,10 +6,10 @@
 
 ## Display
 
-- [ ] Allow for layout box'es to dissapear when empty.
 - [ ] Add burn-in prevention if AMOLED support is added.
 
 ## General
 
 - [ ] Add more metric-specific icons
 - [ ] Every widget can go anywhere
+- [ ] Empty widget
