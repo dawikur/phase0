@@ -15,11 +15,15 @@ module Data {
 				RefreshRate.MIN
 			);
 
-			self.value_max = ActivityMonitor.getInfo().pushGoal;
+			var info = ActivityMonitor.getInfo();
+			if (info has :pushGoal) {
+				self.value_max = info.pushGoal;
+			}
 		}
 
 		function refresh() as Void {
-			self.value = ActivityMonitor.getInfo().pushes;
+			var info = ActivityMonitor.getInfo();
+			self.value = info has :pushes ? info.pushes : null;
 		}
 	}
 } // module Data

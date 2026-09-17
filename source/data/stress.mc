@@ -20,10 +20,14 @@ module Data {
 		}
 
 		function refresh() as Void {
-			self.value = SensorProvider.get(
-				self.name,
-				SensorHistory.getStressHistory(SensorProvider.OPTIONS)
-			);
+			if (SensorHistory has :getStressHistory) {
+				self.value = SensorProvider.get(
+					self.name,
+					SensorHistory.getStressHistory(SensorProvider.OPTIONS)
+				);
+			} else {
+				self.value = null;
+			}
 		}
 	}
 } // module Data

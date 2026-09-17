@@ -15,11 +15,16 @@ module Data {
 				RefreshRate.MIN
 			);
 
-			self.value_max = ActivityMonitor.getInfo().activeMinutesWeekGoal;
+			var info = ActivityMonitor.getInfo();
+			if (info has :activeMinutesWeekGoal) {
+				self.value_max = info.activeMinutesWeekGoal;
+			}
 		}
 
 		function refresh() as Void {
-			var active_minutes = ActivityMonitor.getInfo().activeMinutesWeek;
+			var info = ActivityMonitor.getInfo();
+			var active_minutes =
+				info has :activeMinutesWeek ? info.activeMinutesWeek : null;
 			self.value = active_minutes != null ? active_minutes.total : null;
 		}
 	}

@@ -17,7 +17,9 @@ module Data {
 		}
 
 		function refresh() as Void {
-			var meters_descended = ActivityMonitor.getInfo().metersDescended;
+			var info = ActivityMonitor.getInfo();
+			var meters_descended =
+				info has :metersDescended ? info.metersDescended : null;
 			self.value =
 				meters_descended != null
 					? Units.convertElevation(meters_descended.toNumber())

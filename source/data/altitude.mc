@@ -20,10 +20,14 @@ module Data {
 		}
 
 		function refresh() as Void {
-			self.value = SensorProvider.get(
-				self.name,
-				SensorHistory.getElevationHistory(SensorProvider.OPTIONS)
-			);
+			if (SensorHistory has :getElevationHistory) {
+				self.value = SensorProvider.get(
+					self.name,
+					SensorHistory.getElevationHistory(SensorProvider.OPTIONS)
+				);
+			} else {
+				self.value = null;
+			}
 		}
 	}
 } // module Data

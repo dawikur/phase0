@@ -22,10 +22,14 @@ module Data {
 		}
 
 		function refresh() as Void {
-			self.value = SensorProvider.get(
-				self.name,
-				SensorHistory.getPressureHistory(SensorProvider.OPTIONS)
-			);
+			if (SensorHistory has :getPressureHistory) {
+				self.value = SensorProvider.get(
+					self.name,
+					SensorHistory.getPressureHistory(SensorProvider.OPTIONS)
+				);
+			} else {
+				self.value = null;
+			}
 		}
 	}
 } // module Data

@@ -17,7 +17,9 @@ module Data {
 		}
 
 		function refresh() as Void {
-			var active_minutes = ActivityMonitor.getInfo().activeMinutesDay;
+			var info = ActivityMonitor.getInfo();
+			var active_minutes =
+				info has :activeMinutesDay ? info.activeMinutesDay : null;
 			self.value = active_minutes != null ? active_minutes.total : null;
 		}
 	}

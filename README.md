@@ -21,3 +21,7 @@ If Connect IQ reports an application crash, the script stops immediately and
 keeps the simulator log in the terminal for diagnosis.
 Set `--simulator-duration` to change that interval, for example
 `scripts/smoke --simulator-duration 20`.
+
+Run `make smoke_test` to build the test variant and run all tests in the
+simulator. To run only one test, select it explicitly with
+`make smoke SMOKE_MODE=test SMOKE_TEST=SmokeDataTest`.

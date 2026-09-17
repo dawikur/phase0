@@ -18,7 +18,8 @@ module Data {
 		}
 
 		function refresh() as Void {
-			self.value = ActivityMonitor.getInfo().timeToRecovery;
+			var info = ActivityMonitor.getInfo();
+			self.value = info has :timeToRecovery ? info.timeToRecovery : null;
 		}
 	}
 } // module Data

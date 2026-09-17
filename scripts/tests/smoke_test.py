@@ -20,6 +20,7 @@ from scripts.utils.smoke import (
     Simulator,
     SmokeSignals,
     _check_simulator,
+    _start_watch_face,
     _stop_process,
     _wait_for_crash,
     _wait_for_watch_face,
@@ -74,6 +75,7 @@ def test_smoke_cli_handles_keyboard_interrupt(
         build_dir=Path("build"),
         sdk_dir=None,
         simulator_duration=10,
+        mode="release",
     )
 
     with (
@@ -94,6 +96,7 @@ def test_smoke_cli_returns_zero_when_run_succeeds() -> None:
         build_dir=Path("build"),
         sdk_dir=Path("sdk"),
         simulator_duration=10,
+        mode="release",
     )
 
     with (
@@ -109,6 +112,7 @@ def test_smoke_cli_returns_zero_when_run_succeeds() -> None:
         build_dir=arguments.build_dir,
         sdk_dir=arguments.sdk_dir,
         simulator_duration=arguments.simulator_duration,
+        mode=arguments.mode,
     )
 
 
@@ -120,6 +124,7 @@ def test_smoke_parser_uses_defaults() -> None:
     assert arguments.manifest == Path("manifest.xml")
     assert arguments.build_dir == Path("build")
     assert arguments.simulator_duration == 10
+    assert arguments.mode == "release"
 
 
 @patch("scripts.utils.smoke.time.sleep")
@@ -228,6 +233,40 @@ def test_run_smoke_test_reuses_one_simulator_for_all_devices(
     second_monkeydo.wait.assert_called_once_with(timeout=3)
     simulator.terminate.assert_called_once_with()
     simulator.wait.assert_called_once_with(timeout=3)
+
+
+@patch("scripts.utils.smoke._start_logged_process")
+def test_start_watch_face_passes_test_mode_to_monkeydo(
+    start_logged_process: MagicMock, tmp_path: Path
+) -> None:
+    process = MagicMock()
+    output_thread = Thread(target=lambda: None)
+    start_logged_process.return_value = (process, output_thread)
+    signals = SmokeSignals(Event())
+
+    loader = _start_watch_face(
+        monkeydo=tmp_path / "monkeydo",
+        build_dir=tmp_path / "build",
+        name="phase0",
+        device="fr255",
+        mode="test",
+        signals=signals,
+    )
+
+    assert loader.process is process
+    assert loader.output_thread is output_thread
+    start_logged_process.assert_called_once_with(
+        [
+            str(tmp_path / "monkeydo"),
+            str(tmp_path / "build" / "phase0-fr255_test.prg"),
+            "fr255",
+            "-a",
+            str(tmp_path / "build" / "phase0-fr255_test-settings.json")
+            + ":GARMIN/Settings/phase0-fr255_test-settings.json",
+            "-t",
+        ],
+        signals,
+    )
 
 
 def test_check_simulator_raises_when_watch_face_crashes() -> None:

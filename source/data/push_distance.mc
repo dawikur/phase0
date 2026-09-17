@@ -17,7 +17,8 @@ module Data {
 		}
 
 		function refresh() as Void {
-			var distance_cm = ActivityMonitor.getInfo().pushDistance;
+			var info = ActivityMonitor.getInfo();
+			var distance_cm = info has :pushDistance ? info.pushDistance : null;
 			self.value =
 				distance_cm != null
 					? Units.convertDistance(distance_cm / 100)

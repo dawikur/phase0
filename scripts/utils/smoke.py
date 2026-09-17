@@ -70,8 +70,9 @@ def run_smoke_test(
     build_dir: Path,
     sdk_dir: Path | None,
     simulator_duration: float,
+    mode: str = "release",
 ) -> None:
-    """Run each release build in one shared simulator instance."""  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    """Run each build in one shared simulator instance."""  # pylint: disable=too-many-arguments,too-many-positional-arguments
     sdk_dir = sdk_dir or connect_iq_sdk_dir()
     sdk_bin = sdk_dir / "bin"
     simulator: Simulator | None = None
@@ -80,10 +81,15 @@ def run_smoke_test(
         simulator = _start_simulator(sdk_bin / "connectiq")
         for device in supported_devices(manifest):
             print(f"\n {ANSI_REVERSE}[ {device} ]{ANSI_RESET} ", flush=True)
-            _build_release(make, name, device)
+            _build(make, name, device, mode)
             simulator.signals.ready = Event()
             monkeydo = _start_watch_face(
-                sdk_bin / "monkeydo", build_dir, name, device, simulator.signals
+                sdk_bin / "monkeydo",
+                build_dir,
+                name,
+                device,
+                mode,
+                simulator.signals,
             )
             try:
                 _wait_for_watch_face(simulator, device)
@@ -106,27 +112,33 @@ def _start_simulator(connectiq: Path) -> Simulator:
     return simulator
 
 
-def _build_release(make: str, name: str, device: str) -> None:
+def _build(make: str, name: str, device: str, mode: str) -> None:
     subprocess.run(
-        [make, "build_release", f"NAME={name}", f"DEVICE={device}"], check=True
+        [make, f"build_{mode}", f"NAME={name}", f"DEVICE={device}"], check=True
     )
 
 
 def _start_watch_face(
-    monkeydo: Path, build_dir: Path, name: str, device: str, signals: SmokeSignals
+    monkeydo: Path,
+    build_dir: Path,
+    name: str,
+    device: str,
+    mode: str,
+    signals: SmokeSignals,
 ) -> WatchFaceLoader:
-    output_name = f"{name}-{device}_release"
+    """Start a watch-face process with the selected test options."""  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    output_name = f"{name}-{device}_{mode}"
     settings = build_dir / f"{output_name}-settings.json"
-    process, output_thread = _start_logged_process(
-        [
-            str(monkeydo),
-            str(build_dir / f"{output_name}.prg"),
-            device,
-            "-a",
-            f"{settings}:GARMIN/Settings/{settings.name}",
-        ],
-        signals,
-    )
+    command = [
+        str(monkeydo),
+        str(build_dir / f"{output_name}.prg"),
+        device,
+        "-a",
+        f"{settings}:GARMIN/Settings/{settings.name}",
+    ]
+    if mode == "test":
+        command.append("-t")
+    process, output_thread = _start_logged_process(command, signals)
     return WatchFaceLoader(process, output_thread)
 
 

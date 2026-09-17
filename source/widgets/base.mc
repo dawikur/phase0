@@ -5,6 +5,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 
 module Widgets {
+	// TODO(api-4.2.0): Isolate Complications types for API 3.4 devices.
 	function Fits(
 		_size_x as Lang.Number,
 		_size_y as Lang.Number,

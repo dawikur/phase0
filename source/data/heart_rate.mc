@@ -39,9 +39,13 @@ module Data {
 			) {
 				self.value = activity_info.currentHeartRate;
 			} else {
-				self.value = SensorProvider.getRaw(
-					SensorHistory.getHeartRateHistory(SensorProvider.OPTIONS)
-				);
+				if (SensorHistory has :getHeartRateHistory) {
+					self.value = SensorProvider.getRaw(
+						SensorHistory.getHeartRateHistory(
+							SensorProvider.OPTIONS
+						)
+					);
+				}
 			}
 		}
 	}

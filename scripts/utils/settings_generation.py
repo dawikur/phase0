@@ -17,6 +17,7 @@ Widget = Single | list[Entry]
 def render_data_mc(data: Any) -> str:
     doc = McDocument.create()
     doc.line("import Toybox.Lang;")
+    doc.line("import Toybox.Test;")
     with McScope(doc, "module Data {") as _module:
         with McScope(doc, "function get(_id as Lang.Number) as Base? {") as _get:
             with McScope(doc, "switch (_id) {") as _switch:
@@ -28,6 +29,20 @@ def render_data_mc(data: Any) -> str:
 
                 doc.line()
                 doc.line("default: return null;")
+
+        doc.line("(:test)")
+        with McScope(
+            doc, "function SmokeTest(_logger as Test.Logger) as Lang.Boolean {"
+        ) as _smoke_test:
+            with McScope(doc, "for (var i = 1; ; ++i) {") as _for:
+                doc.line("var data = Data.get(i);")
+                with McScope(doc, "if (data == null) {") as _if:
+                    doc.line("break;")
+
+                doc.line("data.refresh();")
+                doc.line("data.refreshRevision();")
+
+            doc.line("return true;")
 
     return doc.render()
 

@@ -12,6 +12,8 @@ MODE        ?= debug
 LOG_PREFIX  ?=
 # show commands
 V           ?= 0
+# smoke-test build mode
+SMOKE_MODE  ?= release
 
 VALID_MODES := debug test optimized release
 ifneq ($(filter $(MODE),$(VALID_MODES)),$(MODE))
@@ -414,9 +416,9 @@ site: $(SITE_EXPORT_STAMP) # build publishable site
 	$(Q)echo " [ $(call LOG_TAG,site) ]"
 .PHONY: s site
 
-site-update: # fetch the latest site UI and rebuild the site
+site_update: # fetch the latest site UI and rebuild the site
 	$(Q)$(MAKE) SITE_UI_REFRESH=1 site
-.PHONY: site-update
+.PHONY: site_update
 
 t test: $(RESOURCES) $(VENV_STAMP) # run test
 	$(Q)echo " [ $(call LOG_TAG,test) ]"
@@ -437,8 +439,13 @@ l lint: $(VENV_STAMP) # run static checks
 
 smoke: $(VENV_STAMP) # run smoke test
 	$(Q)echo " [ $(call LOG_TAG,smoke) ]"
-	$(Q)$(VENV_PYTHON) scripts/smoke
+	$(Q)$(VENV_PYTHON) scripts/smoke \
+		--mode $(SMOKE_MODE)
 .PHONY: smoke
+
+smoke_test: SMOKE_MODE=test
+smoke_test: smoke # run smoke test with test build
+.PHONY: smoke_test
 
 ifneq ($(MODE),release)
 d deploy:

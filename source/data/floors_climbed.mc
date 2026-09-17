@@ -15,7 +15,10 @@ module Data {
 				RefreshRate.MIN
 			);
 
-			self.value_max = ActivityMonitor.getInfo().floorsClimbedGoal;
+			var info = ActivityMonitor.getInfo();
+			if (info has :floorsClimbedGoal) {
+				self.value_max = info.floorsClimbedGoal;
+			}
 		}
 
 		function refresh() as Void {

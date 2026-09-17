@@ -968,7 +968,7 @@ TYPEFACE = Typeface("Dot", [
         "00000",
     ]),
 
-    Glyph("à", [  # TODO
+    Glyph("à", [
         "01000",
         "00100",
         "01110",
@@ -990,7 +990,7 @@ TYPEFACE = Typeface("Dot", [
         "00000",
     ]),
 
-    Glyph("â", [  # TODO
+    Glyph("â", [
         "00100",
         "01010",
         "01110",
@@ -1023,7 +1023,7 @@ TYPEFACE = Typeface("Dot", [
         "00000",
     ]),
 
-    Glyph("ã", [  # TODO
+    Glyph("ã", [
         "01010",
         "10100",
         "01110",
@@ -1067,7 +1067,7 @@ TYPEFACE = Typeface("Dot", [
         "00000",
     ]),
 
-    Glyph("É", [  # TODO
+    Glyph("É", [
         "00010",
         "00100",
         "11111",
@@ -1122,7 +1122,7 @@ TYPEFACE = Typeface("Dot", [
         "00100",
     ]),
 
-    Glyph("Í", [  # TODO
+    Glyph("Í", [
         "00010",
         "00100",
         "01110",
@@ -1133,7 +1133,7 @@ TYPEFACE = Typeface("Dot", [
         "00000",
     ]),
 
-    Glyph("í", [  # TODO
+    Glyph("í", [
         "00010",
         "00100",
         "00000",
@@ -1166,7 +1166,7 @@ TYPEFACE = Typeface("Dot", [
         "00000",
     ]),
 
-    Glyph("ß", [  # TODO
+    Glyph("ß", [
         "01110",
         "10001",
         "10000",
@@ -1210,7 +1210,7 @@ TYPEFACE = Typeface("Dot", [
         "00000",
     ]),
 
-    Glyph("ñ", [  # TODO
+    Glyph("ñ", [
         "01010",
         "10100",
         "11100",
@@ -1232,7 +1232,7 @@ TYPEFACE = Typeface("Dot", [
         "00000",
     ]),
 
-    Glyph("ô", [  # TODO
+    Glyph("ô", [
         "00100",
         "01010",
         "01110",
@@ -1254,7 +1254,7 @@ TYPEFACE = Typeface("Dot", [
         "00000",
     ]),
 
-    Glyph("õ", [  # TODO
+    Glyph("õ", [
         "01010",
         "10100",
         "01110",
@@ -1276,7 +1276,7 @@ TYPEFACE = Typeface("Dot", [
         "00000",
     ]),
 
-    Glyph("ú", [  # TODO
+    Glyph("ú", [
         "00010",
         "00100",
         "10001",

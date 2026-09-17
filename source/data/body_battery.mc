@@ -22,10 +22,14 @@ module Data {
 		}
 
 		function refresh() as Void {
-			self.value = SensorProvider.get(
-				self.name,
-				SensorHistory.getBodyBatteryHistory(SensorProvider.OPTIONS)
-			);
+			if (SensorHistory has :getBodyBatteryHistory) {
+				self.value = SensorProvider.get(
+					self.name,
+					SensorHistory.getBodyBatteryHistory(SensorProvider.OPTIONS)
+				);
+			} else {
+				self.value = null;
+			}
 		}
 	}
 } // module Data

@@ -22,10 +22,16 @@ module Data {
 		}
 
 		function refresh() as Void {
-			self.value = SensorProvider.get(
-				self.name,
-				SensorHistory.getOxygenSaturationHistory(SensorProvider.OPTIONS)
-			);
+			if (SensorHistory has :getOxygenSaturationHistory) {
+				self.value = SensorProvider.get(
+					self.name,
+					SensorHistory.getOxygenSaturationHistory(
+						SensorProvider.OPTIONS
+					)
+				);
+			} else {
+				self.value = null;
+			}
 		}
 	}
 } // module Data

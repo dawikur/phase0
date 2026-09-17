@@ -5,6 +5,7 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 module Data {
+	// TODO(api-4.2.0): Isolate Complications types for API 3.4 devices.
 	class Base {
 		var type as Complications.Type?;
 		var name as Lang.String;

@@ -17,7 +17,9 @@ module Data {
 		}
 
 		function refresh() as Void {
-			var meters_climbed = ActivityMonitor.getInfo().metersClimbed;
+			var info = ActivityMonitor.getInfo();
+			var meters_climbed =
+				info has :metersClimbed ? info.metersClimbed : null;
 			self.value =
 				meters_climbed != null
 					? Units.convertElevation(meters_climbed.toNumber())

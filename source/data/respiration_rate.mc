@@ -17,7 +17,9 @@ module Data {
 		}
 
 		function refresh() as Void {
-			self.value = ActivityMonitor.getInfo().respirationRate;
+			var info = ActivityMonitor.getInfo();
+			self.value =
+				info has :respirationRate ? info.respirationRate : null;
 		}
 	}
 } // module Data

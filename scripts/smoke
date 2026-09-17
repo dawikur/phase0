@@ -24,6 +24,12 @@ def parse_arguments(arguments: Sequence[str] | None = None) -> argparse.Namespac
     parser.add_argument("--make", default="make", help="Make executable")
     parser.add_argument("--name", default="phase0", help="Application name")
     parser.add_argument(
+        "--mode",
+        choices=("release", "test"),
+        default="release",
+        help="Build mode (default: release)",
+    )
+    parser.add_argument(
         "--build-dir", type=Path, default=Path("build"), help="Build directory"
     )
     parser.add_argument("--sdk-dir", type=Path, help="Connect IQ SDK directory")
@@ -46,6 +52,7 @@ def main() -> int:
             build_dir=args.build_dir,
             sdk_dir=args.sdk_dir,
             simulator_duration=args.simulator_duration,
+            mode=args.mode,
         )
     except KeyboardInterrupt:
         print("Smoke test interrupted.", file=sys.stderr)

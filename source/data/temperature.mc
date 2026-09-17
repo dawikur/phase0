@@ -18,10 +18,14 @@ module Data {
 		}
 
 		function refresh() as Void {
-			self.value = SensorProvider.get(
-				self.name,
-				SensorHistory.getTemperatureHistory(SensorProvider.OPTIONS)
-			);
+			if (SensorHistory has :getTemperatureHistory) {
+				self.value = SensorProvider.get(
+					self.name,
+					SensorHistory.getTemperatureHistory(SensorProvider.OPTIONS)
+				);
+			} else {
+				self.value = null;
+			}
 		}
 	}
 } // module Data
