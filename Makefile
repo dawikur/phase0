@@ -565,7 +565,21 @@ h help: # print help message
 	printf "\n"
 	# ---- devices ----
 	printf " %bDevices%b\n" "$$B" "$$N"
-	sed -n 's/.*iq:product id="\(.*\)"\/>/     \1/p' $(MANIFEST)
+	awk '
+	/iq:product id="/ {
+		device = $$0;
+		sub(/^.*iq:product id="/, "", device);
+		sub(/".*$$/, "", device);
+		devices[++count] = device;
+		if (length(device) > max_length) max_length = length(device);
+	}
+	END {
+		middle = int((count + 1) / 2);
+		for (i = 1; i <= middle; i++) {
+			right = (i + middle <= count) ? devices[i + middle] : "";
+			printf "     %-*s     %s\n", max_length, devices[i], right;
+		}
+	}' $(MANIFEST)
 	printf "\n"
 	# ---- modes ----
 	printf " %bModes%b\n" "$$B" "$$N"
