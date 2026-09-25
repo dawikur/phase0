@@ -20,6 +20,7 @@ from scripts.utils.smoke import (
     Simulator,
     SmokeSignals,
     _check_simulator,
+    _start_logged_process,
     _start_watch_face,
     _stop_process,
     _wait_for_crash,
@@ -267,6 +268,30 @@ def test_start_watch_face_passes_test_mode_to_monkeydo(
         ],
         signals,
     )
+
+
+@patch("scripts.utils.smoke.Thread")
+@patch("scripts.utils.smoke.subprocess.Popen")
+def test_start_logged_process_applies_environment_overrides(
+    popen: MagicMock, thread: MagicMock
+) -> None:
+    process = MagicMock()
+    popen.return_value = process
+
+    result_process, result_thread = _start_logged_process(
+        ["connectiq"],
+        SmokeSignals(Event()),
+        env_overrides={"GDK_BACKEND": "x11"},
+        cwd=Path("/tmp"),
+    )
+
+    assert result_process is process
+    assert result_thread is thread.return_value
+    arguments = popen.call_args
+    assert arguments.args == (["stdbuf", "-oL", "-eL", "connectiq"],)
+    assert arguments.kwargs["env"]["GDK_BACKEND"] == "x11"
+    assert arguments.kwargs["cwd"] == Path("/tmp")
+    thread.return_value.start.assert_called_once_with()
 
 
 def test_check_simulator_raises_when_watch_face_crashes() -> None:

@@ -1,13 +1,15 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
+import os
 import subprocess
 import sys
 import time
 import xml.etree.ElementTree as ET
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from threading import Event, Thread
-from typing import TextIO
+from typing import Any, TextIO
 
 CONNECT_IQ_NAMESPACE = {"iq": "http://www.garmin.com/xml/connectiq"}
 SIMULATOR_START_DELAY = 3
@@ -102,10 +104,17 @@ def run_smoke_test(
             _stop_simulator(simulator)
 
 
-def _start_simulator(connectiq: Path) -> Simulator:
+def _start_simulator(
+    connectiq: Path,
+    *,
+    env_overrides: Mapping[str, str] | None = None,
+    cwd: Path | None = None,
+) -> Simulator:
     """Start Connect IQ once and ensure it remains alive during startup."""
     signals = SmokeSignals(Event())
-    process, output_thread = _start_logged_process([str(connectiq)], signals)
+    process, output_thread = _start_logged_process(
+        [str(connectiq)], signals, env_overrides=env_overrides, cwd=cwd
+    )
     simulator = Simulator(process, signals, output_thread)
     time.sleep(SIMULATOR_START_DELAY)
     _check_simulator(simulator)
@@ -143,18 +152,28 @@ def _start_watch_face(
 
 
 def _start_logged_process(
-    command: list[str], signals: SmokeSignals
+    command: list[str],
+    signals: SmokeSignals,
+    *,
+    env_overrides: Mapping[str, str] | None = None,
+    cwd: Path | None = None,
 ) -> tuple[subprocess.Popen[str], Thread]:
     """Start a simulator process with line-buffered output monitoring."""
     # The caller owns the live process and stops it explicitly after the smoke test.
     # pylint: disable=consider-using-with
-    process = subprocess.Popen(
-        [*LINE_BUFFER_COMMAND, *command],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1,
-    )
+    process_arguments: dict[str, Any] = {
+        "stdout": subprocess.PIPE,
+        "stderr": subprocess.STDOUT,
+        "text": True,
+        "bufsize": 1,
+    }
+    if env_overrides:
+        environment = os.environ.copy()
+        environment.update(env_overrides)
+        process_arguments["env"] = environment
+    if cwd is not None:
+        process_arguments["cwd"] = cwd
+    process = subprocess.Popen([*LINE_BUFFER_COMMAND, *command], **process_arguments)
     output_thread = Thread(
         target=_watch_simulator_output,
         args=(process.stdout, signals),

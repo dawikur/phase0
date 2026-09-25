@@ -617,6 +617,79 @@ h1 {
 	padding: var(--space-6) 0;
 }
 
+.screenshot-gallery {
+	padding: var(--space-5) 0 var(--space-3);
+}
+
+.screenshot-gallery-heading {
+	max-width: 660px;
+	margin-bottom: var(--space-4);
+}
+
+.screenshot-gallery-heading h2 {
+	margin: 0 0 var(--space-1);
+	font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+
+.screenshot-gallery-heading > p:last-child {
+	margin: 0;
+	color: var(--muted);
+	line-height: 1.55;
+}
+
+.screenshot-grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: var(--space-3);
+}
+
+.screenshot-grid figure {
+	min-width: 0;
+	margin: 0;
+	padding: 12px;
+	border: 1px solid var(--chip-border);
+	border-radius: var(--radius);
+	background: var(--panel);
+}
+
+.screenshot-grid .screenshot-preview {
+	display: grid;
+	width: 100%;
+	aspect-ratio: 1;
+	place-items: center;
+}
+
+.screenshot-grid img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: 50%;
+	object-fit: cover;
+	background: #000;
+	box-shadow: 0 8px 18px rgb(0 0 0 / 0.32), 0 0 0 1px var(--chip-border);
+}
+
+.screenshot-grid .screenshot-card--small img {
+	width: 78%;
+}
+
+.screenshot-grid figcaption {
+	display: grid;
+	gap: 4px;
+	padding: 12px 2px 2px;
+}
+
+.screenshot-grid figcaption strong {
+	color: var(--ink);
+	font-size: 0.95rem;
+}
+
+.screenshot-grid figcaption span {
+	color: var(--muted);
+	font-size: 0.85rem;
+	line-height: 1.4;
+}
+
 .supporting article {
 	border-top: 1px solid var(--chip-border);
 	padding-top: var(--space-2);
@@ -680,6 +753,10 @@ h1 {
 	.supporting {
 		grid-template-columns: 1fr;
 	}
+
+	.screenshot-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
 }
 
 @media (max-width: 560px) {
@@ -690,6 +767,10 @@ h1 {
 
 	.supporting {
 		padding: var(--space-5) 0;
+	}
+
+	.screenshot-grid {
+		grid-template-columns: 1fr;
 	}
 
 	.lede,

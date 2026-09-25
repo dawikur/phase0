@@ -30,6 +30,20 @@ class Options(IntEnum):
     SMALL = auto()
 
 
+EXTRA_WIDGETS = [
+    Options.NONE,
+    Options.BATTERY_DAYS_REMAINING,
+    Options.BATTERY_ICON,
+    Options.BATTERY_PERCENTAGE,
+    Options.DAWN_AND_DUSK,
+    Options.DAWN_AND_DUSK_MOON,
+    Options.DAWN_AND_DUSK_SUN,
+    Options.DAWN_OR_DUSK,
+    Options.DAWN_OR_DUSK_MOON,
+    Options.DAWN_OR_DUSK_SUN,
+]
+
+
 class Heights(IntEnum):
     AUTO = Options.AUTO.value
     SMALL = Options.SMALL.value
@@ -58,21 +72,7 @@ def Widgets(  # pylint: disable=invalid-name
         Any,
         IntEnum(
             "Widget",
-            {
-                datum.name: datum.value + len(data)
-                for datum in [
-                    Options.NONE,
-                    Options.BATTERY_DAYS_REMAINING,
-                    Options.BATTERY_ICON,
-                    Options.BATTERY_PERCENTAGE,
-                    Options.DAWN_AND_DUSK,
-                    Options.DAWN_AND_DUSK_MOON,
-                    Options.DAWN_AND_DUSK_SUN,
-                    Options.DAWN_OR_DUSK,
-                    Options.DAWN_OR_DUSK_MOON,
-                    Options.DAWN_OR_DUSK_SUN,
-                ]
-            },
+            {datum.name: datum.value + len(data) for datum in EXTRA_WIDGETS},
         ),
     )
 
@@ -144,7 +144,7 @@ def MemoryLow(  # pylint: disable=invalid-name
             "top outer",
             "Widget",
             [
-                Select("data", widgets.DAWN_AND_DUSK_MOON),
+                Select("data", widgets.DAWN_OR_DUSK_MOON),
             ],
         ),
         Array(

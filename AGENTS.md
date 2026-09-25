@@ -320,6 +320,20 @@ outputs, fetched site UI cache, virtual environments, Python caches, and root-le
 The release optimizer is pinned in `package-lock.json`; install its Node
 dependencies with `npm ci` before producing a release build.
 
+`make screenshots` generates the Connect IQ Store icon and configured
+normal and AoD watch-face screenshots in `site/assets/screenshots/` (named
+`<scenario>.png` and `<scenario>-aod.png`) and the Store icon at
+`site/assets/icon_big.png`. AoD capture temporarily forces `isNightMode_()`
+while compiling each mode and restores `source/phase0/view.mc` immediately.
+Screenshot scenarios live in
+`data/store_screenshots.py`; device, app-property overrides, and gallery title,
+description and alt text belong together there. `make site` generates
+`screenshots-data.js` from that metadata for the website gallery. Scenario
+overrides must not change `data/settings/settings.py`. Screenshot capture
+requires a graphical X11 or XWayland session, the Connect IQ Simulator,
+`wmctrl` and `xdotool`. On Wayland, the screenshot workflow starts the
+simulator through GTK's X11 backend for window control and native capture.
+
 Do not run the project build or the Connect IQ simulator in this environment.
 Both are known to fail here, so they do not provide useful verification.
 

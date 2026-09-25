@@ -61,8 +61,11 @@ HELP_DESCRIPTION_COLUMN := 26
 LOG_TAG = $(if $(LOG_PREFIX),$(LOG_PREFIX)-$(1),$(1))
 
 PYTHON_FILES := $(shell rg --files -g '*.py') \
-	scripts/generate_fonts scripts/generate_icon scripts/generate_settings \
-	scripts/generate_site_devices scripts/generate_site_settings scripts/generate_memory_jungle scripts/smoke
+	scripts/generate_fonts scripts/generate_icon scripts/generate_store_icon \
+	scripts/generate_store_screenshots \
+	scripts/generate_settings \
+	scripts/generate_site_devices scripts/generate_site_settings scripts/generate_site_screenshots \
+	scripts/generate_memory_jungle scripts/smoke
 
 SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release deploy
 
@@ -153,6 +156,7 @@ ICON_DEPS           := scripts/generate_icon                      \
                        $(DATA_FONTS_DEPS)                         \
                        $(RESOURCE_STRINGS)
 ICON_STAMP          := $(BUILD_DIR).icon.stamp
+SITE_STORE_ICON     := $(SITE_DIR)assets/icon_big.png
 FONTS_DEPS          := scripts/generate_fonts                     \
                        $(SCRIPT_DEPS)                             \
                        $(DATA_FONTS_DEPS)                          \
@@ -168,6 +172,13 @@ SITE_SETTINGS_DEPS  := scripts/generate_site_settings             \
                        $(SETTINGS_STAMP)                           \
                        $(RESOURCE_STRINGS)
 SITE_SETTINGS       := $(SITE_OUTPUT_DIR)settings-data.js
+SITE_SCREENSHOTS_DEPS := scripts/generate_site_screenshots     \
+	                     scripts/utils/site_screenshots.py      \
+	                     scripts/utils/store_screenshots.py     \
+	                     data/store_screenshots.py               \
+	                     $(DATA_SETTINGS_DEPS)                   \
+	                     $(SRCS_DATA)
+SITE_SCREENSHOTS    := $(SITE_OUTPUT_DIR)screenshots-data.js
 SITE_DEVICES_DEPS   := scripts/generate_site_devices              \
                        scripts/utils/site_devices.py              \
                        $(MANIFEST)                                \
@@ -276,6 +287,11 @@ $(SITE_DEVICES): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_DEVICES_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_devices \
 		--output $(SITE_DEVICES)
+
+$(SITE_SCREENSHOTS): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SCREENSHOTS_DEPS)
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_screenshots \
+		--output $(SITE_SCREENSHOTS)
 
 $(SITE_ICON): $(ICON_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
@@ -398,6 +414,20 @@ r resources: $(RESOURCES) # generate resources
 	$(Q)echo " [ $(call LOG_TAG,resources) ]"
 .PHONY: r resources
 
+$(SITE_STORE_ICON): $(ICON_STAMP) scripts/generate_store_icon
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_store_icon \
+		--input $(RESOURCES_GENERATED_DIR)icon.svg \
+		--output $@
+
+x screenshots: $(SITE_STORE_ICON) $(VENV_STAMP) # generate Connect IQ Store assets and screenshots
+	$(Q)echo " [ $(call LOG_TAG,screenshots) ]"
+	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_store_screenshots \
+		--manifest $(MANIFEST) \
+		--build-dir $(BUILD_DIR) \
+		--output-dir $(SITE_DIR)assets/screenshots
+.PHONY: x screenshots
+
 $(SITE_COPY_STAMP): $(SITE_FILES) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,site-copy) ]"
 	rm -rf -- "$(SITE_OUTPUT_DIR)"
@@ -408,7 +438,7 @@ $(SITE_COPY_STAMP): $(SITE_FILES) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI
 	rm -rf -- "$(SITE_OUTPUT_DIR)tests"
 	touch "$@"
 
-$(SITE_EXPORT_STAMP): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SETTINGS) $(SITE_DEVICES)
+$(SITE_EXPORT_STAMP): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_SCREENSHOTS)
 	$(Q)echo " [ $(call LOG_TAG,site) ]"
 	touch "$@"
 

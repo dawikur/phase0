@@ -6,6 +6,7 @@
 	<title>phase0 Watch Face</title>
 	<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 	<script src="settings-data.js"></script>
+	<script src="screenshots-data.js"></script>
 	<script src="assets/site-ui/theme.js"></script>
 	<script src="theme.js"></script>
 	<link rel="stylesheet" href="assets/site-ui/foundation.css">
@@ -53,7 +54,7 @@
 					<img
 						class="watch-face"
 						id="watchFace"
-						src="assets/normal.png"
+						src="assets/screenshots/data-rich.png"
 						alt="phase0 normal watch face"
 					>
 					<img
@@ -78,6 +79,15 @@
 			</div>
 		</section>
 
+		<section class="screenshot-gallery" aria-labelledby="screenshots-title">
+			<div class="screenshot-gallery-heading">
+				<p class="eyebrow">One face, many configurations</p>
+				<h2 id="screenshots-title">Your layout, your way</h2>
+				<p>Choose the fields, widgets and colors that matter. phase0 adapts the layout to the available space and hides rows that are not in use.</p>
+			</div>
+			<div class="screenshot-grid" id="screenshotGrid"></div>
+		</section>
+
 		<section class="supporting" aria-label="Product details">
 			<article>
 				<h2>Readable At A Glance</h2>
@@ -89,7 +99,7 @@
 			</article>
 			<article>
 				<h2>Built For Small Screens</h2>
-				<p>Every widget has a compact role: icons, labels, values and gauges are tuned for quick inspection.</p>
+				<p>The layout adapts to each watch screen and the widgets you choose, keeping icons, labels, values and gauges clear at a glance.</p>
 			</article>
 			<article class="support-card" id="supportCard">
 				<h2>Support</h2>

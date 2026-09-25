@@ -351,7 +351,7 @@ test("switches to always-on view and hides unsupported hotspots", () => {
 
 	context.applyWatchView("aod");
 
-	assert.equal(watchFace.src, "assets/aod.png");
+	assert.equal(watchFace.src, "assets/screenshots/data-rich-aod.png");
 	assert.equal(watchFace.alt, "phase0 always-on watch face on a Garmin watch");
 	assert.match(pageLede.textContent, /only the essentials/);
 	assert.match(pageLede.textContent, /battery state/);
@@ -429,7 +429,7 @@ test("falls back to normal view for unknown view names", () => {
 
 	context.applyWatchView("missing");
 
-	assert.equal(watchFace.src, "assets/normal.png");
+	assert.equal(watchFace.src, "assets/screenshots/data-rich.png");
 	assert.match(pageLede.textContent, /fast human scanning/);
 	assert.match(pageLede.textContent, /unified retro style/);
 	assert.equal(

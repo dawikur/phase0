@@ -4,7 +4,7 @@
 import textwrap
 from collections.abc import Iterable
 from enum import IntEnum
-from typing import Any
+from typing import Any, Mapping
 
 from data.settings import Array, Boolean, Entry, Number, Options, Select, Single
 from scripts.utils.mc_document import McDocument, McScope
@@ -12,6 +12,55 @@ from scripts.utils.xml_document import XmlDocument
 
 Top = Single | Array
 Widget = Single | list[Entry]
+
+
+def apply_property_defaults(
+    settings: Iterable[Top], overrides: Mapping[str, int | bool]
+) -> set[str]:
+    """Apply screenshot overrides to the source settings model before generation."""
+    applied: set[str] = set()
+    for section in settings:
+        widgets = (
+            [(None, section.entries)]
+            if isinstance(section, Single)
+            else list(enumerate(section.entries))
+        )
+        for index, entries in widgets:
+            for entry in entries:
+                suffix = "" if index is None else str(index)
+                property_id = f"{section.id}{entry.id}{suffix}"
+                if property_id not in overrides:
+                    continue
+                value = overrides[property_id]
+                if isinstance(entry, Select):
+                    # bool subclasses int, but the settings schema requires an integer.
+                    # pylint: disable=unidiomatic-typecheck
+                    if type(value) is not int:
+                        raise ValueError(
+                            f"Setting property '{property_id}' expects int, "
+                            f"got {type(value).__name__}."
+                        )
+                    entry.default = str(value)
+                elif isinstance(entry, Number):
+                    # bool subclasses int, but the settings schema requires an integer.
+                    # pylint: disable=unidiomatic-typecheck
+                    if type(value) is not int:
+                        raise ValueError(
+                            f"Setting property '{property_id}' expects int, "
+                            f"got {type(value).__name__}."
+                        )
+                    entry.default = value
+                elif isinstance(entry, Boolean):
+                    # bool must not be accepted as an integer for Boolean settings.
+                    # pylint: disable=unidiomatic-typecheck
+                    if type(value) is not bool:
+                        raise ValueError(
+                            f"Setting property '{property_id}' expects bool, "
+                            f"got {type(value).__name__}."
+                        )
+                    entry.default = value
+                applied.add(property_id)
+    return applied
 
 
 def render_data_mc(data: Any) -> str:

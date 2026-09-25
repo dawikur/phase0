@@ -1,4 +1,5 @@
 const settingsData = window.PHASE_SETTINGS || { groups: [] };
+const screenshotData = window.PHASE_SCREENSHOTS || [];
 
 const featureContent = {
 	general: {
@@ -55,6 +56,7 @@ const watchFace = document.getElementById("watchFace");
 const pageLede = document.getElementById("pageLede");
 const supportedDevicesList = document.getElementById("supportedDevices");
 const supportedLanguagesList = document.getElementById("supportedLanguages");
+const screenshotGrid = document.getElementById("screenshotGrid");
 let activeFeature = "general";
 let activeView = "normal";
 
@@ -62,15 +64,15 @@ const watchViews = {
 	normal: {
 		label: "phase0 normal watch face on a Garmin watch",
 		lede: "Normal mode is built for fast human scanning: time, conditions and daily progress resolve into clear visual reads. Gauges add completeness cues to bottom metrics, condition icons stay recognizable at a glance, and the dense layout keeps a unified retro style without giving up readability.",
-		src: "assets/normal.png",
-		fallback: "assets/normal.png",
+		src: "assets/screenshots/data-rich.png",
+		fallback: "assets/screenshots/data-rich.png",
 		features: ["general", "top", "status", "clock", "gauges", "bottom", "battery"],
 	},
 	aod: {
 		label: "phase0 always-on watch face on a Garmin watch",
 		lede: "Always-on mode keeps only the essentials: the time, battery state for the charge-or-not decision, and quiet status signals for alarms, notifications and connection state.",
-		src: "assets/aod.png",
-		fallback: "assets/aod.png",
+		src: "assets/screenshots/data-rich-aod.png",
+		fallback: "assets/screenshots/data-rich-aod.png",
 		features: ["general", "status", "clock", "battery"],
 	},
 };
@@ -187,6 +189,13 @@ function applyWatchView(view) {
 		button.setAttribute("aria-pressed", String(button.dataset.watchView === nextView));
 	});
 
+	screenshotGrid?.querySelectorAll(".screenshot-card img").forEach((image) => {
+		const suffix = nextView === "aod" ? "-aod" : "";
+		const alt = nextView === "aod" ? image.dataset.aodAlt : image.dataset.normalAlt;
+		image.src = `assets/screenshots/${image.dataset.screenshotName}${suffix}.png`;
+		image.alt = alt || "";
+	});
+
 	applyHotspotGeometry();
 
 	if (!config.features.includes(activeFeature)) {
@@ -222,6 +231,31 @@ function escapeHtml(value) {
 		.replaceAll(">", "&gt;")
 		.replaceAll('"', "&quot;")
 		.replaceAll("'", "&#39;");
+}
+
+function renderScreenshotGallery() {
+	if (!screenshotGrid) {
+		return;
+	}
+
+	screenshotGrid.innerHTML = screenshotData.map((screenshot) => `
+		<figure class="screenshot-card${screenshot.previewSize === "small" ? " screenshot-card--small" : ""}">
+			<div class="screenshot-preview">
+				<img
+					src="assets/screenshots/${escapeHtml(screenshot.name)}.png"
+					alt="${escapeHtml(screenshot.alt)}"
+					data-screenshot-name="${escapeHtml(screenshot.name)}"
+					data-normal-alt="${escapeHtml(screenshot.alt)}"
+					data-aod-alt="${escapeHtml(screenshot.aodAlt)}"
+					loading="lazy"
+				>
+			</div>
+			<figcaption>
+				<strong>${escapeHtml(screenshot.title)}</strong>
+				<span>${escapeHtml(screenshot.description)}</span>
+			</figcaption>
+		</figure>
+	`).join("");
 }
 
 function supportListMarkup(items, formatter = (item) => item) {
@@ -391,6 +425,7 @@ const themeMode = document.documentElement.dataset.themeMode || "auto";
 
 applyHotspotGeometry();
 applyTheme(themeMode);
+renderScreenshotGallery();
 renderSupportMeta();
 applyWatchView(initialView || "normal");
 

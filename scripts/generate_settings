@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
+import json
+import os
+
 from data.settings import Data, Widgets
 from data.settings import settings as Settings
 from scripts.utils.args_parse import parse_folders
 from scripts.utils.settings_generation import (
+    apply_property_defaults,
     render_data_mc,
     render_properties_mc,
     render_properties_xml,
@@ -21,11 +25,32 @@ if __name__ == "__main__":
     widgets = Widgets(data)
     folders.source("generated", "widgets.mc").write_text(render_widgets_mc(widgets))
 
-    for settings, annotation in [
+    settings_by_memory = [
         (Settings.MemoryLow(data, widgets), "low"),
         (Settings.MemoryMedium(data, widgets), "medium"),
         (Settings.MemoryHigh(data, widgets), "high"),
-    ]:
+    ]
+    overrides_json = os.environ.get("PHASE0_STORE_SCREENSHOT_OVERRIDES")
+    overrides = json.loads(overrides_json) if overrides_json else {}
+    if not isinstance(overrides, dict):
+        raise ValueError("Screenshot setting overrides must be an object.")
+    if any(not isinstance(key, str) for key in overrides):
+        raise ValueError("Screenshot setting override keys must be property IDs.")
+    if any(type(value) not in (int, bool) for value in overrides.values()):
+        raise ValueError(
+            "Screenshot setting overrides must map property IDs to numbers or booleans."
+        )
+
+    applied: set[str] = set()
+    for settings, _annotation in settings_by_memory:
+        applied.update(apply_property_defaults(settings, overrides))
+    unknown = set(overrides) - applied
+    if unknown:
+        raise ValueError(
+            "Unknown screenshot setting properties: " + ", ".join(sorted(unknown))
+        )
+
+    for settings, annotation in settings_by_memory:
         folders.source("generated", f"properties_memory_{annotation}.mc").write_text(
             render_properties_mc(settings, widgets, f"memory_{annotation}")
         )

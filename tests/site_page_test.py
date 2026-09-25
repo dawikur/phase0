@@ -58,6 +58,7 @@ def test_site_page_loads_assets_in_expected_order() -> None:
 
     assert values_for(parser, "script", "src") == [
         "settings-data.js",
+        "screenshots-data.js",
         "assets/site-ui/theme.js",
         "theme.js",
         "app.js",
@@ -157,7 +158,7 @@ def test_site_page_watch_images_have_stable_ids_sources_and_alt_text() -> None:
     parser = parse_site_page()
 
     watch_face = attrs_for(parser, "img", "id", "watchFace")
-    assert watch_face["src"] == "assets/normal.png"
+    assert watch_face["src"] == "assets/screenshots/data-rich.png"
     assert watch_face["alt"] == "phase0 normal watch face"
 
     overlay_sources = {
@@ -170,6 +171,18 @@ def test_site_page_watch_images_have_stable_ids_sources_and_alt_text() -> None:
         "assets/fr955-light.png",
         "assets/fr955-dark.png",
     }
+
+
+def test_site_page_uses_generated_store_screenshot_metadata() -> None:
+    parser = parse_site_page()
+    script_sources = [attrs.get("src") for tag, attrs in parser.tags if tag == "script"]
+    containers = [
+        attrs for _, attrs in parser.tags if attrs.get("id") == "screenshotGrid"
+    ]
+
+    assert "screenshots-data.js" in script_sources
+    assert len(containers) == 1
+    assert "screenshot-grid" in (containers[0].get("class") or "")
 
 
 def test_site_alternative_metric_copy_matches_source_wiring() -> None:

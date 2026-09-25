@@ -8,6 +8,7 @@ import pytest
 
 from data.settings import Array, Boolean, Number, Select, Settings, Single
 from scripts.utils.settings_generation import (
+    apply_property_defaults,
     render_data_mc,
     render_properties_mc,
     render_properties_xml,
@@ -24,6 +25,66 @@ class SampleOptions(IntEnum):
 class SampleData(IntEnum):
     NONE = 0
     HEART_RATE = 1
+
+
+def test_apply_property_defaults_updates_single_and_array_settings() -> None:
+    settings = [
+        Single("general", "General", [Select("accent", SampleOptions.AUTO)]),
+        Array("status", "Status", [[Number("width", 2)], [Number("width", 4)]]),
+        Single("clock", "Clock", [Boolean("visible", True)]),
+    ]
+
+    applied = apply_property_defaults(
+        settings,
+        {
+            "GeneralAccent": 2,
+            "StatusWidth0": 5,
+            "StatusWidth1": 6,
+            "ClockVisible": False,
+        },
+    )
+
+    assert applied == {"GeneralAccent", "StatusWidth0", "StatusWidth1", "ClockVisible"}
+    assert (
+        '<property id="GeneralAccent" type="Number">2</property>'
+        in render_properties_xml(settings)
+    )
+    assert (
+        '<property id="StatusWidth0" type="Number">5</property>'
+        in render_properties_xml(settings)
+    )
+    assert (
+        '<property id="ClockVisible" type="Boolean">False</property>'
+        in render_properties_xml(settings)
+    )
+    assert apply_property_defaults(settings, {}) == set()
+
+
+@pytest.mark.parametrize(
+    ("settings", "overrides", "message"),
+    [
+        (
+            [Single("general", "General", [Select("accent", SampleOptions.AUTO)])],
+            {"GeneralAccent": True},
+            "expects int",
+        ),
+        (
+            [Single("clock", "Clock", [Number("width", 2)])],
+            {"ClockWidth": False},
+            "expects int",
+        ),
+        (
+            [Single("clock", "Clock", [Boolean("visible", True)])],
+            {"ClockVisible": 0},
+            "expects bool",
+        ),
+    ],
+)
+def test_apply_property_defaults_rejects_wrong_types(
+    settings: list[Single | Array], overrides: dict[str, int | bool], message: str
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        apply_property_defaults(settings, overrides)
 
 
 def test_render_properties_xml_handles_single_and_array_settings() -> None:

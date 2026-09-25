@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+from typing import Sequence
+
+# The script supports direct execution as well as package imports.
+# pylint: disable=wrong-import-position
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from data.store_screenshots import SCENARIOS
+from scripts.utils.store_screenshots import REPO_DIR, generate_screenshots
+
+
+def parse_arguments(arguments: Sequence[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Generate Connect IQ Store screenshots"
+    )
+    parser.add_argument("--manifest", type=Path, default=REPO_DIR / "manifest.xml")
+    parser.add_argument("--make", default="make")
+    parser.add_argument("--name", default="phase0")
+    parser.add_argument("--build-dir", type=Path, default=REPO_DIR / "build")
+    parser.add_argument("--sdk-dir", type=Path)
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=REPO_DIR / "site" / "assets" / "screenshots",
+    )
+    parser.add_argument(
+        "--scenario",
+        action="append",
+        dest="scenarios",
+        help="capture only the named scenario; may be repeated (default: all)",
+    )
+    return parser.parse_args(arguments)
+
+
+def main(arguments: Sequence[str] | None = None) -> int:
+    args = parse_arguments(arguments)
+    try:
+        outputs = generate_screenshots(
+            SCENARIOS,
+            manifest=args.manifest,
+            make=args.make,
+            name=args.name,
+            build_dir=args.build_dir,
+            sdk_dir=args.sdk_dir,
+            output_dir=args.output_dir,
+            selected_names=args.scenarios,
+        )
+    except KeyboardInterrupt:
+        print("Store screenshot generation interrupted.", file=sys.stderr)
+        return 130
+    except (OSError, RuntimeError, ValueError, subprocess.CalledProcessError) as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
+
+    for output in outputs:
+        print(output)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

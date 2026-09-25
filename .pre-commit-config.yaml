@@ -87,7 +87,7 @@ repos:
       rev: v4.0.6
       hooks:
           - id: pylint
-            additional_dependencies: [pytest]
+            additional_dependencies: [Pillow, pytest]
 
     - repo: https://github.com/asottile/pyupgrade
       rev: v3.21.2
