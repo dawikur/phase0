@@ -1,5 +1,5 @@
 const settingsData = window.PHASE_SETTINGS || { groups: [] };
-const screenshotData = window.PHASE_SCREENSHOTS || [];
+const screenshotData = (window.PHASE_SCREENSHOTS || []).filter((screenshot) => screenshot.name !== "data-rich");
 
 const featureContent = {
 	general: {
@@ -9,11 +9,17 @@ const featureContent = {
 		regions: ["theme"],
 	},
 	top: {
-		kicker: "Upper widgets",
-		title: "Context and compact metrics",
-		copy: "The upper area is built for quick context such as time-of-day, weather, environmental and compact metric data. Each middle slot can choose data, accent and width.",
+		kicker: "Upper metrics",
+		title: "Context above the clock",
+		copy: "The upper middle slots can show weather, environmental and other compact metrics. Each slot can choose data, accent and width.",
 		alternativeCopy: "Top Middle can also have alternative settings. When alternatives are configured, long-pressing the clock switches between the base and alternative top middle metrics.",
 		regions: ["top"],
+	},
+	top_outer: {
+		kicker: "Top outer widget",
+		title: "Battery or sun and moon",
+		copy: "The top outer slot can show battery information or sunrise and sunset details, with optional sun or moon icons.",
+		regions: ["top_outer"],
 	},
 	status: {
 		kicker: "Status rail",
@@ -40,11 +46,11 @@ const featureContent = {
 		alternativeCopy: "Bottom Middle can also have alternative settings. When alternatives are configured, long-pressing the clock switches between the base and alternative bottom middle metrics.",
 		regions: ["bottom"],
 	},
-	battery: {
-		kicker: "Battery slot",
-		title: "Battery status stays visible at the base",
-		copy: "The bottom outer slot can show battery-oriented data or another compact widget while staying separate from the lower metric row.",
-		regions: ["battery"],
+	bottom_outer: {
+		kicker: "Bottom outer widget",
+		title: "Battery or sun and moon",
+		copy: "The bottom outer slot can show battery information or sunrise and sunset details, with optional sun or moon icons.",
+		regions: ["bottom_outer"],
 	},
 };
 
@@ -68,14 +74,14 @@ const watchViews = {
 		lede: normalLede,
 		src: "assets/screenshots/data-rich.png",
 		fallback: "assets/screenshots/data-rich.png",
-		features: ["general", "top", "status", "clock", "gauges", "bottom", "battery"],
+		features: ["general", "top", "top_outer", "status", "clock", "gauges", "bottom", "bottom_outer"],
 	},
 	aod: {
 		label: "phase0 always-on watch face on a Garmin watch",
 		lede: "Always-on mode keeps only the essentials: the time, battery state for the charge-or-not decision, and quiet status signals for alarms, notifications and connection state.",
 		src: "assets/screenshots/data-rich-aod.png",
 		fallback: "assets/screenshots/data-rich-aod.png",
-		features: ["general", "status", "clock", "battery"],
+		features: ["general", "status", "clock", "bottom_outer"],
 	},
 };
 
@@ -86,11 +92,12 @@ const hotspotGeometry = {
 	// different hit areas than the visual bounds suggest.
 	face: { left: 16.25, top: 26.60, right: 84.73, bottom: 76.20 },
 	top: { left: 5, top: 0, right: 95, bottom: 35.08 },
+	top_outer: { left: 40.52, top: 0, right: 59.65, bottom: 14.5 },
 	status: { left: 3.65, top: 35.08, right: 12.05, bottom: 64.72 },
 	clock: { left: 11.03, top: 35.08, right: 87.98, bottom: 64.72 },
 	gauges: { left: 86.96, top: 35.08, right: 95.50, bottom: 64.72 },
 	bottom: { left: 5, top: 64.72, right: 95, bottom: 90.51 },
-	battery: { left: 40.52, top: 88.51, right: 59.65, bottom: 98.19 },
+	bottom_outer: { left: 40.52, top: 88.51, right: 59.65, bottom: 98.19 },
 };
 
 function boxFromEdges(left, top, right, bottom) {
@@ -117,11 +124,12 @@ function faceRelativeBox(face, region) {
 function computedHotspots() {
 	const face = hotspotGeometry.face;
 	const top = faceRelativeBox(face, hotspotGeometry.top);
+	const topOuter = faceRelativeBox(face, hotspotGeometry.top_outer);
 	const status = faceRelativeBox(face, hotspotGeometry.status);
 	const clock = faceRelativeBox(face, hotspotGeometry.clock);
 	const gauges = faceRelativeBox(face, hotspotGeometry.gauges);
 	const bottom = faceRelativeBox(face, hotspotGeometry.bottom);
-	const battery = faceRelativeBox(face, hotspotGeometry.battery);
+	const bottomOuter = faceRelativeBox(face, hotspotGeometry.bottom_outer);
 	const sideWidth = clock.left - face.left;
 
 	return {
@@ -132,11 +140,12 @@ function computedHotspots() {
 			face.top + (face.bottom - face.top) * 0.48
 		),
 		top,
+		top_outer: topOuter,
 		status,
 		clock,
 		gauges,
 		bottom,
-		battery,
+		bottom_outer: bottomOuter,
 	};
 }
 

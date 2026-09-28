@@ -46,9 +46,8 @@ repository should be fetched before rebuilding the site.
 - `source/utils/` — rendering, caching, runtime and data providers
 - `data/` — inputs for generated resources and settings
 - `resources/` — source resources and generated resource definitions
-- `README.md` — project entry point and links to project documents
+- `README.md` — project entry point and product description
 - `TODO.md` — compact product and technical backlog
-- `RELEASE.md` — release preparation and publishing checklist
 - `CHANGELOG.md` — release history
 
 Do not edit generated files by hand. In particular, treat
@@ -109,6 +108,10 @@ Avoid:
 Full-screen redraws are appropriate only when the complete visual state must
 change, such as initial rendering, layout or setting changes, theme changes,
 or waking from sleep. They are not appropriate for routine clock updates.
+
+Position the top and bottom inner rows as though all three rows on that side
+were available. Visible middle and outer rows share the remaining space
+dynamically, so hiding either one does not move the inner row.
 
 ---
 
@@ -291,6 +294,11 @@ Before submitting code, verify:
 
 The repository documentation is published on the project website.
 
+TopOuter and BottomOuter are independently configurable widget slots. Both can
+show battery information or dawn/dusk information with sun or moon icons.
+Website hotspots for these slots should describe the available widgets and
+remain separate from the middle metric hotspots.
+
 Documentation should therefore:
 
 - be Markdown
@@ -320,10 +328,21 @@ outputs, fetched site UI cache, virtual environments, Python caches, and root-le
 The release optimizer is pinned in `package-lock.json`; install its Node
 dependencies with `npm ci` before producing a release build.
 
-`make screenshots` generates the Connect IQ Store icon and configured
-normal and AoD watch-face screenshots in `site/assets/screenshots/` (named
-`<scenario>.png` and `<scenario>-aod.png`) and the Store icon at
-`site/assets/icon_big.png`. AoD capture temporarily forces `isNightMode_()`
+`make screenshots` generates `build/store/icon_128.png` and
+`build/store/icon_512.png`, plus configured normal and AoD watch-face screenshots
+in `site/assets/screenshots/` (named `<scenario>.png` and
+`<scenario>-aod.png`). The Garmin Store requires a separate 500 x 500 icon.
+Screenshot PNGs stay in Git because capturing them requires the simulator.
+Screenshot capture is incremental: source code, resources, settings, scenario
+definitions and generator changes must invalidate its build stamp.
+`make store_assets` recreates both icons and `build/store/hero.png` without the
+simulator. The hero pairs
+the data-rich normal and AoD screenshots at 1440 x 720. The small AoD face
+retains its native 280 x 280 size; the main face is scaled exactly 2x to keep
+pixels even.
+`make site` copies source assets into `build/site/` and generates the favicon
+and both `fr955` overlays directly in that publishable output.
+AoD capture temporarily forces `isNightMode_()`
 while compiling each mode and restores `source/phase0/view.mc` immediately.
 The screenshot generator starts one simulator per invocation and loads each
 scenario's PRG into that running simulator, including when it changes devices.
@@ -332,7 +351,10 @@ command and waits for the watch face to restart before capturing; the simulator
 otherwise retains application properties between loads.
 Screenshot scenarios live in
 `data/screenshots.py`; device, app-property overrides, and gallery title,
-description and alt text belong together there. `make site` generates
+description and alt text belong together there. Simulator time display and
+units display also belong to each scenario; the defaults are 24 hour and
+metric. Apply them after loading each PRG and before resetting app data.
+`make site` generates
 `screenshots-data.js` from that metadata for the website gallery. Scenario
 overrides must not change `data/settings/settings.py`. Screenshot capture
 requires a graphical X11 or XWayland session, the Connect IQ Simulator,

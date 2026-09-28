@@ -11,7 +11,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from threading import Event
-from typing import Iterator, Mapping, Sequence
+from typing import Iterator, Literal, Mapping, Sequence
 from uuid import uuid4
 
 from PIL import Image
@@ -59,6 +59,8 @@ class Scenario:
     description: str = ""
     alt: str = ""
     preview_size: str = "normal"
+    time_display: Literal["12h", "24h"] = "24h"
+    units_display: Literal["metric", "statute"] = "metric"
 
 
 def validate_scenarios(
@@ -81,6 +83,16 @@ def validate_scenarios(
             raise ValueError(
                 f"Screenshot scenario '{scenario.name}' uses unsupported device "
                 f"'{scenario.device}'."
+            )
+        if scenario.time_display not in ("12h", "24h"):
+            raise ValueError(
+                f"Screenshot scenario '{scenario.name}' has unsupported time display "
+                f"'{scenario.time_display}'."
+            )
+        if scenario.units_display not in ("metric", "statute"):
+            raise ValueError(
+                f"Screenshot scenario '{scenario.name}' has unsupported units display "
+                f"'{scenario.units_display}'."
             )
 
     if selected_names is None:
@@ -232,6 +244,32 @@ def reset_simulator_app_data() -> None:
     time.sleep(0.15)
     _xdotool("key", "--clearmodifiers", "Return")
     time.sleep(0.15)
+
+
+def set_simulator_display_settings(
+    time_display: Literal["12h", "24h"],
+    units_display: Literal["metric", "statute"],
+) -> None:
+    """Set the simulator's global display preferences for one capture."""
+    window_id = find_simulator_window()
+    subprocess.run(["wmctrl", "-ia", window_id], check=True)
+    # Settings lists Time Display first and Units Display second.
+    for menu_offset, choice_offset in (
+        (0, 0 if time_display == "12h" else 1),
+        (1, 0 if units_display == "metric" else 1),
+    ):
+        _xdotool("key", "--clearmodifiers", "alt+s")
+        time.sleep(0.15)
+        _xdotool("key", "Home")
+        for _ in range(menu_offset):
+            _xdotool("key", "Down")
+        _xdotool("key", "Right")
+        time.sleep(0.15)
+        _xdotool("key", "Home")
+        for _ in range(choice_offset):
+            _xdotool("key", "Down")
+        _xdotool("key", "Return")
+        time.sleep(0.15)
 
 
 def _wait_for_window(title_re: re.Pattern[str], timeout: float) -> str | None:
@@ -457,6 +495,8 @@ def run_scenario(
         )
         _print_status("Waiting for phase0 to finish initializing...")
         _wait_for_watch_face(simulator, scenario.device)
+        _print_status("Setting simulator time and units display...")
+        set_simulator_display_settings(scenario.time_display, scenario.units_display)
         _print_status("Resetting simulator app data to load scenario defaults...")
         simulator.signals.ready = Event()
         reset_simulator_app_data()

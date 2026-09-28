@@ -124,7 +124,7 @@ function createHarness({ hash = "", search = "", prefersDark = false, pathname =
 	const supportedDevices = register(makeElement({ id: "supportedDevices" }));
 	const supportedLanguages = register(makeElement({ id: "supportedLanguages" }));
 
-	for (const feature of ["general", "top", "status", "clock", "gauges", "bottom", "battery"]) {
+	for (const feature of ["general", "top", "top_outer", "status", "clock", "gauges", "bottom", "bottom_outer"]) {
 		register(makeElement({
 			classes: ["hotspot"],
 			dataset: { feature },
@@ -186,6 +186,12 @@ function createHarness({ hash = "", search = "", prefersDark = false, pathname =
 						settings: [{ title: "Foreground", type: "list", options: [{ label: "White", value: 16777215 }] }],
 					},
 					{
+						id: "TopOuter",
+						region: "top_outer",
+						title: "Top Outer",
+						settings: [{ title: "Data", type: "list", options: [{ label: "Battery percentage", value: 1 }, { label: "Dawn or dusk with moon", value: 2 }] }],
+					},
+					{
 						id: "TopMiddle",
 						hasAlternative: true,
 						region: "top",
@@ -195,6 +201,12 @@ function createHarness({ hash = "", search = "", prefersDark = false, pathname =
 							{ title: "Accent", type: "list", options: [{ label: "Orange", value: 11162880 }] },
 							{ title: "Width", type: "numeric", min: "1", max: "5" },
 						],
+					},
+					{
+						id: "BottomOuter",
+						region: "bottom_outer",
+						title: "Bottom Outer",
+						settings: [{ title: "Data", type: "list", options: [{ label: "Battery percentage", value: 1 }, { label: "Dawn or dusk with sun", value: 2 }] }],
 					},
 					{
 						id: "BottomMiddle",
@@ -280,11 +292,13 @@ test("computes stable hotspot geometry from watch face regions", () => {
 	const boxes = context.computedHotspots();
 	const rounded = (value) => Number(value.toFixed(1));
 
-	assert.deepEqual(Object.keys(boxes), ["general", "top", "status", "clock", "gauges", "bottom", "battery"]);
+	assert.deepEqual(Object.keys(boxes), ["general", "top", "top_outer", "status", "clock", "gauges", "bottom", "bottom_outer"]);
 	assert.equal(rounded(boxes.clock.left), 23.8);
 	assert.equal(rounded(boxes.clock.width), 52.7);
 	assert.equal(rounded(boxes.top.top), 26.6);
 	assert.equal(rounded(boxes.top.height), 17.4);
+	assert.equal(rounded(boxes.top_outer.width), 13.1);
+	assert.equal(rounded(boxes.bottom_outer.width), 13.1);
 });
 
 test("converts numeric color values to padded css hex values", () => {
@@ -367,8 +381,9 @@ test("switches to always-on view and hides unsupported hotspots", () => {
 	assert.equal(byFeature.clock.classList.contains("is-hidden"), false);
 	assert.equal(byFeature.general.classList.contains("is-hidden"), false);
 	assert.equal(byFeature.general.tabIndex, 0);
-	assert.equal(byFeature.battery.tabIndex, 0);
+	assert.equal(byFeature.bottom_outer.tabIndex, 0);
 	assert.equal(byFeature.top.classList.contains("is-hidden"), true);
+	assert.equal(byFeature.top_outer.classList.contains("is-hidden"), true);
 	assert.equal(byFeature.top.tabIndex, -1);
 	assert.equal(byFeature.top.getAttribute("aria-hidden"), "true");
 	assert.equal(byFeature.top.getAttribute("aria-pressed"), "false");
@@ -483,6 +498,19 @@ test("middle metric feature copy matches exposed settings", () => {
 		assert.doesNotMatch(html, /\bicon\b/i);
 		assert.doesNotMatch(html, /\bpadding\b/i);
 		assert.doesNotMatch(html, /\bgauge behavior\b/i);
+	}
+});
+
+test("outer hotspots show battery and sun or moon choices for each slot", () => {
+	const { context, document } = createHarness();
+
+	for (const feature of ["top_outer", "bottom_outer"]) {
+		context.renderPanel(feature);
+		const html = document.getElementById("detailPanel").innerHTML;
+
+		assert.match(html, /Battery or sun and moon/);
+		assert.match(html, /Battery percentage/);
+		assert.match(html, /Dawn or dusk with (sun|moon)/);
 	}
 });
 

@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
+
+"""Compose a Connect IQ Store hero image from genuine watch-face captures."""
+
+import argparse
+from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFont
+
+SIZE = (1440, 720)
+BACKGROUND = "#202020"
+ACCENT = "#ffaa00"
+
+
+def paste_face(
+    canvas: Image.Image, source: Path, center: tuple[int, int], diameter: int
+) -> None:
+    with Image.open(source) as image:
+        face = image.convert("RGB")
+        if face.width != diameter:
+            resampling = (
+                Image.Resampling.LANCZOS
+                if diameter < face.width
+                else Image.Resampling.NEAREST
+            )
+            face = face.resize((diameter, diameter), resampling)
+
+    mask = Image.new("L", (diameter, diameter))
+    ImageDraw.Draw(mask).ellipse((0, 0, diameter - 1, diameter - 1), fill=255)
+    left = center[0] - diameter // 2
+    top = center[1] - diameter // 2
+    canvas.paste(face, (left, top), mask)
+    ImageDraw.Draw(canvas).ellipse(
+        (left, top, left + diameter - 1, top + diameter - 1),
+        outline="#555555",
+        width=3,
+    )
+
+
+def generate_hero(screenshots: Path, output: Path) -> None:
+    canvas = Image.new("RGB", SIZE, BACKGROUND)
+    draw = ImageDraw.Draw(canvas)
+    draw.rectangle((108, 244, 192, 251), fill=ACCENT)
+    draw.text((102, 279), "phase0", font=ImageFont.load_default(size=80), fill="white")
+
+    paste_face(canvas, screenshots / "data-rich-aod.png", (1105, 495), 280)
+    paste_face(canvas, screenshots / "data-rich.png", (735, 345), 560)
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(output, format="PNG", optimize=True)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--screenshots", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    generate_hero(args.screenshots, args.output)
+
+
+if __name__ == "__main__":
+    main()

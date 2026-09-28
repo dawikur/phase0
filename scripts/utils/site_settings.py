@@ -66,7 +66,8 @@ def setting_region(group_id: str) -> str:
     exact_regions = {
         "General": "theme",
         "Clock": "clock",
-        "BottomOuter": "battery",
+        "TopOuter": "top_outer",
+        "BottomOuter": "bottom_outer",
     }
     if group_id in exact_regions:
         return exact_regions[group_id]
@@ -74,7 +75,6 @@ def setting_region(group_id: str) -> str:
     prefix_regions = {
         "Status": "status",
         "Gauges": "gauges",
-        "TopOuter": "top",
         "TopMiddle": "top",
         "BottomMiddle": "bottom",
     }
@@ -102,9 +102,10 @@ def setting_summary(group_id: str) -> str:
         "clock": "Main time display colors and size.",
         "status": "Small system indicators shown near the clock.",
         "gauges": "Side gauge widgets for progress-style metrics.",
-        "top": "Upper widgets for weather, sun and compact data slots.",
+        "top": "Upper middle slots for weather and compact metrics.",
+        "top_outer": "Top outer slot for battery or sun and moon widgets.",
         "bottom": "Lower metrics for health and activity data.",
-        "battery": "Bottom battery and extra data slot.",
+        "bottom_outer": "Bottom outer slot for battery or sun and moon widgets.",
     }
 
     return summaries.get(

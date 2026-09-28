@@ -10,9 +10,6 @@ developer_key
 *.pem
 *.der
 
-site/assets/fr955-dark.png
-site/assets/fr955-light.png
-site/assets/icon.svg
 site/settings-data.js
 site/devices-data.js
 

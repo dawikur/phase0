@@ -150,10 +150,7 @@ module Phase0 {
 			var clock_size_x = Render.ClockWidth(_dc, "00:00", clock_font);
 			var clock_size_y = Render.ClockHeight(_dc, clock_font);
 
-			var line_inner_height =
-				self.show_top_inner_ or self.show_bottom_inner_
-					? Render.TextHeight(_dc, _inner_is_small)
-					: 0;
+			var line_inner_height = Render.TextHeight(_dc, _inner_is_small);
 			var line_middle_height = _middle_is_small
 				? Render.TextHeight(_dc, Render.SIZE_SMALL)
 				: Render.LabelHeight(_dc) +
@@ -164,13 +161,6 @@ module Phase0 {
 				: Render.LabelHeight(_dc) +
 					Render.SPACING +
 					Render.TextHeight(_dc, Render.SIZE_SMALL);
-			if (!self.show_top_middle_ and !self.show_bottom_middle_) {
-				line_middle_height = 0;
-			}
-			if (!self.show_top_outer_ and !self.show_bottom_outer_) {
-				line_outer_height = 0;
-			}
-
 			var side_size_x = 0;
 			var side_size_raw_x = 0;
 			var side_size_raw_y = _dc.getFontHeight(clock_font);
@@ -200,23 +190,45 @@ module Phase0 {
 				(self.show_bottom_middle_ ? line_middle_height : 0) +
 				(self.show_bottom_outer_ ? line_outer_height : 0);
 			var top_line_count =
-				(self.show_top_inner_ ? 1 : 0) +
 				(self.show_top_middle_ ? 1 : 0) +
 				(self.show_top_outer_ ? 1 : 0);
 			var bottom_line_count =
-				(self.show_bottom_inner_ ? 1 : 0) +
 				(self.show_bottom_middle_ ? 1 : 0) +
 				(self.show_bottom_outer_ ? 1 : 0);
+			var top_available_y = clock_pos_y;
+			var bottom_available_y =
+				self.screen_size_y - clock_pos_y - clock_size_y;
+			// Anchor inner as though all three lines were present.
+			var top_inner_gap_y = self.show_top_inner_
+				? (top_available_y -
+						line_inner_height -
+						line_middle_height -
+						line_outer_height) /
+					4
+				: 0;
+			var bottom_inner_gap_y = self.show_bottom_inner_
+				? (bottom_available_y -
+						line_inner_height -
+						line_middle_height -
+						line_outer_height) /
+					4
+				: 0;
 			var top_gap_y =
-				(clock_pos_y - top_content_height) / (top_line_count + 1);
+				(top_available_y - top_content_height - top_inner_gap_y) /
+				(top_line_count + 1);
 			var bottom_gap_y =
-				(self.screen_size_y -
-					clock_pos_y -
-					clock_size_y -
-					bottom_content_height) /
+				(bottom_available_y -
+					bottom_content_height -
+					bottom_inner_gap_y) /
 				(bottom_line_count + 1);
 
-			if (gap_x < 1 or top_gap_y < 1 or bottom_gap_y < 1) {
+			if (
+				gap_x < 1 or
+				top_gap_y < 1 or
+				bottom_gap_y < 1 or
+				(self.show_top_inner_ and top_inner_gap_y < 1) or
+				(self.show_bottom_inner_ and bottom_inner_gap_y < 1)
+			) {
 				return false;
 			}
 
@@ -246,7 +258,7 @@ module Phase0 {
 			if (self.show_top_inner_) {
 				self.top_inner = Box.ForY(
 					self.screen_size_y,
-					pos_y,
+					clock_pos_y - top_inner_gap_y - line_inner_height,
 					line_inner_height
 				);
 			}
@@ -295,7 +307,10 @@ module Phase0 {
 			if (self.show_bottom_inner_) {
 				self.bottom_inner = Box.ForY(
 					self.screen_size_y,
-					bottom_pos_y,
+					clock_pos_y +
+						clock_size_y +
+						bottom_inner_gap_y +
+						line_inner_height,
 					-line_inner_height
 				);
 			}

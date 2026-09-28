@@ -123,7 +123,8 @@ def test_site_settings_preserves_numeric_boolean_and_regions() -> None:
 
     assert top_middle["region"] == "top"
     assert top_middle["hasAlternative"] is False
-    assert groups["BottomOuter"]["region"] == "battery"
+    assert groups["TopOuter"]["region"] == "top_outer"
+    assert groups["BottomOuter"]["region"] == "bottom_outer"
     assert "TopMiddle0" not in groups
     assert "TopMiddleAlt0" not in groups
     assert "Status0" not in groups

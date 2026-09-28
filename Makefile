@@ -103,6 +103,7 @@ SITE_DIR  := site/
 SITE_EXPORT_STAMP := $(BUILD_DIR).site.stamp
 SITE_OUTPUT_DIR := $(BUILD_DIR)site/
 SITE_COPY_STAMP := $(SITE_OUTPUT_DIR).source.stamp
+STORE_OUTPUT_DIR := $(BUILD_DIR)store/
 SITE_UI_ASSETS := foundation.css components.css theme.js scroll-top.js
 SITE_UI_DIR := .site-ui
 SITE_UI_REMOTE_REPOSITORY := https://github.com/dawikur/site-ui.git
@@ -157,7 +158,10 @@ ICON_DEPS           := scripts/generate_resources_icon            \
                        $(DATA_FONTS_DEPS)                         \
                        $(RESOURCE_STRINGS)
 ICON_STAMP          := $(BUILD_DIR).icon.stamp
-SITE_STORE_ICON     := $(SITE_DIR)assets/icon_big.png
+STORE_ICONS         := $(STORE_OUTPUT_DIR)icon_128.png $(STORE_OUTPUT_DIR)icon_512.png
+STORE_HERO          := $(STORE_OUTPUT_DIR)hero.png
+STORE_HERO_SCREENSHOTS := $(addprefix $(SITE_DIR)assets/screenshots/,data-rich.png data-rich-aod.png)
+SCREENSHOTS_STAMP   := $(BUILD_DIR).screenshots.stamp
 FONTS_DEPS          := scripts/generate_resources_fonts            \
                        $(SCRIPT_DEPS)                             \
                        $(DATA_FONTS_DEPS)                          \
@@ -185,10 +189,11 @@ SITE_DEVICES_DEPS   := scripts/generate_site_devices              \
                        $(MANIFEST)                                \
                        $(DATA_DEVICES_DEPS)
 SITE_DEVICES        := $(SITE_OUTPUT_DIR)devices-data.js
-SITE_ICON           := $(SITE_DIR)assets/icon.svg
+SITE_ICON           := $(SITE_OUTPUT_DIR)assets/icon.svg
 DEVICE_OVERLAY_SRC  := $(SITE_DIR)assets/fr955.png
-SITE_DEVICE_OVERLAY_LIGHT := $(SITE_DIR)assets/fr955-light.png
-SITE_DEVICE_OVERLAY_DARK  := $(SITE_DIR)assets/fr955-dark.png
+SITE_DEVICE_OVERLAY_SRC := $(SITE_OUTPUT_DIR)assets/fr955.png
+SITE_DEVICE_OVERLAY_LIGHT := $(SITE_OUTPUT_DIR)assets/fr955-light.png
+SITE_DEVICE_OVERLAY_DARK  := $(SITE_OUTPUT_DIR)assets/fr955-dark.png
 SITE_DEVICE_OVERLAYS := $(SITE_DEVICE_OVERLAY_LIGHT) $(SITE_DEVICE_OVERLAY_DARK)
 
 RESOURCES := $(ICON_STAMP) $(FONTS_STAMP) $(SETTINGS_STAMP)
@@ -203,6 +208,10 @@ MONKEYC_KEY_DEPS := $(if $(filter release,$(MODE)),$(strip $(CONNECTIQ_DEVELOPER
 
 PRG_DEPS := $(JUNGLE) $(MEMORY_JUNGLE) $(MONKEYC_DEPS) $(MONKEYC_KEY_DEPS) $(SRCS) $(RSCS) \
             $(ICON_STAMP) $(FONTS_STAMP) $(SETTINGS_STAMP)
+SCREENSHOTS_DEPS := Makefile scripts/generate_screenshots $(SCRIPT_DEPS) \
+                    data/screenshots.py $(DATA_SETTINGS_DEPS) $(DATA_DEVICES_DEPS) \
+                    $(MANIFEST) scripts/optimizedc.mjs package.json package-lock.json \
+                    $(PRG_DEPS)
 
 # ---- settings ----
 
@@ -294,16 +303,16 @@ $(SITE_SCREENSHOTS): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SCREENSHOTS_DEPS)
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_screenshots \
 		--output $(SITE_SCREENSHOTS)
 
-$(SITE_ICON): $(ICON_STAMP)
+$(SITE_ICON): $(ICON_STAMP) $(SITE_COPY_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
 	cp $(RESOURCES_GENERATED_DIR)icon.svg $@
 
-$(SITE_DEVICE_OVERLAY_LIGHT): $(DEVICE_OVERLAY_SRC)
+$(SITE_DEVICE_OVERLAY_LIGHT): $(SITE_COPY_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
-	convert $< -alpha extract $@.orig-alpha.png
-	convert $< \
+	convert $(SITE_DEVICE_OVERLAY_SRC) -alpha extract $@.orig-alpha.png
+	convert $(SITE_DEVICE_OVERLAY_SRC) \
 		-alpha on \
 		-bordercolor white \
 		-border 1 \
@@ -314,14 +323,14 @@ $(SITE_DEVICE_OVERLAY_LIGHT): $(DEVICE_OVERLAY_SRC)
 		-alpha extract \
 		$@.bg-alpha.png
 	convert $@.orig-alpha.png $@.bg-alpha.png -compose Darken -composite -threshold 99% $@.alpha.png
-	convert $< $@.alpha.png -alpha off -compose CopyOpacity -composite $@
+	convert $(SITE_DEVICE_OVERLAY_SRC) $@.alpha.png -alpha off -compose CopyOpacity -composite $@
 	$(RM) $@.orig-alpha.png $@.bg-alpha.png $@.alpha.png
 
-$(SITE_DEVICE_OVERLAY_DARK): $(DEVICE_OVERLAY_SRC)
+$(SITE_DEVICE_OVERLAY_DARK): $(SITE_COPY_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
-	convert $< -alpha extract $@.orig-alpha.png
-	convert $< \
+	convert $(SITE_DEVICE_OVERLAY_SRC) -alpha extract $@.orig-alpha.png
+	convert $(SITE_DEVICE_OVERLAY_SRC) \
 		-alpha off \
 		-bordercolor white \
 		-border 1 \
@@ -334,7 +343,7 @@ $(SITE_DEVICE_OVERLAY_DARK): $(DEVICE_OVERLAY_SRC)
 	convert $@.orig-alpha.png $@.external-alpha.png -compose Darken -composite -threshold 99% $@.alpha.png
 	convert $@.external-alpha.png -negate -morphology Dilate Disk:1 $@.external-dilate.png
 	convert $@.external-dilate.png $@.alpha.png -compose Multiply -composite $@.edge-mask.png
-	convert $< \( +clone -fill '#1d2020' -colorize 100 \) $@.edge-mask.png -compose Over -composite $@.edge-rgb.png
+	convert $(SITE_DEVICE_OVERLAY_SRC) \( +clone -fill '#1d2020' -colorize 100 \) $@.edge-mask.png -compose Over -composite $@.edge-rgb.png
 	convert $@.edge-rgb.png $@.alpha.png -alpha off -compose CopyOpacity -composite $@
 	$(RM) $@.orig-alpha.png $@.external-alpha.png $@.alpha.png $@.external-dilate.png $@.edge-mask.png $@.edge-rgb.png
 
@@ -415,21 +424,37 @@ r resources: $(RESOURCES) # generate resources
 	$(Q)echo " [ $(call LOG_TAG,resources) ]"
 .PHONY: r resources
 
-$(SITE_STORE_ICON): $(ICON_STAMP) scripts/generate_site_icon
+$(STORE_OUTPUT_DIR)icon_%.png: $(ICON_STAMP) scripts/generate_site_icon
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_icon \
 		--input $(RESOURCES_GENERATED_DIR)icon.svg \
+		--output $@ \
+		--size $*
+
+$(STORE_HERO): scripts/generate_site_hero $(STORE_HERO_SCREENSHOTS) $(VENV_STAMP)
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_hero \
+		--screenshots $(SITE_DIR)assets/screenshots \
 		--output $@
 
-x screenshots: $(SITE_STORE_ICON) $(VENV_STAMP) # generate Connect IQ Store assets and screenshots
+store_assets: $(STORE_ICONS) $(STORE_HERO) # generate Store icons and hero from existing screenshots
+	$(Q)echo " [ $(call LOG_TAG,store_assets) ]"
+.PHONY: store_assets
+
+$(SCREENSHOTS_STAMP): $(SCREENSHOTS_DEPS) $(STORE_ICONS) $(VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,screenshots) ]"
+	$(RM) "$@"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_screenshots \
 		--manifest $(MANIFEST) \
 		--build-dir $(BUILD_DIR) \
 		--output-dir $(SITE_DIR)assets/screenshots
+	touch "$@"
+
+x screenshots: $(SCREENSHOTS_STAMP) # generate Connect IQ Store assets and screenshots
+	$(Q)$(MAKE) $(STORE_HERO)
 .PHONY: x screenshots
 
-$(SITE_COPY_STAMP): $(SITE_FILES) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI_STAMP)
+$(SITE_COPY_STAMP): $(SITE_FILES) $(SITE_UI_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,site-copy) ]"
 	rm -rf -- "$(SITE_OUTPUT_DIR)"
 	mkdir -p -- "$(SITE_OUTPUT_DIR)"
@@ -439,7 +464,7 @@ $(SITE_COPY_STAMP): $(SITE_FILES) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_UI
 	rm -rf -- "$(SITE_OUTPUT_DIR)tests"
 	touch "$@"
 
-$(SITE_EXPORT_STAMP): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_SCREENSHOTS)
+$(SITE_EXPORT_STAMP): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_SCREENSHOTS)
 	$(Q)echo " [ $(call LOG_TAG,site) ]"
 	touch "$@"
 
@@ -511,7 +536,6 @@ c clean: # remove build directory and files
 		$(RESOURCES_DIR)memory/medium/generated \
 		$(RESOURCES_DIR)memory/high/generated   \
 		$(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_DIR)settings-data.js $(SITE_DIR)devices-data.js \
-		$(SITE_ICON) $(SITE_DEVICE_OVERLAYS) \
 		$(VENV_DIR) .build-venv .dev-venv .site-venv $(SITE_UI_DIR) \
 		.mypy_cache .pytest_cache .coverage $(wildcard *.egg-info)
 .PHONY: c clean

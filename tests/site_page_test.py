@@ -138,11 +138,12 @@ def test_site_page_hotspots_match_documented_features() -> None:
     assert values_for(parser, "button", "data-feature") == [
         "general",
         "top",
+        "top_outer",
         "status",
         "clock",
         "gauges",
         "bottom",
-        "battery",
+        "bottom_outer",
     ]
 
     for feature in values_for(parser, "button", "data-feature"):

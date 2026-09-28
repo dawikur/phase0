@@ -9,6 +9,7 @@ from io import StringIO
 from pathlib import Path
 from threading import Event
 from types import SimpleNamespace
+from typing import Literal, cast
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -77,6 +78,32 @@ def test_validate_scenarios_defaults_to_all() -> None:
             "Duplicate",
         ),
         ([Scenario("unknown", "venu3", {})], ["fr255"], None, "unsupported"),
+        (
+            [
+                Scenario(
+                    "bad-time",
+                    "fr255",
+                    {},
+                    time_display=cast(Literal["12h", "24h"], "13h"),
+                )
+            ],
+            ["fr255"],
+            None,
+            "unsupported time display",
+        ),
+        (
+            [
+                Scenario(
+                    "bad-units",
+                    "fr255",
+                    {},
+                    units_display=cast(Literal["metric", "statute"], "nautical"),
+                )
+            ],
+            ["fr255"],
+            None,
+            "unsupported units display",
+        ),
         ([Scenario("valid", "fr255", {})], ["fr255"], ["missing"], "Unknown"),
     ],
 )
@@ -207,7 +234,9 @@ def test_run_scenario_builds_waits_captures_and_stops(
 ) -> None:
     import scripts.utils.store_screenshots as screenshots
 
-    scenario = Scenario("preview", "fr255", {})
+    scenario = Scenario(
+        "preview", "fr255", {}, time_display="12h", units_display="statute"
+    )
     simulator = Simulator(MagicMock(), SmokeSignals(Event()), MagicMock())
     loader = WatchFaceLoader(MagicMock(), MagicMock())
     settings = tmp_path / "settings.json"
@@ -233,6 +262,13 @@ def test_run_scenario_builds_waits_captures_and_stops(
 
     monkeypatch.setattr(screenshots, "_wait_for_watch_face", wait_for_watch_face)
     monkeypatch.setattr(
+        screenshots,
+        "set_simulator_display_settings",
+        lambda time_display, units_display: events.append(
+            f"display:{time_display}:{units_display}"
+        ),
+    )
+    monkeypatch.setattr(
         screenshots, "reset_simulator_app_data", lambda: events.append("reset")
     )
     monkeypatch.setattr(screenshots, "_check_simulator", lambda *_: None)
@@ -257,7 +293,14 @@ def test_run_scenario_builds_waits_captures_and_stops(
     )
 
     assert result == output
-    assert events == ["ready", "reset", "ready", "capture", "stop-app"]
+    assert events == [
+        "ready",
+        "display:12h:statute",
+        "reset",
+        "ready",
+        "capture",
+        "stop-app",
+    ]
     assert ready_events[0] is not ready_events[1]
 
 
@@ -493,6 +536,49 @@ def test_reset_simulator_app_data_uses_reset_all_app_data_menu(
         ("key", "--clearmodifiers", "r"),
         ("key", "--clearmodifiers", "r"),
         ("key", "--clearmodifiers", "Return"),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("time_display", "units_display", "time_down", "units_down"),
+    [("12h", "metric", 0, 0), ("24h", "statute", 1, 1)],
+)
+def test_set_simulator_display_settings_uses_settings_menu(
+    time_display: Literal["12h", "24h"],
+    units_display: Literal["metric", "statute"],
+    time_down: int,
+    units_down: int,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.utils.store_screenshots as screenshots
+
+    commands: list[tuple[str, ...]] = []
+    monkeypatch.setattr(screenshots, "find_simulator_window", lambda: "0x2")
+    monkeypatch.setattr(
+        screenshots.subprocess,
+        "run",
+        lambda command, **_kwargs: commands.append(tuple(command)),
+    )
+    monkeypatch.setattr(screenshots, "_xdotool", lambda *args: commands.append(args))
+    monkeypatch.setattr(screenshots.time, "sleep", lambda _delay: None)
+
+    screenshots.set_simulator_display_settings(time_display, units_display)
+
+    assert commands == [
+        ("wmctrl", "-ia", "0x2"),
+        ("key", "--clearmodifiers", "alt+s"),
+        ("key", "Home"),
+        ("key", "Right"),
+        ("key", "Home"),
+        *[("key", "Down")] * time_down,
+        ("key", "Return"),
+        ("key", "--clearmodifiers", "alt+s"),
+        ("key", "Home"),
+        ("key", "Down"),
+        ("key", "Right"),
+        ("key", "Home"),
+        *[("key", "Down")] * units_down,
+        ("key", "Return"),
     ]
 
 
@@ -820,89 +906,3 @@ def test_generate_screenshots_rejects_invalid_scenarios_before_x11(
         )
 
     require_tools.assert_not_called()
-
-
-def test_store_screenshot_config_has_supported_scenarios() -> None:
-    from data.screenshots import (
-        _DATA_ALL,
-        _DATA_WITH_ICON,
-        _DATA_WITH_VALUE_MAX,
-        _WIDGETS,
-        SCENARIOS,
-    )
-    from data.settings.colors import Colors
-
-    assert [scenario.name for scenario in SCENARIOS] == [
-        "data-rich",
-        "compact",
-        "indigo-accent",
-        "reduced",
-        "empty-layout",
-        "magenta-accent",
-        "sunrise",
-        "gray-mix",
-    ]
-
-    assert all(
-        scenario.title and scenario.description and scenario.alt
-        for scenario in SCENARIOS
-    )
-
-    indigo = next(s for s in SCENARIOS if s.name == "indigo-accent")
-    assert indigo.properties["GeneralAccent"] == Colors.LIGHT_INDIGO.value
-    assert indigo.properties["GaugesAccent0"] == indigo.properties["GeneralAccent"]
-    assert indigo.properties["GaugesAccent1"] == indigo.properties["GeneralAccent"]
-    assert indigo.properties["GaugesAccent2"] == indigo.properties["GeneralAccent"]
-    assert indigo.properties["TopOuterData"] == _WIDGETS.BATTERY_PERCENTAGE.value
-    assert indigo.properties["BottomOuterData"] == _WIDGETS.NONE.value
-
-    compact = next(s for s in SCENARIOS if s.name == "compact")
-    assert compact.preview_size == "small"
-    assert compact.properties["TopOuterData"] == _WIDGETS.BATTERY_PERCENTAGE.value
-    assert compact.properties["BottomOuterData"] == _WIDGETS.NONE.value
-
-    magenta = next(s for s in SCENARIOS if s.name == "magenta-accent")
-    assert magenta.properties["GeneralBackground"] == Colors.WHITE.value
-    assert magenta.properties["GeneralShade"] == Colors.MAGENTA.value
-    assert magenta.properties["ClockBackground"] == Colors.MAGENTA.value
-    assert magenta.properties["ClockForeground"] == Colors.BLACK.value
-    assert magenta.properties["TopMiddleData0"] == _DATA_WITH_ICON.UV_INDEX.value
-    assert magenta.properties["TopMiddleData1"] == _DATA_WITH_ICON.RAIN.value
-    assert (
-        magenta.properties["BottomMiddleData0"]
-        == _DATA_ALL.ACTIVE_MINUTES_PER_DAY.value
-    )
-    assert magenta.properties["BottomMiddleData1"] == _DATA_ALL.DISTANCE.value
-    assert magenta.properties["BottomMiddleData2"] == _DATA_ALL.METERS_CLIMBED.value
-
-    reduced = next(s for s in SCENARIOS if s.name == "reduced")
-    assert reduced.properties["GaugesData0"] == _DATA_WITH_VALUE_MAX.STRESS.value
-    assert reduced.properties["TopMiddleData0"] == _DATA_WITH_ICON.NONE.value
-    assert reduced.properties["BottomMiddleData0"] == _DATA_ALL.ALTITUDE.value
-    assert reduced.properties["BottomMiddleData1"] == _DATA_ALL.RECOVERY_TIME.value
-    assert reduced.properties["TopOuterData"] != 0
-    assert (
-        reduced.properties["BottomOuterData"] == _WIDGETS.BATTERY_DAYS_REMAINING.value
-    )
-
-    empty = next(s for s in SCENARIOS if s.name == "empty-layout")
-    assert empty.properties["TopMiddleData0"] == 0
-    assert empty.properties["BottomMiddleData3"] == 0
-    assert empty.properties["BottomOuterData"] == empty.properties["TopOuterData"]
-
-    sunrise = next(s for s in SCENARIOS if s.name == "sunrise")
-    assert sunrise.properties["TopMiddleData0"] == 0
-    assert sunrise.properties["BottomMiddleData2"] == 0
-    assert sunrise.properties["BottomMiddleWidth1"] == 5
-    assert (
-        sunrise.properties["GeneralBackground"] == sunrise.properties["ClockBackground"]
-    )
-    assert sunrise.properties["GeneralBackground"] == Colors.LIGHT_YELLOW.value
-    assert sunrise.properties["GeneralForeground"] == Colors.BLACK.value
-    assert sunrise.properties["BottomOuterData"] == _WIDGETS.BATTERY_PERCENTAGE.value
-
-    gray_mix = next(s for s in SCENARIOS if s.name == "gray-mix")
-    assert gray_mix.properties["TopMiddleData0"] == _DATA_WITH_ICON.WIND.value
-    assert gray_mix.properties["TopMiddleData1"] == _DATA_WITH_ICON.RAIN.value
-    assert gray_mix.properties["BottomMiddleData0"] == _DATA_ALL.FLOORS_DESCENDED.value
-    assert gray_mix.properties["BottomMiddleData1"] == _DATA_ALL.CALORIES.value

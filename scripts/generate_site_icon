@@ -8,8 +8,6 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-ICON_SIZE = 500
-ICON_MARGIN = 50
 BACKGROUND = (0x55, 0x55, 0x55, 0xFF)
 SVG_NAMESPACE = "{http://www.w3.org/2000/svg}"
 COLOR_RE = re.compile(r"rgba?\(([^)]+)\)")
@@ -26,28 +24,33 @@ def parse_color(value: str) -> tuple[int, int, int, int]:
     return red, green, blue, alpha
 
 
-def render_icon(source: Path) -> Image.Image:
+def draw_rectangle(artwork: Image.Image, rectangle: ET.Element) -> Image.Image:
+    x = int(float(rectangle.attrib["x"]))
+    y = int(float(rectangle.attrib["y"]))
+    width = int(float(rectangle.attrib["width"]))
+    height = int(float(rectangle.attrib["height"]))
+    layer = Image.new("RGBA", artwork.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    draw.rectangle(
+        (x, y, x + width - 1, y + height - 1),
+        fill=parse_color(rectangle.attrib["fill"]),
+    )
+    return Image.alpha_composite(artwork, layer)
+
+
+def render_icon(source: Path, size: int) -> Image.Image:
     root = ET.parse(source).getroot()
     width = int(root.attrib["width"])
     height = int(root.attrib["height"])
     artwork = Image.new("RGBA", (width, height), (0, 0, 0, 0))
 
     for rectangle in root.findall(f"{SVG_NAMESPACE}rect"):
-        x = int(float(rectangle.attrib["x"]))
-        y = int(float(rectangle.attrib["y"]))
-        rect_width = int(float(rectangle.attrib["width"]))
-        rect_height = int(float(rectangle.attrib["height"]))
-        layer = Image.new("RGBA", artwork.size, (0, 0, 0, 0))
-        draw = ImageDraw.Draw(layer)
-        draw.rectangle(
-            (x, y, x + rect_width - 1, y + rect_height - 1),
-            fill=parse_color(rectangle.attrib["fill"]),
-        )
-        artwork = Image.alpha_composite(artwork, layer)
+        artwork = draw_rectangle(artwork, rectangle)
 
+    margin = size // 10
     artwork_scale = min(
-        (ICON_SIZE - 2 * ICON_MARGIN) / artwork.width,
-        (ICON_SIZE - 2 * ICON_MARGIN) / artwork.height,
+        (size - 2 * margin) / artwork.width,
+        (size - 2 * margin) / artwork.height,
     )
     artwork = artwork.resize(
         (
@@ -56,23 +59,26 @@ def render_icon(source: Path) -> Image.Image:
         ),
         Image.Resampling.NEAREST,
     )
-    canvas = Image.new("RGBA", (ICON_SIZE, ICON_SIZE), BACKGROUND)
+    canvas = Image.new("RGBA", (size, size), BACKGROUND)
     position = (
-        (ICON_SIZE - artwork.width) // 2,
-        (ICON_SIZE - artwork.height) // 2,
+        (size - artwork.width) // 2,
+        (size - artwork.height) // 2,
     )
     canvas.alpha_composite(artwork, position)
     return canvas.convert("RGB")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate the Connect IQ Store icon")
+    parser = argparse.ArgumentParser(
+        description="Generate a PNG icon from the project SVG"
+    )
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--size", type=int, required=True)
     args = parser.parse_args()
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    render_icon(args.input).save(args.output, format="PNG", optimize=True)
+    render_icon(args.input, args.size).save(args.output, format="PNG", optimize=True)
 
 
 if __name__ == "__main__":
