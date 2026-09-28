@@ -14,7 +14,7 @@ The changelog starts with the first published release.
 phase0 is a clean, customizable watch face built to keep useful information
 easy to read.
 
-[dawikur.dev/phase0](https://dawikur.dev/phase0)
+[https://dawikur.dev/phase0](dawikur.dev/phase0)
 
 Choose the fields, widgets and colors that matter. phase0 adapts the layout to
 the available space and hides rows that are not in use.

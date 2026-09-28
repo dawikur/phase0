@@ -12,8 +12,6 @@ MODE        ?= debug
 LOG_PREFIX  ?=
 # show commands
 V           ?= 0
-# smoke-test build mode
-SMOKE_MODE  ?= release
 
 VALID_MODES := debug test optimized release
 ifneq ($(filter $(MODE),$(VALID_MODES)),$(MODE))
@@ -420,10 +418,6 @@ sr simulate_release: # run simulator with release build
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release simulate
 .PHONY: sr simulate_release
 
-r resources: $(RESOURCES) # generate resources
-	$(Q)echo " [ $(call LOG_TAG,resources) ]"
-.PHONY: r resources
-
 $(STORE_OUTPUT_DIR)icon_%.png: $(ICON_STAMP) scripts/generate_site_icon
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_icon \
@@ -436,10 +430,6 @@ $(STORE_HERO): scripts/generate_site_hero $(STORE_HERO_SCREENSHOTS) $(VENV_STAMP
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_hero \
 		--screenshots $(SITE_DIR)assets/screenshots \
 		--output $@
-
-store_assets: $(STORE_ICONS) $(STORE_HERO) # generate Store icons and hero from existing screenshots
-	$(Q)echo " [ $(call LOG_TAG,store_assets) ]"
-.PHONY: store_assets
 
 $(SCREENSHOTS_STAMP): $(SCREENSHOTS_DEPS) $(STORE_ICONS) $(VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,screenshots) ]"
@@ -476,6 +466,10 @@ site_update: # fetch the latest site UI and rebuild the site
 	$(Q)$(MAKE) SITE_UI_REFRESH=1 site
 .PHONY: site_update
 
+store: $(STORE_ICONS) $(STORE_HERO) # generate store assets
+	$(Q)echo " [ $(call LOG_TAG,store) ]"
+.PHONY: store
+
 t test: $(RESOURCES) $(VENV_STAMP) # run test
 	$(Q)echo " [ $(call LOG_TAG,test) ]"
 	PYTHONPATH=. $(VENV_PYTHON) -m pytest \
@@ -495,12 +489,12 @@ l lint: $(VENV_STAMP) # run static checks
 
 smoke: $(VENV_STAMP) # run smoke test
 	$(Q)echo " [ $(call LOG_TAG,smoke) ]"
-	$(Q)$(VENV_PYTHON) scripts/smoke \
-		--mode $(SMOKE_MODE)
+	$(Q)$(VENV_PYTHON) scripts/smoke --mode release
 .PHONY: smoke
 
-smoke_test: SMOKE_MODE=test
-smoke_test: smoke # run smoke test with test build
+smoke_test: $(VENV_STAMP) # run smoke test w/ tests
+	$(Q)echo " [ $(call LOG_TAG,smoke_test) ]"
+	$(Q)$(VENV_PYTHON) scripts/smoke --mode test
 .PHONY: smoke_test
 
 ifneq ($(MODE),release)
