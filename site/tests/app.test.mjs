@@ -118,7 +118,9 @@ function createHarness({ hash = "", search = "", prefersDark = false, pathname =
 	register(makeElement({ id: "detailPanel", rect: { left: -260, top: 20, right: -20, bottom: 360, width: 240, height: 340 } }));
 	register(makeElement({ id: "faceRing" }));
 	const watchFace = register(makeElement({ id: "watchFace" }));
+	register(makeElement({ id: "watchFaceAod" }));
 	const pageLede = register(makeElement({ id: "pageLede" }));
+	pageLede.textContent = "Shared normal description";
 	const supportedDevices = register(makeElement({ id: "supportedDevices" }));
 	const supportedLanguages = register(makeElement({ id: "supportedLanguages" }));
 
@@ -347,12 +349,12 @@ test("preserves unknown parameters while omitting phase defaults", () => {
 });
 
 test("switches to always-on view and hides unsupported hotspots", () => {
-	const { all, context, document, pageLede, watchFace } = createHarness();
+	const { all, context, document, pageLede } = createHarness();
 
 	context.applyWatchView("aod");
 
-	assert.equal(watchFace.src, "assets/screenshots/data-rich-aod.png");
-	assert.equal(watchFace.alt, "phase0 always-on watch face on a Garmin watch");
+	assert.equal(document.getElementById("watchFace").classList.contains("is-hidden"), true);
+	assert.equal(document.getElementById("watchFaceAod").getAttribute("aria-hidden"), "false");
 	assert.match(pageLede.textContent, /only the essentials/);
 	assert.match(pageLede.textContent, /battery state/);
 
@@ -429,9 +431,8 @@ test("falls back to normal view for unknown view names", () => {
 
 	context.applyWatchView("missing");
 
-	assert.equal(watchFace.src, "assets/screenshots/data-rich.png");
-	assert.match(pageLede.textContent, /fast human scanning/);
-	assert.match(pageLede.textContent, /unified retro style/);
+	assert.equal(watchFace.classList.contains("is-hidden"), false);
+	assert.equal(pageLede.textContent, "Shared normal description");
 	assert.equal(
 		all.find((element) => element.dataset.watchView === "normal").getAttribute("aria-pressed"),
 		"true",

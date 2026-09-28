@@ -198,7 +198,7 @@ module Phase0 {
 				self.gauges_[i].resize(
 					_dc,
 					layout.right.size_x,
-					layout.right.size_y
+					layout.show_right ? layout.right.size_y : 0
 				);
 			}
 			self.DistributeWidgetsInBox_(self.gauges_, layout.right);

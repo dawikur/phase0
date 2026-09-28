@@ -17,6 +17,7 @@ from uuid import uuid4
 from PIL import Image
 
 from scripts.utils.smoke import (
+    Simulator,
     SmokeSignals,
     WatchFaceLoader,
     _check_simulator,
@@ -219,6 +220,20 @@ def _xdotool(*arguments: str) -> None:
     subprocess.run(["xdotool", *arguments], check=True)
 
 
+def reset_simulator_app_data() -> None:
+    """Clear saved properties and restart the current app through the simulator."""
+    window_id = find_simulator_window()
+    subprocess.run(["wmctrl", "-ia", window_id], check=True)
+    _xdotool("key", "--clearmodifiers", "alt+f")
+    time.sleep(0.15)
+    _xdotool("key", "--clearmodifiers", "r")
+    time.sleep(0.15)
+    _xdotool("key", "--clearmodifiers", "r")
+    time.sleep(0.15)
+    _xdotool("key", "--clearmodifiers", "Return")
+    time.sleep(0.15)
+
+
 def _wait_for_window(title_re: re.Pattern[str], timeout: float) -> str | None:
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -389,19 +404,17 @@ def _restore_default_settings(make: str, build_dir: Path) -> None:
 def _start_watch_face(
     monkeydo: Path,
     *,
-    build_dir: Path,
-    name: str,
     scenario: Scenario,
     settings: Path,
     signals: SmokeSignals,
+    program: Path,
 ) -> WatchFaceLoader:
-    output_name = f"{name}-{scenario.device}_release"
     command = [
         str(monkeydo),
-        str(build_dir / f"{output_name}.prg"),
+        str(program),
         scenario.device,
         "-a",
-        f"{settings}:GARMIN/Settings/{settings.name}",
+        f"{settings}:GARMIN/Settings/{program.stem.upper()}-settings.json",
     ]
     process, output_thread = _start_logged_process(command, signals)
     return WatchFaceLoader(process, output_thread)
@@ -416,6 +429,7 @@ def run_scenario(
     build_dir: Path,
     sdk_dir: Path,
     output_dir: Path,
+    simulator: Simulator,
     night_mode: bool = False,
 ) -> Path:
     view_name = "AoD" if night_mode else "normal"
@@ -430,24 +444,22 @@ def run_scenario(
         build_dir=build_dir,
         night_mode=night_mode,
     )
-    _print_status(f"Starting Connect IQ Simulator for {scenario.device}...")
-    simulator = _start_simulator(
-        sdk_dir / "bin" / "connectiq",
-        env_overrides={"GDK_BACKEND": "x11"},
-        cwd=REPO_DIR,
-    )
+    program = build_dir / f"{name}-{scenario.device}_release.prg"
     loader = None
     try:
         simulator.signals.ready = Event()
         loader = _start_watch_face(
             sdk_dir / "bin" / "monkeydo",
-            build_dir=build_dir,
-            name=name,
             scenario=scenario,
             settings=settings,
             signals=simulator.signals,
+            program=program,
         )
         _print_status("Waiting for phase0 to finish initializing...")
+        _wait_for_watch_face(simulator, scenario.device)
+        _print_status("Resetting simulator app data to load scenario defaults...")
+        simulator.signals.ready = Event()
+        reset_simulator_app_data()
         _wait_for_watch_face(simulator, scenario.device)
         _check_simulator(simulator, scenario.device)
         _print_status("phase0 is ready; capturing screenshot...")
@@ -457,10 +469,6 @@ def run_scenario(
     finally:
         if loader is not None:
             _stop_watch_face_loader(loader)
-        try:
-            close_simulator_windows()
-        finally:
-            _stop_simulator(simulator)
 
 
 # pylint: disable=too-many-arguments
@@ -483,30 +491,33 @@ def generate_screenshots(
     require_x11_display()
     sdk_dir = sdk_dir or connect_iq_sdk_dir()
     try:
-        outputs = []
-        for scenario in selected:
-            outputs.append(
-                run_scenario(
-                    scenario,
-                    make=make,
-                    name=name,
-                    build_dir=build_dir,
-                    sdk_dir=sdk_dir,
-                    output_dir=output_dir,
-                    night_mode=False,
-                )
-            )
-            outputs.append(
-                run_scenario(
-                    scenario,
-                    make=make,
-                    name=name,
-                    build_dir=build_dir,
-                    sdk_dir=sdk_dir,
-                    output_dir=output_dir,
-                    night_mode=True,
-                )
-            )
-        return outputs
+        _print_status("Starting Connect IQ Simulator...")
+        simulator = _start_simulator(
+            sdk_dir / "bin" / "connectiq",
+            env_overrides={"GDK_BACKEND": "x11"},
+            cwd=REPO_DIR,
+        )
+        try:
+            outputs = []
+            for scenario in selected:
+                for night_mode in (False, True):
+                    outputs.append(
+                        run_scenario(
+                            scenario,
+                            make=make,
+                            name=name,
+                            build_dir=build_dir,
+                            sdk_dir=sdk_dir,
+                            output_dir=output_dir,
+                            simulator=simulator,
+                            night_mode=night_mode,
+                        )
+                    )
+            return outputs
+        finally:
+            try:
+                close_simulator_windows()
+            finally:
+                _stop_simulator(simulator)
     finally:
         _restore_default_settings(make, build_dir)

@@ -325,8 +325,13 @@ normal and AoD watch-face screenshots in `site/assets/screenshots/` (named
 `<scenario>.png` and `<scenario>-aod.png`) and the Store icon at
 `site/assets/icon_big.png`. AoD capture temporarily forces `isNightMode_()`
 while compiling each mode and restores `source/phase0/view.mc` immediately.
+The screenshot generator starts one simulator per invocation and loads each
+scenario's PRG into that running simulator, including when it changes devices.
+After loading each PRG, the generator uses the simulator's Reset All App Data
+command and waits for the watch face to restart before capturing; the simulator
+otherwise retains application properties between loads.
 Screenshot scenarios live in
-`data/store_screenshots.py`; device, app-property overrides, and gallery title,
+`data/screenshots.py`; device, app-property overrides, and gallery title,
 description and alt text belong together there. `make site` generates
 `screenshots-data.js` from that metadata for the website gallery. Scenario
 overrides must not change `data/settings/settings.py`. Screenshot capture

@@ -212,29 +212,30 @@ def test_run_scenario_builds_waits_captures_and_stops(
     loader = WatchFaceLoader(MagicMock(), MagicMock())
     settings = tmp_path / "settings.json"
     settings.touch()
+    build = tmp_path / "build"
     output = tmp_path / "store" / "preview.png"
     events: list[str] = []
+    ready_events: list[Event | None] = []
 
     monkeypatch.setattr(
         screenshots, "_build_scenario", lambda *args, **kwargs: settings
     )
+
+    def start_watch_face(*_args: object, **kwargs: object) -> WatchFaceLoader:
+        assert kwargs["program"] == build / "phase0-fr255_release.prg"
+        return loader
+
+    monkeypatch.setattr(screenshots, "_start_watch_face", start_watch_face)
+
+    def wait_for_watch_face(sim: Simulator, _device: str) -> None:
+        ready_events.append(sim.signals.ready)
+        events.append("ready")
+
+    monkeypatch.setattr(screenshots, "_wait_for_watch_face", wait_for_watch_face)
     monkeypatch.setattr(
-        screenshots, "_start_simulator", lambda *_args, **_kwargs: simulator
-    )
-    monkeypatch.setattr(
-        screenshots,
-        "_start_watch_face",
-        lambda *args, **kwargs: loader,
-    )
-    monkeypatch.setattr(
-        screenshots, "_wait_for_watch_face", lambda *_: events.append("ready")
+        screenshots, "reset_simulator_app_data", lambda: events.append("reset")
     )
     monkeypatch.setattr(screenshots, "_check_simulator", lambda *_: None)
-    monkeypatch.setattr(
-        screenshots,
-        "close_simulator_windows",
-        lambda: events.append("close-windows"),
-    )
     monkeypatch.setattr(
         screenshots,
         "capture_simulator_screenshot",
@@ -245,24 +246,22 @@ def test_run_scenario_builds_waits_captures_and_stops(
         "_stop_watch_face_loader",
         lambda _loader: events.append("stop-app"),
     )
-    monkeypatch.setattr(
-        screenshots, "_stop_simulator", lambda _simulator: events.append("stop-sim")
-    )
-
     result = run_scenario(
         scenario,
         make="make",
         name="phase0",
-        build_dir=tmp_path / "build",
+        build_dir=build,
         sdk_dir=tmp_path / "sdk",
         output_dir=tmp_path / "store",
+        simulator=simulator,
     )
 
     assert result == output
-    assert events == ["ready", "capture", "stop-app", "close-windows", "stop-sim"]
+    assert events == ["ready", "reset", "ready", "capture", "stop-app"]
+    assert ready_events[0] is not ready_events[1]
 
 
-def test_run_scenario_stops_simulator_if_app_fails_to_start(
+def test_run_scenario_leaves_shared_simulator_running_if_app_fails_to_start(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     import scripts.utils.store_screenshots as screenshots
@@ -272,17 +271,10 @@ def test_run_scenario_stops_simulator_if_app_fails_to_start(
         screenshots, "_build_scenario", lambda *args, **kwargs: tmp_path
     )
     monkeypatch.setattr(
-        screenshots, "_start_simulator", lambda *_args, **_kwargs: simulator
-    )
-    monkeypatch.setattr(
         screenshots,
         "_start_watch_face",
         MagicMock(side_effect=RuntimeError("launch failed")),
     )
-    monkeypatch.setattr(screenshots, "close_simulator_windows", lambda: None)
-    stop_simulator = MagicMock()
-    monkeypatch.setattr(screenshots, "_stop_simulator", stop_simulator)
-
     with pytest.raises(RuntimeError, match="launch failed"):
         run_scenario(
             Scenario("preview", "fr255", {}),
@@ -291,9 +283,8 @@ def test_run_scenario_stops_simulator_if_app_fails_to_start(
             build_dir=tmp_path / "build",
             sdk_dir=tmp_path / "sdk",
             output_dir=tmp_path / "store",
+            simulator=simulator,
         )
-
-    stop_simulator.assert_called_once_with(simulator)
 
 
 def test_require_capture_tools_reports_missing_tools(
@@ -479,6 +470,48 @@ def test_xdotool_runs_requested_command() -> None:
     run.assert_called_once_with(["xdotool", "key", "Return"], check=True)
 
 
+def test_reset_simulator_app_data_uses_reset_all_app_data_menu(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.utils.store_screenshots as screenshots
+
+    commands: list[tuple[str, ...]] = []
+    monkeypatch.setattr(screenshots, "find_simulator_window", lambda: "0x2")
+    monkeypatch.setattr(
+        screenshots.subprocess,
+        "run",
+        lambda command, **_kwargs: commands.append(tuple(command)),
+    )
+    monkeypatch.setattr(screenshots, "_xdotool", lambda *args: commands.append(args))
+    monkeypatch.setattr(screenshots.time, "sleep", lambda _delay: None)
+
+    screenshots.reset_simulator_app_data()
+
+    assert commands == [
+        ("wmctrl", "-ia", "0x2"),
+        ("key", "--clearmodifiers", "alt+f"),
+        ("key", "--clearmodifiers", "r"),
+        ("key", "--clearmodifiers", "r"),
+        ("key", "--clearmodifiers", "Return"),
+    ]
+
+
+def test_force_night_mode_rejects_missing_function_without_changing_source(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.utils.store_screenshots as screenshots
+
+    source = tmp_path / "view.mc"
+    source.write_text("class View {}\n", encoding="utf-8")
+    monkeypatch.setattr(screenshots, "VIEW_SOURCE", source)
+
+    with pytest.raises(RuntimeError, match="Could not locate isNightMode_"):
+        with screenshots.force_night_mode(True):
+            pytest.fail("Night mode should not be entered")
+
+    assert source.read_text(encoding="utf-8") == "class View {}\n"
+
+
 def test_capture_simulator_screenshot_saves_valid_native_image(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -650,27 +683,27 @@ def test_start_watch_face_passes_scenario_settings(
     thread = MagicMock()
     signals = SmokeSignals(Event())
     settings = tmp_path / "phase0-fr255_release-settings.json"
+    program = tmp_path / "build" / "phase0-preview-123.prg"
     with patch(
         "scripts.utils.store_screenshots._start_logged_process",
         return_value=(process, thread),
     ) as start:
         loader = screenshots._start_watch_face(
             tmp_path / "sdk" / "monkeydo",
-            build_dir=tmp_path / "build",
-            name="phase0",
             scenario=Scenario("preview", "fr255", {}),
             settings=settings,
             signals=signals,
+            program=program,
         )
 
     assert loader == WatchFaceLoader(process, thread)
     start.assert_called_once_with(
         [
             str(tmp_path / "sdk" / "monkeydo"),
-            str(tmp_path / "build" / "phase0-fr255_release.prg"),
+            str(program),
             "fr255",
             "-a",
-            f"{settings}:GARMIN/Settings/{settings.name}",
+            f"{settings}:GARMIN/Settings/PHASE0-PREVIEW-123-settings.json",
         ],
         signals,
     )
@@ -688,6 +721,12 @@ def test_generate_screenshots_runs_selected_scenarios(
     monkeypatch.setattr(screenshots, "require_capture_tools", lambda: None)
     monkeypatch.setattr(screenshots, "require_x11_display", lambda: None)
     monkeypatch.setattr(screenshots, "connect_iq_sdk_dir", lambda: tmp_path / "sdk")
+    simulator = Simulator(MagicMock(), SmokeSignals(Event()), MagicMock())
+    start_simulator = MagicMock(return_value=simulator)
+    monkeypatch.setattr(screenshots, "_start_simulator", start_simulator)
+    monkeypatch.setattr(screenshots, "close_simulator_windows", lambda: None)
+    stop_simulator = MagicMock()
+    monkeypatch.setattr(screenshots, "_stop_simulator", stop_simulator)
     run = MagicMock(
         side_effect=lambda scenario, **kwargs: kwargs["output_dir"]
         / (
@@ -713,6 +752,12 @@ def test_generate_screenshots_runs_selected_scenarios(
         tmp_path / "store" / "second.png",
         tmp_path / "store" / "second-aod.png",
     ]
+    start_simulator.assert_called_once_with(
+        tmp_path / "sdk" / "bin" / "connectiq",
+        env_overrides={"GDK_BACKEND": "x11"},
+        cwd=screenshots.REPO_DIR,
+    )
+    stop_simulator.assert_called_once_with(simulator)
     assert run.call_args_list == [
         call(
             scenarios[1],
@@ -721,6 +766,7 @@ def test_generate_screenshots_runs_selected_scenarios(
             build_dir=tmp_path / "build",
             sdk_dir=tmp_path / "sdk",
             output_dir=tmp_path / "store",
+            simulator=simulator,
             night_mode=False,
         ),
         call(
@@ -730,6 +776,7 @@ def test_generate_screenshots_runs_selected_scenarios(
             build_dir=tmp_path / "build",
             sdk_dir=tmp_path / "sdk",
             output_dir=tmp_path / "store",
+            simulator=simulator,
             night_mode=True,
         ),
     ]
@@ -776,14 +823,14 @@ def test_generate_screenshots_rejects_invalid_scenarios_before_x11(
 
 
 def test_store_screenshot_config_has_supported_scenarios() -> None:
-    from data.settings.colors import Colors
-    from data.store_screenshots import (
+    from data.screenshots import (
         _DATA_ALL,
         _DATA_WITH_ICON,
         _DATA_WITH_VALUE_MAX,
         _WIDGETS,
         SCENARIOS,
     )
+    from data.settings.colors import Colors
 
     assert [scenario.name for scenario in SCENARIOS] == [
         "data-rich",

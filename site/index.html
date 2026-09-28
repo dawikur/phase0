@@ -30,11 +30,7 @@
 			<div class="product-copy">
 				<p class="eyebrow"><a class="ui-back-link" href="../" data-site-back data-state-transfer hidden>← dawikur.dev</a><span data-site-back-separator hidden> · </span>Garmin Connect IQ watch face</p>
 				<h1 id="page-title">phase0</h1>
-				<p class="lede" id="pageLede">
-					A dense digital watch face built around fast scanning: current time,
-					weather, daily metrics, status signals and configurable color systems
-					share one readable surface.
-				</p>
+				<p class="lede" id="pageLede">phase0 is a clean, customizable watch face built to keep useful information easy to read.</p>
 				<div class="feature-strip" aria-label="Highlights">
 					<span class="ui-tag ui-tag--fill-at-mobile">Live data layout</span>
 					<span class="ui-tag ui-tag--fill-at-mobile">Configurable widgets</span>
@@ -52,10 +48,18 @@
 			<div class="watch-zone" id="watchZone">
 				<div class="watch-stage" id="watchStage">
 					<img
-						class="watch-face"
+						class="watch-face watch-face--normal"
 						id="watchFace"
 						src="assets/screenshots/data-rich.png"
 						alt="phase0 normal watch face"
+					>
+					<img
+						class="watch-face watch-face--aod"
+						id="watchFaceAod"
+						src="assets/screenshots/data-rich-aod.png"
+						decoding="sync"
+						alt=""
+						aria-hidden="true"
 					>
 					<img
 						class="watch-overlay watch-overlay--light"
@@ -79,28 +83,40 @@
 			</div>
 		</section>
 
-		<section class="screenshot-gallery" aria-labelledby="screenshots-title">
-			<div class="screenshot-gallery-heading">
+		<section class="overview" aria-labelledby="overview-title">
+			<div class="overview-heading">
 				<p class="eyebrow">One face, many configurations</p>
-				<h2 id="screenshots-title">Your layout, your way</h2>
+				<h2 id="overview-title">Your layout, your way</h2>
 				<p>Choose the fields, widgets and colors that matter. phase0 adapts the layout to the available space and hides rows that are not in use.</p>
 			</div>
-			<div class="screenshot-grid" id="screenshotGrid"></div>
-		</section>
 
-		<section class="supporting" aria-label="Product details">
-			<article>
+			<section class="product-description" aria-label="About phase0">
+				<p>Put the time first, then choose the details that matter to you. Add activity and health metrics, weather, battery information, sunrise and sunset, or status icons. Pick your colors and decide which data appears in the available areas.</p>
+				<h2>Make the layout yours</h2>
+				<ul>
+					<li>Choose colors for the background, text, accents and clock.</li>
+					<li>Add metrics such as heart rate, steps, floors, stress, Body Battery, calories and recovery time.</li>
+					<li>Show weather details such as temperature, rain chance, UV index and wind.</li>
+					<li>Add battery, alarm, phone connection and notification indicators.</li>
+					<li>Choose sunrise and sunset information, with sun or moon icons.</li>
+				</ul>
+				<h2>Designed to adapt</h2>
+				<p>phase0 measures the available screen space and adjusts the layout to fit. Depending on the device and selected fields, it can resize text, rearrange the spacing or omit lines that do not fit. Smaller screens can show a simpler face; larger screens can fit more information.</p>
+				<p>The watch face is designed with efficient updates in mind. Some data depends on your device, Garmin Connect, available sensors and permissions, and may not be available on every watch.</p>
 				<h2>Readable At A Glance</h2>
 				<p>The large segmented clock stays dominant while secondary metrics keep their own lanes.</p>
-			</article>
-			<article>
 				<h2>Adaptive Color System</h2>
 				<p>Accent, foreground and background combinations keep the face readable across bright daytime use and low-distraction AoD viewing.</p>
-			</article>
-			<article>
 				<h2>Built For Small Screens</h2>
 				<p>The layout adapts to each watch screen and the widgets you choose, keeping icons, labels, values and gauges clear at a glance.</p>
-			</article>
+			</section>
+
+			<section class="screenshot-gallery" aria-label="Watch face configurations">
+				<div class="screenshot-grid" id="screenshotGrid"></div>
+			</section>
+		</section>
+
+		<section class="supporting" aria-label="Support">
 			<article class="support-card" id="supportCard">
 				<h2>Support</h2>
 				<div class="support-meta">

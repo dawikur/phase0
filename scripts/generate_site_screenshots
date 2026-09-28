@@ -4,7 +4,7 @@
 import argparse
 from pathlib import Path
 
-from data.store_screenshots import SCENARIOS
+from data.screenshots import SCENARIOS
 from scripts.utils.site_screenshots import build_site_screenshots
 
 if __name__ == "__main__":

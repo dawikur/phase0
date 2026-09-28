@@ -190,7 +190,7 @@ def test_run_smoke_test_reuses_one_simulator_for_all_devices(
                 "fr255",
                 "-a",
                 str(build_dir / "phase0-fr255_release-settings.json")
-                + ":GARMIN/Settings/phase0-fr255_release-settings.json",
+                + ":GARMIN/Settings/PHASE0-FR255_RELEASE-settings.json",
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -207,7 +207,7 @@ def test_run_smoke_test_reuses_one_simulator_for_all_devices(
                 "fenix7x",
                 "-a",
                 str(build_dir / "phase0-fenix7x_release-settings.json")
-                + ":GARMIN/Settings/phase0-fenix7x_release-settings.json",
+                + ":GARMIN/Settings/PHASE0-FENIX7X_RELEASE-settings.json",
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -263,7 +263,7 @@ def test_start_watch_face_passes_test_mode_to_monkeydo(
             "fr255",
             "-a",
             str(tmp_path / "build" / "phase0-fr255_test-settings.json")
-            + ":GARMIN/Settings/phase0-fr255_test-settings.json",
+            + ":GARMIN/Settings/PHASE0-FR255_TEST-settings.json",
             "-t",
         ],
         signals,

@@ -66,6 +66,9 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
+			if (self.size_x <= 0 or self.size_y <= 0) {
+				return;
+			}
 			var center_x = self.centerX();
 			var center_y = self.centerY() + Render.SHADOW_OFFSET;
 
@@ -81,6 +84,9 @@ module Widgets {
 		}
 
 		function renderMinimal(_dc as Graphics.Dc) as Void {
+			if (self.size_x <= 0 or self.size_y <= 0) {
+				return;
+			}
 			var center_x = self.centerX();
 			var center_y = self.centerY() + Render.SHADOW_OFFSET;
 

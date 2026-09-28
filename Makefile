@@ -61,9 +61,9 @@ HELP_DESCRIPTION_COLUMN := 26
 LOG_TAG = $(if $(LOG_PREFIX),$(LOG_PREFIX)-$(1),$(1))
 
 PYTHON_FILES := $(shell rg --files -g '*.py') \
-	scripts/generate_fonts scripts/generate_icon scripts/generate_store_icon \
-	scripts/generate_store_screenshots \
-	scripts/generate_settings \
+	scripts/generate_resources_fonts scripts/generate_resources_icon scripts/generate_site_icon \
+	scripts/generate_screenshots \
+	scripts/generate_resources_settings \
 	scripts/generate_site_devices scripts/generate_site_settings scripts/generate_site_screenshots \
 	scripts/generate_memory_jungle scripts/smoke
 
@@ -93,6 +93,7 @@ MEMORY_JUNGLE := $(BUILD_DIR)memory.jungle
 JUNGLES       := $(JUNGLE);$(MEMORY_JUNGLE)
 MANIFEST      := manifest.xml
 OUT           := $(NAME)-$(DEVICE)$(NAME_SUFFIX)
+APP_SETTINGS  := $(shell printf '%s' '$(OUT)' | tr '[:lower:]' '[:upper:]')-settings.json
 PRG           := $(BUILD_DIR)$(OUT).prg
 RSCS          := $(shell find resources/base resources/lang resources/memory -type f ! -path '*/__pycache__/*')
 SRCS          := $(shell find source -type f ! -path '*/__pycache__/*')
@@ -151,18 +152,18 @@ DATA_SETTINGS_DEPS  := $(shell find data/settings -type f ! -path '*/__pycache__
 DATA_DEVICES_DEPS   := $(shell find data/devices -type f -name '*.py')
 RESOURCE_STRINGS    := $(shell find resources -name strings.xml -type f)
 
-ICON_DEPS           := scripts/generate_icon                      \
+ICON_DEPS           := scripts/generate_resources_icon            \
                        $(SCRIPT_DEPS)                             \
                        $(DATA_FONTS_DEPS)                         \
                        $(RESOURCE_STRINGS)
 ICON_STAMP          := $(BUILD_DIR).icon.stamp
 SITE_STORE_ICON     := $(SITE_DIR)assets/icon_big.png
-FONTS_DEPS          := scripts/generate_fonts                     \
+FONTS_DEPS          := scripts/generate_resources_fonts            \
                        $(SCRIPT_DEPS)                             \
                        $(DATA_FONTS_DEPS)                          \
                        $(RESOURCE_STRINGS)
 FONTS_STAMP         := $(BUILD_DIR).fonts.stamp
-SETTINGS_DEPS       := scripts/generate_settings                  \
+SETTINGS_DEPS       := scripts/generate_resources_settings         \
                        $(SCRIPT_DEPS)                             \
                        $(DATA_FONTS_DEPS)                          \
                        $(DATA_SETTINGS_DEPS)
@@ -172,11 +173,11 @@ SITE_SETTINGS_DEPS  := scripts/generate_site_settings             \
                        $(SETTINGS_STAMP)                           \
                        $(RESOURCE_STRINGS)
 SITE_SETTINGS       := $(SITE_OUTPUT_DIR)settings-data.js
-SITE_SCREENSHOTS_DEPS := scripts/generate_site_screenshots     \
-	                     scripts/utils/site_screenshots.py      \
-	                     scripts/utils/store_screenshots.py     \
-	                     data/store_screenshots.py               \
-	                     $(DATA_SETTINGS_DEPS)                   \
+SITE_SCREENSHOTS_DEPS := scripts/generate_site_screenshots        \
+	                     scripts/utils/site_screenshots.py        \
+	                     scripts/utils/store_screenshots.py       \
+	                     data/screenshots.py                      \
+	                     $(DATA_SETTINGS_DEPS)                    \
 	                     $(SRCS_DATA)
 SITE_SCREENSHOTS    := $(SITE_OUTPUT_DIR)screenshots-data.js
 SITE_DEVICES_DEPS   := scripts/generate_site_devices              \
@@ -387,7 +388,7 @@ s simulate: build # run simulator
 	$(MONKEYDO) \
 		$(PRG) \
 		$(DEVICE) \
-		-a $(BUILD_DIR)$(OUT)-settings.json:GARMIN/Settings/$(OUT)-settings.json \
+		-a $(BUILD_DIR)$(OUT)-settings.json:GARMIN/Settings/$(APP_SETTINGS) \
 		$(FLAG_SIMULATE)
 
 	wait "$$SIM_PID"
@@ -414,15 +415,15 @@ r resources: $(RESOURCES) # generate resources
 	$(Q)echo " [ $(call LOG_TAG,resources) ]"
 .PHONY: r resources
 
-$(SITE_STORE_ICON): $(ICON_STAMP) scripts/generate_store_icon
+$(SITE_STORE_ICON): $(ICON_STAMP) scripts/generate_site_icon
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_store_icon \
+	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_icon \
 		--input $(RESOURCES_GENERATED_DIR)icon.svg \
 		--output $@
 
 x screenshots: $(SITE_STORE_ICON) $(VENV_STAMP) # generate Connect IQ Store assets and screenshots
 	$(Q)echo " [ $(call LOG_TAG,screenshots) ]"
-	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_store_screenshots \
+	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_screenshots \
 		--manifest $(MANIFEST) \
 		--build-dir $(BUILD_DIR) \
 		--output-dir $(SITE_DIR)assets/screenshots

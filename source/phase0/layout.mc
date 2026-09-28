@@ -21,6 +21,8 @@ module Phase0 {
 
 		var left as Box = new Box(0, 0, 0, 0);
 		var right as Box = new Box(0, 0, 0, 0);
+		var show_left as Lang.Boolean = false;
+		var show_right as Lang.Boolean = false;
 
 		hidden var show_top_outer_ as Lang.Boolean = false;
 		hidden var show_top_middle_ as Lang.Boolean = false;
@@ -218,6 +220,9 @@ module Phase0 {
 				return false;
 			}
 
+			self.show_left = _show_left;
+			self.show_right = _show_right;
+
 			var pos_y = top_gap_y;
 			self.top_outer = new Box(0, 0, 0, 0);
 			self.top_middle = new Box(0, 0, 0, 0);
@@ -316,6 +321,8 @@ module Phase0 {
 			);
 			self.left = new Box(0, 0, 0, 0);
 			self.right = new Box(0, 0, 0, 0);
+			self.show_left = false;
+			self.show_right = false;
 
 			self.top_outer = new Box(0, 0, 0, 0);
 			self.top_middle = new Box(0, 0, 0, 0);

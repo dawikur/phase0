@@ -52,8 +52,8 @@ Before publishing a release, complete and record the following checks.
 >
 > Put the time first, then choose the details that matter to you. Add activity
 > and health metrics, weather, battery information, sunrise and sunset, or
-> status icons. Pick your colors and decide which data
-> appears in the available areas.
+> status icons. Pick your colors and decide which data appears in the available
+> areas.
 >
 > Make the layout yours
 >
@@ -65,17 +65,30 @@ Before publishing a release, complete and record the following checks.
 > - Choose sunrise and sunset information, with sun or moon icons.
 >
 > Designed to adapt
+>
 > phase0 measures the available screen space and adjusts the layout to fit.
 > Depending on the device and selected fields, it can resize text, rearrange
-> the spacing or omit lines that do not fit. Smaller
-> screens can show a simpler face; larger screens can fit more information.
+> the spacing or omit lines that do not fit. Smaller screens can show a simpler
+> face; larger screens can fit more information.
 >
 > The watch face is designed with efficient updates in mind. Some data depends
 > on your device, Garmin Connect, available sensors and permissions, and may
 > not be available on every watch.
 >
-> Supported devices: compatible Garmin devices listed on this Connect IQ Store
-> page.
+> Readable At A Glance
+>
+> The large segmented clock stays dominant while secondary metrics keep their
+> own lanes.
+>
+> Adaptive Color System
+>
+> Accent, foreground and background combinations keep the face readable across
+> bright daytime use and low-distraction AoD viewing.
+>
+> Built For Small Screens
+>
+> The layout adapts to each watch screen and the widgets you choose, keeping
+> icons, labels, values and gauges clear at a glance.
 
 ### Store screenshots
 
@@ -109,15 +122,17 @@ Do not imply that each screenshot is a different device feature; the examples
 show configurations and screen sizes supported by the same watch face. Check
 that text, colors and line visibility match the MIP output.
 
-The scenarios are configured in `data/store_screenshots.py`. Set each
+The scenarios are configured in `data/screenshots.py`. Set each
 scenario's device and property overrides there, then run `make screenshots` to
 generate the icon at `site/assets/icon_big.png` and screenshots at
 `site/assets/screenshots/`. Each scenario produces a normal image and an AoD
 image named `<scenario>.png` and `<scenario>-aod.png`; the website's Normal/AoD
 control switches the gallery between them. The screenshot generator forces
 `isNightMode_()` to the corresponding value only during compilation and restores
-the source file afterward. The home page displays the screenshot gallery. Use
-`scripts/generate_store_screenshots --scenario <name>` to capture one scenario.
+the source file afterward. One simulator instance is reused for every scenario
+in the run, with each scenario's PRG loaded in sequence. The home page displays
+the screenshot gallery. Use `scripts/generate_screenshots --scenario <name>` to
+capture one scenario.
 Screenshot capture requires a graphical X11 or XWayland session, plus `wmctrl`
 and `xdotool`. On Wayland, the generator starts the simulator through GTK's
 X11 backend so its window can be controlled and its native screenshot command

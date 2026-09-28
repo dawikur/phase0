@@ -143,7 +143,7 @@ def _start_watch_face(
         str(build_dir / f"{output_name}.prg"),
         device,
         "-a",
-        f"{settings}:GARMIN/Settings/{settings.name}",
+        f"{settings}:GARMIN/Settings/{output_name.upper()}-settings.json",
     ]
     if mode == "test":
         command.append("-t")

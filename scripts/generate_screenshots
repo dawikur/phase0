@@ -12,7 +12,7 @@ from typing import Sequence
 if __package__ is None or __package__ == "":
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from data.store_screenshots import SCENARIOS
+from data.screenshots import SCENARIOS
 from scripts.utils.store_screenshots import REPO_DIR, generate_screenshots
 
 
