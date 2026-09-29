@@ -134,6 +134,21 @@ def test_all_strings_files_define_the_same_string_ids(strings_xml: Path) -> None
     )
 
 
+@pytest.mark.parametrize(
+    "strings_xml", sorted(Path(RESOURCES_DIR).glob("lang/*/strings.xml")), ids=str
+)
+def test_locales_define_every_setting_string(strings_xml: Path) -> None:
+    expected = get_defined_strings(
+        Path(RESOURCES_DIR) / "base" / "strings.xml", "SETTING_"
+    )
+    actual = get_defined_strings(strings_xml, "SETTING_")
+
+    assert actual == expected, (
+        f"Setting strings in {strings_xml} differ from base: "
+        f"missing={sorted(expected - actual)}, extra={sorted(actual - expected)}"
+    )
+
+
 @pytest.mark.parametrize("strings_xml", get_strings_xml_files(), ids=str)
 def test_all_watchface_label_strings_are_used_by_monkey_c(strings_xml: Path) -> None:
     defined = get_defined_strings(strings_xml, "LABEL_")

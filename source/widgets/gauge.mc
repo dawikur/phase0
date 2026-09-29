@@ -20,7 +20,10 @@ module Widgets {
 			Base.initialize(_impl.type, _impl.refresh_rate);
 
 			self.impl_ = _impl;
-			self.accent_ = _properties.accent;
+			self.accent_ =
+				_properties.accent == Render.COLOR_GLOBAL
+					? Render.accent
+					: _properties.accent;
 
 			self.size_x = Render.SPACING;
 		}

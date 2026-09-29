@@ -34,10 +34,10 @@ class App extends Application.AppBase {
 
 		var properties = new Properties();
 
-		Render.accent = properties.general.accent;
-		Render.foreground = properties.general.foreground;
-		Render.shade = properties.general.shade;
-		Render.background = properties.general.background;
+		Render.accent = properties.global.accent;
+		Render.foreground = properties.global.foreground;
+		Render.shade = properties.global.shade;
+		Render.background = properties.global.background;
 
 		self.view_.onSettingsChanged(properties);
 	}

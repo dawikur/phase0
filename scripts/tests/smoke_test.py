@@ -8,7 +8,7 @@ from argparse import Namespace
 from io import StringIO
 from pathlib import Path
 from threading import Event, Thread
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock, call, patch
 
@@ -381,6 +381,23 @@ def test_wait_for_crash_detects_stopped_simulator() -> None:
     assert error.value.returncode == 2
 
 
+def test_wait_for_crash_checks_process_during_full_interval() -> None:
+    process = MagicMock(args=["connectiq"])
+    process.poll.return_value = None
+    crashed = Event()
+    simulator = Simulator(process, SmokeSignals(crashed), Thread(target=lambda: None))
+    clock = SimpleNamespace(monotonic=MagicMock(side_effect=[0.0, 0.5, 1.1]))
+
+    with (
+        patch("scripts.utils.simulator_process.time", clock),
+        patch.object(crashed, "wait") as wait,
+    ):
+        wait_for_crash(simulator, 1.0, "fr255")
+
+    assert process.poll.call_count == 2
+    wait.assert_called_once_with(timeout=0.1)
+
+
 def test_wait_for_watch_face_detects_stopped_simulator() -> None:
     process = MagicMock(args=["connectiq"])
     process.poll.return_value = 2
@@ -392,6 +409,40 @@ def test_wait_for_watch_face_detects_stopped_simulator() -> None:
         wait_for_watch_face(simulator, "fr255")
 
     assert error.value.returncode == 2
+
+
+def test_wait_for_watch_face_accepts_ready_signal_after_waiting() -> None:
+    process = MagicMock(args=["connectiq"])
+    process.poll.return_value = None
+    ready = Event()
+    simulator = Simulator(
+        process, SmokeSignals(Event(), ready), Thread(target=lambda: None)
+    )
+    clock = SimpleNamespace(monotonic=MagicMock(side_effect=[0.0, 0.5]))
+
+    with (
+        patch("scripts.utils.simulator_process.time", clock),
+        patch.object(ready, "wait", side_effect=lambda timeout: ready.set()) as wait,
+    ):
+        wait_for_watch_face(simulator, "fr255")
+
+    assert process.poll.call_count == 2
+    wait.assert_called_once_with(timeout=0.1)
+
+
+def test_wait_for_watch_face_reports_start_timeout() -> None:
+    process = MagicMock(args=["connectiq"])
+    process.poll.return_value = None
+    simulator = Simulator(
+        process, SmokeSignals(Event(), Event()), Thread(target=lambda: None)
+    )
+    clock = SimpleNamespace(monotonic=MagicMock(side_effect=[0.0, 31.0]))
+
+    with (
+        patch("scripts.utils.simulator_process.time", clock),
+        pytest.raises(ApplicationStartError, match="initialization on fr255"),
+    ):
+        wait_for_watch_face(simulator, "fr255")
 
 
 def test_simulator_output_marks_application_crash(

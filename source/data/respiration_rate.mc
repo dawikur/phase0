@@ -16,6 +16,10 @@ module Data {
 			);
 		}
 
+		function defaultWidth() as Lang.Number {
+			return 2;
+		}
+
 		function refresh() as Void {
 			var info = ActivityMonitor.getInfo();
 			self.value =

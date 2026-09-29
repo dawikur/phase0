@@ -20,6 +20,10 @@ module Data {
 			WeatherProvider.register("wind_speed");
 		}
 
+		function defaultWidth() as Lang.Number {
+			return 2;
+		}
+
 		function refresh() as Void {
 			var wind_bearing = WeatherProvider.get("wind_bearing");
 			if (wind_bearing == null) {

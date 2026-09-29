@@ -5,7 +5,7 @@ from typing import Any, cast
 
 from .colors import Colors
 from .data import Data
-from .model import Array, Number, Select, Settings, Single
+from .model import Array, Select, Settings, Single
 
 
 class Options(IntEnum):
@@ -44,9 +44,32 @@ EXTRA_WIDGETS = [
 ]
 
 
-class Heights(IntEnum):
+class Sizes(IntEnum):
     AUTO = Options.AUTO.value
     SMALL = Options.SMALL.value
+
+
+class MetricWidths(IntEnum):
+    AUTO = -1
+    WIDTH_1 = 1
+    WIDTH_2 = 2
+    WIDTH_3 = 3
+    WIDTH_4 = 4
+    WIDTH_5 = 5
+    WIDTH_6 = 6
+    WIDTH_7 = 7
+    WIDTH_8 = 8
+    WIDTH_9 = 9
+    WIDTH_10 = 10
+
+
+ColorOptions = cast(
+    Any,
+    IntEnum(
+        "ColorOptions",
+        {"GLOBAL": -1, **{color.name: color.value for color in Colors}},
+    ),
+)
 
 
 class Status(IntEnum):
@@ -89,8 +112,8 @@ def MemoryLow(  # pylint: disable=invalid-name
 
     return Settings(
         Single(
-            "general",
-            "General",
+            "global",
+            "Global",
             [
                 Select("accent", Colors.ORANGE),
                 Select("foreground", Colors.WHITE),
@@ -102,9 +125,9 @@ def MemoryLow(  # pylint: disable=invalid-name
             "clock",
             "Clock",
             [
-                Select("foreground", Colors.LIGHT_ORANGE),
-                Select("background", Colors.CHARCOAL),
-                Select("height", Heights.AUTO),
+                Select("foreground", ColorOptions.LIGHT_ORANGE),
+                Select("shade", ColorOptions.GLOBAL),
+                Select("size", Sizes.AUTO),
             ],
         ),
         Array(
@@ -128,15 +151,15 @@ def MemoryLow(  # pylint: disable=invalid-name
             [
                 [
                     Select("data", DataWithValueMax.BODY_BATTERY),
-                    Select("accent", Colors.CYAN),
+                    Select("accent", ColorOptions.CYAN),
                 ],
                 [
                     Select("data", DataWithValueMax.STRESS),
-                    Select("accent", Colors.YELLOW),
+                    Select("accent", ColorOptions.YELLOW),
                 ],
                 [
                     Select("data", DataWithValueMax.MOVE_BAR),
-                    Select("accent", Colors.RED),
+                    Select("accent", ColorOptions.RED),
                 ],
             ],
         ),
@@ -153,11 +176,11 @@ def MemoryLow(  # pylint: disable=invalid-name
             [
                 [
                     Select("data", DataWithIcon.RAIN),
-                    Number("width", 2),
+                    Select("width", MetricWidths.AUTO),
                 ],
                 [
                     Select("data", DataWithIcon.UV_INDEX),
-                    Number("width", 2),
+                    Select("width", MetricWidths.AUTO),
                 ],
             ],
         ),
@@ -167,11 +190,11 @@ def MemoryLow(  # pylint: disable=invalid-name
             [
                 [
                     Select("data", DataAll.HEART_RATE),
-                    Number("width", 3),
+                    Select("width", MetricWidths.AUTO),
                 ],
                 [
                     Select("data", DataAll.STEPS),
-                    Number("width", 3),
+                    Select("width", MetricWidths.AUTO),
                 ],
             ],
         ),
@@ -205,29 +228,29 @@ def MemoryMedium(  # pylint: disable=invalid-name
             "gauges",
             [
                 Select("data", DataWithValueMax.NONE),
-                Select("accent", Colors.BLUE),
+                Select("accent", ColorOptions.BLUE),
             ],
         )
         .extend(
             "top middle",
             [
                 Select("data", DataWithIcon.WIND),
-                Number("width", 2),
+                Select("width", MetricWidths.AUTO),
             ],
             [
                 Select("data", DataWithIcon.NONE),
-                Number("width", 2),
+                Select("width", MetricWidths.AUTO),
             ],
         )
         .extend(
             "bottom middle",
             [
                 Select("data", DataAll.FLOORS_CLIMBED),
-                Number("width", 3),
+                Select("width", MetricWidths.AUTO),
             ],
             [
                 Select("data", DataAll.NONE),
-                Number("width", 3),
+                Select("width", MetricWidths.AUTO),
             ],
         )
     )

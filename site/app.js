@@ -2,23 +2,23 @@ const settingsData = window.PHASE_SETTINGS || { groups: [] };
 const screenshotData = (window.PHASE_SCREENSHOTS || []).filter((screenshot) => screenshot.name !== "data-rich");
 
 const featureContent = {
-	general: {
-		kicker: "General settings",
+	global: {
+		kicker: "Global settings",
 		title: "Global palette for the whole face",
-		copy: "Theme settings define the accent, foreground, shade and background used by the watch face. Hovering here highlights the shared visual layer behind every widget.",
+		copy: "Global settings define the accent, foreground, shade and background used by the watch face. Clock and gauges can inherit these colors. Hovering here highlights the shared visual layer behind every widget.",
 		regions: ["theme"],
 	},
 	top: {
-		kicker: "Upper metrics",
+		kicker: "Top Metrics",
 		title: "Context above the clock",
-		copy: "The upper middle slots can show weather, environmental and other compact metrics. Each slot can choose data, accent and width.",
-		alternativeCopy: "Top Middle can also have alternative settings. When alternatives are configured, long-pressing the clock switches between the base and alternative top middle metrics.",
+		copy: "The upper middle slots can show weather, environmental and other compact metrics. Each slot can choose data and width. Auto width uses the selected data's default.",
+		alternativeCopy: "Top Metrics can also have alternative settings. When alternatives are configured, long-pressing the clock switches between the base and alternative top metrics.",
 		regions: ["top"],
 	},
 	top_outer: {
-		kicker: "Top outer widget",
+		kicker: "Top",
 		title: "Battery or sun and moon",
-		copy: "The top outer slot can show battery information or sunrise and sunset details, with optional sun or moon icons.",
+		copy: "The top slot can show battery information or sunrise and sunset details, with optional sun or moon icons.",
 		regions: ["top_outer"],
 	},
 	status: {
@@ -30,26 +30,26 @@ const featureContent = {
 	clock: {
 		kicker: "Main clock",
 		title: "The time remains the anchor",
-		copy: "Clock settings control foreground, background and height so the time can stay prominent across different visual themes.",
+		copy: "Clock settings control foreground, shade and size. Select Global for either color to follow the Global palette.",
 		regions: ["clock"],
 	},
 	gauges: {
 		kicker: "Progress gauges",
 		title: "Side bars for bounded metrics",
-		copy: "Gauge widgets are intended for values with a useful maximum, such as Body Battery, stress or movement progress.",
+		copy: "Gauge widgets are intended for values with a useful maximum, such as Body Battery, stress or movement progress. Their accent can follow the Global palette.",
 		regions: ["gauges"],
 	},
 	bottom: {
-		kicker: "Lower metrics",
+		kicker: "Bottom Metrics",
 		title: "Activity, health and progress data",
-		copy: "Lower slots are built for metric-heavy activity, health and progress data. Each middle slot can choose data, accent and width.",
-		alternativeCopy: "Bottom Middle can also have alternative settings. When alternatives are configured, long-pressing the clock switches between the base and alternative bottom middle metrics.",
+		copy: "Lower slots are built for metric-heavy activity, health and progress data. Each middle slot can choose data and width. Auto width uses the selected data's default.",
+		alternativeCopy: "Bottom Metrics can also have alternative settings. When alternatives are configured, long-pressing the clock switches between the base and alternative bottom metrics.",
 		regions: ["bottom"],
 	},
 	bottom_outer: {
-		kicker: "Bottom outer widget",
+		kicker: "Bottom",
 		title: "Battery or sun and moon",
-		copy: "The bottom outer slot can show battery information or sunrise and sunset details, with optional sun or moon icons.",
+		copy: "The bottom slot can show battery information or sunrise and sunset details, with optional sun or moon icons.",
 		regions: ["bottom_outer"],
 	},
 };
@@ -65,7 +65,7 @@ const normalLede = pageLede.textContent;
 const supportedDevicesList = document.getElementById("supportedDevices");
 const supportedLanguagesList = document.getElementById("supportedLanguages");
 const screenshotGrid = document.getElementById("screenshotGrid");
-let activeFeature = "general";
+let activeFeature = "global";
 let activeView = "normal";
 
 const watchViews = {
@@ -74,14 +74,14 @@ const watchViews = {
 		lede: normalLede,
 		src: "assets/screenshots/data-rich.png",
 		fallback: "assets/screenshots/data-rich.png",
-		features: ["general", "top", "top_outer", "status", "clock", "gauges", "bottom", "bottom_outer"],
+		features: ["global", "top", "top_outer", "status", "clock", "gauges", "bottom", "bottom_outer"],
 	},
 	aod: {
 		label: "phase0 always-on watch face on a Garmin watch",
 		lede: "Always-on mode keeps only the essentials: the time, battery state for the charge-or-not decision, and quiet status signals for alarms, notifications and connection state.",
 		src: "assets/screenshots/data-rich-aod.png",
 		fallback: "assets/screenshots/data-rich-aod.png",
-		features: ["general", "status", "clock", "bottom_outer"],
+		features: ["global", "status", "clock", "bottom_outer"],
 	},
 };
 
@@ -90,13 +90,14 @@ const hotspotGeometry = {
 	// Other regions are percentages relative to the face box.
 	// Top, bottom, status and gauges can be tuned independently when regions need
 	// different hit areas than the visual bounds suggest.
+	// Keep middle regions clear of the outer widgets and side regions on the clock.
 	face: { left: 16.25, top: 26.60, right: 84.73, bottom: 76.20 },
-	top: { left: 5, top: 0, right: 95, bottom: 35.08 },
-	top_outer: { left: 40.52, top: 0, right: 59.65, bottom: 14.5 },
-	status: { left: 3.65, top: 35.08, right: 12.05, bottom: 64.72 },
-	clock: { left: 11.03, top: 35.08, right: 87.98, bottom: 64.72 },
-	gauges: { left: 86.96, top: 35.08, right: 95.50, bottom: 64.72 },
-	bottom: { left: 5, top: 64.72, right: 95, bottom: 90.51 },
+	top: { left: 5, top: 12.8, right: 95, bottom: 35.08 },
+	top_outer: { left: 38, top: 1.61, right: 62, bottom: 12.8 },
+	status: { left: 6.1, top: 37.8, right: 13.1, bottom: 62.8 },
+	clock: { left: 13.1, top: 35.08, right: 85.8, bottom: 64.72 },
+	gauges: { left: 85.8, top: 37.8, right: 92.8, bottom: 62.8 },
+	bottom: { left: 5, top: 64.72, right: 95, bottom: 88.51 },
 	bottom_outer: { left: 40.52, top: 88.51, right: 59.65, bottom: 98.19 },
 };
 
@@ -133,7 +134,7 @@ function computedHotspots() {
 	const sideWidth = clock.left - face.left;
 
 	return {
-		general: boxFromEdges(
+		global: boxFromEdges(
 			face.left - sideWidth * 0.45,
 			face.top + (face.bottom - face.top) * 0.34,
 			face.left + sideWidth * 0.55,
@@ -217,10 +218,10 @@ function applyWatchView(view) {
 	applyHotspotGeometry();
 
 	if (!config.features.includes(activeFeature)) {
-		const fallbackFeature = config.features.includes("general") ? "general" : "clock";
-		activate(fallbackFeature, fallbackFeature !== "general");
+		const fallbackFeature = config.features.includes("global") ? "global" : "clock";
+		activate(fallbackFeature, fallbackFeature !== "global");
 	} else {
-		activate(activeFeature, activeFeature !== "general");
+		activate(activeFeature, activeFeature !== "global");
 	}
 }
 
@@ -329,7 +330,7 @@ function optionsMarkup(setting) {
 	}
 
 	return (setting.options || []).map((option) => {
-		const color = setting.title === "Accent" || setting.title === "Foreground" || setting.title === "Background" || setting.title === "Shade"
+		const color = /(?:Accent|Foreground|Background|Shade)\d*$/.test(setting.key)
 			? colorFromValue(option.value)
 			: null;
 		if (color) {
@@ -340,9 +341,10 @@ function optionsMarkup(setting) {
 }
 
 function settingMarkup(setting) {
+	const title = escapeHtml(setting.title).replace(/\bN\b/g, "<var>N</var>");
 	return `
 		<div class="setting-row">
-			<div class="setting-name">${escapeHtml(setting.title)}</div>
+			<div class="setting-name">${title}</div>
 			<div class="setting-options">${optionsMarkup(setting)}</div>
 		</div>
 	`;
@@ -383,7 +385,7 @@ function activate(feature, highlight = true) {
 		hotspot.classList.toggle("is-active", highlight && hotspot.dataset.feature === feature);
 		hotspot.setAttribute("aria-pressed", String(hotspot.dataset.feature === feature));
 	});
-	faceRing.classList.toggle("is-active", highlight && feature === "general");
+	faceRing.classList.toggle("is-active", highlight && feature === "global");
 	renderPanel(feature);
 }
 
@@ -420,7 +422,7 @@ window.addEventListener("keydown", (event) => {
 
 	event.preventDefault();
 	blurFocusedHotspot();
-	activate("general", false);
+	activate("global", false);
 });
 
 window.addEventListener("resize", () => {
@@ -442,5 +444,5 @@ renderSupportMeta();
 applyWatchView(initialView || "normal");
 
 if (!featureContent[initialFeature]) {
-	activate("general", false);
+	activate("global", false);
 }

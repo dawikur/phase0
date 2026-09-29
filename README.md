@@ -55,6 +55,17 @@ icons. Pick your colors and decide which data appears in the available areas.
 - Add battery, alarm, phone connection and notification indicators.
 - Choose sunrise and sunset information, with sun or moon icons.
 
+In the phone settings, Global controls the face palette. Clock and Gauges can
+use their own colors or inherit the matching color from Global. Clock also
+offers an Auto or Small size. Status, Gauges, Top Metrics and Bottom Metrics
+each appear once. Numbered fields identify the slots in order,
+so you can tell which indicator or metric you are changing. Select a slot by its
+data; the following field sets a gauge's accent or a middle metric's width.
+Metric width defaults to Auto, which uses the selected data's preferred width
+(three digits unless that data specifies otherwise). For example, UV index uses
+two digits, pressure four and steps five. You can also choose one to ten digits
+explicitly.
+
 ### Designed to adapt
 
 phase0 measures the available screen space and adjusts the layout to fit.

@@ -124,7 +124,7 @@ function createHarness({ hash = "", search = "", prefersDark = false, pathname =
 	const supportedDevices = register(makeElement({ id: "supportedDevices" }));
 	const supportedLanguages = register(makeElement({ id: "supportedLanguages" }));
 
-	for (const feature of ["general", "top", "top_outer", "status", "clock", "gauges", "bottom", "bottom_outer"]) {
+	for (const feature of ["global", "top", "top_outer", "status", "clock", "gauges", "bottom", "bottom_outer"]) {
 		register(makeElement({
 			classes: ["hotspot"],
 			dataset: { feature },
@@ -188,35 +188,35 @@ function createHarness({ hash = "", search = "", prefersDark = false, pathname =
 					{
 						id: "TopOuter",
 						region: "top_outer",
-						title: "Top Outer",
-						settings: [{ title: "Data", type: "list", options: [{ label: "Battery percentage", value: 1 }, { label: "Dawn or dusk with moon", value: 2 }] }],
+						title: "Top",
+						settings: [{ title: "Content", type: "list", options: [{ label: "Battery percentage", value: 1 }, { label: "Dawn or dusk with moon", value: 2 }] }],
 					},
 					{
 						id: "TopMiddle",
 						hasAlternative: true,
 						region: "top",
-						title: "Top",
+						title: "Top Metrics",
 						settings: [
 							{ title: "Data", type: "list", options: [{ label: "Rain", value: 18 }] },
 							{ title: "Accent", type: "list", options: [{ label: "Orange", value: 11162880 }] },
-							{ title: "Width", type: "numeric", min: "1", max: "5" },
+							{ title: "Width", type: "list", options: [{ label: "Auto", value: -1 }, { label: "1", value: 1 }, { label: "10", value: 10 }] },
 						],
 					},
 					{
 						id: "BottomOuter",
 						region: "bottom_outer",
-						title: "Bottom Outer",
-						settings: [{ title: "Data", type: "list", options: [{ label: "Battery percentage", value: 1 }, { label: "Dawn or dusk with sun", value: 2 }] }],
+						title: "Bottom",
+						settings: [{ title: "Content", type: "list", options: [{ label: "Battery percentage", value: 1 }, { label: "Dawn or dusk with sun", value: 2 }] }],
 					},
 					{
 						id: "BottomMiddle",
 						hasAlternative: false,
 						region: "bottom",
-						title: "Bottom",
+						title: "Bottom Metrics",
 						settings: [
 							{ title: "Data", type: "list", options: [{ label: "Steps", value: 23 }] },
 							{ title: "Accent", type: "list", options: [{ label: "Orange", value: 11162880 }] },
-							{ title: "Width", type: "numeric", min: "1", max: "5" },
+							{ title: "Width", type: "list", options: [{ label: "Auto", value: -1 }, { label: "1", value: 1 }, { label: "10", value: 10 }] },
 						],
 					},
 				],
@@ -292,13 +292,23 @@ test("computes stable hotspot geometry from watch face regions", () => {
 	const boxes = context.computedHotspots();
 	const rounded = (value) => Number(value.toFixed(1));
 
-	assert.deepEqual(Object.keys(boxes), ["general", "top", "top_outer", "status", "clock", "gauges", "bottom", "bottom_outer"]);
-	assert.equal(rounded(boxes.clock.left), 23.8);
-	assert.equal(rounded(boxes.clock.width), 52.7);
-	assert.equal(rounded(boxes.top.top), 26.6);
-	assert.equal(rounded(boxes.top.height), 17.4);
-	assert.equal(rounded(boxes.top_outer.width), 13.1);
+	assert.deepEqual(Object.keys(boxes), ["global", "top", "top_outer", "status", "clock", "gauges", "bottom", "bottom_outer"]);
+	assert.equal(rounded(boxes.clock.left), 25.2);
+	assert.equal(rounded(boxes.clock.width), 49.8);
+	assert.equal(rounded(boxes.top.top), 32.9);
+	assert.equal(rounded(boxes.top.width), rounded(boxes.bottom.width));
+	assert.equal(rounded(boxes.top_outer.width), 16.4);
 	assert.equal(rounded(boxes.bottom_outer.width), 13.1);
+	assert.ok(boxes.top_outer.width > boxes.bottom_outer.width);
+	assert.ok(boxes.top_outer.height > boxes.bottom_outer.height);
+	assert.equal(rounded(boxes.top.top), rounded(boxes.top_outer.top + boxes.top_outer.height));
+	assert.equal(rounded(boxes.bottom.top + boxes.bottom.height), rounded(boxes.bottom_outer.top));
+	assert.equal(rounded(boxes.status.top), rounded(boxes.gauges.top));
+	assert.equal(rounded(boxes.status.height), rounded(boxes.gauges.height));
+	assert.equal(rounded(boxes.status.left + boxes.status.width), rounded(boxes.clock.left));
+	assert.equal(rounded(boxes.clock.left + boxes.clock.width), rounded(boxes.gauges.left));
+	assert.ok(boxes.status.top > boxes.clock.top);
+	assert.ok(boxes.status.top + boxes.status.height < boxes.clock.top + boxes.clock.height);
 });
 
 test("converts numeric color values to padded css hex values", () => {
@@ -379,8 +389,8 @@ test("switches to always-on view and hides unsupported hotspots", () => {
 	);
 
 	assert.equal(byFeature.clock.classList.contains("is-hidden"), false);
-	assert.equal(byFeature.general.classList.contains("is-hidden"), false);
-	assert.equal(byFeature.general.tabIndex, 0);
+	assert.equal(byFeature.global.classList.contains("is-hidden"), false);
+	assert.equal(byFeature.global.tabIndex, 0);
 	assert.equal(byFeature.bottom_outer.tabIndex, 0);
 	assert.equal(byFeature.top.classList.contains("is-hidden"), true);
 	assert.equal(byFeature.top_outer.classList.contains("is-hidden"), true);
@@ -388,15 +398,15 @@ test("switches to always-on view and hides unsupported hotspots", () => {
 	assert.equal(byFeature.top.getAttribute("aria-hidden"), "true");
 	assert.equal(byFeature.top.getAttribute("aria-pressed"), "false");
 	assert.equal(byFeature.bottom.classList.contains("is-hidden"), true);
-	assert.equal(byFeature.general.getAttribute("aria-pressed"), "true");
-	assert.equal(byFeature.general.classList.contains("is-active"), false);
+	assert.equal(byFeature.global.getAttribute("aria-pressed"), "true");
+	assert.equal(byFeature.global.classList.contains("is-active"), false);
 	assert.equal(byFeature.clock.getAttribute("aria-pressed"), "false");
 	assert.equal(document.getElementById("faceRing").classList.contains("is-active"), false);
 });
 
 test("Escape opens global settings without highlighting the global hotspot", () => {
 	const { all, document, windowListeners } = createHarness();
-	const general = all.find((element) => element.dataset.feature === "general");
+	const global = all.find((element) => element.dataset.feature === "global");
 	const clock = all.find((element) => element.dataset.feature === "clock");
 	let prevented = false;
 
@@ -410,34 +420,34 @@ test("Escape opens global settings without highlighting the global hotspot", () 
 
 	assert.equal(prevented, true);
 	assert.equal(document.activeElement, null);
-	assert.equal(general.getAttribute("aria-pressed"), "true");
-	assert.equal(general.classList.contains("is-active"), false);
+	assert.equal(global.getAttribute("aria-pressed"), "true");
+	assert.equal(global.classList.contains("is-active"), false);
 	assert.equal(document.getElementById("faceRing").classList.contains("is-active"), false);
 
-	general.eventListeners.mouseenter({ currentTarget: general });
+	global.eventListeners.mouseenter({ currentTarget: global });
 
-	assert.equal(general.classList.contains("is-active"), true);
+	assert.equal(global.classList.contains("is-active"), true);
 	assert.equal(document.getElementById("faceRing").classList.contains("is-active"), true);
 });
 
 test("switching to AoD clears the global highlight when the active hotspot is unavailable", () => {
 	const { all, context, document } = createHarness();
-	const general = all.find((element) => element.dataset.feature === "general");
+	const global = all.find((element) => element.dataset.feature === "global");
 
 	context.activate("top");
 	context.applyWatchView("aod");
 
-	assert.equal(general.getAttribute("aria-pressed"), "true");
-	assert.equal(general.classList.contains("is-active"), false);
+	assert.equal(global.getAttribute("aria-pressed"), "true");
+	assert.equal(global.classList.contains("is-active"), false);
 	assert.equal(document.getElementById("faceRing").classList.contains("is-active"), false);
 });
 
 test("starts with global settings open but without a hotspot highlight", () => {
 	const { all, document } = createHarness();
-	const general = all.find((element) => element.dataset.feature === "general");
+	const global = all.find((element) => element.dataset.feature === "global");
 
-	assert.equal(general.getAttribute("aria-pressed"), "true");
-	assert.equal(general.classList.contains("is-active"), false);
+	assert.equal(global.getAttribute("aria-pressed"), "true");
+	assert.equal(global.classList.contains("is-active"), false);
 	assert.equal(document.getElementById("faceRing").classList.contains("is-active"), false);
 });
 
@@ -461,11 +471,31 @@ test("renders setting option markup for boolean numeric and color settings", () 
 	assert.match(context.optionsMarkup({ type: "numeric", min: "2", max: "8" }), /Range 2-8/);
 	assert.match(
 		context.optionsMarkup({
-			title: "Accent",
+			key: "GaugesAccent0",
+			title: "Gauge N Accent",
 			type: "list",
 			options: [{ label: "Red", value: 16711680 }],
 		}),
 		/background:#ff0000/,
+	);
+	const globalColor = context.optionsMarkup({
+		key: "ClockShade",
+		type: "list",
+		options: [{ label: "Global", value: -1 }],
+	});
+	assert.match(globalColor, />Global<\/span>/);
+	assert.doesNotMatch(globalColor, /ui-color-dot/);
+});
+
+test("marks the representative setting index as a variable", () => {
+	const { context } = createHarness();
+	const markup = context.settingMarkup({ title: "Metric N Width", type: "list", options: [] });
+
+	assert.match(markup, /Metric <var>N<\/var> Width/);
+	assert.match(context.settingMarkup({ title: "Foreground", type: "list", options: [] }), />Foreground<\/div>/);
+	assert.match(
+		context.settingMarkup({ title: "Metric N <script>", type: "list", options: [] }),
+		/Metric <var>N<\/var> &lt;script&gt;/,
 	);
 });
 
@@ -476,13 +506,13 @@ test("renders alternative setting guidance for middle metric regions", () => {
 	const topHtml = document.getElementById("detailPanel").innerHTML;
 
 	assert.match(topHtml, /panel-note/);
-	assert.match(topHtml, /alternative top middle metrics/);
+	assert.match(topHtml, /alternative top metrics/);
 
 	context.renderPanel("bottom");
 	const bottomHtml = document.getElementById("detailPanel").innerHTML;
 
 	assert.doesNotMatch(bottomHtml, /panel-note/);
-	assert.doesNotMatch(bottomHtml, /alternative bottom middle metrics/);
+	assert.doesNotMatch(bottomHtml, /alternative bottom metrics/);
 });
 
 test("middle metric feature copy matches exposed settings", () => {
@@ -493,8 +523,8 @@ test("middle metric feature copy matches exposed settings", () => {
 		const html = document.getElementById("detailPanel").innerHTML;
 
 		assert.match(html, /Data/);
-		assert.match(html, /Accent/);
 		assert.match(html, /Width/);
+		assert.match(html, /Auto width/);
 		assert.doesNotMatch(html, /\bicon\b/i);
 		assert.doesNotMatch(html, /\bpadding\b/i);
 		assert.doesNotMatch(html, /\bgauge behavior\b/i);

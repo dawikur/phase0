@@ -121,11 +121,11 @@ def test_validate_scenarios_rejects_invalid_configuration(
 def test_apply_property_overrides_updates_generated_settings(tmp_path: Path) -> None:
     settings = tmp_path / "settings.json"
     settings.write_text(
-        json.dumps(generated_settings_document(GeneralAccent=1, ClockHeight=2)),
+        json.dumps(generated_settings_document(GlobalAccent=1, ClockSize=2)),
         encoding="utf-8",
     )
 
-    apply_property_overrides(settings, {"GeneralAccent": 0x00AAAA})
+    apply_property_overrides(settings, {"GlobalAccent": 0x00AAAA})
 
     actual = json.loads(settings.read_text(encoding="utf-8"))
     entries = actual["settings"][0]["group"]["entries"]
@@ -136,7 +136,7 @@ def test_apply_property_overrides_rejects_unknown_key_without_writing(
     tmp_path: Path,
 ) -> None:
     settings = tmp_path / "settings.json"
-    original = json.dumps(generated_settings_document(GeneralAccent=1)) + "\n"
+    original = json.dumps(generated_settings_document(GlobalAccent=1)) + "\n"
     settings.write_text(original, encoding="utf-8")
 
     with pytest.raises(ValueError, match="Unknown setting property"):
@@ -148,11 +148,11 @@ def test_apply_property_overrides_rejects_unknown_key_without_writing(
 def test_apply_property_overrides_rejects_wrong_type(tmp_path: Path) -> None:
     settings = tmp_path / "settings.json"
     settings.write_text(
-        json.dumps(generated_settings_document(GeneralAccent=1)), encoding="utf-8"
+        json.dumps(generated_settings_document(GlobalAccent=1)), encoding="utf-8"
     )
 
     with pytest.raises(ValueError, match="expects int, got bool"):
-        apply_property_overrides(settings, {"GeneralAccent": True})
+        apply_property_overrides(settings, {"GlobalAccent": True})
 
 
 def test_apply_property_overrides_rejects_non_object(tmp_path: Path) -> None:
@@ -762,17 +762,17 @@ def test_capture_simulator_screenshot_reports_invalid_image(
 def test_build_scenario_builds_and_overrides_settings(tmp_path: Path) -> None:
     import scripts.utils.store_screenshots as screenshots
 
-    scenario = Scenario("preview", "fr255", {"GeneralAccent": 10})
+    scenario = Scenario("preview", "fr255", {"GlobalAccent": 10})
     build = tmp_path / "build"
     build.mkdir()
     settings = build / "phase0-fr255_release-settings.json"
     settings.write_text(
-        json.dumps(generated_settings_document(GeneralAccent=1)), encoding="utf-8"
+        json.dumps(generated_settings_document(GlobalAccent=1)), encoding="utf-8"
     )
 
     def fake_build(*_args: object, **_kwargs: object) -> None:
         settings.write_text(
-            json.dumps(generated_settings_document(GeneralAccent=1)), encoding="utf-8"
+            json.dumps(generated_settings_document(GlobalAccent=1)), encoding="utf-8"
         )
 
     with patch("scripts.utils.store_screenshots.subprocess.run") as run:

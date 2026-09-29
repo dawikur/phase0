@@ -37,7 +37,11 @@ module Widgets {
 			Base.initialize(_impl.type, _impl.refresh_rate);
 
 			self.impl_ = _impl;
-			self.width_ = _properties.width;
+			// Width 0 was Auto in earlier releases.
+			self.width_ =
+				_properties.width <= 0
+					? _impl.defaultWidth()
+					: _properties.width;
 			self.style_ = _style;
 		}
 		function resize(

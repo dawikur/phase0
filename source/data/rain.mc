@@ -21,6 +21,10 @@ module Data {
 			WeatherProvider.register("precipitation_chance");
 		}
 
+		function defaultWidth() as Lang.Number {
+			return 2;
+		}
+
 		function refresh() as Void {
 			self.value = WeatherProvider.get("precipitation_chance");
 

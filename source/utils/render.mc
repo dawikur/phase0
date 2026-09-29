@@ -26,6 +26,7 @@ module Render {
 	// Settings
 
 	const COLOR_NONE as Lang.Number = -1;
+	const COLOR_GLOBAL as Lang.Number = -1;
 
 	const SPACING as Lang.Number = Fonts.SPACING_SMALL;
 	const SHADOW_OFFSET as Lang.Number = 1;
@@ -85,17 +86,17 @@ module Render {
 
 	function Clock(
 		_dc as Graphics.Dc,
-		_color as Lang.Number,
-		_background as Lang.Number,
+		_foreground as Lang.Number,
+		_shade as Lang.Number,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number,
 		_font_fg as WatchUi.FontResource,
-		_font_bg as WatchUi.FontResource,
+		_font_shade as WatchUi.FontResource,
 		_clock as Lang.String,
-		_shade as Lang.String
+		_shade_text as Lang.String
 	) as Void {
 		if (_clock.length() != 0) {
-			_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(_foreground, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
 				_pos_x,
 				_pos_y,
@@ -105,13 +106,13 @@ module Render {
 			);
 		}
 
-		if (_shade.length() != 0) {
-			_dc.setColor(_background, Graphics.COLOR_TRANSPARENT);
+		if (_shade_text.length() != 0) {
+			_dc.setColor(_shade, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
 				_pos_x + SHADOW_OFFSET,
 				_pos_y + SHADOW_OFFSET,
-				_font_bg,
-				_shade,
+				_font_shade,
+				_shade_text,
 				Render.JUSTIFY_LEFT_VCENTER
 			);
 		}
@@ -137,13 +138,13 @@ module Render {
 
 	function Label(
 		_dc as Graphics.Dc,
-		_color as Lang.Number,
+		_foreground as Lang.Number,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number,
 		_label as Lang.String,
 		_justify as Lang.Number
 	) as Void {
-		_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
+		_dc.setColor(_foreground, Graphics.COLOR_TRANSPARENT);
 		_dc.drawText(_pos_x, _pos_y, FONT_TINY, _label, _justify);
 	}
 
@@ -160,7 +161,7 @@ module Render {
 
 	function Text(
 		_dc as Graphics.Dc,
-		_color as Lang.Number,
+		_foreground as Lang.Number,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number,
 		_is_small as Lang.Boolean,
@@ -168,7 +169,7 @@ module Render {
 		_justify as Lang.Number
 	) as Void {
 		if (_text.length() != 0) {
-			_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(_foreground, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(_pos_x, _pos_y, fontFg_(_is_small), _text, _justify);
 			_dc.setColor(Render.shade, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(
@@ -335,13 +336,13 @@ module Render {
 
 	function Gauge(
 		_dc as Graphics.Dc,
-		_color as Lang.Number,
+		_foreground as Lang.Number,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number,
 		_height as Lang.Number,
 		_value as Lang.Float
 	) as Void {
-		_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
+		_dc.setColor(_foreground, Graphics.COLOR_TRANSPARENT);
 
 		if (_value <= 0.0) {
 		} else if (_value < 1.0) {
@@ -398,7 +399,7 @@ module Render {
 
 	function Icons(
 		_dc as Graphics.Dc,
-		_color as Lang.Number,
+		_foreground as Lang.Number,
 		_pos_x as Lang.Number,
 		_pos_y as Lang.Number,
 		_icons as Lang.String,
@@ -406,7 +407,7 @@ module Render {
 		_justify as Lang.Number
 	) as Void {
 		if (_icons.length() != 0) {
-			_dc.setColor(_color, Graphics.COLOR_TRANSPARENT);
+			_dc.setColor(_foreground, Graphics.COLOR_TRANSPARENT);
 			_dc.drawText(_pos_x, _pos_y, ICONS, _icons, _justify);
 		}
 

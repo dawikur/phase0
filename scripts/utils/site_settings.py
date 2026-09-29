@@ -14,6 +14,7 @@ PROPERTY_REF_RE = re.compile(r"^@Properties\.([A-Za-z0-9_]+)$")
 REPEATED_GROUP_RE = re.compile(
     r"^(Status|Gauges|TopMiddle|BottomMiddle)(?:Alt|Alternative)?\d+$"
 )
+ARRAY_GROUP_IDS = {"Status", "Gauges", "TopMiddle", "BottomMiddle"}
 LANGUAGE_NAMES = {
     "deu": "German",
     "eng": "English",
@@ -49,6 +50,15 @@ def resolve_text(value: str | None, strings: dict[str, str]) -> str:
     return value
 
 
+def setting_title(
+    value: str | None, strings: dict[str, str], source_group_id: str
+) -> str:
+    title = resolve_text(value, strings)
+    if source_group_id in ARRAY_GROUP_IDS:
+        return re.sub(r"\b1\b", "N", title, count=1)
+    return title
+
+
 def resolve_property(value: str | None) -> str:
     if not value:
         return ""
@@ -64,7 +74,7 @@ def setting_region(group_id: str) -> str:
     group_id = display_group_id(group_id)
 
     exact_regions = {
-        "General": "theme",
+        "Global": "theme",
         "Clock": "clock",
         "TopOuter": "top_outer",
         "BottomOuter": "bottom_outer",
@@ -96,7 +106,7 @@ def is_alternative_group(source_group_id: str) -> bool:
 
 def setting_summary(group_id: str) -> str:
     summaries = {
-        "General": "Global palette controls for the whole watch face.",
+        "Global": "Global palette controls for the whole watch face.",
         "Clock": "Main time display colors and size.",
         "theme": "Global palette controls for the whole watch face.",
         "clock": "Main time display colors and size.",
@@ -178,10 +188,15 @@ def parse_settings(
         }
 
         for setting in group.findall("setting"):
+            if source_group_id in ARRAY_GROUP_IDS and not setting.get(
+                "propertyKey", ""
+            ).endswith("0"):
+                continue
+
             config = setting.find("settingConfig")
             parsed_setting: dict[str, Any] = {
                 "key": resolve_property(setting.get("propertyKey")),
-                "title": resolve_text(setting.get("title"), strings),
+                "title": setting_title(setting.get("title"), strings, source_group_id),
                 "type": config.get("type", "") if config is not None else "",
                 "required": (
                     config.get("required") == "true" if config is not None else False

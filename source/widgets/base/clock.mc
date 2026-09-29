@@ -12,17 +12,17 @@ module Widgets {
 		hidden var prepared_hour_ as Lang.Number = -1;
 		hidden var prepared_min_ as Lang.Number = -1;
 		hidden var time_ as Lang.String = "";
-		hidden var shade_ as Lang.String = "88:88";
+		hidden var shade_text_ as Lang.String = "88:88";
 
 		hidden var digit_width_ as Lang.Number = -1;
 		hidden var colon_width_ as Lang.Number = -1;
 
 		hidden var font_fg_ as WatchUi.FontResource;
-		hidden var font_bg_ as WatchUi.FontResource;
+		hidden var font_shade_ as WatchUi.FontResource;
 
 		hidden var foreground_ as Lang.Number;
-		hidden var background_ as Lang.Number;
-		hidden var height_ as Lang.Number;
+		hidden var shade_ as Lang.Number;
+		hidden var size_ as Lang.Number;
 
 		function initialize(_properties as Properties.Clock) {
 			Base.initialize(null, RefreshRate.MIN);
@@ -30,13 +30,19 @@ module Widgets {
 			self.font_fg_ =
 				Application.loadResource(Rez.Fonts.DIGITS_REGULAR) as
 				WatchUi.FontResource;
-			self.font_bg_ =
+			self.font_shade_ =
 				Application.loadResource(Rez.Fonts.DIGITS_REGULAR_THIN) as
 				WatchUi.FontResource;
 
-			self.foreground_ = _properties.foreground;
-			self.background_ = _properties.background;
-			self.height_ = _properties.height;
+			self.foreground_ =
+				_properties.foreground == Render.COLOR_GLOBAL
+					? Render.foreground
+					: _properties.foreground;
+			self.shade_ =
+				_properties.shade == Render.COLOR_GLOBAL
+					? Render.shade
+					: _properties.shade;
+			self.size_ = _properties.size;
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
@@ -57,11 +63,11 @@ module Widgets {
 			self.rendered_hour_ = -1;
 			self.rendered_min_ = -1;
 			self.is_dirty_ = true;
-			if (self.height_ != Properties.SMALL) {
+			if (self.size_ != Properties.SMALL) {
 				self.font_fg_ =
 					Application.loadResource(Rez.Fonts.DIGITS_REGULAR) as
 					WatchUi.FontResource;
-				self.font_bg_ =
+				self.font_shade_ =
 					Application.loadResource(Rez.Fonts.DIGITS_REGULAR_THIN) as
 					WatchUi.FontResource;
 
@@ -87,7 +93,7 @@ module Widgets {
 			self.font_fg_ =
 				Application.loadResource(Rez.Fonts.DIGITS_SMALL) as
 				WatchUi.FontResource;
-			self.font_bg_ =
+			self.font_shade_ =
 				Application.loadResource(Rez.Fonts.DIGITS_SMALL_THIN) as
 				WatchUi.FontResource;
 
@@ -100,7 +106,12 @@ module Widgets {
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
-			self.render_(_dc, self.clockStartX_(), self.time_, self.shade_);
+			self.render_(
+				_dc,
+				self.clockStartX_(),
+				self.time_,
+				self.shade_text_
+			);
 			self.saveRenderedTime_();
 		}
 
@@ -110,7 +121,7 @@ module Widgets {
 		}
 
 		function update(_dc as Graphics.Dc) as Void {
-			self.update_(_dc, self.shade_);
+			self.update_(_dc, self.shade_text_);
 		}
 
 		function updateMinimal(_dc as Graphics.Dc) as Void {
@@ -194,11 +205,11 @@ module Widgets {
 			Render.Clock(
 				_dc,
 				self.foreground_,
-				self.background_,
+				self.shade_,
 				_pos_x,
 				self.centerY(),
 				self.font_fg_,
-				self.font_bg_,
+				self.font_shade_,
 				_time,
 				_shade
 			);

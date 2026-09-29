@@ -19,6 +19,10 @@ module Data {
 			WeatherProvider.register("uv_index");
 		}
 
+		function defaultWidth() as Lang.Number {
+			return 2;
+		}
+
 		function refresh() as Void {
 			var uv_index = WeatherProvider.get("uv_index");
 			if (uv_index == null) {

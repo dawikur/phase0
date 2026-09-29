@@ -1,6 +1,8 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
+import xml.etree.ElementTree as ET
 from enum import IntEnum
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
@@ -29,7 +31,7 @@ class SampleData(IntEnum):
 
 def test_apply_property_defaults_updates_single_and_array_settings() -> None:
     settings = [
-        Single("general", "General", [Select("accent", SampleOptions.AUTO)]),
+        Single("global", "Global", [Select("accent", SampleOptions.AUTO)]),
         Array("status", "Status", [[Number("width", 2)], [Number("width", 4)]]),
         Single("clock", "Clock", [Boolean("visible", True)]),
     ]
@@ -37,16 +39,16 @@ def test_apply_property_defaults_updates_single_and_array_settings() -> None:
     applied = apply_property_defaults(
         settings,
         {
-            "GeneralAccent": 2,
+            "GlobalAccent": 2,
             "StatusWidth0": 5,
             "StatusWidth1": 6,
             "ClockVisible": False,
         },
     )
 
-    assert applied == {"GeneralAccent", "StatusWidth0", "StatusWidth1", "ClockVisible"}
+    assert applied == {"GlobalAccent", "StatusWidth0", "StatusWidth1", "ClockVisible"}
     assert (
-        '<property id="GeneralAccent" type="Number">2</property>'
+        '<property id="GlobalAccent" type="Number">2</property>'
         in render_properties_xml(settings)
     )
     assert (
@@ -64,8 +66,8 @@ def test_apply_property_defaults_updates_single_and_array_settings() -> None:
     ("settings", "overrides", "message"),
     [
         (
-            [Single("general", "General", [Select("accent", SampleOptions.AUTO)])],
-            {"GeneralAccent": True},
+            [Single("global", "Global", [Select("accent", SampleOptions.AUTO)])],
+            {"GlobalAccent": True},
             "expects int",
         ),
         (
@@ -94,7 +96,7 @@ def test_render_properties_xml_handles_single_and_array_settings() -> None:
                 "clock",
                 "Clock",
                 [
-                    Select("height", SampleOptions.AUTO),
+                    Select("size", SampleOptions.AUTO),
                     Boolean("visible", True),
                 ],
             ),
@@ -109,7 +111,7 @@ def test_render_properties_xml_handles_single_and_array_settings() -> None:
         ]
     )
 
-    assert '<property id="ClockHeight" type="Number">1</property>' in xml
+    assert '<property id="ClockSize" type="Number">1</property>' in xml
     assert '<property id="ClockVisible" type="Boolean">True</property>' in xml
     assert '<property id="StatusWidth0" type="Number">2</property>' in xml
     assert '<property id="StatusWidth1" type="Number">4</property>' in xml
@@ -122,7 +124,7 @@ def test_render_settings_xml_includes_setting_config_by_entry_type() -> None:
                 "clock",
                 "Clock",
                 [
-                    Select("height", SampleOptions.AUTO),
+                    Select("size", SampleOptions.AUTO),
                     Number("width", 2),
                     Boolean("visible", True),
                 ],
@@ -137,10 +139,66 @@ def test_render_settings_xml_includes_setting_config_by_entry_type() -> None:
 
 
 def test_render_settings_xml_handles_array_settings() -> None:
-    xml = render_settings_xml([Array("status", "Status", [[Number("width", 2)]])])
+    xml = render_settings_xml(
+        [
+            Array("status", "Status", [[Number("width", 2)], [Number("width", 4)]]),
+            Array(
+                "gauges",
+                "Gauge",
+                [
+                    [
+                        Select("data", SampleOptions.AUTO),
+                        Select("accent", SampleOptions.LARGE),
+                    ],
+                    [
+                        Select("data", SampleOptions.LARGE),
+                        Select("accent", SampleOptions.AUTO),
+                    ],
+                ],
+            ),
+        ]
+    )
+    root = ET.fromstring(xml)
+    groups = root.findall("group")
 
-    assert '<group id="Status0"' in xml
-    assert 'propertyKey="@Properties.StatusWidth0"' in xml
+    assert [group.get("id") for group in groups] == ["Status", "Gauges"]
+    assert [setting.get("title") for setting in groups[0].findall("setting")] == [
+        "@Strings.SETTING_STATUS_1",
+        "@Strings.SETTING_STATUS_2",
+    ]
+    assert [setting.get("title") for setting in groups[1].findall("setting")] == [
+        "@Strings.SETTING_GAUGE_1_DATA",
+        "@Strings.SETTING_GAUGE_1_ACCENT",
+        "@Strings.SETTING_GAUGE_2_DATA",
+        "@Strings.SETTING_GAUGE_2_ACCENT",
+    ]
+    assert [setting.get("propertyKey") for setting in groups[0].findall("setting")] == [
+        "@Properties.StatusWidth0",
+        "@Properties.StatusWidth1",
+    ]
+
+
+def test_array_setting_labels_are_translated() -> None:
+    expected = {
+        f"SETTING_{name}_{index}{suffix}"
+        for name, suffixes in (
+            ("STATUS", ("",)),
+            ("GAUGE", ("_DATA", "_ACCENT")),
+            ("METRIC", ("_DATA", "_WIDTH")),
+        )
+        for index in range(1, 5)
+        for suffix in suffixes
+    }
+    paths = [
+        Path("resources/base/strings.xml"),
+        *Path("resources/lang").glob("*/strings.xml"),
+    ]
+
+    for path in paths:
+        strings = {
+            element.get("id") for element in ET.parse(path).getroot().findall("string")
+        }
+        assert expected <= strings, path
 
 
 def test_render_properties_mc_reuses_matching_property_classes() -> None:

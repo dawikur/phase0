@@ -18,6 +18,10 @@ module Data {
 			self.value_max = ActivityMonitor.MOVE_BAR_LEVEL_MAX;
 		}
 
+		function defaultWidth() as Lang.Number {
+			return 1;
+		}
+
 		function refresh() as Void {
 			self.value = ActivityMonitor.getInfo().moveBarLevel;
 		}

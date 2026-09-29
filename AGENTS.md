@@ -151,6 +151,11 @@ Example:
 
 Components should not know about each other.
 
+Color settings outside the Global group may select Global (`-1`). Resolve that
+choice against the matching Global color when constructing the widget, so
+rendering uses a concrete color. Metric Width uses `-1` for Auto; resolve it
+once from the data object's default width when constructing the metric.
+
 ---
 
 ## Code style
@@ -299,6 +304,13 @@ TopOuter and BottomOuter are independently configurable widget slots. Both can
 show battery information or dawn/dusk information with sun or moon icons.
 Website hotspots for these slots should describe the available widgets and
 remain separate from the middle metric hotspots.
+Keep the middle website hotspots clear of their outer widgets. Size outer
+hotspots for their content; the top widget can be taller than the bottom one.
+Keep the side hotspots within the clock's vertical bounds so they do not reach
+the date row. Place the side and clock hit areas edge to edge, without overlap.
+The website shows one representative setting for each repeated metric, gauge
+and status group. Label its index `N` and render it as an italic variable so the
+example does not imply slot 1 only.
 
 Documentation should therefore:
 

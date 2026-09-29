@@ -32,8 +32,8 @@ function hexFromDecimalColor(value) {
 }
 
 function settingColorNames() {
-	const general = settingsData.groups.find((group) => group.id === "General");
-	const accent = general?.settings.find((setting) => setting.key === "GeneralAccent");
+	const globalSettings = settingsData.groups.find((group) => group.id === "Global");
+	const accent = globalSettings?.settings.find((setting) => setting.key === "GlobalAccent");
 	if (!accent) return new Map();
 	return new Map(accent.options
 		.map((option) => [hexFromDecimalColor(option.value), option.label])

@@ -461,19 +461,19 @@ h1 {
 	outline-offset: 3px;
 }
 
-.hotspot[data-feature="general"]:focus-visible,
-.hotspot[data-feature="general"].is-active {
+.hotspot[data-feature="global"]:focus-visible,
+.hotspot[data-feature="global"].is-active {
 	border-color: transparent;
 	background: transparent;
 	box-shadow: none;
 }
 
-.hotspot[data-feature="general"]:focus-visible {
+.hotspot[data-feature="global"]:focus-visible {
 	outline: none;
 }
 
-.hotspot[data-feature="general"]:focus-visible::after,
-.hotspot[data-feature="general"].is-active::after {
+.hotspot[data-feature="global"]:focus-visible::after,
+.hotspot[data-feature="global"].is-active::after {
 	border-color: transparent;
 	box-shadow: none;
 }
@@ -598,6 +598,10 @@ h1 {
 	color: var(--setting-label);
 	font-size: 0.875rem;
 	font-weight: 700;
+}
+
+.setting-name var {
+	font-style: italic;
 }
 
 .setting-options {

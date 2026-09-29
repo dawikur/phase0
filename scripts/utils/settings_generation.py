@@ -2,6 +2,7 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
 import textwrap
+import xml.etree.ElementTree as ET
 from collections.abc import Iterable
 from enum import IntEnum
 from typing import Any, Mapping
@@ -299,26 +300,36 @@ def render_settings_xml(settings: Iterable[Single | Array]) -> str:
     root = XmlDocument.resource("settings")
 
     for single_or_array in settings:
+        assert isinstance(
+            single_or_array, (Single, Array)
+        ), f"Unsupported type {type(single_or_array)}"
+        group_xml = root.subelement(
+            root.root,
+            "group",
+            id=single_or_array.id,
+            title=f"@Strings.{single_or_array.setting}",
+        )
 
-        def render_widget(top: Top, widget: Widget, idx: int | None = None) -> None:
+        def render_widget(
+            top: Top, widget: Widget, group: ET.Element, idx: int | None = None
+        ) -> None:
             prop_id = f"{idx}" if idx is not None else ""
-
-            group_xml = root.subelement(
-                root.root,
-                "group",
-                id=f"{top.id}{prop_id}",
-                title=f"@Strings.{top.setting}",
-            )
 
             for entry in widget:
                 if entry.hidden:
                     continue
 
+                title = entry.setting
+                if idx is not None:
+                    title = f"SETTING_{top.klass.upper()}_{idx + 1}"
+                    if len(widget) > 1:
+                        title = f"{title}_{entry.name.upper()}"
+
                 setting = root.subelement(
-                    group_xml,
+                    group,
                     "setting",
                     propertyKey=f"@Properties.{top.id}{entry.id}{prop_id}",
-                    title=f"@Strings.{entry.setting}",
+                    title=f"@Strings.{title}",
                 )
 
                 if isinstance(entry, Select):
@@ -361,14 +372,9 @@ def render_settings_xml(settings: Iterable[Single | Array]) -> str:
                 assert False, f"Unsupported type {type(entry)}"
 
         if isinstance(single_or_array, Single):
-            render_widget(single_or_array, single_or_array)
-            continue
-
-        if isinstance(single_or_array, Array):
+            render_widget(single_or_array, single_or_array, group_xml)
+        else:
             for idx, widget in enumerate(single_or_array):
-                render_widget(single_or_array, widget, idx)
-            continue
-
-        assert False, f"Unsupported type {type(single_or_array)}"
+                render_widget(single_or_array, widget, group_xml, idx)
 
     return root.render()

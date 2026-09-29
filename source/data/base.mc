@@ -24,6 +24,10 @@ module Data {
 			self.refresh_rate = _refresh_rate;
 		}
 
+		function defaultWidth() as Lang.Number {
+			return 3;
+		}
+
 		function refresh() as Void {}
 
 		function refreshRevision() as Lang.Number? {

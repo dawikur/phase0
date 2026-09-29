@@ -136,7 +136,7 @@ def test_site_page_hotspots_match_documented_features() -> None:
     parser = parse_site_page()
 
     assert values_for(parser, "button", "data-feature") == [
-        "general",
+        "global",
         "top",
         "top_outer",
         "status",
