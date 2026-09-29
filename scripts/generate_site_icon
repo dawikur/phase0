@@ -8,6 +8,8 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
+from scripts.utils.store_ribbon import add_ribbon
+
 BACKGROUND = (0x55, 0x55, 0x55, 0xFF)
 SVG_NAMESPACE = "{http://www.w3.org/2000/svg}"
 COLOR_RE = re.compile(r"rgba?\(([^)]+)\)")
@@ -75,10 +77,16 @@ def main() -> None:
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--size", type=int, required=True)
+    parser.add_argument(
+        "--channel", choices=("release", "alpha", "beta"), default="release"
+    )
     args = parser.parse_args()
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    render_icon(args.input, args.size).save(args.output, format="PNG", optimize=True)
+    icon = render_icon(args.input, args.size)
+    if args.channel != "release":
+        icon = add_ribbon(icon, args.channel)
+    icon.save(args.output, format="PNG", optimize=True)
 
 
 if __name__ == "__main__":

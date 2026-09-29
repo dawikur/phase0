@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from data.devices import DEVICES, Device
-from scripts.utils.site_settings import supported_connect_iq_ids
+from scripts.utils.manifest import supported_connect_iq_ids
 
 MEMORY_CLASSES = {
     98304: "low",
@@ -36,7 +36,7 @@ def supported_devices(manifest_xml: Path) -> list[Device]:
 
 def render_memory_jungle(manifest_xml: Path) -> str:
     lines = [
-        "# Generated from manifest.xml and data/devices.",
+        "# Generated from the release manifest and data/devices.",
         "# Do not edit by hand.",
         "",
     ]

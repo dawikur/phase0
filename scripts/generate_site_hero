@@ -8,6 +8,8 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+from scripts.utils.store_ribbon import add_ribbon
+
 SIZE = (1440, 720)
 BACKGROUND = "#202020"
 ACCENT = "#ffaa00"
@@ -38,7 +40,7 @@ def paste_face(
     )
 
 
-def generate_hero(screenshots: Path, output: Path) -> None:
+def generate_hero(screenshots: Path, output: Path, channel: str = "release") -> None:
     canvas = Image.new("RGB", SIZE, BACKGROUND)
     draw = ImageDraw.Draw(canvas)
     draw.rectangle((108, 244, 192, 251), fill=ACCENT)
@@ -46,6 +48,9 @@ def generate_hero(screenshots: Path, output: Path) -> None:
 
     paste_face(canvas, screenshots / "data-rich-aod.png", (1105, 495), 280)
     paste_face(canvas, screenshots / "data-rich.png", (735, 345), 560)
+
+    if channel != "release":
+        canvas = add_ribbon(canvas, channel)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(output, format="PNG", optimize=True)
@@ -55,8 +60,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--screenshots", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--channel", choices=("release", "alpha", "beta"), default="release"
+    )
     args = parser.parse_args()
-    generate_hero(args.screenshots, args.output)
+    generate_hero(args.screenshots, args.output, args.channel)
 
 
 if __name__ == "__main__":

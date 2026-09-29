@@ -8,6 +8,8 @@ NAME        ?= phase0
 DEVICE      ?= fr955
 # build mode
 MODE        ?= debug
+# application channel
+CHANNEL     ?= developer
 # log tag prefix
 LOG_PREFIX  ?=
 # show commands
@@ -16,6 +18,20 @@ V           ?= 0
 VALID_MODES := debug test optimized release
 ifneq ($(filter $(MODE),$(VALID_MODES)),$(MODE))
 $(error Unsupported MODE='$(MODE)'; choose one of: $(VALID_MODES))
+endif
+
+PACKAGE_TARGETS := alpha beta iq
+ifneq ($(filter $(PACKAGE_TARGETS),$(MAKECMDGOALS)),)
+ifneq ($(origin MODE),file)
+ifneq ($(MODE),release)
+$(error alpha, beta and iq require MODE=release)
+endif
+endif
+endif
+
+VALID_CHANNELS := developer alpha beta release
+ifneq ($(filter $(CHANNEL),$(VALID_CHANNELS)),$(CHANNEL))
+$(error Unsupported CHANNEL='$(CHANNEL)'; choose one of: $(VALID_CHANNELS))
 endif
 
 # developer key path (provided through the environment or make arguments)
@@ -61,11 +77,12 @@ LOG_TAG = $(if $(LOG_PREFIX),$(LOG_PREFIX)-$(1),$(1))
 PYTHON_FILES := $(shell rg --files -g '*.py') \
 	scripts/generate_resources_fonts scripts/generate_resources_icon scripts/generate_site_icon \
 	scripts/generate_screenshots \
+	scripts/generate_manifest \
 	scripts/generate_resources_settings \
 	scripts/generate_site_devices scripts/generate_site_settings scripts/generate_site_screenshots \
 	scripts/generate_memory_jungle scripts/smoke
 
-SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release deploy
+SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release deploy alpha beta iq
 
 ifneq ($(strip $(MAKECMDGOALS)),)
 ifneq ($(filter $(SDK_TARGETS),$(MAKECMDGOALS)),)
@@ -85,12 +102,15 @@ MONKEYC   := $(SDK_DIR)bin/monkeyc
 endif
 
 BUILD_DIR     := build/
-IQ            := $(BUILD_DIR)$(NAME).iq
+IQ            := $(BUILD_DIR)$(NAME)$(if $(filter release,$(CHANNEL)),,-$(CHANNEL)).iq
 JUNGLE        := monkey.jungle
 MEMORY_JUNGLE := $(BUILD_DIR)memory.jungle
-JUNGLES       := $(JUNGLE);$(MEMORY_JUNGLE)
-MANIFEST      := manifest.xml
-OUT           := $(NAME)-$(DEVICE)$(NAME_SUFFIX)
+MANIFEST_TEMPLATE := manifest.xml.tmpl
+MANIFEST      := $(BUILD_DIR)manifests/$(CHANNEL).xml
+RELEASE_MANIFEST := $(BUILD_DIR)manifests/release.xml
+CHANNEL_JUNGLE := $(BUILD_DIR)manifests/$(CHANNEL).jungle
+JUNGLES       := $(JUNGLE);$(MEMORY_JUNGLE);$(CHANNEL_JUNGLE)
+OUT           := $(NAME)-$(DEVICE)$(NAME_SUFFIX)$(if $(filter release,$(CHANNEL)),,_$(CHANNEL))
 APP_SETTINGS  := $(shell printf '%s' '$(OUT)' | tr '[:lower:]' '[:upper:]')-settings.json
 PRG           := $(BUILD_DIR)$(OUT).prg
 RSCS          := $(shell find resources/base resources/lang resources/memory -type f ! -path '*/__pycache__/*')
@@ -158,7 +178,11 @@ ICON_DEPS           := scripts/generate_resources_icon            \
 ICON_STAMP          := $(BUILD_DIR).icon.stamp
 STORE_ICONS         := $(STORE_OUTPUT_DIR)icon_128.png $(STORE_OUTPUT_DIR)icon_512.png
 STORE_HERO          := $(STORE_OUTPUT_DIR)hero.png
+STORE_VARIANTS      := $(foreach channel,alpha beta,$(addprefix $(STORE_OUTPUT_DIR)$(channel)/,icon_128.png icon_512.png hero.png data-rich.png))
 STORE_HERO_SCREENSHOTS := $(addprefix $(SITE_DIR)assets/screenshots/,data-rich.png data-rich-aod.png)
+STORE_SCREENSHOT_SOURCES := $(filter-out %-aod.png,$(wildcard $(SITE_DIR)assets/screenshots/*.png)) \
+                            $(SITE_DIR)assets/screenshots/data-rich-aod.png
+STORE_SCREENSHOTS := $(patsubst $(SITE_DIR)assets/screenshots/%,$(STORE_OUTPUT_DIR)%,$(STORE_SCREENSHOT_SOURCES))
 SCREENSHOTS_STAMP   := $(BUILD_DIR).screenshots.stamp
 FONTS_DEPS          := scripts/generate_resources_fonts            \
                        $(SCRIPT_DEPS)                             \
@@ -172,6 +196,7 @@ SETTINGS_DEPS       := scripts/generate_resources_settings         \
 SETTINGS_STAMP      := $(BUILD_DIR).settings.stamp
 SITE_SETTINGS_DEPS  := scripts/generate_site_settings             \
                        scripts/utils/site_settings.py             \
+                       $(RELEASE_MANIFEST)                       \
                        $(SETTINGS_STAMP)                           \
                        $(RESOURCE_STRINGS)
 SITE_SETTINGS       := $(SITE_OUTPUT_DIR)settings-data.js
@@ -184,7 +209,7 @@ SITE_SCREENSHOTS_DEPS := scripts/generate_site_screenshots        \
 SITE_SCREENSHOTS    := $(SITE_OUTPUT_DIR)screenshots-data.js
 SITE_DEVICES_DEPS   := scripts/generate_site_devices              \
                        scripts/utils/site_devices.py              \
-                       $(MANIFEST)                                \
+                       $(RELEASE_MANIFEST)                        \
                        $(DATA_DEVICES_DEPS)
 SITE_DEVICES        := $(SITE_OUTPUT_DIR)devices-data.js
 SITE_ICON           := $(SITE_OUTPUT_DIR)assets/icon.svg
@@ -198,17 +223,17 @@ RESOURCES := $(ICON_STAMP) $(FONTS_STAMP) $(SETTINGS_STAMP)
 
 MEMORY_JUNGLE_DEPS := scripts/generate_memory_jungle \
                       scripts/utils/memory_jungle.py \
-                      $(MANIFEST) \
+                      $(RELEASE_MANIFEST) \
                       $(DATA_DEVICES_DEPS)
 
 MONKEYC_DEPS := $(if $(filter optimized release,$(MODE)),scripts/optimizedc.mjs,)
 MONKEYC_KEY_DEPS := $(if $(filter release,$(MODE)),$(strip $(CONNECTIQ_DEVELOPER_KEY)),)
 
-PRG_DEPS := $(JUNGLE) $(MEMORY_JUNGLE) $(MONKEYC_DEPS) $(MONKEYC_KEY_DEPS) $(SRCS) $(RSCS) \
+PRG_DEPS := $(JUNGLE) $(MEMORY_JUNGLE) $(MANIFEST) $(CHANNEL_JUNGLE) $(MONKEYC_DEPS) $(MONKEYC_KEY_DEPS) $(SRCS) $(RSCS) \
             $(ICON_STAMP) $(FONTS_STAMP) $(SETTINGS_STAMP)
 SCREENSHOTS_DEPS := Makefile scripts/generate_screenshots $(SCRIPT_DEPS) \
                     data/screenshots.py $(DATA_SETTINGS_DEPS) $(DATA_DEVICES_DEPS) \
-                    $(MANIFEST) scripts/optimizedc.mjs package.json package-lock.json \
+                    $(RELEASE_MANIFEST) scripts/optimizedc.mjs package.json package-lock.json \
                     $(PRG_DEPS)
 
 # ---- settings ----
@@ -242,6 +267,12 @@ $(VENV_STAMP): requirements.txt
 	$(Q)$(VENV_PYTHON) -m pip install -r requirements.txt
 	touch "$@"
 
+$(BUILD_DIR)manifests/%.xml: $(MANIFEST_TEMPLATE) scripts/generate_manifest scripts/utils/app_channels.py
+	$(Q)PYTHONPATH=. python3 scripts/generate_manifest --channel $* --output $@
+
+$(BUILD_DIR)manifests/%.jungle: $(BUILD_DIR)manifests/%.xml
+	$(Q)printf 'project.manifest = %s\n' '$(abspath $(BUILD_DIR)manifests/$*.xml)' > $@
+
 $(PRG): $(PRG_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	$(MONKEYC) \
@@ -254,6 +285,7 @@ $(PRG): $(PRG_DEPS)
 
 $(IQ): $(PRG_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+	$(Q)test "$(CHANNEL)" != developer
 	$(MONKEYC) \
 		--jungles "$(JUNGLES)" \
 		--output $@ \
@@ -281,11 +313,12 @@ $(SETTINGS_STAMP): $(SETTINGS_DEPS) $(SRCS_DATA) $(VENV_STAMP)
 
 $(MEMORY_JUNGLE): $(MEMORY_JUNGLE_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	PYTHONPATH=. python3 scripts/generate_memory_jungle --output $@
+	PYTHONPATH=. python3 scripts/generate_memory_jungle --manifest $(RELEASE_MANIFEST) --output $@
 
 $(SITE_SETTINGS): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SETTINGS_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_settings \
+		--manifest $(RELEASE_MANIFEST) \
 		--build $(BUILD_DIR) \
 		--resources $(RESOURCES_DIR) \
 		--source $(SOURCE_DIR) \
@@ -294,6 +327,7 @@ $(SITE_SETTINGS): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SETTINGS_DEPS)
 $(SITE_DEVICES): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_DEVICES_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_devices \
+		--manifest $(RELEASE_MANIFEST) \
 		--output $(SITE_DEVICES)
 
 $(SITE_SCREENSHOTS): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SCREENSHOTS_DEPS)
@@ -347,34 +381,36 @@ $(SITE_DEVICE_OVERLAY_DARK): $(SITE_COPY_STAMP)
 
 # ---- aliases ----
 
-ifneq ($(MODE),release)
-iq:
-	$(Q)echo " [ $(call LOG_TAG,iq) ]"
-	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release iq
-else
-iq: $(IQ) # build iq project
-	$(Q)echo " [ $(call LOG_TAG,iq) ]"
-endif
-.PHONY: iq
-
-b build: $(PRG) # build project for device
+b build: $(PRG) # build developer PRG for device
 	$(Q)echo " [ $(call LOG_TAG,build) ]"
 .PHONY: b build
 
-bt build_test: # build project for device w/ tests
+bt build_test: # build developer PRG with tests
 	$(Q)echo " [ $(call LOG_TAG,build_test) ]"
-	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test build
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test CHANNEL=$(CHANNEL) build
 .PHONY: bt build_test
 
-bo build_optimized: # build project for device in optimized mode
+bo build_optimized: # build developer PRG in optimized mode
 	$(Q)echo " [ $(call LOG_TAG,build_optimized) ]"
-	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=optimized build
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=optimized CHANNEL=$(CHANNEL) build
 .PHONY: bo build_optimized
 
-br build_release: # build project for device in release mode
+br build_release: # build developer PRG in release mode
 	$(Q)echo " [ $(call LOG_TAG,build_release) ]"
-	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release build
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release CHANNEL=$(CHANNEL) build
 .PHONY: br build_release
+
+alpha: # build alpha IQ package
+	$(Q)$(MAKE) NAME=$(NAME) MODE=release CHANNEL=alpha $(BUILD_DIR)$(NAME)-alpha.iq
+.PHONY: alpha
+
+beta: # build beta IQ package
+	$(Q)$(MAKE) NAME=$(NAME) MODE=release CHANNEL=beta $(BUILD_DIR)$(NAME)-beta.iq
+.PHONY: beta
+
+iq: # build release IQ package
+	$(Q)$(MAKE) NAME=$(NAME) MODE=release CHANNEL=release $(BUILD_DIR)$(NAME).iq
+.PHONY: iq
 
 s simulate: build # run simulator
 	$(Q)echo " [ $(call LOG_TAG,simulate) ] $(MODE)"
@@ -405,17 +441,17 @@ s simulate: build # run simulator
 
 st simulate_test: # run simulator w/ tests
 	$(Q)echo " [ $(call LOG_TAG,simulate_test) ]"
-	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test simulate
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=test CHANNEL=$(CHANNEL) simulate
 .PHONY: st simulate_test
 
 so simulate_optimized: # run simulator width optimized build
 	$(Q)echo " [ $(call LOG_TAG,simulate_optimized) ]"
-	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=optimized simulate
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=optimized CHANNEL=$(CHANNEL) simulate
 .PHONY: so simulate_optimized
 
 sr simulate_release: # run simulator with release build
 	$(Q)echo " [ $(call LOG_TAG,simulate_release) ]"
-	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release simulate
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release CHANNEL=$(CHANNEL) simulate
 .PHONY: sr simulate_release
 
 $(STORE_OUTPUT_DIR)icon_%.png: $(ICON_STAMP) scripts/generate_site_icon
@@ -425,17 +461,47 @@ $(STORE_OUTPUT_DIR)icon_%.png: $(ICON_STAMP) scripts/generate_site_icon
 		--output $@ \
 		--size $*
 
+$(STORE_OUTPUT_DIR)%/icon_128.png: $(ICON_STAMP) scripts/generate_site_icon scripts/utils/store_ribbon.py
+	$(Q)PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_icon \
+		--input $(RESOURCES_GENERATED_DIR)icon.svg \
+		--output $@ \
+		--size 128 \
+		--channel $*
+
+$(STORE_OUTPUT_DIR)%/icon_512.png: $(ICON_STAMP) scripts/generate_site_icon scripts/utils/store_ribbon.py
+	$(Q)PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_icon \
+		--input $(RESOURCES_GENERATED_DIR)icon.svg \
+		--output $@ \
+		--size 512 \
+		--channel $*
+
 $(STORE_HERO): scripts/generate_site_hero $(STORE_HERO_SCREENSHOTS) $(VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_hero \
 		--screenshots $(SITE_DIR)assets/screenshots \
 		--output $@
 
+$(STORE_OUTPUT_DIR)%/hero.png: scripts/generate_site_hero scripts/utils/store_ribbon.py $(STORE_HERO_SCREENSHOTS) $(VENV_STAMP)
+	$(Q)PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_hero \
+		--screenshots $(SITE_DIR)assets/screenshots \
+		--output $@ \
+		--channel $*
+
+$(STORE_OUTPUT_DIR)%/data-rich.png: $(SITE_DIR)assets/screenshots/data-rich.png scripts/utils/store_ribbon.py $(VENV_STAMP)
+	$(Q)PYTHONPATH=. $(VENV_PYTHON) -m scripts.utils.store_ribbon \
+		--input $< \
+		--output $@ \
+		--channel $*
+
+$(STORE_SCREENSHOTS): $(STORE_OUTPUT_DIR)%: $(SITE_DIR)assets/screenshots/%
+	$(Q)mkdir -p $(STORE_OUTPUT_DIR)
+	cp $< $@
+
 $(SCREENSHOTS_STAMP): $(SCREENSHOTS_DEPS) $(STORE_ICONS) $(VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,screenshots) ]"
 	$(RM) "$@"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_screenshots \
-		--manifest $(MANIFEST) \
+		--manifest $(RELEASE_MANIFEST) \
 		--build-dir $(BUILD_DIR) \
 		--output-dir $(SITE_DIR)assets/screenshots
 	touch "$@"
@@ -466,11 +532,11 @@ site_update: # fetch the latest site UI and rebuild the site
 	$(Q)$(MAKE) SITE_UI_REFRESH=1 site
 .PHONY: site_update
 
-store: $(STORE_ICONS) $(STORE_HERO) # generate store assets
+store: $(STORE_ICONS) $(STORE_HERO) $(STORE_VARIANTS) $(STORE_SCREENSHOTS) # generate store assets
 	$(Q)echo " [ $(call LOG_TAG,store) ]"
 .PHONY: store
 
-t test: $(RESOURCES) $(VENV_STAMP) # run test
+t test: $(RESOURCES) $(VENV_STAMP) $(RELEASE_MANIFEST) # run test
 	$(Q)echo " [ $(call LOG_TAG,test) ]"
 	PYTHONPATH=. $(VENV_PYTHON) -m pytest \
 		--cov \
@@ -487,12 +553,12 @@ l lint: $(VENV_STAMP) # run static checks
 	$(Q)$(VENV_PYTHON) -m pylint $(PYTHON_FILES)
 .PHONY: l lint
 
-smoke: $(VENV_STAMP) # run smoke test
+smoke: $(VENV_STAMP) $(RELEASE_MANIFEST) # run smoke test
 	$(Q)echo " [ $(call LOG_TAG,smoke) ]"
 	$(Q)$(VENV_PYTHON) scripts/smoke --mode release
 .PHONY: smoke
 
-smoke_test: $(VENV_STAMP) # run smoke test w/ tests
+smoke_test: $(VENV_STAMP) $(RELEASE_MANIFEST) # run smoke test w/ tests
 	$(Q)echo " [ $(call LOG_TAG,smoke_test) ]"
 	$(Q)$(VENV_PYTHON) scripts/smoke --mode test
 .PHONY: smoke_test
@@ -500,7 +566,7 @@ smoke_test: $(VENV_STAMP) # run smoke test w/ tests
 ifneq ($(MODE),release)
 d deploy:
 	$(Q)echo " [ $(call LOG_TAG,deploy) ]"
-	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release deploy
+	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release CHANNEL=$(CHANNEL) deploy
 else
 d deploy: build # deploy release binary to watch
 	$(Q)i=0; while ! gio mount -l | grep -q "mtp://091e_"; do
@@ -628,7 +694,7 @@ h help: # print help message
 			right = (i + middle <= count) ? devices[i + middle] : "";
 			printf "     %-*s     %s\n", max_length, devices[i], right;
 		}
-	}' $(MANIFEST)
+	}' $(MANIFEST_TEMPLATE)
 	printf "\n"
 	# ---- modes ----
 	printf " %bModes%b\n" "$$B" "$$N"

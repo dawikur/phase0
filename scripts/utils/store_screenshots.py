@@ -16,18 +16,18 @@ from uuid import uuid4
 
 from PIL import Image
 
-from scripts.utils.smoke import (
+from scripts.utils.manifest import supported_connect_iq_ids as supported_devices
+from scripts.utils.simulator_process import (
     Simulator,
     SmokeSignals,
     WatchFaceLoader,
-    _check_simulator,
-    _start_logged_process,
-    _start_simulator,
-    _stop_simulator,
-    _stop_watch_face_loader,
-    _wait_for_watch_face,
+    check_simulator,
     connect_iq_sdk_dir,
-    supported_devices,
+    start_logged_process,
+    start_simulator,
+    stop_simulator,
+    stop_watch_face_loader,
+    wait_for_watch_face,
 )
 
 REPO_DIR = Path(__file__).resolve().parents[2]
@@ -61,6 +61,12 @@ class Scenario:
     preview_size: str = "normal"
     time_display: Literal["12h", "24h"] = "24h"
     units_display: Literal["metric", "statute"] = "metric"
+
+
+@dataclass
+class WindowSession:
+    simulator_id: str
+    owned_ids: set[str]
 
 
 def validate_scenarios(
@@ -202,26 +208,38 @@ def require_x11_display() -> None:
         raise RuntimeError("Store screenshot capture needs X11: " + detail)
 
 
-def find_simulator_window(timeout: float = WINDOW_WAIT_TIMEOUT) -> str:
+def list_windows() -> dict[str, str]:
+    """Return the current X11 window titles keyed by window ID."""
+    result = subprocess.run(
+        ["wmctrl", "-l"], capture_output=True, text=True, check=True
+    )
+    windows = {}
+    for line in result.stdout.splitlines():
+        parts = line.split(maxsplit=3)
+        if len(parts) == 4:
+            windows[parts[0]] = parts[3]
+    return windows
+
+
+def find_simulator_window(
+    timeout: float = WINDOW_WAIT_TIMEOUT,
+    excluded_ids: frozenset[str] = frozenset(),
+) -> str:
     deadline = time.monotonic() + timeout
-    last_windows: list[str] = []
+    last_windows: dict[str, str] = {}
     while time.monotonic() < deadline:
-        result = subprocess.run(
-            ["wmctrl", "-l"], capture_output=True, text=True, check=True
-        )
-        last_windows = result.stdout.splitlines()
+        last_windows = list_windows()
         matches = [
-            line.split(maxsplit=3)[0]
-            for line in last_windows
-            if len(line.split(maxsplit=3)) == 4
-            and SIMULATOR_WINDOW_RE.search(line.split(maxsplit=3)[3])
+            window_id
+            for window_id, title in last_windows.items()
+            if window_id not in excluded_ids and SIMULATOR_WINDOW_RE.search(title)
         ]
         if len(matches) == 1:
             return matches[0]
         if len(matches) > 1:
             raise RuntimeError("More than one Connect IQ Simulator window is open.")
         time.sleep(0.1)
-    visible_windows = " | ".join(last_windows) or "wmctrl reported no windows"
+    visible_windows = " | ".join(last_windows.values()) or "wmctrl reported no windows"
     raise RuntimeError(
         "Timed out waiting for the Connect IQ Simulator window. "
         f"Windows reported by wmctrl -l: {visible_windows}"
@@ -232,9 +250,9 @@ def _xdotool(*arguments: str) -> None:
     subprocess.run(["xdotool", *arguments], check=True)
 
 
-def reset_simulator_app_data() -> None:
+def reset_simulator_app_data(window_id: str | None = None) -> None:
     """Clear saved properties and restart the current app through the simulator."""
-    window_id = find_simulator_window()
+    window_id = window_id or find_simulator_window()
     subprocess.run(["wmctrl", "-ia", window_id], check=True)
     _xdotool("key", "--clearmodifiers", "alt+f")
     time.sleep(0.15)
@@ -249,9 +267,10 @@ def reset_simulator_app_data() -> None:
 def set_simulator_display_settings(
     time_display: Literal["12h", "24h"],
     units_display: Literal["metric", "statute"],
+    window_id: str | None = None,
 ) -> None:
     """Set the simulator's global display preferences for one capture."""
-    window_id = find_simulator_window()
+    window_id = window_id or find_simulator_window()
     subprocess.run(["wmctrl", "-ia", window_id], check=True)
     # Settings lists Time Display first and Units Display second.
     for menu_offset, choice_offset in (
@@ -272,60 +291,56 @@ def set_simulator_display_settings(
         time.sleep(0.15)
 
 
-def _wait_for_window(title_re: re.Pattern[str], timeout: float) -> str | None:
+def _wait_for_window(
+    title_re: re.Pattern[str],
+    timeout: float,
+    excluded_ids: frozenset[str] = frozenset(),
+) -> str | None:
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        result = subprocess.run(
-            ["wmctrl", "-l"], capture_output=True, text=True, check=True
-        )
-        for line in result.stdout.splitlines():
-            parts = line.split(maxsplit=3)
-            if len(parts) == 4 and title_re.search(parts[3]):
-                return parts[0]
+        for window_id, title in list_windows().items():
+            if window_id not in excluded_ids and title_re.search(title):
+                return window_id
         time.sleep(0.1)
     return None
 
 
-def close_simulator_windows(timeout: float = SIMULATOR_CLOSE_TIMEOUT) -> None:
+def close_simulator_windows(
+    owned_window_ids: set[str], timeout: float = SIMULATOR_CLOSE_TIMEOUT
+) -> None:
     """Close screenshot dialogs and simulator windows opened by this workflow."""
-
-    def matching_windows() -> list[tuple[str, str]]:
-        result = subprocess.run(
-            ["wmctrl", "-l"], capture_output=True, text=True, check=True
-        )
-        windows = []
-        for line in result.stdout.splitlines():
-            parts = line.split(maxsplit=3)
-            if len(parts) == 4 and (
-                SIMULATOR_WINDOW_RE.search(parts[3])
-                or SCREENSHOT_DIALOG_RE.search(parts[3])
-            ):
-                windows.append((parts[0], parts[3]))
-        return windows
-
-    windows = matching_windows()
-    if not windows:
+    windows = list_windows()
+    owned = owned_window_ids & windows.keys()
+    if not owned:
         return
+    ordered = sorted(
+        owned,
+        key=lambda window_id: bool(SIMULATOR_WINDOW_RE.search(windows[window_id])),
+    )
 
     _print_status("Closing the screenshot dialog and simulator...")
-    for window_id, _title in sorted(
-        windows, key=lambda window: bool(SIMULATOR_WINDOW_RE.search(window[1]))
-    ):
+    for window_id in ordered:
         subprocess.run(["wmctrl", "-ic", window_id], check=True)
 
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        if not matching_windows():
+        if not owned_window_ids & list_windows().keys():
             return
         time.sleep(0.1)
     raise RuntimeError("Timed out waiting for the Connect IQ Simulator to close.")
 
 
-def capture_simulator_screenshot(output: Path) -> Path:
+def capture_simulator_screenshot(
+    output: Path,
+    session: WindowSession | None = None,
+) -> Path:
     """Save the simulator's native device-screen capture to ``output``."""
     output.parent.mkdir(parents=True, exist_ok=True)
     _print_status("Waiting for the Connect IQ Simulator window...")
-    window_id = find_simulator_window()
+    window_id = session.simulator_id if session else find_simulator_window()
+    existing_window_ids = (
+        frozenset(list_windows()) if session is not None else frozenset()
+    )
     temporary_output = REPO_DIR / f"phase0-store-shot-{uuid4().hex}.png"
     try:
         _print_status("Opening the simulator's Save Screenshot command...")
@@ -338,14 +353,17 @@ def capture_simulator_screenshot(output: Path) -> Path:
 
         _print_status("Waiting for the screenshot save dialog...")
         dialog_id = _wait_for_window(
-            re.compile(r"save (?:screenshot|screen capture)|save as", re.IGNORECASE),
+            SCREENSHOT_DIALOG_RE,
             SCREENSHOT_DIALOG_TIMEOUT,
+            excluded_ids=existing_window_ids,
         )
         if dialog_id is None:
             raise RuntimeError(
                 "Could not open the simulator's Save Screenshot dialog. "
                 "The simulator may use different File menu shortcuts in this SDK."
             )
+        if session is not None:
+            session.owned_ids.add(dialog_id)
 
         _print_status("Saving the native simulator screenshot...")
         subprocess.run(["wmctrl", "-ia", dialog_id], check=True)
@@ -356,38 +374,39 @@ def capture_simulator_screenshot(output: Path) -> Path:
         _xdotool("key", "--clearmodifiers", "Return")
         time.sleep(0.5)
         if not temporary_output.is_file() and _wait_for_window(
-            SCREENSHOT_DIALOG_RE, timeout=0.2
+            SCREENSHOT_DIALOG_RE, timeout=0.2, excluded_ids=existing_window_ids
         ):
             _print_status("Save dialog is still open; confirming once more...")
             _xdotool("key", "--clearmodifiers", "Return")
 
-        deadline = time.monotonic() + SCREENSHOT_FILE_TIMEOUT
-        valid_image = False
-        invalid_image_error: OSError | ValueError | None = None
-        while True:
-            if temporary_output.is_file():
-                try:
-                    with Image.open(temporary_output) as image:
-                        image.verify()
-                    valid_image = True
-                except (OSError, ValueError) as error:
-                    invalid_image_error = error
-            if valid_image:
-                break
-            if time.monotonic() >= deadline:
-                break
-            time.sleep(0.1)
-        if not temporary_output.is_file():
-            raise RuntimeError("The simulator did not create the screenshot file.")
-        if not valid_image:
-            raise RuntimeError(
-                "The simulator screenshot is not a valid image."
-            ) from invalid_image_error
-
+        _wait_for_valid_screenshot_file(temporary_output)
         output.write_bytes(temporary_output.read_bytes())
     finally:
         temporary_output.unlink(missing_ok=True)
     return output
+
+
+def _wait_for_valid_screenshot_file(path: Path) -> None:
+    deadline = time.monotonic() + SCREENSHOT_FILE_TIMEOUT
+    valid_image = False
+    invalid_image_error: OSError | ValueError | None = None
+    while True:
+        if path.is_file():
+            try:
+                with Image.open(path) as image:
+                    image.verify()
+                valid_image = True
+            except (OSError, ValueError) as error:
+                invalid_image_error = error
+        if valid_image or time.monotonic() >= deadline:
+            break
+        time.sleep(0.1)
+    if not path.is_file():
+        raise RuntimeError("The simulator did not create the screenshot file.")
+    if not valid_image:
+        raise RuntimeError(
+            "The simulator screenshot is not a valid image."
+        ) from invalid_image_error
 
 
 def _build_scenario(
@@ -406,7 +425,13 @@ def _build_scenario(
     environment["PHASE0_STORE_SCREENSHOT_OVERRIDES"] = json.dumps(scenario.properties)
     with force_night_mode(night_mode):
         subprocess.run(
-            [make, "build_release", f"NAME={name}", f"DEVICE={scenario.device}"],
+            [
+                make,
+                "build_release",
+                f"NAME={name}",
+                f"DEVICE={scenario.device}",
+                "CHANNEL=release",
+            ],
             cwd=REPO_DIR,
             check=True,
             env=environment,
@@ -454,7 +479,7 @@ def _start_watch_face(
         "-a",
         f"{settings}:GARMIN/Settings/{program.stem.upper()}-settings.json",
     ]
-    process, output_thread = _start_logged_process(command, signals)
+    process, output_thread = start_logged_process(command, signals)
     return WatchFaceLoader(process, output_thread)
 
 
@@ -468,6 +493,7 @@ def run_scenario(
     sdk_dir: Path,
     output_dir: Path,
     simulator: Simulator,
+    window_session: WindowSession,
     night_mode: bool = False,
 ) -> Path:
     view_name = "AoD" if night_mode else "normal"
@@ -494,21 +520,23 @@ def run_scenario(
             program=program,
         )
         _print_status("Waiting for phase0 to finish initializing...")
-        _wait_for_watch_face(simulator, scenario.device)
+        wait_for_watch_face(simulator, scenario.device)
         _print_status("Setting simulator time and units display...")
-        set_simulator_display_settings(scenario.time_display, scenario.units_display)
+        set_simulator_display_settings(
+            scenario.time_display, scenario.units_display, window_session.simulator_id
+        )
         _print_status("Resetting simulator app data to load scenario defaults...")
         simulator.signals.ready = Event()
-        reset_simulator_app_data()
-        _wait_for_watch_face(simulator, scenario.device)
-        _check_simulator(simulator, scenario.device)
+        reset_simulator_app_data(window_session.simulator_id)
+        wait_for_watch_face(simulator, scenario.device)
+        check_simulator(simulator, scenario.device)
         _print_status("phase0 is ready; capturing screenshot...")
-        output = capture_simulator_screenshot(output_dir / output_name)
+        output = capture_simulator_screenshot(output_dir / output_name, window_session)
         _print_status(f"Saved {output}")
         return output
     finally:
         if loader is not None:
-            _stop_watch_face_loader(loader)
+            stop_watch_face_loader(loader)
 
 
 # pylint: disable=too-many-arguments
@@ -523,20 +551,28 @@ def generate_screenshots(
     output_dir: Path,
     selected_names: Sequence[str] | None = None,
 ) -> list[Path]:
-    devices = supported_devices(manifest)
-    selected = validate_scenarios(scenarios, devices, selected_names)
+    selected = validate_scenarios(
+        scenarios, supported_devices(manifest), selected_names
+    )
     if not selected:
         return []
     require_capture_tools()
     require_x11_display()
     sdk_dir = sdk_dir or connect_iq_sdk_dir()
+    existing_window_ids = frozenset(list_windows())
+    window_session: WindowSession | None = None
+    simulator: Simulator | None = None
     try:
         _print_status("Starting Connect IQ Simulator...")
-        simulator = _start_simulator(
+        simulator = start_simulator(
             sdk_dir / "bin" / "connectiq",
             env_overrides={"GDK_BACKEND": "x11"},
             cwd=REPO_DIR,
         )
+        window_session = WindowSession(
+            find_simulator_window(excluded_ids=existing_window_ids), set()
+        )
+        window_session.owned_ids.add(window_session.simulator_id)
         try:
             outputs = []
             for scenario in selected:
@@ -550,14 +586,17 @@ def generate_screenshots(
                             sdk_dir=sdk_dir,
                             output_dir=output_dir,
                             simulator=simulator,
+                            window_session=window_session,
                             night_mode=night_mode,
                         )
                     )
             return outputs
         finally:
             try:
-                close_simulator_windows()
+                close_simulator_windows(window_session.owned_ids)
             finally:
-                _stop_simulator(simulator)
+                stop_simulator(simulator)
     finally:
+        if simulator is not None and window_session is None:
+            stop_simulator(simulator)
         _restore_default_settings(make, build_dir)

@@ -88,7 +88,7 @@ def test_site_settings_resolves_labels_and_options() -> None:
     data = parse_settings(
         Path("resources/memory/high/generated/settings.xml"),
         Path("resources"),
-        Path("manifest.xml"),
+        Path("manifest.xml.tmpl"),
     )
 
     groups = {group["id"]: group for group in data["groups"]}
@@ -114,7 +114,7 @@ def test_site_settings_preserves_numeric_boolean_and_regions() -> None:
     data = parse_settings(
         Path("resources/memory/high/generated/settings.xml"),
         Path("resources"),
-        Path("manifest.xml"),
+        Path("manifest.xml.tmpl"),
     )
 
     groups = {group["id"]: group for group in data["groups"]}

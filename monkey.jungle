@@ -1,10 +1,10 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
-project.manifest = manifest.xml
 project.optimization = 3p
 project.typecheck = strict
 
-base.resourcePath = $(base.resourcePath);resources/base
+base.sourcePath = source
+base.resourcePath = resources;resources/base
 base.lang.ara     = $(base.lang.ara);resources/lang/ara
 base.lang.bul     = $(base.lang.bul);resources/lang/bul
 base.lang.ces     = $(base.lang.ces);resources/lang/ces

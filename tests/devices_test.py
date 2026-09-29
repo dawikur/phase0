@@ -132,7 +132,7 @@ def test_devices_expose_known_resolutions() -> None:
 
 def test_manifest_products_match_supported_connect_iq_ids() -> None:
     namespace = {"iq": "http://www.garmin.com/xml/connectiq"}
-    manifest = ET.parse(Path("manifest.xml")).getroot()
+    manifest = ET.parse(Path("manifest.xml.tmpl")).getroot()
     products = {
         product.get("id", "")
         for product in manifest.findall(".//iq:products/iq:product", namespace)

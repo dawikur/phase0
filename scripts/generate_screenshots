@@ -20,7 +20,9 @@ def parse_arguments(arguments: Sequence[str] | None = None) -> argparse.Namespac
     parser = argparse.ArgumentParser(
         description="Generate Connect IQ Store screenshots"
     )
-    parser.add_argument("--manifest", type=Path, default=REPO_DIR / "manifest.xml")
+    parser.add_argument(
+        "--manifest", type=Path, default=REPO_DIR / "build/manifests/release.xml"
+    )
     parser.add_argument("--make", default="make")
     parser.add_argument("--name", default="phase0")
     parser.add_argument("--build-dir", type=Path, default=REPO_DIR / "build")

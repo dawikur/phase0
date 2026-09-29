@@ -14,19 +14,22 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from scripts.utils.smoke import (
+from scripts.utils.simulator_process import (
     ApplicationCrashError,
     ApplicationStartError,
     Simulator,
     SmokeSignals,
-    _check_simulator,
-    _start_logged_process,
-    _start_watch_face,
-    _stop_process,
-    _wait_for_crash,
-    _wait_for_watch_face,
-    _watch_simulator_output,
+    check_simulator,
     connect_iq_sdk_dir,
+    start_logged_process,
+    start_simulator,
+    stop_process,
+    wait_for_crash,
+    wait_for_watch_face,
+    watch_simulator_output,
+)
+from scripts.utils.smoke import (
+    _start_watch_face,
     run_smoke_test,
     supported_devices,
 )
@@ -122,15 +125,15 @@ def test_smoke_parser_uses_defaults() -> None:
 
     arguments = cli.parse_arguments([])
 
-    assert arguments.manifest == Path("manifest.xml")
+    assert arguments.manifest == Path("build/manifests/release.xml")
     assert arguments.build_dir == Path("build")
     assert arguments.simulator_duration == 10
     assert arguments.mode == "release"
 
 
-@patch("scripts.utils.smoke.time.sleep")
+@patch("scripts.utils.simulator_process.time.sleep")
 @patch("scripts.utils.smoke.subprocess.run")
-@patch("scripts.utils.smoke.subprocess.Popen")
+@patch("scripts.utils.simulator_process.subprocess.Popen")
 def test_run_smoke_test_reuses_one_simulator_for_all_devices(
     popen: MagicMock,
     run: MagicMock,
@@ -160,8 +163,8 @@ def test_run_smoke_test_reuses_one_simulator_for_all_devices(
     popen.side_effect = [simulator, first_monkeydo, second_monkeydo]
 
     with (
-        patch("scripts.utils.smoke._wait_for_watch_face") as wait_for_watch_face,
-        patch("scripts.utils.smoke._wait_for_crash") as wait_for_crash,
+        patch("scripts.utils.smoke.wait_for_watch_face") as wait_for_watch_face_mock,
+        patch("scripts.utils.smoke.wait_for_crash") as wait_for_crash_mock,
     ):
         run_smoke_test(
             manifest=manifest,
@@ -216,18 +219,33 @@ def test_run_smoke_test_reuses_one_simulator_for_all_devices(
         ),
     ]
     assert run.call_args_list == [
-        call(["gmake", "build_release", "NAME=phase0", "DEVICE=fr255"], check=True),
         call(
-            ["gmake", "build_release", "NAME=phase0", "DEVICE=fenix7x"],
+            [
+                "gmake",
+                "build_release",
+                "NAME=phase0",
+                "DEVICE=fr255",
+                "CHANNEL=release",
+            ],
+            check=True,
+        ),
+        call(
+            [
+                "gmake",
+                "build_release",
+                "NAME=phase0",
+                "DEVICE=fenix7x",
+                "CHANNEL=release",
+            ],
             check=True,
         ),
     ]
     assert sleep.call_args_list == [call(3)]
-    assert [call.args[1] for call in wait_for_watch_face.call_args_list] == [
+    assert [call.args[1] for call in wait_for_watch_face_mock.call_args_list] == [
         "fr255",
         "fenix7x",
     ]
-    assert [call.args[1] for call in wait_for_crash.call_args_list] == [10, 10]
+    assert [call.args[1] for call in wait_for_crash_mock.call_args_list] == [10, 10]
     first_monkeydo.terminate.assert_called_once_with()
     first_monkeydo.wait.assert_called_once_with(timeout=3)
     second_monkeydo.terminate.assert_called_once_with()
@@ -236,13 +254,13 @@ def test_run_smoke_test_reuses_one_simulator_for_all_devices(
     simulator.wait.assert_called_once_with(timeout=3)
 
 
-@patch("scripts.utils.smoke._start_logged_process")
+@patch("scripts.utils.smoke.start_logged_process")
 def test_start_watch_face_passes_test_mode_to_monkeydo(
-    start_logged_process: MagicMock, tmp_path: Path
+    start_logged_process_mock: MagicMock, tmp_path: Path
 ) -> None:
     process = MagicMock()
     output_thread = Thread(target=lambda: None)
-    start_logged_process.return_value = (process, output_thread)
+    start_logged_process_mock.return_value = (process, output_thread)
     signals = SmokeSignals(Event())
 
     loader = _start_watch_face(
@@ -256,7 +274,7 @@ def test_start_watch_face_passes_test_mode_to_monkeydo(
 
     assert loader.process is process
     assert loader.output_thread is output_thread
-    start_logged_process.assert_called_once_with(
+    start_logged_process_mock.assert_called_once_with(
         [
             str(tmp_path / "monkeydo"),
             str(tmp_path / "build" / "phase0-fr255_test.prg"),
@@ -270,15 +288,15 @@ def test_start_watch_face_passes_test_mode_to_monkeydo(
     )
 
 
-@patch("scripts.utils.smoke.Thread")
-@patch("scripts.utils.smoke.subprocess.Popen")
+@patch("scripts.utils.simulator_process.Thread")
+@patch("scripts.utils.simulator_process.subprocess.Popen")
 def test_start_logged_process_applies_environment_overrides(
     popen: MagicMock, thread: MagicMock
 ) -> None:
     process = MagicMock()
     popen.return_value = process
 
-    result_process, result_thread = _start_logged_process(
+    result_process, result_thread = start_logged_process(
         ["connectiq"],
         SmokeSignals(Event()),
         env_overrides={"GDK_BACKEND": "x11"},
@@ -294,6 +312,44 @@ def test_start_logged_process_applies_environment_overrides(
     thread.return_value.start.assert_called_once_with()
 
 
+def test_start_simulator_stops_process_if_startup_check_fails() -> None:
+    process = MagicMock()
+    output_thread = MagicMock()
+    with (
+        patch(
+            "scripts.utils.simulator_process.start_logged_process",
+            return_value=(process, output_thread),
+        ),
+        patch("scripts.utils.simulator_process.time.sleep"),
+        patch(
+            "scripts.utils.simulator_process.check_simulator",
+            side_effect=RuntimeError("startup failed"),
+        ),
+        patch("scripts.utils.simulator_process.stop_simulator") as stop,
+        pytest.raises(RuntimeError, match="startup failed"),
+    ):
+        start_simulator(Path("connectiq"))
+
+    stopped_simulator = stop.call_args.args[0]
+    assert stopped_simulator.process is process
+    assert stopped_simulator.output_thread is output_thread
+
+
+def test_start_logged_process_stops_process_if_output_thread_fails() -> None:
+    process = MagicMock()
+    thread = MagicMock()
+    thread.start.side_effect = RuntimeError("thread failed")
+    with (
+        patch("scripts.utils.simulator_process.subprocess.Popen", return_value=process),
+        patch("scripts.utils.simulator_process.Thread", return_value=thread),
+        patch("scripts.utils.simulator_process.stop_process") as stop,
+        pytest.raises(RuntimeError, match="thread failed"),
+    ):
+        start_logged_process(["connectiq"], SmokeSignals(Event()))
+
+    stop.assert_called_once_with(process)
+
+
 def test_check_simulator_raises_when_watch_face_crashes() -> None:
     process = MagicMock(args=["connectiq"])
     crashed = Event()
@@ -301,7 +357,7 @@ def test_check_simulator_raises_when_watch_face_crashes() -> None:
     simulator = Simulator(process, SmokeSignals(crashed), Thread(target=lambda: None))
 
     with pytest.raises(ApplicationCrashError, match="application crash on descentmk2"):
-        _check_simulator(simulator, "descentmk2")
+        check_simulator(simulator, "descentmk2")
 
 
 def test_wait_for_crash_fails_immediately_when_watch_face_crashes() -> None:
@@ -311,7 +367,31 @@ def test_wait_for_crash_fails_immediately_when_watch_face_crashes() -> None:
     simulator = Simulator(process, SmokeSignals(crashed), Thread(target=lambda: None))
 
     with pytest.raises(ApplicationCrashError, match="application crash on descentmk2"):
-        _wait_for_crash(simulator, 10, "descentmk2")
+        wait_for_crash(simulator, 10, "descentmk2")
+
+
+def test_wait_for_crash_detects_stopped_simulator() -> None:
+    process = MagicMock(args=["connectiq"])
+    process.poll.return_value = 2
+    simulator = Simulator(process, SmokeSignals(Event()), Thread(target=lambda: None))
+
+    with pytest.raises(subprocess.CalledProcessError) as error:
+        wait_for_crash(simulator, 10, "fr255")
+
+    assert error.value.returncode == 2
+
+
+def test_wait_for_watch_face_detects_stopped_simulator() -> None:
+    process = MagicMock(args=["connectiq"])
+    process.poll.return_value = 2
+    simulator = Simulator(
+        process, SmokeSignals(Event(), Event()), Thread(target=lambda: None)
+    )
+
+    with pytest.raises(subprocess.CalledProcessError) as error:
+        wait_for_watch_face(simulator, "fr255")
+
+    assert error.value.returncode == 2
 
 
 def test_simulator_output_marks_application_crash(
@@ -319,7 +399,7 @@ def test_simulator_output_marks_application_crash(
 ) -> None:
     signals = SmokeSignals(Event(), Event())
 
-    _watch_simulator_output(
+    watch_simulator_output(
         StringIO("Error: Out Of Memory Error\nEncountered an app crash.\n"), signals
     )
 
@@ -331,7 +411,7 @@ def test_simulator_output_marks_application_crash(
 def test_simulator_output_marks_watch_face_ready() -> None:
     signals = SmokeSignals(Event(), Event())
 
-    _watch_simulator_output(StringIO("Phase0 initialized\n"), signals)
+    watch_simulator_output(StringIO("Phase0 initialized\n"), signals)
 
     assert signals.ready is not None and signals.ready.is_set()
 
@@ -342,24 +422,24 @@ def test_smoke_helpers_handle_missing_ready_output_and_process_failures(
     config = tmp_path / ".Garmin" / "ConnectIQ" / "current-sdk.cfg"
     config.parent.mkdir(parents=True)
     config.write_text("/opt/connectiq\n", encoding="utf-8")
-    with patch("scripts.utils.smoke.Path.home", return_value=tmp_path):
+    with patch("scripts.utils.simulator_process.Path.home", return_value=tmp_path):
         assert connect_iq_sdk_dir() == Path("/opt/connectiq")
 
     signals = SmokeSignals(Event())
-    _watch_simulator_output(None, signals)
+    watch_simulator_output(None, signals)
     process: Any = MagicMock()
     simulator = Simulator(process, signals, Thread(target=lambda: None))
     with pytest.raises(ApplicationStartError, match="initialization on fr255"):
-        _wait_for_watch_face(simulator, "fr255")
+        wait_for_watch_face(simulator, "fr255")
 
     process.poll.return_value = 2
     with pytest.raises(subprocess.CalledProcessError):
-        _check_simulator(simulator)
+        check_simulator(simulator)
 
     process.poll.return_value = None
     simulator.signals.ready = Event()
     simulator.signals.ready.set()
-    _wait_for_watch_face(simulator, "fr255")
+    wait_for_watch_face(simulator, "fr255")
 
 
 def test_stop_process_kills_process_after_timeout() -> None:
@@ -367,7 +447,7 @@ def test_stop_process_kills_process_after_timeout() -> None:
     process.poll.return_value = None
     process.wait.side_effect = [subprocess.TimeoutExpired("connectiq", 3), None]
 
-    _stop_process(process)
+    stop_process(process)
 
     process.terminate.assert_called_once_with()
     process.kill.assert_called_once_with()

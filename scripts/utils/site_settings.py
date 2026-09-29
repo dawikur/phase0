@@ -7,13 +7,13 @@ from pathlib import Path
 from typing import Any
 
 from data.devices import DEVICES
+from scripts.utils.manifest import CONNECT_IQ_NAMESPACE, supported_connect_iq_ids
 
 STRING_REF_RE = re.compile(r"^@Strings\.([A-Za-z0-9_]+)$")
 PROPERTY_REF_RE = re.compile(r"^@Properties\.([A-Za-z0-9_]+)$")
 REPEATED_GROUP_RE = re.compile(
     r"^(Status|Gauges|TopMiddle|BottomMiddle)(?:Alt|Alternative)?\d+$"
 )
-CONNECT_IQ_NAMESPACE = {"iq": "http://www.garmin.com/xml/connectiq"}
 LANGUAGE_NAMES = {
     "deu": "German",
     "eng": "English",
@@ -114,15 +114,6 @@ def setting_summary(group_id: str) -> str:
     )
 
 
-def supported_connect_iq_ids(manifest_xml: Path) -> list[str]:
-    root = ET.parse(manifest_xml).getroot()
-    return [
-        product.get("id", "")
-        for product in root.findall(".//iq:products/iq:product", CONNECT_IQ_NAMESPACE)
-        if product.get("id")
-    ]
-
-
 def supported_devices(manifest_xml: Path) -> list[str]:
     products = supported_connect_iq_ids(manifest_xml)
     by_connect_iq_id = {
@@ -156,7 +147,7 @@ def supported_languages(manifest_xml: Path) -> list[dict[str, str]]:
 def parse_settings(
     settings_xml: Path,
     resources_dir: Path,
-    manifest_xml: Path = Path("manifest.xml"),
+    manifest_xml: Path = Path("manifest.xml.tmpl"),
 ) -> dict[str, Any]:
     strings = load_strings(resources_dir)
     root = ET.parse(settings_xml).getroot()
@@ -234,7 +225,7 @@ def write_settings_js(data: dict[str, Any], output: Path) -> None:
 def build_site_settings(
     resources_dir: Path = Path("resources"),
     settings_xml: Path = Path("resources/memory/high/generated/settings.xml"),
-    manifest_xml: Path = Path("manifest.xml"),
+    manifest_xml: Path = Path("manifest.xml.tmpl"),
     output: Path = Path("build/site/settings-data.js"),
 ) -> None:
     write_settings_js(parse_settings(settings_xml, resources_dir, manifest_xml), output)

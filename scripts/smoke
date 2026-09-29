@@ -19,7 +19,10 @@ def parse_arguments(arguments: Sequence[str] | None = None) -> argparse.Namespac
         description="Smoke-test the release watch face on every supported device"
     )
     parser.add_argument(
-        "--manifest", type=Path, default=Path("manifest.xml"), help="Manifest path"
+        "--manifest",
+        type=Path,
+        default=Path("build/manifests/release.xml"),
+        help="Manifest path",
     )
     parser.add_argument("--make", default="make", help="Make executable")
     parser.add_argument("--name", default="phase0", help="Application name")

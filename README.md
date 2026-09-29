@@ -9,6 +9,29 @@ phase0 is a minimal, battery-efficient Garmin Connect IQ watch face.
 
 The changelog starts with the first published release.
 
+## Build channels
+
+The default `make build` produces a device-specific developer PRG. Select a
+different channel with `make build CHANNEL=alpha DEVICE=fr955` when testing a
+Store identity on a device. Build uploadable packages with `make alpha`,
+`make beta`, or `make iq` for the release `phase0.iq` package.
+The developer channel has no IQ package target.
+These three package targets always compile in release mode and reject an
+explicit `MODE` value other than `release`.
+
+`manifest.xml.tmpl` holds the shared product, permission, and language lists.
+Make renders each channel's stable ID and name into `build/manifests/` before
+compilation. Keep each ID assigned to its existing Garmin Store listing when
+uploading updates: developer is for PRG testing, alpha is a private Garmin
+Beta App, beta is a separate public test listing, and release is the public
+watch face. Separate IDs keep installations and settings independent.
+
+`make store` creates the release icons and hero in `build/store/` and copies
+all normal screenshots plus the data-rich AoD screenshot from
+`site/assets/screenshots/`. It also creates purple-ribbon alpha and
+turquoise-ribbon beta icons, heroes and data-rich covers in the corresponding
+subfolders. The original screenshots remain unlabeled.
+
 ## About phase0
 
 phase0 is a clean, customizable watch face built to keep useful information

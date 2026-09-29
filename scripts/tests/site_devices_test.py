@@ -26,7 +26,7 @@ def test_site_devices_include_device_display_and_memory_data() -> None:
     assert by_connect_iq_id["fr745"]["supported"] is False
     assert "Forerunner 745" in [device["productId"] for device in devices]
     assert {device["connectIqId"] for device in devices if device["supported"]} == set(
-        supported_connect_iq_ids(Path("manifest.xml"))
+        supported_connect_iq_ids(Path("manifest.xml.tmpl"))
     )
 
 
@@ -41,7 +41,7 @@ def test_site_devices_writer_exposes_data_on_window(tmp_path: Path) -> None:
 def test_site_devices_builder_writes_default_data(tmp_path: Path) -> None:
     output = tmp_path / "nested" / "devices-data.js"
 
-    build_site_devices(Path("manifest.xml"), output)
+    build_site_devices(Path("manifest.xml.tmpl"), output)
 
     assert output.exists()
     assert output.read_text(encoding="utf-8").startswith("window.PHASE_DEVICES = [")

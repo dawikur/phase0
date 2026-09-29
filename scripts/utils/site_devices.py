@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TypedDict
 
 from data.devices import DEVICES
-from scripts.utils.site_settings import supported_connect_iq_ids
+from scripts.utils.manifest import supported_connect_iq_ids
 
 
 class DeviceMemoryData(TypedDict):
@@ -22,7 +22,7 @@ class DeviceData(TypedDict):
     apiVersion: str
 
 
-def device_data(manifest_xml: Path = Path("manifest.xml")) -> list[DeviceData]:
+def device_data(manifest_xml: Path = Path("manifest.xml.tmpl")) -> list[DeviceData]:
     supported_ids = set(supported_connect_iq_ids(manifest_xml))
 
     return [
@@ -54,7 +54,7 @@ def write_devices_js(
 
 
 def build_site_devices(
-    manifest_xml: Path = Path("manifest.xml"),
+    manifest_xml: Path = Path("manifest.xml.tmpl"),
     output: Path = Path("build/site/devices-data.js"),
 ) -> None:
     write_devices_js(device_data(manifest_xml), output)

@@ -58,7 +58,8 @@ build outputs; change their source data or generator instead.
 Memory-specific resources belong in `resources/memory/low/`,
 `resources/memory/medium/` or `resources/memory/high/`. Their device mapping and
 `memory_low`, `memory_medium` and `memory_high` source exclusions are generated
-from `manifest.xml` and `data/devices`; inverse annotations
+from the release manifest rendered from `manifest.xml.tmpl` and
+`data/devices`; inverse annotations
 `memory_not_low`, `memory_not_medium` and `memory_not_high` are also generated
 so a declaration can be included in every profile except one. Monkey C
 annotation names use underscores because hyphens are not valid in annotations.
@@ -328,6 +329,20 @@ outputs, fetched site UI cache, virtual environments, Python caches, and root-le
 The release optimizer is pinned in `package-lock.json`; install its Node
 dependencies with `npm ci` before producing a release build.
 
+`manifest.xml.tmpl` is the shared source for developer, alpha, beta and release
+manifest files. `make build` defaults to the developer PRG. `make alpha`,
+`make beta` and `make iq` export separate IQ packages in release mode and
+reject an explicit different `MODE`; developer has no IQ package. Generated
+manifests and their selecting Jungle files live in
+`build/manifests/`. Do not reuse a channel's application ID for another Store
+listing. `make store` creates release artwork at `build/store/`, copies all
+normal screenshots and only the data-rich AoD screenshot from
+`site/assets/screenshots/`, and creates labeled alpha and beta icons, heroes
+and data-rich covers in its channel subfolders.
+Because manifests are generated outside the repository root, `monkey.jungle`
+must explicitly anchor `base.sourcePath` and `base.resourcePath` to root source
+and resource directories; SDK defaults would resolve against the manifest.
+
 `make screenshots` generates `build/store/icon_128.png` and
 `build/store/icon_512.png`, plus configured normal and AoD watch-face screenshots
 in `site/assets/screenshots/` (named `<scenario>.png` and
@@ -349,6 +364,9 @@ scenario's PRG into that running simulator, including when it changes devices.
 After loading each PRG, the generator uses the simulator's Reset All App Data
 command and waits for the watch face to restart before capturing; the simulator
 otherwise retains application properties between loads.
+Shared simulator process lifecycle helpers live in
+`scripts/utils/simulator_process.py`. Screenshot capture tracks the X11 window
+IDs opened during its run and closes only those windows.
 Screenshot scenarios live in
 `data/screenshots.py`; device, app-property overrides, and gallery title,
 description and alt text belong together there. Simulator time display and

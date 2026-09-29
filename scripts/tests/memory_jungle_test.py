@@ -19,7 +19,7 @@ def test_memory_class_for_limit_rejects_unknown_limit() -> None:
 
 
 def test_render_memory_jungle_maps_supported_devices() -> None:
-    jungle = render_memory_jungle(Path("manifest.xml"))
+    jungle = render_memory_jungle(Path("manifest.xml.tmpl"))
 
     assert jungle.count(".resourcePath =") == 35
     assert jungle.count("../resources/memory/low") == 12
@@ -44,7 +44,7 @@ def test_render_memory_jungle_maps_supported_devices() -> None:
 
 
 def test_render_memory_jungle_ignores_unsupported_devices() -> None:
-    jungle = render_memory_jungle(Path("manifest.xml"))
+    jungle = render_memory_jungle(Path("manifest.xml.tmpl"))
 
     assert "approachs50" not in jungle
     assert "fr745" not in jungle

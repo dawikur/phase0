@@ -1,6 +1,9 @@
 <!-- Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev> -->
 
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+	<string id="APP_NAME_DEVELOPER" translatable="false">phase0 Developer</string>
+	<string id="APP_NAME_ALPHA" translatable="false">phase0 Alpha</string>
+	<string id="APP_NAME_BETA" translatable="false">phase0 Beta</string>
 	<string id="APP_NAME">phase0</string>
 
 	<string id="CONDITION_00_CLEAR">Clear</string>

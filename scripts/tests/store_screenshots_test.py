@@ -18,6 +18,7 @@ from PIL import Image
 from scripts.utils.smoke import Simulator, SmokeSignals, WatchFaceLoader
 from scripts.utils.store_screenshots import (
     Scenario,
+    WindowSession,
     _wait_for_window,
     _xdotool,
     apply_property_overrides,
@@ -260,26 +261,28 @@ def test_run_scenario_builds_waits_captures_and_stops(
         ready_events.append(sim.signals.ready)
         events.append("ready")
 
-    monkeypatch.setattr(screenshots, "_wait_for_watch_face", wait_for_watch_face)
+    monkeypatch.setattr(screenshots, "wait_for_watch_face", wait_for_watch_face)
     monkeypatch.setattr(
         screenshots,
         "set_simulator_display_settings",
-        lambda time_display, units_display: events.append(
+        lambda time_display, units_display, _window_id: events.append(
             f"display:{time_display}:{units_display}"
         ),
     )
     monkeypatch.setattr(
-        screenshots, "reset_simulator_app_data", lambda: events.append("reset")
+        screenshots,
+        "reset_simulator_app_data",
+        lambda _window_id: events.append("reset"),
     )
-    monkeypatch.setattr(screenshots, "_check_simulator", lambda *_: None)
+    monkeypatch.setattr(screenshots, "check_simulator", lambda *_: None)
     monkeypatch.setattr(
         screenshots,
         "capture_simulator_screenshot",
-        lambda path: events.append("capture") or path,
+        lambda path, _session: events.append("capture") or path,
     )
     monkeypatch.setattr(
         screenshots,
-        "_stop_watch_face_loader",
+        "stop_watch_face_loader",
         lambda _loader: events.append("stop-app"),
     )
     result = run_scenario(
@@ -290,6 +293,7 @@ def test_run_scenario_builds_waits_captures_and_stops(
         sdk_dir=tmp_path / "sdk",
         output_dir=tmp_path / "store",
         simulator=simulator,
+        window_session=WindowSession("0x2", {"0x2"}),
     )
 
     assert result == output
@@ -327,6 +331,7 @@ def test_run_scenario_leaves_shared_simulator_running_if_app_fails_to_start(
             sdk_dir=tmp_path / "sdk",
             output_dir=tmp_path / "store",
             simulator=simulator,
+            window_session=WindowSession("0x2", {"0x2"}),
         )
 
 
@@ -411,6 +416,19 @@ def test_find_simulator_window_rejects_multiple_windows() -> None:
             find_simulator_window(timeout=1)
 
 
+def test_find_simulator_window_excludes_existing_simulator() -> None:
+    result = SimpleNamespace(
+        stdout=(
+            "0x1 0 0 0 CIQ Simulator - existing\n"
+            "0x2 0 0 0 CIQ Simulator - screenshot run\n"
+        ),
+    )
+    with patch("scripts.utils.store_screenshots.subprocess.run", return_value=result):
+        assert (
+            find_simulator_window(timeout=1, excluded_ids=frozenset({"0x1"})) == "0x2"
+        )
+
+
 def test_find_simulator_window_times_out(monkeypatch: pytest.MonkeyPatch) -> None:
     import scripts.utils.store_screenshots as screenshots
 
@@ -442,7 +460,7 @@ def test_close_simulator_windows_closes_dialog_then_simulator() -> None:
             no_windows,
         ],
     ) as run:
-        close_simulator_windows()
+        close_simulator_windows({"0x1", "0x2"})
 
     assert [call.args[0] for call in run.call_args_list] == [
         ["wmctrl", "-l"],
@@ -458,11 +476,33 @@ def test_close_simulator_windows_returns_when_none_are_open() -> None:
         "scripts.utils.store_screenshots.subprocess.run",
         return_value=SimpleNamespace(stdout="0x1 0 0 0 Other Window\n"),
     ) as run:
-        close_simulator_windows()
+        close_simulator_windows({"0x2"})
 
     run.assert_called_once_with(
         ["wmctrl", "-l"], capture_output=True, text=True, check=True
     )
+
+
+def test_close_simulator_windows_keeps_unowned_windows() -> None:
+    windows = SimpleNamespace(
+        stdout=(
+            "0x1 0 0 0 Save As\n"
+            "0x2 0 0 0 CIQ Simulator - screenshot run\n"
+            "0x3 0 0 0 CIQ Simulator - existing\n"
+        )
+    )
+    remaining = SimpleNamespace(stdout="0x1 0 0 0 Save As\n0x3 0 0 0 CIQ Simulator\n")
+    with patch(
+        "scripts.utils.store_screenshots.subprocess.run",
+        side_effect=[windows, SimpleNamespace(), remaining],
+    ) as run:
+        close_simulator_windows({"0x2"})
+
+    assert [call.args[0] for call in run.call_args_list] == [
+        ["wmctrl", "-l"],
+        ["wmctrl", "-ic", "0x2"],
+        ["wmctrl", "-l"],
+    ]
 
 
 def test_close_simulator_windows_reports_timeout() -> None:
@@ -475,7 +515,7 @@ def test_close_simulator_windows_reports_timeout() -> None:
     ), pytest.raises(
         RuntimeError, match="waiting for the Connect IQ Simulator to close"
     ):
-        close_simulator_windows(timeout=-1)
+        close_simulator_windows({"0x2"}, timeout=-1)
 
 
 def test_wait_for_window_returns_matching_dialog() -> None:
@@ -609,9 +649,20 @@ def test_capture_simulator_screenshot_saves_valid_native_image(
     xdotool_commands: list[tuple[str, ...]] = []
     save_confirmations = 0
     file_write_attempts = 0
+    session = WindowSession("0x2", {"0x2"})
+    excluded_ids: list[frozenset[str]] = []
     monkeypatch.setattr(screenshots, "REPO_DIR", tmp_path)
-    monkeypatch.setattr(screenshots, "find_simulator_window", lambda: "0x2")
-    monkeypatch.setattr(screenshots, "_wait_for_window", lambda *_, **__: "0x3")
+    monkeypatch.setattr(
+        screenshots,
+        "list_windows",
+        lambda: {"0x2": "CIQ Simulator", "0x9": "Unrelated Save As"},
+    )
+
+    def wait_for_dialog(*_args: object, **kwargs: object) -> str:
+        excluded_ids.append(cast(frozenset[str], kwargs["excluded_ids"]))
+        return "0x3"
+
+    monkeypatch.setattr(screenshots, "_wait_for_window", wait_for_dialog)
 
     def delayed_file(_delay: float) -> None:
         nonlocal file_write_attempts
@@ -640,7 +691,7 @@ def test_capture_simulator_screenshot_saves_valid_native_image(
 
     monkeypatch.setattr(screenshots, "_xdotool", fake_xdotool)
 
-    assert capture_simulator_screenshot(output) == output
+    assert capture_simulator_screenshot(output, session) == output
     with Image.open(output) as image:
         assert image.size == (240, 240)
     assert commands == [
@@ -650,6 +701,8 @@ def test_capture_simulator_screenshot_saves_valid_native_image(
     assert typed_path and "/" not in typed_path[0]
     assert ("key", "--clearmodifiers", "Return") in xdotool_commands
     assert file_write_attempts >= 2
+    assert session.owned_ids == {"0x2", "0x3"}
+    assert excluded_ids == [frozenset({"0x2", "0x9"})] * 2
     assert not list(tmp_path.glob("phase0-store-shot-*.png"))
 
 
@@ -659,7 +712,7 @@ def test_capture_simulator_screenshot_reports_missing_dialog(
     import scripts.utils.store_screenshots as screenshots
 
     monkeypatch.setattr(screenshots, "find_simulator_window", lambda: "0x2")
-    monkeypatch.setattr(screenshots, "_wait_for_window", lambda *_: None)
+    monkeypatch.setattr(screenshots, "_wait_for_window", lambda *_, **__: None)
     monkeypatch.setattr(screenshots.time, "sleep", lambda _: None)
     monkeypatch.setattr(screenshots, "_xdotool", lambda *_: None)
     monkeypatch.setattr(screenshots.subprocess, "run", lambda *_args, **_kwargs: None)
@@ -736,6 +789,7 @@ def test_build_scenario_builds_and_overrides_settings(tmp_path: Path) -> None:
         "build_release",
         "NAME=phase0",
         "DEVICE=fr255",
+        "CHANNEL=release",
     ]
     assert run.call_args.kwargs["cwd"] == screenshots.REPO_DIR
     assert run.call_args.kwargs["check"] is True
@@ -771,7 +825,7 @@ def test_start_watch_face_passes_scenario_settings(
     settings = tmp_path / "phase0-fr255_release-settings.json"
     program = tmp_path / "build" / "phase0-preview-123.prg"
     with patch(
-        "scripts.utils.store_screenshots._start_logged_process",
+        "scripts.utils.store_screenshots.start_logged_process",
         return_value=(process, thread),
     ) as start:
         loader = screenshots._start_watch_face(
@@ -809,10 +863,12 @@ def test_generate_screenshots_runs_selected_scenarios(
     monkeypatch.setattr(screenshots, "connect_iq_sdk_dir", lambda: tmp_path / "sdk")
     simulator = Simulator(MagicMock(), SmokeSignals(Event()), MagicMock())
     start_simulator = MagicMock(return_value=simulator)
-    monkeypatch.setattr(screenshots, "_start_simulator", start_simulator)
-    monkeypatch.setattr(screenshots, "close_simulator_windows", lambda: None)
+    monkeypatch.setattr(screenshots, "start_simulator", start_simulator)
+    monkeypatch.setattr(screenshots, "list_windows", lambda: {})
+    monkeypatch.setattr(screenshots, "find_simulator_window", lambda **_kwargs: "0x2")
+    monkeypatch.setattr(screenshots, "close_simulator_windows", lambda _owned: None)
     stop_simulator = MagicMock()
-    monkeypatch.setattr(screenshots, "_stop_simulator", stop_simulator)
+    monkeypatch.setattr(screenshots, "stop_simulator", stop_simulator)
     run = MagicMock(
         side_effect=lambda scenario, **kwargs: kwargs["output_dir"]
         / (
@@ -853,6 +909,7 @@ def test_generate_screenshots_runs_selected_scenarios(
             sdk_dir=tmp_path / "sdk",
             output_dir=tmp_path / "store",
             simulator=simulator,
+            window_session=WindowSession("0x2", {"0x2"}),
             night_mode=False,
         ),
         call(
@@ -863,6 +920,7 @@ def test_generate_screenshots_runs_selected_scenarios(
             sdk_dir=tmp_path / "sdk",
             output_dir=tmp_path / "store",
             simulator=simulator,
+            window_session=WindowSession("0x2", {"0x2"}),
             night_mode=True,
         ),
     ]
@@ -883,6 +941,40 @@ def test_generate_screenshots_returns_when_no_scenarios_selected(
         sdk_dir=None,
         output_dir=tmp_path / "store",
     )
+
+
+def test_generate_screenshots_stops_simulator_if_window_does_not_appear(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.utils.store_screenshots as screenshots
+
+    simulator = Simulator(MagicMock(), SmokeSignals(Event()), MagicMock())
+    monkeypatch.setattr(screenshots, "supported_devices", lambda _: ["fr255"])
+    monkeypatch.setattr(screenshots, "require_capture_tools", lambda: None)
+    monkeypatch.setattr(screenshots, "require_x11_display", lambda: None)
+    monkeypatch.setattr(screenshots, "list_windows", lambda: {})
+    monkeypatch.setattr(screenshots, "start_simulator", lambda *_, **__: simulator)
+    monkeypatch.setattr(
+        screenshots,
+        "find_simulator_window",
+        MagicMock(side_effect=RuntimeError("window missing")),
+    )
+    stop = MagicMock()
+    monkeypatch.setattr(screenshots, "stop_simulator", stop)
+    monkeypatch.setattr(screenshots, "_restore_default_settings", lambda *_: None)
+
+    with pytest.raises(RuntimeError, match="window missing"):
+        generate_screenshots(
+            [Scenario("preview", "fr255", {})],
+            manifest=tmp_path / "manifest.xml",
+            make="make",
+            name="phase0",
+            build_dir=tmp_path / "build",
+            sdk_dir=tmp_path / "sdk",
+            output_dir=tmp_path / "store",
+        )
+
+    stop.assert_called_once_with(simulator)
 
 
 def test_generate_screenshots_rejects_invalid_scenarios_before_x11(

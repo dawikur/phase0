@@ -9,7 +9,9 @@ from scripts.utils.memory_jungle import render_memory_jungle
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--manifest", type=Path, default=Path("manifest.xml"))
+    parser.add_argument(
+        "--manifest", type=Path, default=Path("build/manifests/release.xml")
+    )
     args = parser.parse_args()
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
