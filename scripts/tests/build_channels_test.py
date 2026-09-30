@@ -46,7 +46,7 @@ def test_generated_manifest_uses_explicit_source_path() -> None:
 def test_package_helpers_use_release_mode(
     target: str, channel: str, package: str, mode: str | None
 ) -> None:
-    command = ["make", "-n", target]
+    command = ["make", "-B", "-n", target]
     if mode is not None:
         command.append(f"MODE={mode}")
     result = subprocess.run(command, capture_output=True, text=True, check=False)

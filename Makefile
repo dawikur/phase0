@@ -30,6 +30,10 @@ endif
 endif
 
 VALID_CHANNELS := developer alpha beta release
+CHANNEL_DESCRIPTION.developer := Local development builds
+CHANNEL_DESCRIPTION.alpha     := Alpha Store listing
+CHANNEL_DESCRIPTION.beta      := Beta Store listing
+CHANNEL_DESCRIPTION.release   := Public Store listing
 ifneq ($(filter $(CHANNEL),$(VALID_CHANNELS)),$(CHANNEL))
 $(error Unsupported CHANNEL='$(CHANNEL)'; choose one of: $(VALID_CHANNELS))
 endif
@@ -718,4 +722,24 @@ h help: # print help message
 			printf "     %-" description_width "s %s\n", modes[i], descriptions[i]; \
 	}' $(MAKEFILE_LIST)
 	printf "\n"
+	# ---- channels ----
+	printf " %bChannels%b\n" "$$B" "$$N"
+	awk -v description_column=$(HELP_DESCRIPTION_COLUMN) '\
+	/^[[:space:]]*CHANNEL_DESCRIPTION\.[[:alnum:]_-]+[[:space:]]*:=/ { \
+		split($$1, name_parts, "."); \
+		++n; \
+		channels[n] = name_parts[2]; \
+		descriptions[n] = substr($$0, index($$0, ":=") + 2); \
+		sub(/^[[:space:]]*/, "", descriptions[n]); \
+		if (length(channels[n]) > max_channel) max_channel = length(channels[n]); \
+	} \
+	END { \
+		description_width = description_column - 6; \
+		if (max_channel > description_width) \
+			description_width = max_channel; \
+		for (i = 1; i <= n; i++) \
+			printf "     %-" description_width "s %s\n", channels[i], descriptions[i]; \
+	}' $(MAKEFILE_LIST)
+	printf "\n"
+.PHONY: help
 .PHONY: help

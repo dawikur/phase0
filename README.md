@@ -1,95 +1,62 @@
 # phase0
 
-phase0 is a minimal, battery-efficient Garmin Connect IQ watch face.
+Source repository for a Garmin Connect IQ watch face. For the product overview,
+see the [phase0 website](https://dawikur.dev/phase0).
 
-## Project documents
+## Getting started
 
-- [TODO.md](TODO.md) — compact product and technical backlog.
-- [CHANGELOG.md](CHANGELOG.md) — release history.
+You need Python 3, Node.js 22, and the Garmin Connect IQ SDK. The Makefile reads
+the active SDK from `~/.Garmin/ConnectIQ/current-sdk.cfg` and creates `.venv`
+for Python targets. Release builds also need `CONNECTIQ_DEVELOPER_KEY` and the
+pinned Node dependencies (`npm ci`).
 
-The changelog starts with the first published release.
+```sh
+make help            # list targets, arguments, devices, and modes
+make test            # Python and website tests
+make build           # developer PRG for fr955 (the default device)
+```
+
+Use `DEVICE=<id>` to build for another device in `manifest.xml.tmpl`. Build
+outputs go to `build/`. `make lint` runs the Python checks and may reformat
+files, so review the diff afterward. `make smoke_test` and `make smoke` build
+and run every supported device in the Connect IQ simulator.
+
+## Repository layout
+
+| Path | Purpose |
+| --- | --- |
+| `source/phase0/`, `source/app.mc` | App lifecycle, view, and layout |
+| `source/widgets/` | Reusable watch-face components |
+| `source/data/` | Data metrics and formatting |
+| `source/utils/` | Rendering, caching, and data providers |
+| `data/` | Inputs for generated resources, settings, and devices |
+| `resources/` | Source resources and generated resource definitions |
+| `scripts/`, `tests/` | Generators, build helpers, and Python tests |
+| `site/` | Website source and JavaScript tests |
+
+Edit generator inputs rather than generated files. In particular,
+`source/generated/`, `resources/base/generated/`, and generated files in
+`build/site/` are build outputs. `make site` copies the website source to
+`build/site/` and adds generated data; `make site_update` also refreshes the
+shared site UI before rebuilding.
 
 ## Build channels
 
-The default `make build` produces a device-specific developer PRG. Select a
-different channel with `make build CHANNEL=alpha DEVICE=fr955` when testing a
-Store identity on a device. Build uploadable packages with `make alpha`,
-`make beta`, or `make iq` for the release `phase0.iq` package.
-The developer channel has no IQ package target.
-These three package targets always compile in release mode and reject an
-explicit `MODE` value other than `release`.
+`make build` creates a device-specific developer PRG. To test a Store identity
+on a watch, select its channel, for example `make build CHANNEL=alpha`. To
+create uploadable, release-mode IQ packages, run `make alpha`, `make beta`, or
+`make iq` (`build/phase0.iq` for the public release). Run `npm ci` before these
+release builds.
 
-`manifest.xml.tmpl` holds the shared product, permission, and language lists.
-Make renders each channel's stable ID and name into `build/manifests/` before
-compilation. Keep each ID assigned to its existing Garmin Store listing when
-uploading updates: developer is for PRG testing, alpha is a private Garmin
-Beta App, beta is a separate public test listing, and release is the public
-watch face. Separate IDs keep installations and settings independent.
+The manifest generator assigns a stable ID to each channel using the shared
+`manifest.xml.tmpl`. Developer is for PRG testing; alpha is a private Garmin
+Beta App; beta is a separate public test listing; release is the public watch
+face. Keep each ID with its existing Store listing so installations and
+settings stay separate.
 
-`make store` creates the release icons and hero in `build/store/` and copies
-all normal screenshots plus the data-rich AoD screenshot from
-`site/assets/screenshots/`. It also creates purple-ribbon alpha and
-turquoise-ribbon beta icons, heroes and data-rich covers in the corresponding
-subfolders. The original screenshots remain unlabeled.
+## Project documents
 
-## About phase0
-
-phase0 is a clean, customizable watch face built to keep useful information
-easy to read.
-
-[https://dawikur.dev/phase0](dawikur.dev/phase0)
-
-Choose the fields, widgets and colors that matter. phase0 adapts the layout to
-the available space and hides rows that are not in use.
-
-Put the time first, then choose the details that matter to you. Add activity
-and health metrics, weather, battery information, sunrise and sunset, or status
-icons. Pick your colors and decide which data appears in the available areas.
-
-### Make the layout yours
-
-- Choose colors for the background, text, accents and clock.
-- Add metrics such as heart rate, steps, floors, stress, Body Battery, calories
-  and recovery time.
-- Show weather details such as temperature, rain chance, UV index and wind.
-- Add battery, alarm, phone connection and notification indicators.
-- Choose sunrise and sunset information, with sun or moon icons.
-
-In the phone settings, Global controls the face palette. Clock and Gauges can
-use their own colors or inherit the matching color from Global. Clock also
-offers an Auto or Small size. Status, Gauges, Top Metrics and Bottom Metrics
-each appear once. Numbered fields identify the slots in order,
-so you can tell which indicator or metric you are changing. Select a slot by its
-data; the following field sets a gauge's accent or a middle metric's width.
-Metric width defaults to Auto, which uses the selected data's preferred width
-(three digits unless that data specifies otherwise). For example, UV index uses
-two digits, pressure four and steps five. You can also choose one to ten digits
-explicitly.
-
-### Designed to adapt
-
-phase0 measures the available screen space and adjusts the layout to fit.
-Depending on the device and selected fields, it can resize text, rearrange the
-spacing or omit lines that do not fit. The rows closest to the clock keep
-their position when middle or outer rows are hidden; the remaining visible
-rows spread into the free space. Smaller screens can show a simpler face;
-larger screens can fit more information.
-
-The watch face is designed with efficient updates in mind. Some data depends
-on your device, Garmin Connect, available sensors and permissions, and may
-not be available on every watch.
-
-### Readable At A Glance
-
-The large segmented clock stays dominant while secondary metrics keep their
-own lanes.
-
-### Adaptive Color System
-
-Accent, foreground and background combinations keep the face readable across
-bright daytime use and low-distraction AoD viewing.
-
-### Built For Small Screens
-
-The layout adapts to each watch screen and the widgets you choose, keeping
-icons, labels, values and gauges clear at a glance.
+- [AGENTS.md](AGENTS.md) — architecture, performance, and repository rules.
+- [TODO.md](TODO.md) — product and technical backlog.
+- [CHANGELOG.md](CHANGELOG.md) — release history.
+- [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — build, upload, and watch checks.
