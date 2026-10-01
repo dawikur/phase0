@@ -26,7 +26,7 @@
       </div>
       <p class="eyebrow"><a class="ui-back-link" href="../" data-site-back data-state-transfer>← phase0</a><span data-site-back-separator> · </span>Garmin Connect IQ reference</p>
       <h1>Device Reference</h1>
-      <p class="lede">Display characteristics, API versions, and documented watch face memory limits for devices in the Connect IQ device catalog.</p>
+      <p class="lede">Display shape and technology, resolution, API versions, and documented watch face memory limits for devices in the Connect IQ device catalog.</p>
       <div class="devices-table-toolbar">
         <p class="devices-summary ui-tag" id="devicesSummary"></p>
         <div class="ui-segmented ui-segmented--two devices-scope-control" role="group" aria-label="Device scope">
@@ -40,6 +40,7 @@
             <tr>
               <th scope="col" aria-sort="ascending"><button type="button" data-sort-column="productId">Device</button></th>
               <th scope="col" aria-sort="none"><button type="button" data-sort-column="resolution">Resolution</button></th>
+              <th scope="col" aria-sort="none"><button type="button" data-sort-column="screenShape">Shape</button></th>
               <th scope="col" aria-sort="none"><button type="button" data-sort-column="screenType">Screen</button></th>
               <th scope="col" aria-sort="none"><button type="button" data-sort-column="connectIqId">Connect IQ ID</button></th>
               <th scope="col" aria-sort="none"><button type="button" data-sort-column="watchFaceMemory">Watch face memory</button></th>
@@ -48,6 +49,7 @@
             <tr class="devices-table-filters">
               <th scope="col"><label><span class="ui-visually-hidden">Filter device</span><input type="search" data-filter-column="productId" placeholder="Filter devices" /></label></th>
               <th scope="col"><label><span class="ui-visually-hidden">Filter resolution</span><select data-filter-column="resolution"><option value="">All</option></select></label></th>
+              <th scope="col"><label><span class="ui-visually-hidden">Filter screen shape</span><select data-filter-column="screenShape"><option value="">All</option></select></label></th>
               <th scope="col"><label><span class="ui-visually-hidden">Filter screen type</span><select data-filter-column="screenType"><option value="">All</option></select></label></th>
               <th scope="col"><label><span class="ui-visually-hidden">Filter Connect IQ ID</span><input type="search" data-filter-column="connectIqId" placeholder="Filter IDs" /></label></th>
               <th scope="col"><label><span class="ui-visually-hidden">Filter watch face memory</span><select data-filter-column="watchFaceMemory"><option value="">All</option><option value="documented">Documented</option><option value="unknown">Unknown</option></select></label></th>

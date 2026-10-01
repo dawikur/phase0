@@ -4,8 +4,8 @@
 import json
 import os
 
-from data.settings import Data, Widgets
-from data.settings import settings as Settings
+from data.settings import Source, Widgets
+from data.settings import data as Settings
 from scripts.utils.args_parse import parse_folders
 from scripts.utils.settings_generation import (
     apply_property_defaults,
@@ -19,7 +19,7 @@ from scripts.utils.settings_generation import (
 if __name__ == "__main__":
     folders = parse_folders()
 
-    data = Data(folders.source("data"))
+    data = Source(folders.source("data"))
     folders.source("generated", "data.mc").write_text(render_data_mc(data))
 
     widgets = Widgets(data)

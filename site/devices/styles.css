@@ -17,7 +17,7 @@
 
 .devices-table {
 	width: 100%;
-	min-width: 760px;
+	min-width: 860px;
 	border-collapse: collapse;
 	color: var(--copy);
 	font-size: 0.9rem;

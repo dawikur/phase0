@@ -117,7 +117,8 @@ JUNGLES       := $(JUNGLE);$(MEMORY_JUNGLE);$(CHANNEL_JUNGLE)
 OUT           := $(NAME)-$(DEVICE)$(NAME_SUFFIX)$(if $(filter release,$(CHANNEL)),,_$(CHANNEL))
 APP_SETTINGS  := $(shell printf '%s' '$(OUT)' | tr '[:lower:]' '[:upper:]')-settings.json
 PRG           := $(BUILD_DIR)$(OUT).prg
-RSCS          := $(shell find resources/base resources/lang resources/memory -type f ! -path '*/__pycache__/*')
+RESOURCE_DIRS := resources/base resources/lang $(wildcard resources/memory)
+RSCS          := $(shell find $(RESOURCE_DIRS) -type f ! -path '*/__pycache__/*')
 SRCS          := $(shell find source -type f ! -path '*/__pycache__/*')
 SRCS_DATA     := $(shell find source/data -type f ! -path '*/__pycache__/*')
 

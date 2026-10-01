@@ -6,8 +6,19 @@ from typing import Iterator, overload
 
 
 class ScreenType(str, Enum):
+    MIP2 = "MIP2"
+    MIP8 = "MIP8"
+    MIP16 = "MIP16"
     MIP64 = "MIP64"
+    LCD = "LCD"
     AMOLED = "AMOLED"
+
+
+class ScreenShape(str, Enum):
+    ROUND = "round"
+    SEMI_ROUND = "semi-round"
+    RECTANGLE = "rectangle"
+    SEMI_OCTAGON = "semi-octagon"
 
 
 @dataclass(frozen=True)
@@ -29,25 +40,42 @@ class Device:
     connect_iq_id: str = ""
     memory: Memory = Memory()
     api_version: str = ""
+    screen_shape: ScreenShape = ScreenShape.ROUND
 
 
 class Devices:
-    __items: tuple[Device, ...]
+    __items: list[Device]
 
-    def __init__(self, items: list[Device]):
-        self.__items = tuple(items)
+    def __init__(self, *items: Device):
+        self.__items = list(items)
 
     @property
-    def all(self) -> tuple[Device, ...]:
+    def all(self) -> list[Device]:
         return self.__items
 
     @property
-    def mip64(self) -> tuple[Device, ...]:
+    def mip64(self) -> list[Device]:
         return self.__with_screen_type(ScreenType.MIP64)
 
     @property
-    def amoled(self) -> tuple[Device, ...]:
+    def mip2(self) -> list[Device]:
+        return self.__with_screen_type(ScreenType.MIP2)
+
+    @property
+    def mip8(self) -> list[Device]:
+        return self.__with_screen_type(ScreenType.MIP8)
+
+    @property
+    def mip16(self) -> list[Device]:
+        return self.__with_screen_type(ScreenType.MIP16)
+
+    @property
+    def amoled(self) -> list[Device]:
         return self.__with_screen_type(ScreenType.AMOLED)
+
+    @property
+    def lcd(self) -> list[Device]:
+        return self.__with_screen_type(ScreenType.LCD)
 
     @property
     def resolutions(self) -> tuple[Resolution, ...]:
@@ -56,27 +84,27 @@ class Devices:
         )
 
     @property
-    def resolution_240x240(self) -> tuple[Device, ...]:
+    def resolution_240x240(self) -> list[Device]:
         return self.__with_resolution(Resolution(240, 240))
 
     @property
-    def resolution_260x260(self) -> tuple[Device, ...]:
+    def resolution_260x260(self) -> list[Device]:
         return self.__with_resolution(Resolution(260, 260))
 
     @property
-    def resolution_280x280(self) -> tuple[Device, ...]:
+    def resolution_280x280(self) -> list[Device]:
         return self.__with_resolution(Resolution(280, 280))
 
     @property
-    def resolution_390x390(self) -> tuple[Device, ...]:
+    def resolution_390x390(self) -> list[Device]:
         return self.__with_resolution(Resolution(390, 390))
 
     @property
-    def resolution_416x416(self) -> tuple[Device, ...]:
+    def resolution_416x416(self) -> list[Device]:
         return self.__with_resolution(Resolution(416, 416))
 
     @property
-    def resolution_454x454(self) -> tuple[Device, ...]:
+    def resolution_454x454(self) -> list[Device]:
         return self.__with_resolution(Resolution(454, 454))
 
     def __iter__(self) -> Iterator[Device]:
@@ -90,22 +118,18 @@ class Devices:
         pass  # pragma: no cover
 
     @overload
-    def __getitem__(self, idx: slice) -> tuple[Device, ...]:
+    def __getitem__(self, idx: slice) -> list[Device]:
         pass  # pragma: no cover
 
-    def __getitem__(self, idx: int | slice) -> Device | tuple[Device, ...]:
+    def __getitem__(self, idx: int | slice) -> Device | list[Device]:
         return self.__items[idx]
 
-    def __with_screen_type(self, screen_type: ScreenType) -> tuple[Device, ...]:
-        return tuple(
-            device for device in self.__items if device.screen_type == screen_type
-        )
+    def __with_screen_type(self, screen_type: ScreenType) -> list[Device]:
+        return [device for device in self.__items if device.screen_type == screen_type]
 
     def __resolutions(self) -> Iterator[Resolution]:
         for device in self.__items:
             yield device.resolution
 
-    def __with_resolution(self, resolution: Resolution) -> tuple[Device, ...]:
-        return tuple(
-            device for device in self.__items if device.resolution == resolution
-        )
+    def __with_resolution(self, resolution: Resolution) -> list[Device]:
+        return [device for device in self.__items if device.resolution == resolution]

@@ -9,15 +9,15 @@ import pytest
 from data.settings import (
     Array,
     Boolean,
-    Data,
     Number,
     Select,
     Settings,
     Single,
+    Source,
     Token,
     Widgets,
 )
-from data.settings.settings import MemoryHigh, MemoryLow, MemoryMedium
+from data.settings.data import MemoryHigh, MemoryLow, MemoryMedium
 
 
 class Options(IntEnum):
@@ -79,7 +79,7 @@ def test_data_reads_metrics_and_filters_their_features(tmp_path: Path) -> None:
     )
     (tmp_path / "nested").mkdir()
 
-    data = Data(tmp_path)
+    data = Source(tmp_path)
 
     assert [(item.name, item.value) for item in data] == [
         ("BATTERY", 1),
@@ -94,7 +94,7 @@ def test_data_reads_metrics_and_filters_their_features(tmp_path: Path) -> None:
 
 
 def test_settings_builds_data_widget_values_from_data() -> None:
-    data = Data(Path("source/data"))
+    data = Source(Path("source/data"))
     data_widget: Any = Widgets(data)
 
     assert data_widget.NONE == len(data) + 1

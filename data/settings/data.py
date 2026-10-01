@@ -1,128 +1,263 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
-import re
-from dataclasses import dataclass
-from enum import IntEnum
-from pathlib import Path
-from typing import Any, Callable, Iterator, cast
+from enum import IntEnum, auto
+from typing import Any, cast
+
+from .colors import Colors
+from .model import Array, Select, Settings, Single
+from .source import Source
 
 
-@dataclass
-class Datum:
-    name: str
-    value: int
+class Options(IntEnum):
+    NONE = auto()
 
-    has_icon: bool
-    has_value_max: bool
+    ALARM = auto()
+    AUTO = auto()
+    BATTERY_DAYS_REMAINING = auto()
+    BATTERY_ICON = auto()
+    BATTERY_PERCENTAGE = auto()
+    BLUETOOTH_CONNECTED = auto()
+    BLUETOOTH_DISCONNECTED = auto()
+    DAWN_AND_DUSK = auto()
+    DAWN_AND_DUSK_MOON = auto()
+    DAWN_AND_DUSK_SUN = auto()
+    DAWN_OR_DUSK = auto()
+    DAWN_OR_DUSK_MOON = auto()
+    DAWN_OR_DUSK_SUN = auto()
+    GAUGE = auto()
+    ICON = auto()
+    NOTIFICATIONS = auto()
+    SMALL = auto()
 
 
-class Data:
-    CLASS_PARTS_RE = re.compile(r"(?<!^)(?=[A-Z])")
-    CLASS_RE = re.compile(r"\bclass\s+([A-Za-z_]\w*)\s+extends Base\b")
-    ICON_ASSIGN_RE = re.compile(r"\bself\.icon\s*=\s*Fonts\.ICON_\w+")
-    INITIALIZE_RE = re.compile(
-        r"function\s+initialize\s*\(\s*\)(.*?)(?=\n\s*function|\Z)", re.DOTALL
+EXTRA_WIDGETS = [
+    Options.NONE,
+    Options.BATTERY_DAYS_REMAINING,
+    Options.BATTERY_ICON,
+    Options.BATTERY_PERCENTAGE,
+    Options.DAWN_AND_DUSK,
+    Options.DAWN_AND_DUSK_MOON,
+    Options.DAWN_AND_DUSK_SUN,
+    Options.DAWN_OR_DUSK,
+    Options.DAWN_OR_DUSK_MOON,
+    Options.DAWN_OR_DUSK_SUN,
+]
+
+
+class Sizes(IntEnum):
+    AUTO = Options.AUTO.value
+    SMALL = Options.SMALL.value
+
+
+class MetricWidths(IntEnum):
+    AUTO = -1
+    WIDTH_1 = 1
+    WIDTH_2 = 2
+    WIDTH_3 = 3
+    WIDTH_4 = 4
+    WIDTH_5 = 5
+    WIDTH_6 = 6
+    WIDTH_7 = 7
+    WIDTH_8 = 8
+    WIDTH_9 = 9
+    WIDTH_10 = 10
+
+
+ColorOptions = cast(
+    Any,
+    IntEnum(
+        "ColorOptions",
+        {"GLOBAL": -1, **{color.name: color.value for color in Colors}},
+    ),
+)
+
+
+class Status(IntEnum):
+    NONE = Options.NONE.value
+
+    ALARM = Options.ALARM.value
+    BLUETOOTH_CONNECTED = Options.BLUETOOTH_CONNECTED.value
+    BLUETOOTH_DISCONNECTED = Options.BLUETOOTH_DISCONNECTED.value
+    NOTIFICATIONS = Options.NOTIFICATIONS.value
+
+
+class MetricStyle(IntEnum):
+    NONE = Options.NONE.value
+
+    ICON = Options.ICON.value
+    GAUGE = Options.GAUGE.value
+
+
+def Widgets(  # pylint: disable=invalid-name
+    data: Source,
+) -> type[IntEnum]:
+    DataWidget = cast(
+        Any,
+        IntEnum(
+            "Widget",
+            {datum.name: datum.value + len(data) for datum in EXTRA_WIDGETS},
+        ),
     )
-    LABEL_RE = re.compile(r"LABEL_(\w+)")
-    VALUE_MAX_ASSIGN_RE = re.compile(r"\bself\.value_max\s*=")
 
-    __items: list[Datum]
+    return DataWidget
 
-    def __init__(self, source: Path):
-        items = []
-        for data in source.iterdir():
-            if not data.is_file():
-                continue
-            data_text = data.read_text()
 
-            class_match = self.CLASS_RE.findall(data_text)
-            if not class_match:
-                continue
-            assert len(class_match) == 1
+def MemoryLow(  # pylint: disable=invalid-name
+    data: Source,
+    widgets: Any,
+) -> Settings:
+    DataAll = data.all
+    DataWithIcon = data.with_icon
+    DataWithValueMax = data.with_value_max
 
-            class_parts = [
-                part.lower() for part in self.CLASS_PARTS_RE.split(class_match[0])
-            ]
-            file_parts = data.stem.split("_")
+    return Settings(
+        Single(
+            "global",
+            "Global",
+            [
+                Select("accent", Colors.ORANGE),
+                Select("foreground", Colors.WHITE),
+                Select("shade", Colors.CHARCOAL),
+                Select("background", Colors.BLACK),
+            ],
+        ),
+        Single(
+            "clock",
+            "Clock",
+            [
+                Select("foreground", ColorOptions.LIGHT_ORANGE),
+                Select("shade", ColorOptions.GLOBAL),
+                Select("size", Sizes.AUTO),
+            ],
+        ),
+        Array(
+            "status",
+            "Status",
+            [
+                [
+                    Select("data", Status.ALARM),
+                ],
+                [
+                    Select("data", Status.BLUETOOTH_CONNECTED),
+                ],
+                [
+                    Select("data", Status.NOTIFICATIONS),
+                ],
+            ],
+        ),
+        Array(
+            "gauges",
+            "Gauge",
+            [
+                [
+                    Select("data", DataWithValueMax.BODY_BATTERY),
+                    Select("accent", ColorOptions.CYAN),
+                ],
+                [
+                    Select("data", DataWithValueMax.STRESS),
+                    Select("accent", ColorOptions.YELLOW),
+                ],
+                [
+                    Select("data", DataWithValueMax.MOVE_BAR),
+                    Select("accent", ColorOptions.RED),
+                ],
+            ],
+        ),
+        Single(
+            "top outer",
+            "Widget",
+            [
+                Select("data", widgets.DAWN_OR_DUSK_MOON),
+            ],
+        ),
+        Array(
+            "top middle",
+            "Metric",
+            [
+                [
+                    Select("data", DataWithIcon.RAIN),
+                    Select("width", MetricWidths.AUTO),
+                ],
+                [
+                    Select("data", DataWithIcon.UV_INDEX),
+                    Select("width", MetricWidths.AUTO),
+                ],
+            ],
+        ),
+        Array(
+            "bottom middle",
+            "Metric",
+            [
+                [
+                    Select("data", DataAll.HEART_RATE),
+                    Select("width", MetricWidths.AUTO),
+                ],
+                [
+                    Select("data", DataAll.STEPS),
+                    Select("width", MetricWidths.AUTO),
+                ],
+            ],
+        ),
+        Single(
+            "bottom outer",
+            "Widget",
+            [
+                Select("data", widgets.BATTERY_ICON),
+            ],
+        ),
+    )
 
-            assert class_parts == file_parts, f"{class_parts} vs {file_parts}"
 
-            label_match = self.LABEL_RE.findall(data_text)
-            assert label_match
-            assert len(label_match) == 1
+def MemoryMedium(  # pylint: disable=invalid-name
+    data: Source,
+    widgets: Any,
+) -> Settings:
+    DataAll = data.all
+    DataWithIcon = data.with_icon
+    DataWithValueMax = data.with_value_max
 
-            label_parts = [part.lower() for part in label_match[0].split("_")]
-
-            assert class_parts == label_parts, f"{class_parts} vs {label_parts}"
-
-            items.append(
-                (
-                    "_".join(class_parts).upper(),
-                    self.__has_icon(data_text),
-                    self.__has_value_max(data_text),
-                )
-            )
-
-        self.__items = [
-            Datum(name, index, *args)
-            for index, (name, *args) in enumerate(
-                sorted(items, key=lambda item: item[0]),
-                start=1,
-            )
-        ]
-
-    @property
-    def all(self) -> Any:
-        return self.__filter("DataAll", lambda _: True)
-
-    @property
-    def with_icon(self) -> Any:
-        return self.__filter("DataWithIcon", lambda d: d.has_icon)
-
-    @property
-    def with_value_max(self) -> Any:
-        return self.__filter("DataWithValueMax", lambda d: d.has_value_max)
-
-    def __filter(self, name: str, predicate: Callable[[Datum], bool]) -> Any:
-        return cast(
-            Any,
-            IntEnum(
-                name,
-                {
-                    "NONE": 0,
-                    **{
-                        datum.name: datum.value
-                        for datum in self.__items
-                        if predicate(datum)
-                    },
-                },
-            ),
+    return (
+        MemoryLow(data, widgets)
+        .extend(
+            "status",
+            [
+                Select("data", Status.NONE),
+            ],
         )
-
-    def __iter__(self) -> Iterator[Datum]:
-        return self.__items.__iter__()
-
-    def __len__(self) -> int:
-        return len(self.__items)
-
-    def __getattr__(self, name: str) -> int:
-        for item in self.__items:
-            if item.name == name:
-                return item.value
-        raise AttributeError(name)
-
-    def __has_value_max(self, data_text: str) -> bool:
-        initialize_match = self.INITIALIZE_RE.search(data_text)
-        return (
-            bool(self.VALUE_MAX_ASSIGN_RE.search(initialize_match.group(1)))
-            if initialize_match
-            else False
+        .extend(
+            "gauges",
+            [
+                Select("data", DataWithValueMax.NONE),
+                Select("accent", ColorOptions.BLUE),
+            ],
         )
-
-    def __has_icon(self, data_text: str) -> bool:
-        initialize_match = self.INITIALIZE_RE.search(data_text)
-        return (
-            bool(self.ICON_ASSIGN_RE.search(initialize_match.group(1)))
-            if initialize_match
-            else False
+        .extend(
+            "top middle",
+            [
+                Select("data", DataWithIcon.WIND),
+                Select("width", MetricWidths.AUTO),
+            ],
+            [
+                Select("data", DataWithIcon.NONE),
+                Select("width", MetricWidths.AUTO),
+            ],
         )
+        .extend(
+            "bottom middle",
+            [
+                Select("data", DataAll.FLOORS_CLIMBED),
+                Select("width", MetricWidths.AUTO),
+            ],
+            [
+                Select("data", DataAll.NONE),
+                Select("width", MetricWidths.AUTO),
+            ],
+        )
+    )
+
+
+def MemoryHigh(  # pylint: disable=invalid-name
+    data: Source,
+    widgets: Any,
+) -> Settings:
+    return MemoryMedium(data, widgets)

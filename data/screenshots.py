@@ -11,12 +11,12 @@ options instead of relying on unexplained numeric literals.
 from pathlib import Path
 from typing import Any, cast
 
-from data.settings import Data, Widgets
+from data.settings import Source, Widgets
 from data.settings.colors import Colors
-from data.settings.settings import Status
+from data.settings.data import Status
 from scripts.utils.store_screenshots import Scenario
 
-_DATA = Data(Path(__file__).resolve().parent.parent / "source" / "data")
+_DATA = Source(Path(__file__).resolve().parent.parent / "source" / "data")
 _DATA_ALL = _DATA.all
 _DATA_WITH_ICON = _DATA.with_icon
 _DATA_WITH_VALUE_MAX = _DATA.with_value_max

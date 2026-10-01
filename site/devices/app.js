@@ -8,6 +8,7 @@ const columnLabels = {
 	connectIqId: "Connect IQ ID",
 	productId: "Device",
 	resolution: "Resolution",
+	screenShape: "Shape",
 	screenType: "Screen",
 	watchFaceMemory: "Watch face memory",
 	apiVersion: "API version",
@@ -54,7 +55,7 @@ function formatMemory(value) {
 }
 
 function populateFilters() {
-	["resolution", "screenType"].forEach((column) => {
+	["resolution", "screenShape", "screenType"].forEach((column) => {
 		const filter = filters.find((element) => element.dataset.filterColumn === column);
 		const values = [...new Set(devices.map((device) => column === "resolution"
 			? `${device.resolution.width} × ${device.resolution.height}`
@@ -92,6 +93,7 @@ function render() {
 		row.append(
 			cell(device.productId),
 			cell(`${device.resolution.width} × ${device.resolution.height}`),
+			cell(device.screenShape),
 			cell(device.screenType),
 			cell(device.connectIqId || "—"),
 			cell(formatMemory(device.memory.watchFace)),

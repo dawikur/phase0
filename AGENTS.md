@@ -209,6 +209,9 @@ If proposing API usage, verify compatibility.
 The manifest supports multiple device families and has a minimum API level of
 3.4.0. Changes to layout or API usage must preserve that compatibility and
 consider at least one representative MIP64 and AMOLED device where applicable.
+`data/devices` catalogs all SDK devices in Watches/Wearables with watch-face
+support, including devices below the manifest API minimum. Catalog membership
+does not imply app support; the manifest product list defines supported devices.
 
 ---
 
@@ -386,7 +389,7 @@ units display also belong to each scenario; the defaults are 24 hour and
 metric. Apply them after loading each PRG and before resetting app data.
 `make site` generates
 `screenshots-data.js` from that metadata for the website gallery. Scenario
-overrides must not change `data/settings/settings.py`. Screenshot capture
+overrides must not change `data/settings/data.py`. Screenshot capture
 requires a graphical X11 or XWayland session, the Connect IQ Simulator,
 `wmctrl` and `xdotool`. On Wayland, the screenshot workflow starts the
 simulator through GTK's X11 backend for window control and native capture.

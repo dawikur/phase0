@@ -13,12 +13,14 @@ test("device reference loads generated device data and provides sortable columns
 	assert.match(page, /class="ui-segmented ui-segmented--two devices-scope-control"/);
 	assert.match(page, /data-sort-column="productId"/);
 	assert.match(page, /data-sort-column="resolution"/);
+	assert.match(page, /data-sort-column="screenShape"/);
 	assert.match(page, /data-sort-column="screenType"/);
 	assert.match(page, /data-sort-column="connectIqId"/);
 	assert.match(page, /data-sort-column="watchFaceMemory"/);
 	assert.match(page, /data-sort-column="apiVersion"/);
 	assert.match(page, /data-filter-column="productId"/);
 	assert.match(page, /data-filter-column="resolution"/);
+	assert.match(page, /data-filter-column="screenShape"/);
 	assert.match(page, /data-filter-column="screenType"/);
 	assert.match(page, /data-filter-column="connectIqId"/);
 	assert.match(page, /data-filter-column="watchFaceMemory"/);

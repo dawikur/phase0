@@ -17,6 +17,7 @@ class DeviceData(TypedDict):
     productId: str
     supported: bool
     resolution: dict[str, int]
+    screenShape: str
     screenType: str
     memory: DeviceMemoryData
     apiVersion: str
@@ -34,6 +35,7 @@ def device_data(manifest_xml: Path = Path("manifest.xml.tmpl")) -> list[DeviceDa
                 "height": device.resolution.height,
                 "width": device.resolution.width,
             },
+            "screenShape": device.screen_shape.value,
             "screenType": device.screen_type.value,
             "memory": {
                 "watchFace": device.memory.watch_face,

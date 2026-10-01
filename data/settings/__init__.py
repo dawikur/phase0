@@ -1,18 +1,18 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
-from .data import Data
+from .data import Options, Widgets
 from .model import Array, Boolean, Entry, Number, Select, Settings, Single, Token
-from .settings import Options, Widgets
+from .source import Source
 
 __all__ = [
     "Array",
     "Boolean",
-    "Data",
     "Entry",
     "Number",
     "Options",
     "Select",
     "Settings",
+    "Source",
     "Single",
     "Token",
     "Widgets",
