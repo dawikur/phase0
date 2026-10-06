@@ -12,7 +12,16 @@ def test_site_devices_include_device_display_and_memory_data() -> None:
         device["connectIqId"]: device for device in devices if device["connectIqId"]
     }
 
-    assert len(devices) == 146
+    assert len(devices) == 149
+    assert by_connect_iq_id["approachs7243mm"]["resolution"] == {
+        "height": 416,
+        "width": 416,
+    }
+    assert by_connect_iq_id["approachs7247mm"]["resolution"] == {
+        "height": 454,
+        "width": 454,
+    }
+    assert by_connect_iq_id["enduro4"]["screenType"] == "MIP64"
     assert by_connect_iq_id["fenix7"] == {
         "connectIqId": "fenix7",
         "productId": "Fenix 7 / quatix 7",

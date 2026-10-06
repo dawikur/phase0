@@ -15,9 +15,9 @@ from data.devices import (
 
 def test_devices_contains_all_converted_rows() -> None:
     assert isinstance(DEVICES, Devices)
-    assert len(DEVICES) == 146
+    assert len(DEVICES) == 149
     assert isinstance(DEVICES.all, list)
-    assert len(DEVICES.all) == 146
+    assert len(DEVICES.all) == 149
 
 
 def test_devices_accepts_variadic_items_and_returns_list_slices() -> None:
@@ -93,6 +93,7 @@ def test_devices_record_watch_face_memory_limit() -> None:
         "venux1": 131072,
         "enduro": 114688,
         "enduro3": 131072,
+        "enduro4": 131072,
         "fenix6": 114688,
         "fenix6pro": 114688,
         "fenix6s": 98304,
@@ -171,9 +172,9 @@ def test_devices_filter_by_screen_type() -> None:
     assert len(DEVICES.mip2) == 8
     assert len(DEVICES.mip8) == 3
     assert len(DEVICES.mip16) == 9
-    assert len(DEVICES.mip64) == 69
+    assert len(DEVICES.mip64) == 70
     assert len(DEVICES.lcd) == 2
-    assert len(DEVICES.amoled) == 55
+    assert len(DEVICES.amoled) == 57
     assert all(device.screen_type == ScreenType.MIP2 for device in DEVICES.mip2)
     assert all(device.screen_type == ScreenType.MIP8 for device in DEVICES.mip8)
     assert all(device.screen_type == ScreenType.MIP16 for device in DEVICES.mip16)
@@ -217,10 +218,10 @@ def test_devices_expose_known_resolutions() -> None:
     )
     assert len(DEVICES.resolution_240x240) == 38
     assert len(DEVICES.resolution_260x260) == 14
-    assert len(DEVICES.resolution_280x280) == 9
+    assert len(DEVICES.resolution_280x280) == 10
     assert len(DEVICES.resolution_390x390) == 23
-    assert len(DEVICES.resolution_416x416) == 12
-    assert len(DEVICES.resolution_454x454) == 14
+    assert len(DEVICES.resolution_416x416) == 13
+    assert len(DEVICES.resolution_454x454) == 15
 
 
 def test_manifest_products_match_supported_connect_iq_ids() -> None:
