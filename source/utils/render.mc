@@ -34,6 +34,17 @@ module Render {
 	const SIZE_SMALL as Lang.Boolean = true;
 	const SIZE_REGULAR as Lang.Boolean = false;
 
+	const SHOW_LABEL as Lang.Boolean = true;
+	const HIDE_LABEL as Lang.Boolean = false;
+	const SHOW_ICON as Lang.Boolean = true;
+	const HIDE_ICON as Lang.Boolean = false;
+	const SHOW_GAUGE as Lang.Boolean = true;
+	const HIDE_GAUGE as Lang.Boolean = false;
+	const SHOW_LEFT as Lang.Boolean = true;
+	const HIDE_LEFT as Lang.Boolean = false;
+	const SHOW_RIGHT as Lang.Boolean = true;
+	const HIDE_RIGHT as Lang.Boolean = false;
+
 	const JUSTIFY_LEFT as Lang.Number = Graphics.TEXT_JUSTIFY_LEFT;
 	const JUSTIFY_LEFT_VCENTER as Lang.Number =
 		Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER;
@@ -78,9 +89,9 @@ module Render {
 		return _is_small ? FONT_SMALL : FONT_REGULAR_THIN;
 	}
 
-	function clear(_dc as Graphics.Dc) as Void {
+	function clear(_dc as Graphics.Dc, _background as Lang.Number) as Void {
 		_dc.clearClip();
-		_dc.setColor(Render.background, Render.background);
+		_dc.setColor(_background, _background);
 		_dc.clear();
 	}
 
@@ -360,8 +371,9 @@ module Render {
 		}
 
 		_dc.setColor(Render.shade, Graphics.COLOR_TRANSPARENT);
+		var dot_x = _pos_x + SPACING / 2;
 		for (var i = 0; i < _height; i += 2 * SPACING) {
-			_dc.fillRectangle(_pos_x, _pos_y + i, 1, 1);
+			_dc.fillRectangle(dot_x, _pos_y + i, 1, 1);
 		}
 	}
 

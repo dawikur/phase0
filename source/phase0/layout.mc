@@ -57,8 +57,8 @@ module Phase0 {
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
-					true,
-					true
+					Render.SHOW_LEFT,
+					Render.SHOW_RIGHT
 				) or
 				self.tryApplyCandidate_(
 					_dc,
@@ -66,8 +66,8 @@ module Phase0 {
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
-					true,
-					true
+					Render.SHOW_LEFT,
+					Render.SHOW_RIGHT
 				) or
 				self.tryApplyCandidate_(
 					_dc,
@@ -75,8 +75,8 @@ module Phase0 {
 					Render.SIZE_REGULAR,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
-					true,
-					true
+					Render.SHOW_LEFT,
+					Render.SHOW_RIGHT
 				) or
 				self.tryApplyCandidate_(
 					_dc,
@@ -84,8 +84,8 @@ module Phase0 {
 					Render.SIZE_REGULAR,
 					Render.SIZE_REGULAR,
 					Render.SIZE_SMALL,
-					true,
-					true
+					Render.SHOW_LEFT,
+					Render.SHOW_RIGHT
 				) or
 				self.tryApplyCandidate_(
 					_dc,
@@ -93,8 +93,8 @@ module Phase0 {
 					Render.SIZE_SMALL,
 					Render.SIZE_REGULAR,
 					Render.SIZE_SMALL,
-					true,
-					true
+					Render.SHOW_LEFT,
+					Render.SHOW_RIGHT
 				) or
 				self.tryApplyCandidate_(
 					_dc,
@@ -102,8 +102,8 @@ module Phase0 {
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
-					true,
-					true
+					Render.SHOW_LEFT,
+					Render.SHOW_RIGHT
 				) or
 				// Keep the left side before the right side when only one can fit.
 				self.tryApplyCandidate_(
@@ -112,8 +112,8 @@ module Phase0 {
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
-					true,
-					false
+					Render.SHOW_LEFT,
+					Render.HIDE_RIGHT
 				) or
 				// FR255S is too narrow for the clock and both side areas.
 				self.tryApplyCandidate_(
@@ -122,8 +122,8 @@ module Phase0 {
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
 					Render.SIZE_SMALL,
-					false,
-					false
+					Render.HIDE_LEFT,
+					Render.HIDE_RIGHT
 				)
 			) {
 			} else {

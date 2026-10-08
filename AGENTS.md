@@ -64,6 +64,18 @@ from the release manifest rendered from `manifest.xml.tmpl` and
 so a declaration can be included in every profile except one. Monkey C
 annotation names use underscores because hyphens are not valid in annotations.
 
+Use `memory_not_low` for the bitmap field and buffered-rendering implementation;
+`memory_low` must compile direct rendering without bitmap state. Profile-specific
+prepare/reset/clear helpers are empty on low-memory devices. Preserve the
+allocation guard and direct-rendering fallback on medium/high devices.
+
+Input annotations `input_touch` and `input_not_touch` are independent of memory
+and display profiles. Record `Device.supports_touch` from installed SDK
+`simulator.json` / `display.isTouch` for every manifest-supported device. Unknown
+is `None`, not false; Jungle generation rejects an unknown supported capability
+and must not depend on an installed SDK. Include press callbacks and the view's
+touch handler only with `input_touch`; keep widget APIs and API guards shared.
+
 ---
 
 ## Philosophy
@@ -98,6 +110,9 @@ Prefer:
 - dirty rectangles
 - cached values
 - cached layouts
+
+Center gauge guide dots within the full bar width. For even widths, use the
+right of the two center pixels.
 
 Avoid:
 
@@ -151,6 +166,9 @@ Example:
 
 Components should not know about each other.
 
+Use the inherited `Base.is_small` for widget font size selection and rendering.
+Do not duplicate this state in subclasses; layout and widgets share the same field.
+
 Color settings outside the Global group may select Global (`-1`). Resolve that
 choice against the matching Global color when constructing the widget, so
 rendering uses a concrete color. Metric Width uses `-1` for Auto; resolve it
@@ -166,6 +184,10 @@ Prefer:
 - explicit naming
 - short functions
 - immutable values where practical
+
+Use named Boolean constants for literal arguments that select rendering or
+layout options, such as `Render.HIDE_LABEL` or `Render.SHOW_LEFT`. Keep field
+initializers as `true` / `false`; a named assignment already explains its meaning.
 
 For equality comparisons involving instance state, keep `self.<field>` on the
 left. For ordered comparisons, use only `<` or `<=`, with the larger value on
@@ -210,8 +232,12 @@ The manifest supports multiple device families and has a minimum API level of
 3.4.0. Changes to layout or API usage must preserve that compatibility and
 consider at least one representative MIP64 and AMOLED device where applicable.
 `data/devices` catalogs all SDK devices in Watches/Wearables with watch-face
-support, including devices below the manifest API minimum. Catalog membership
+support, including devices below the manifest API minimum. AMOLED support
+includes fully round screens meeting the manifest API minimum. Catalog membership
 does not imply app support; the manifest product list defines supported devices.
+Before adding a manifest product, confirm its ID has an installed SDK device
+`compiler.json` with watch-face support. SDK device-reference documentation alone
+does not establish that the compiler accepts the device qualifier.
 
 ---
 
@@ -362,6 +388,9 @@ and resource directories; SDK defaults would resolve against the manifest.
 `build/store/icon_512.png`, plus configured normal and AoD watch-face screenshots
 in `site/assets/screenshots/` (named `<scenario>.png` and
 `<scenario>-aod.png`). The Garmin Store requires a separate 500 x 500 icon.
+Both `make store` and `make screenshots` also generate
+`build/store/icon_128_amoled.png` using AMOLED regular digit styles. Its dedicated
+Makefile target runs without the simulator.
 Screenshot PNGs stay in Git because capturing them requires the simulator.
 Screenshot capture is incremental: source code, resources, settings, scenario
 definitions and generator changes must invalidate its build stamp.
@@ -380,8 +409,13 @@ After loading each PRG, the generator uses the simulator's Reset All App Data
 command and waits for the watch face to restart before capturing; the simulator
 otherwise retains application properties between loads.
 Shared simulator process lifecycle helpers live in
-`scripts/utils/simulator_process.py`. Screenshot capture tracks the X11 window
+`scripts/utils/simulator_process.py`. On Linux, start the SDK's `simulator`
+binary directly: its `connectiq` shell launcher does not exec the child, so
+terminating the launcher can leave the simulator running.
+Screenshot capture tracks the X11 window
 IDs opened during its run and closes only those windows.
+`make smoke` and `make smoke_test` must stop on the first application error or
+failed test, clean up their processes, and exit with a nonzero status.
 Screenshot scenarios live in
 `data/screenshots.py`; device, app-property overrides, and gallery title,
 description and alt text belong together there. Simulator time display and
@@ -411,3 +445,66 @@ When uncertain:
 do not guess
 
 instead explain assumptions.
+
+## Display font profiles
+
+Font outputs live in `resources/fonts/mip/generated/` and
+`resources/fonts/amoled/generated/`; do not edit them by hand. `build/resources.jungle`, generated by
+`scripts/generate_resources_jungle`, chooses exactly one font profile from the manifest-supported device's
+`ScreenType`, independently of memory class. AMOLED increases each grid step
+and foreground dot weight by one; thin dots and the shadow offset stay 1 px.
+Other screen types use the original MIP profile. Preserve resource IDs across
+profiles and select `Fonts.SPACING_*` with the `display_mip` / `display_amoled`
+source annotations at compile time. Keep device memory and font resource paths
+and exclusions together in this generated Jungle; `monkey.jungle` contains only
+shared settings. Do not scale fonts during rendering.
+
+Name physical font styles `STYLE_1` through `STYLE_4`, with `_BOLD` and `_THIN`
+suffixes for weight variants. The number denotes the grid step in pixels.
+Keep logical roles (`regular`, `regular_thin`, `small`, `tiny`) and generated
+resource names separate from physical style names; map roles explicitly per
+display profile in the font generator.
+
+## Display mode lifecycle
+
+Partial-update callbacks, their power-budget callback and update-mode state
+compile only with `display_mip`. AMOLED retains sleep/wake update requests for
+visible faces and renders normal seconds without partial-update budget checks.
+Keep the Seconds widget shared because awake rendering uses it on both profiles.
+
+Compile display-mode callbacks, constants, state and mode-reading helpers only
+with `display_amoled`. MIP uses a single `is_visible_` flag and cached night
+mode; its lifecycle must not include the AMOLED handler, whose code footprint
+can exceed the 96 KiB budget on Descent Mk2S. Shared update paths use
+profile-specific `isVisibleMode_()` and `isMinimalMode_()` helpers. The current
+manifest supports only MIP64 and AMOLED. If LCD support is added, separate
+display-mode capability from font profile before selecting its lifecycle.
+
+`App.onDisplayModeChanged()` forwards to the view. Read display mode only in
+that handler and when the face is shown, guarding `System.getDisplayMode()`
+for API 3.4.0 compatibility. Keep display state independent of sleep/wake and
+partial-update budget state. Store the system mode or HIDDEN in `display_mode_`
+and derive minimal rendering from it and cached night mode; do not store a
+second effective display mode or separate visibility flag on AMOLED. HIDDEN ignores
+display-mode notifications until onShow reads the current system mode again.
+Minimal is selected by night mode or LOW/AoD; HIDDEN and OFF skip update
+callbacks, update requests and touch handling. Returning from OFF or changing
+normal/minimal invalidates the visible face; repeated notifications must not
+request redundant redraws. AMOLED minimal uses black regardless of the chosen
+background; other modes and display types retain the configured background.
+Use generated `Display.IS_AMOLED` from `source/generated/display.mc`, selected
+by the display profile annotations, to
+identify AMOLED independently of display-mode API availability on LCD devices.
+Select the two `updateMinimal_()` implementations with `display_mip` and
+`display_amoled` annotations at compile time. Keep the shifting helper and
+generated offset module AMOLED-only, so MIP renders directly without offsets
+or runtime display-profile branches.
+Keep `isNightMode_()` available for the screenshot generator's mode override.
+
+AMOLED minimal minute offsets are computed during font generation from the
+generated atlases and minimal-rendering shadows, then written to
+`source/generated/burn_in.mc`. Do not hardcode or manually edit the cycle.
+Keep `scripts/utils/burn_in.py` masks aligned with minimal font, shadow and
+battery rendering changes. Generation rejects cycles that cannot fit within
+±2 px and four minute phases. Mask checks do not replace device luminance,
+layout or heat-map validation.

@@ -41,6 +41,7 @@ class Device:
     memory: Memory = Memory()
     api_version: str = ""
     screen_shape: ScreenShape = ScreenShape.ROUND
+    supports_touch: bool | None = None
 
 
 class Devices:

@@ -2,6 +2,9 @@
 
 Follow in order. `fr955` is the default device. Run Connect IQ builds and
 simulator checks on a computer with a working SDK and simulator.
+`make all_tests` runs the automated checks (`lint`, `test`, `smoke_test`, and
+`smoke`) in order and stops at the first failure. Review formatting changes
+afterward.
 
 ## 1. Prepare
 

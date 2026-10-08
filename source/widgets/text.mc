@@ -9,7 +9,6 @@ module Widgets {
 		hidden var label_ as Lang.String = "";
 		hidden var value_ as Lang.String = "";
 		hidden var justify_ as Lang.Number = Render.JUSTIFY_LEFT;
-		hidden var is_small_ as Lang.Boolean = false;
 		hidden var label_offset_y_ as Lang.Number = 0;
 		hidden var show_label_ as Lang.Boolean = true;
 
@@ -31,7 +30,7 @@ module Widgets {
 			if (
 				self.tryApplyCandidate_(
 					_dc,
-					self.is_small_,
+					self.is_small,
 					self.show_label_,
 					_size_x,
 					_size_y
@@ -46,14 +45,14 @@ module Widgets {
 				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_REGULAR,
-					false,
+					Render.HIDE_LABEL,
 					_size_x,
 					_size_y
 				) or
 				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
-					false,
+					Render.HIDE_LABEL,
 					_size_x,
 					_size_y
 				)
@@ -99,7 +98,7 @@ module Widgets {
 					Render.foreground,
 					pos_x,
 					pos_y,
-					self.is_small_,
+					self.is_small,
 					self.value_,
 					self.justify_
 				);
@@ -142,7 +141,7 @@ module Widgets {
 			var size_x = text_size_x;
 			var size_y = text_size_y + label_offset_y;
 
-			self.is_small_ = _is_small;
+			self.is_small = _is_small;
 			self.label_offset_y_ = label_offset_y;
 			self.show_label_ = label_offset_y != 0;
 

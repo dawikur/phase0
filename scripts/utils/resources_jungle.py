@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from data.devices import DEVICES, Device
+from data.devices import DEVICES, Device, ScreenType
 from scripts.utils.manifest import supported_connect_iq_ids
 
 MEMORY_CLASSES = {
@@ -34,7 +34,7 @@ def supported_devices(manifest_xml: Path) -> list[Device]:
     return devices
 
 
-def render_memory_jungle(manifest_xml: Path) -> str:
+def render_resources_jungle(manifest_xml: Path) -> str:
     lines = [
         "# Generated from the release manifest and data/devices.",
         "# Do not edit by hand.",
@@ -49,13 +49,21 @@ def render_memory_jungle(manifest_xml: Path) -> str:
     for device in supported_devices(manifest_xml):
         memory_class = memory_class_for_limit(device.memory.watch_face)
         excluded_annotations = ";".join(excluded_by_class[memory_class])
+        font_profile = "amoled" if device.screen_type == ScreenType.AMOLED else "mip"
+        excluded_font_profile = "mip" if font_profile == "amoled" else "amoled"
+        if device.supports_touch is None:
+            raise ValueError(
+                f"Supported device is missing touch capability: {device.connect_iq_id}"
+            )
+        excluded_input = "input_not_touch" if device.supports_touch else "input_touch"
         qualifier = device.connect_iq_id
         lines.extend(
             [
                 f"{qualifier}.resourcePath = ../resources/base/strings.xml;"
-                f"../resources/base/generated;../resources/memory/{memory_class}",
-                f"{qualifier}.excludeAnnotations = $({qualifier}.excludeAnnotations);"
-                f"{excluded_annotations}",
+                f"../resources/base/generated;../resources/memory/{memory_class};"
+                f"../resources/fonts/{font_profile}/generated",
+                f"{qualifier}.excludeAnnotations = "
+                f"{excluded_annotations};display_{excluded_font_profile};{excluded_input}",
                 "",
             ]
         )

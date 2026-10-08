@@ -22,7 +22,8 @@ module Data {
 		}
 
 		function refresh() as Void {
-			self.value = ActivityMonitor.getInfo().floorsClimbed;
+			var info = ActivityMonitor.getInfo();
+			self.value = info has :floorsClimbed ? info.floorsClimbed : null;
 		}
 	}
 } // module Data

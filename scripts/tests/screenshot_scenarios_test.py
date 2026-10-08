@@ -13,7 +13,7 @@ from data.screenshots import (
 )
 from data.settings.colors import Colors
 from scripts.utils.manifest import supported_connect_iq_ids
-from scripts.utils.memory_jungle import memory_class_for_limit
+from scripts.utils.resources_jungle import memory_class_for_limit
 from scripts.utils.store_screenshots import validate_scenarios
 
 
@@ -22,24 +22,24 @@ def test_screenshot_scenario_metadata_and_display_preferences() -> None:
     assert validate_scenarios(SCENARIOS, supported) == list(SCENARIOS)
     assert [scenario.name for scenario in SCENARIOS] == [
         "data-rich",
-        "compact",
-        "focused-metrics",
-        "minimal-layout",
-        "magenta-accent",
-        "retro-lcd",
-        "weather-gauges",
+        "small-screen",
+        "selected-metrics",
+        "essentials",
+        "custom-colors",
+        "flexible-layout",
+        "aod-ready",
     ]
     assert {
         scenario.name: (scenario.time_display, scenario.units_display)
         for scenario in SCENARIOS
     } == {
         "data-rich": ("24h", "metric"),
-        "compact": ("24h", "metric"),
-        "focused-metrics": ("12h", "metric"),
-        "minimal-layout": ("24h", "metric"),
-        "magenta-accent": ("24h", "statute"),
-        "retro-lcd": ("12h", "statute"),
-        "weather-gauges": ("24h", "statute"),
+        "small-screen": ("24h", "metric"),
+        "selected-metrics": ("12h", "metric"),
+        "essentials": ("24h", "metric"),
+        "custom-colors": ("24h", "statute"),
+        "flexible-layout": ("12h", "statute"),
+        "aod-ready": ("24h", "statute"),
     }
     assert all(
         scenario.title and scenario.description and scenario.alt
@@ -82,12 +82,12 @@ def test_screenshot_overrides_match_device_settings_options() -> None:
 
 
 def test_compact_magenta_and_focused_scenario_widgets() -> None:
-    compact = next(s for s in SCENARIOS if s.name == "compact")
+    compact = next(s for s in SCENARIOS if s.name == "small-screen")
     assert compact.preview_size == "small"
     assert compact.properties["TopOuterData"] == _WIDGETS.BATTERY_PERCENTAGE.value
     assert compact.properties["BottomOuterData"] == _WIDGETS.NONE.value
 
-    magenta = next(s for s in SCENARIOS if s.name == "magenta-accent")
+    magenta = next(s for s in SCENARIOS if s.name == "custom-colors")
     assert magenta.properties["GlobalBackground"] == Colors.WHITE.value
     assert magenta.properties["GlobalShade"] == Colors.MAGENTA.value
     assert magenta.properties["ClockShade"] == Colors.MAGENTA.value
@@ -103,7 +103,7 @@ def test_compact_magenta_and_focused_scenario_widgets() -> None:
     assert magenta.properties["BottomMiddleData1"] == _DATA_ALL.DISTANCE.value
     assert magenta.properties["BottomMiddleData2"] == _DATA_ALL.METERS_CLIMBED.value
 
-    focused = next(s for s in SCENARIOS if s.name == "focused-metrics")
+    focused = next(s for s in SCENARIOS if s.name == "selected-metrics")
     assert focused.properties["GaugesData0"] == _DATA_WITH_VALUE_MAX.STRESS.value
     assert focused.properties["TopMiddleData0"] == _DATA_WITH_ICON.NONE.value
     assert focused.properties["BottomMiddleData0"] == _DATA_ALL.ALTITUDE.value
@@ -114,30 +114,30 @@ def test_compact_magenta_and_focused_scenario_widgets() -> None:
     )
 
 
-def test_minimal_retro_and_weather_scenario_widgets() -> None:
-    minimal = next(s for s in SCENARIOS if s.name == "minimal-layout")
+def test_minimal_flexible_and_aod_scenario_widgets() -> None:
+    minimal = next(s for s in SCENARIOS if s.name == "essentials")
     assert minimal.properties["TopMiddleData0"] == 0
     assert minimal.properties["BottomMiddleData3"] == 0
     assert minimal.properties["BottomOuterData"] == minimal.properties["TopOuterData"]
 
-    retro = next(s for s in SCENARIOS if s.name == "retro-lcd")
-    assert retro.properties["TopMiddleData0"] == 0
-    assert retro.properties["TopMiddleData1"] == 0
-    assert retro.properties["TopMiddleData2"] == 0
-    assert retro.properties["BottomMiddleData2"] == 0
-    assert retro.properties["BottomMiddleWidth1"] == 5
-    assert retro.properties["GlobalBackground"] == retro.properties["ClockShade"]
-    assert retro.properties["GlobalBackground"] == Colors.GREEN.value
-    assert retro.properties["GlobalForeground"] == Colors.BLACK.value
-    assert retro.properties["GlobalAccent"] == Colors.BLACK.value
-    assert retro.properties["GlobalShade"] == Colors.CHARCOAL.value
-    assert retro.properties["BottomOuterData"] == _WIDGETS.BATTERY_PERCENTAGE.value
+    flexible = next(s for s in SCENARIOS if s.name == "flexible-layout")
+    assert flexible.properties["TopMiddleData0"] == 0
+    assert flexible.properties["TopMiddleData1"] == 0
+    assert flexible.properties["TopMiddleData2"] == 0
+    assert flexible.properties["BottomMiddleData2"] == 0
+    assert flexible.properties["BottomMiddleWidth1"] == 5
+    assert flexible.properties["GlobalBackground"] == flexible.properties["ClockShade"]
+    assert flexible.properties["GlobalBackground"] == Colors.GREEN.value
+    assert flexible.properties["GlobalForeground"] == Colors.BLACK.value
+    assert flexible.properties["GlobalAccent"] == Colors.BLACK.value
+    assert flexible.properties["GlobalShade"] == Colors.CHARCOAL.value
+    assert flexible.properties["BottomOuterData"] == _WIDGETS.BATTERY_PERCENTAGE.value
 
-    weather = next(s for s in SCENARIOS if s.name == "weather-gauges")
-    assert weather.properties["TopOuterData"] == _WIDGETS.BATTERY_PERCENTAGE.value
-    assert weather.properties["TopMiddleData0"] == _DATA_WITH_ICON.NONE.value
-    assert weather.properties["TopMiddleData1"] == _DATA_WITH_ICON.NONE.value
-    assert weather.properties["TopMiddleData2"] == _DATA_WITH_ICON.NONE.value
-    assert weather.properties["BottomOuterData"] == _WIDGETS.NONE.value
-    assert weather.properties["BottomMiddleData0"] == _DATA_ALL.FLOORS_DESCENDED.value
-    assert weather.properties["BottomMiddleData1"] == _DATA_ALL.CALORIES.value
+    aod = next(s for s in SCENARIOS if s.name == "aod-ready")
+    assert aod.properties["TopOuterData"] == _WIDGETS.BATTERY_PERCENTAGE.value
+    assert aod.properties["TopMiddleData0"] == _DATA_WITH_ICON.NONE.value
+    assert aod.properties["TopMiddleData1"] == _DATA_WITH_ICON.NONE.value
+    assert aod.properties["TopMiddleData2"] == _DATA_WITH_ICON.NONE.value
+    assert aod.properties["BottomOuterData"] == _WIDGETS.NONE.value
+    assert aod.properties["BottomMiddleData0"] == _DATA_ALL.FLOORS_DESCENDED.value
+    assert aod.properties["BottomMiddleData1"] == _DATA_ALL.CALORIES.value

@@ -2,11 +2,15 @@
 
 from .model import Style
 
-REGULAR_BOLD = Style("Regular Bold", 3, 3)
-REGULAR = Style("Regular", 3, 2)
-REGULAR_THIN = Style("Regular Thin", 3, 1)
+STYLE_4_BOLD = Style("4 Bold", 4, 4)
+STYLE_4 = Style("4", 4, 3)
+STYLE_4_THIN = Style("4 Thin", 4, 2)
 
-SMALL_BOLD = Style("Small Bold", 2, 2)
-SMALL = Style("Small", 2, 1)
+STYLE_3_BOLD = Style("3 Bold", 3, 3)
+STYLE_3 = Style("3", 3, 2)
+STYLE_3_THIN = Style("3 Thin", 3, 1)
 
-TINY = Style("Tiny", 1, 1)
+STYLE_2_BOLD = Style("2 Bold", 2, 2)
+STYLE_2 = Style("2", 2, 1)
+
+STYLE_1 = Style("1", 1, 1)

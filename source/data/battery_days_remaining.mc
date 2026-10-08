@@ -21,7 +21,9 @@ module Data {
 		}
 
 		function refresh() as Void {
-			self.value = System.getSystemStats().batteryInDays.toNumber();
+			var stats = System.getSystemStats();
+			var days = stats has :batteryInDays ? stats.batteryInDays : null;
+			self.value = days != null ? days.toNumber() : null;
 		}
 
 		function refreshRate() as Lang.Number {

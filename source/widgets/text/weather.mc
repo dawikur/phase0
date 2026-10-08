@@ -6,6 +6,9 @@ import Toybox.Lang;
 
 module Widgets {
 	class Weather extends Text {
+		const CONDITION_SHORT as Lang.Boolean = true;
+		const CONDITION_FULL as Lang.Boolean = false;
+
 		hidden var refresh_revision_ as Lang.Number = -1;
 
 		function initialize() {
@@ -45,7 +48,7 @@ module Widgets {
 
 		function refresh(_dc as Graphics.Dc) as Void {
 			var previous_value = self.value_;
-			var previous_is_small = self.is_small_;
+			var previous_is_small = self.is_small;
 
 			var condition = WeatherProvider.get("condition");
 			var temp = "";
@@ -63,28 +66,28 @@ module Widgets {
 					_dc,
 					condition,
 					temp,
-					false,
+					CONDITION_FULL,
 					Render.SIZE_REGULAR
 				) or
 				self.tryApplyWeatherCandidate_(
 					_dc,
 					condition,
 					temp,
-					false,
+					CONDITION_FULL,
 					Render.SIZE_SMALL
 				) or
 				self.tryApplyWeatherCandidate_(
 					_dc,
 					condition,
 					temp,
-					true,
+					CONDITION_SHORT,
 					Render.SIZE_REGULAR
 				) or
 				self.tryApplyWeatherCandidate_(
 					_dc,
 					condition,
 					temp,
-					true,
+					CONDITION_SHORT,
 					Render.SIZE_SMALL
 				)
 			) {
@@ -92,7 +95,7 @@ module Widgets {
 
 			if (
 				previous_value != self.value_ or
-				previous_is_small != self.is_small_
+				self.is_small != previous_is_small
 			) {
 				self.is_dirty_ = true;
 			}
@@ -115,7 +118,7 @@ module Widgets {
 			return self.tryApplyCandidate_(
 				_dc,
 				_is_small,
-				false,
+				Render.HIDE_LABEL,
 				self.size_x,
 				self.size_y
 			);

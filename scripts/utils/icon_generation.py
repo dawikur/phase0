@@ -17,16 +17,20 @@ def rgba_to_svg(color: tuple[int, int, int, int]) -> str:
     return f"rgba({r},{g},{b},{a / 255})"
 
 
-def render_svg() -> str:
-    svg_width = ICON_BLURRED.xadvance * fonts.STYLE_REGULAR.size + 1
-    svg_height = ICON_BLURRED.yadvance * fonts.STYLE_REGULAR.size + 1
+def render_svg(profile: str = "mip") -> str:
+    style, thin_style = {
+        "mip": (fonts.STYLE_3, fonts.STYLE_3_THIN),
+        "amoled": (fonts.STYLE_4, fonts.STYLE_4_THIN),
+    }[profile]
+    svg_width = ICON_BLURRED.xadvance * style.size + 1
+    svg_height = ICON_BLURRED.yadvance * style.size + 1
 
     svg = XmlDocument.svg(svg_width, svg_height)
 
     for icon, style, color in [  # pylint: disable=too-many-nested-blocks
-        (ICON, fonts.STYLE_REGULAR, (0xAA, 0x55, 0x00, 0xFF)),
-        (ICON_BLURRED, fonts.STYLE_REGULAR_THIN, (0xAA, 0x55, 0x00, 0xFF)),
-        (ICON, fonts.STYLE_REGULAR_THIN, (0xFF, 0xAA, 0x00, 0xFF)),
+        (ICON, style, (0xAA, 0x55, 0x00, 0xFF)),
+        (ICON_BLURRED, thin_style, (0xAA, 0x55, 0x00, 0xFF)),
+        (ICON, thin_style, (0xFF, 0xAA, 0x00, 0xFF)),
     ]:
         fill = rgba_to_svg(color)
 

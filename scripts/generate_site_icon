@@ -8,6 +8,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
+from scripts.utils.icon_generation import render_svg
 from scripts.utils.store_ribbon import add_ribbon
 
 BACKGROUND = (0x55, 0x55, 0x55, 0xFF)
@@ -40,8 +41,8 @@ def draw_rectangle(artwork: Image.Image, rectangle: ET.Element) -> Image.Image:
     return Image.alpha_composite(artwork, layer)
 
 
-def render_icon(source: Path, size: int) -> Image.Image:
-    root = ET.parse(source).getroot()
+def render_icon(source: Path | None, size: int, profile: str = "mip") -> Image.Image:
+    root = ET.parse(source).getroot() if source else ET.fromstring(render_svg(profile))
     width = int(root.attrib["width"])
     height = int(root.attrib["height"])
     artwork = Image.new("RGBA", (width, height), (0, 0, 0, 0))
@@ -74,7 +75,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate a PNG icon from the project SVG"
     )
-    parser.add_argument("--input", type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--input", type=Path)
+    source.add_argument("--font-profile", choices=("mip", "amoled"))
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--size", type=int, required=True)
     parser.add_argument(
@@ -83,7 +86,7 @@ def main() -> None:
     args = parser.parse_args()
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    icon = render_icon(args.input, args.size)
+    icon = render_icon(args.input, args.size, args.font_profile or "mip")
     if args.channel != "release":
         icon = add_ribbon(icon, args.channel)
     icon.save(args.output, format="PNG", optimize=True)

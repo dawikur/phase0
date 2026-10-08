@@ -25,16 +25,19 @@ _WIDGETS = cast(Any, Widgets(_DATA))
 SCENARIOS = (
     Scenario(
         name="data-rich",
-        device="fenix7x",
+        device="fr955",
         properties={},
         title="Information at a glance",
-        description="Metrics, weather, status and battery in one dense layout.",
-        alt="Data-rich phase0 layout with the clock, status icons, gauges, metrics and weather",
+        description="See weather, activity metrics, gauges and device status around the clock.",
+        alt=(
+            "phase0 with an orange clock on black, weather above, activity metrics below "
+            "and gauges beside the clock"
+        ),
         time_display="24h",
         units_display="metric",
     ),
     Scenario(
-        name="compact",
+        name="small-screen",
         device="fr255s",
         properties={
             "GlobalAccent": Colors.LIGHT_AZURE.value,
@@ -44,16 +47,22 @@ SCENARIOS = (
             "TopOuterData": _WIDGETS.BATTERY_PERCENTAGE.value,
             "BottomOuterData": _WIDGETS.NONE.value,
         },
-        title="Adapts to smaller screens",
-        description="Compact spacing and a relocated battery percentage.",
-        alt="Compact phase0 layout with blue accents and battery percentage",
+        title="Fits smaller screens",
+        description=(
+            "Keep weather and activity data visible on a smaller display, with battery "
+            "percentage at the top."
+        ),
+        alt=(
+            "phase0 on a small display with a blue clock on black, battery percentage at "
+            "the top and activity metrics below"
+        ),
         preview_size="small",
         time_display="24h",
         units_display="metric",
     ),
     Scenario(
-        name="focused-metrics",
-        device="fenix7x",
+        name="selected-metrics",
+        device="fr265s",
         properties={
             "GlobalAccent": Colors.LIGHT_PINK.value,
             "GlobalForeground": Colors.LIGHT_CYAN.value,
@@ -78,14 +87,20 @@ SCENARIOS = (
             "BottomMiddleData3": _DATA_ALL.NONE.value,
             "BottomOuterData": _WIDGETS.BATTERY_DAYS_REMAINING.value,
         },
-        title="A focused data set",
-        description="Choose a few useful metrics and leave the other rows clear.",
-        alt="phase0 layout with a stress gauge, altitude, recovery time, sunrise and sunset",
+        title="Choose your metrics",
+        description=(
+            "Show stress, altitude and recovery time alongside sunrise, sunset and "
+            "remaining battery days."
+        ),
+        alt=(
+            "phase0 with a pink clock on black, cyan values, a stress gauge, altitude, "
+            "recovery time and sunrise and sunset times"
+        ),
         time_display="12h",
         units_display="metric",
     ),
     Scenario(
-        name="minimal-layout",
+        name="essentials",
         device="fenix7x",
         properties={
             "GlobalAccent": Colors.LIGHT_YELLOW.value,
@@ -110,14 +125,20 @@ SCENARIOS = (
             "BottomMiddleData3": _DATA_ALL.NONE.value,
             "BottomOuterData": _WIDGETS.NONE.value,
         },
-        title="Minimal layout",
-        description="Remove optional fields for a clean, open face.",
-        alt="Minimal phase0 layout with a blue background, cyan text and a white clock",
+        title="Just the essentials",
+        description=(
+            "Leave the clock, date and weather visible while hiding optional metrics, "
+            "gauges and status icons."
+        ),
+        alt=(
+            "phase0 with a white clock on blue, cyan date and weather text, and no "
+            "optional metrics or gauges"
+        ),
         time_display="24h",
         units_display="metric",
     ),
     Scenario(
-        name="magenta-accent",
+        name="custom-colors",
         device="fenix7x",
         properties={
             "GlobalAccent": Colors.MAGENTA.value,
@@ -137,14 +158,20 @@ SCENARIOS = (
             "BottomMiddleData2": _DATA_ALL.METERS_CLIMBED.value,
             "BottomOuterData": _WIDGETS.DAWN_OR_DUSK_MOON.value,
         },
-        title="Make color your own",
-        description="Rearrange the data and adjust the palette for a distinct look.",
-        alt="phase0 layout with active minutes, distance and elevation data in a magenta palette",
+        title="Make it your own",
+        description=(
+            "Pair a white background and magenta accents with your choice of weather and "
+            "activity data."
+        ),
+        alt=(
+            "phase0 with a black clock and magenta accents on white, showing weather, "
+            "active minutes, distance and meters climbed"
+        ),
         time_display="24h",
         units_display="statute",
     ),
     Scenario(
-        name="retro-lcd",
+        name="flexible-layout",
         device="fenix7x",
         properties={
             "GlobalAccent": Colors.BLACK.value,
@@ -164,21 +191,27 @@ SCENARIOS = (
             "BottomMiddleData2": _DATA_ALL.NONE.value,
             "BottomOuterData": _WIDGETS.BATTERY_PERCENTAGE.value,
         },
-        title="Classic LCD",
-        description="Choose which information to show and let the layout adapt.",
-        alt="phase0 sunrise and sunset widget with a five-character steps value",
+        title="Room for your data",
+        description=(
+            "Adjust metric widths to fit longer values alongside heart rate, sunrise and "
+            "sunset times."
+        ),
+        alt=(
+            "phase0 with dark digits on green, sunrise and sunset times above the clock, "
+            "and heart rate and steps below"
+        ),
         time_display="12h",
         units_display="statute",
     ),
     Scenario(
-        name="weather-gauges",
-        device="fenix7x",
+        name="aod-ready",
+        device="fr265s",
         properties={
             "GlobalAccent": Colors.INDIGO.value,
             "GlobalForeground": Colors.BLACK.value,
             "GlobalShade": Colors.CHARCOAL.value,
             "GlobalBackground": Colors.SILVER.value,
-            "ClockForeground": Colors.BLACK.value,
+            "ClockForeground": Colors.CHARCOAL.value,
             "ClockShade": Colors.SILVER.value,
             "GaugesData0": _DATA_WITH_VALUE_MAX.PRESSURE.value,
             "GaugesAccent0": Colors.RED.value,
@@ -194,9 +227,9 @@ SCENARIOS = (
             "BottomMiddleData1": _DATA_ALL.CALORIES.value,
             "BottomOuterData": _WIDGETS.NONE.value,
         },
-        title="Weather gauges",
-        description="Pair a neutral background with a fresh arrangement of data.",
-        alt="phase0 layout with a gray background, weather and activity data",
+        title="AoD ready",
+        description="Keep the time visible with a minimal always-on display on AMOLED.",
+        alt="phase0 on AMOLED with a gray normal layout and a minimal always-on display",
         time_display="24h",
         units_display="statute",
     ),

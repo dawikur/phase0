@@ -84,7 +84,7 @@ PYTHON_FILES := $(shell rg --files -g '*.py') \
 	scripts/generate_manifest \
 	scripts/generate_resources_settings \
 	scripts/generate_site_devices scripts/generate_site_settings scripts/generate_site_screenshots \
-	scripts/generate_memory_jungle scripts/smoke
+	scripts/generate_resources_jungle scripts/smoke
 
 SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release deploy alpha beta iq
 
@@ -108,16 +108,16 @@ endif
 BUILD_DIR     := build/
 IQ            := $(BUILD_DIR)$(NAME)$(if $(filter release,$(CHANNEL)),,-$(CHANNEL)).iq
 JUNGLE        := monkey.jungle
-MEMORY_JUNGLE := $(BUILD_DIR)memory.jungle
+RESOURCES_JUNGLE := $(BUILD_DIR)resources.jungle
 MANIFEST_TEMPLATE := manifest.xml.tmpl
 MANIFEST      := $(BUILD_DIR)manifests/$(CHANNEL).xml
 RELEASE_MANIFEST := $(BUILD_DIR)manifests/release.xml
 CHANNEL_JUNGLE := $(BUILD_DIR)manifests/$(CHANNEL).jungle
-JUNGLES       := $(JUNGLE);$(MEMORY_JUNGLE);$(CHANNEL_JUNGLE)
+JUNGLES       := $(JUNGLE);$(RESOURCES_JUNGLE);$(CHANNEL_JUNGLE)
 OUT           := $(NAME)-$(DEVICE)$(NAME_SUFFIX)$(if $(filter release,$(CHANNEL)),,_$(CHANNEL))
 APP_SETTINGS  := $(shell printf '%s' '$(OUT)' | tr '[:lower:]' '[:upper:]')-settings.json
 PRG           := $(BUILD_DIR)$(OUT).prg
-RESOURCE_DIRS := resources/base resources/lang $(wildcard resources/memory)
+RESOURCE_DIRS := resources/base resources/lang $(wildcard resources/memory resources/fonts)
 RSCS          := $(shell find $(RESOURCE_DIRS) -type f ! -path '*/__pycache__/*')
 SRCS          := $(shell find source -type f ! -path '*/__pycache__/*')
 SRCS_DATA     := $(shell find source/data -type f ! -path '*/__pycache__/*')
@@ -181,7 +181,7 @@ ICON_DEPS           := scripts/generate_resources_icon            \
                        $(DATA_FONTS_DEPS)                         \
                        $(RESOURCE_STRINGS)
 ICON_STAMP          := $(BUILD_DIR).icon.stamp
-STORE_ICONS         := $(STORE_OUTPUT_DIR)icon_128.png $(STORE_OUTPUT_DIR)icon_512.png
+STORE_ICONS         := $(STORE_OUTPUT_DIR)icon_128.png $(STORE_OUTPUT_DIR)icon_512.png $(STORE_OUTPUT_DIR)icon_128_amoled.png
 STORE_HERO          := $(STORE_OUTPUT_DIR)hero.png
 STORE_VARIANTS      := $(foreach channel,alpha beta,$(addprefix $(STORE_OUTPUT_DIR)$(channel)/,icon_128.png icon_512.png hero.png data-rich.png))
 STORE_HERO_SCREENSHOTS := $(addprefix $(SITE_DIR)assets/screenshots/,data-rich.png data-rich-aod.png)
@@ -226,15 +226,15 @@ SITE_DEVICE_OVERLAYS := $(SITE_DEVICE_OVERLAY_LIGHT) $(SITE_DEVICE_OVERLAY_DARK)
 
 RESOURCES := $(ICON_STAMP) $(FONTS_STAMP) $(SETTINGS_STAMP)
 
-MEMORY_JUNGLE_DEPS := scripts/generate_memory_jungle \
-                      scripts/utils/memory_jungle.py \
+RESOURCES_JUNGLE_DEPS := scripts/generate_resources_jungle \
+                      scripts/utils/resources_jungle.py \
                       $(RELEASE_MANIFEST) \
                       $(DATA_DEVICES_DEPS)
 
 MONKEYC_DEPS := $(if $(filter optimized release,$(MODE)),scripts/optimizedc.mjs,)
 MONKEYC_KEY_DEPS := $(if $(filter release,$(MODE)),$(strip $(CONNECTIQ_DEVELOPER_KEY)),)
 
-PRG_DEPS := $(JUNGLE) $(MEMORY_JUNGLE) $(MANIFEST) $(CHANNEL_JUNGLE) $(MONKEYC_DEPS) $(MONKEYC_KEY_DEPS) $(SRCS) $(RSCS) \
+PRG_DEPS := $(JUNGLE) $(RESOURCES_JUNGLE) $(MANIFEST) $(CHANNEL_JUNGLE) $(MONKEYC_DEPS) $(MONKEYC_KEY_DEPS) $(SRCS) $(RSCS) \
             $(ICON_STAMP) $(FONTS_STAMP) $(SETTINGS_STAMP)
 SCREENSHOTS_DEPS := Makefile scripts/generate_screenshots $(SCRIPT_DEPS) \
                     data/screenshots.py $(DATA_SETTINGS_DEPS) $(DATA_DEVICES_DEPS) \
@@ -316,9 +316,9 @@ $(SETTINGS_STAMP): $(SETTINGS_DEPS) $(SRCS_DATA) $(VENV_STAMP)
 	PYTHONPATH=. $(VENV_PYTHON) $< --build $(BUILD_DIR) --resources $(RESOURCES_DIR) --source $(SOURCE_DIR)
 	touch "$@"
 
-$(MEMORY_JUNGLE): $(MEMORY_JUNGLE_DEPS)
+$(RESOURCES_JUNGLE): $(RESOURCES_JUNGLE_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	PYTHONPATH=. python3 scripts/generate_memory_jungle --manifest $(RELEASE_MANIFEST) --output $@
+	PYTHONPATH=. python3 scripts/generate_resources_jungle --manifest $(RELEASE_MANIFEST) --output $@
 
 $(SITE_SETTINGS): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_SETTINGS_DEPS)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
@@ -459,6 +459,13 @@ sr simulate_release: # run simulator with release build
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release CHANNEL=$(CHANNEL) simulate
 .PHONY: sr simulate_release
 
+$(STORE_OUTPUT_DIR)icon_128_amoled.png: $(ICON_DEPS) scripts/generate_site_icon $(VENV_STAMP)
+	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
+	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_icon \
+		--font-profile amoled \
+		--output $@ \
+		--size 128
+
 $(STORE_OUTPUT_DIR)icon_%.png: $(ICON_STAMP) scripts/generate_site_icon
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_icon \
@@ -568,6 +575,13 @@ smoke_test: $(VENV_STAMP) $(RELEASE_MANIFEST) # run smoke test w/ tests
 	$(Q)$(VENV_PYTHON) scripts/smoke --mode test
 .PHONY: smoke_test
 
+T all_tests: # run all automated release checks, stopping on failure
+	$(Q)$(MAKE) lint
+	$(Q)$(MAKE) test
+	$(Q)$(MAKE) smoke_test
+	$(Q)$(MAKE) smoke
+.PHONY: all_tests
+
 ifneq ($(MODE),release)
 d deploy:
 	$(Q)echo " [ $(call LOG_TAG,deploy) ]"
@@ -600,6 +614,8 @@ c clean: # remove build directory and files
 		$(RESOURCES_DIR)memory/low/generated    \
 		$(RESOURCES_DIR)memory/medium/generated \
 		$(RESOURCES_DIR)memory/high/generated   \
+		$(RESOURCES_DIR)fonts/mip/generated     \
+		$(RESOURCES_DIR)fonts/amoled/generated  \
 		$(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_DIR)settings-data.js $(SITE_DIR)devices-data.js \
 		$(VENV_DIR) .build-venv .dev-venv .site-venv $(SITE_UI_DIR) \
 		.mypy_cache .pytest_cache .coverage $(wildcard *.egg-info)

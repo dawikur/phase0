@@ -1,10 +1,13 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from PIL import Image
 
+from data import fonts
 from data.fonts.model import Glyph as SourceGlyph
 from data.fonts.model import Style, Typeface
 from scripts.utils.args_parse import Folders, parse_folders
@@ -83,7 +86,9 @@ def test_generate_fonts_writes_all_generated_outputs(tmp_path) -> None:
     generate_fonts(folders, required_glyphs)
 
     assert folders.source("generated", "fonts.mc").exists()
-    assert folders.resources("base/generated", "fonts.xml").exists()
+    assert folders.resources("fonts/mip/generated", "fonts.xml").exists()
+    assert folders.resources("fonts/amoled/generated", "fonts.xml").exists()
+    assert not folders.resources("base/generated", "fonts.xml").exists()
 
 
 def test_folders_and_parse_folders_resolve_output_paths(tmp_path, monkeypatch) -> None:
@@ -122,3 +127,120 @@ def test_required_glyphs_reports_invalid_and_missing_strings(tmp_path, capsys) -
     ):
         get_required_glyphs(folders)
     assert "Error reading" in capsys.readouterr().out
+
+
+def test_generated_profiles_preserve_ids_glyphs_and_mip_bitmaps(tmp_path: Path) -> None:
+    folders = Folders(tmp_path / "build", tmp_path / "resources", tmp_path / "source")
+    legacy = folders.resources("base/generated")
+    (legacy / "fonts.xml").write_text("old")
+    (legacy / "icons.png").write_text("old")
+    (legacy / "unrelated.xml").write_text("keep")
+    generate_fonts(folders, "012AB ")
+    assert (legacy / "unrelated.xml").read_text() == "keep"
+    assert not (legacy / "icons.png").exists()
+    cases = [
+        (
+            fonts.TYPEFACE_DIGITS,
+            fonts.STYLE_3,
+            fonts.STYLE_4,
+            "digits_regular",
+            ":0123456789",
+        ),
+        (
+            fonts.TYPEFACE_DIGITS,
+            fonts.STYLE_3_THIN,
+            fonts.STYLE_4_THIN,
+            "digits_regular_thin",
+            ":8",
+        ),
+        (
+            fonts.TYPEFACE_DIGITS_SMALL,
+            fonts.STYLE_3,
+            fonts.STYLE_4,
+            "digits_small",
+            ":0123456789",
+        ),
+        (
+            fonts.TYPEFACE_DIGITS_SMALL,
+            fonts.STYLE_3_THIN,
+            fonts.STYLE_4_THIN,
+            "digits_small_thin",
+            ":8",
+        ),
+        (
+            fonts.TYPEFACE_DOT,
+            fonts.STYLE_3,
+            fonts.STYLE_4,
+            "dot_regular",
+            "012AB ",
+        ),
+        (
+            fonts.TYPEFACE_DOT,
+            fonts.STYLE_3_THIN,
+            fonts.STYLE_4_THIN,
+            "dot_regular_thin",
+            "012AB ",
+        ),
+        (
+            fonts.TYPEFACE_DOT,
+            fonts.STYLE_2,
+            fonts.STYLE_3,
+            "dot_small",
+            "012AB ",
+        ),
+        (
+            fonts.TYPEFACE_DOT,
+            fonts.STYLE_1,
+            fonts.STYLE_2_BOLD,
+            "dot_tiny",
+            "012AB ",
+        ),
+        (fonts.TYPEFACE_ICONS, fonts.STYLE_2, fonts.STYLE_3, "icons", None),
+    ]
+    for profile, style_index in [("mip", 1), ("amoled", 2)]:
+        output = folders.resources(f"fonts/{profile}/generated")
+        definitions = ET.parse(output / "fonts.xml").getroot()
+        assert {item.attrib["id"] for item in definitions} == {
+            case[3].upper() for case in cases
+        }
+        assert all(item.attrib["antialias"] == "false" for item in definitions)
+        for case in cases:
+            _, expected_atlas, expected_fnt, _ = parse_typeface_and_style(
+                case[0], case[style_index], case[3], case[4]
+            )
+            assert (output / f"{case[3]}.fnt").read_text() == expected_fnt
+            with Image.open(output / f"{case[3]}.png") as actual:
+                assert actual.size == expected_atlas.size
+                assert actual.tobytes() == expected_atlas.tobytes()
+    source = folders.source("generated", "display.mc").read_text()
+    assert "module Display {" in source
+    assert "(:display_mip)\n\tconst IS_AMOLED as Lang.Boolean = false;" in source
+    assert "(:display_amoled)\n\tconst IS_AMOLED as Lang.Boolean = true;" in source
+    source = folders.source("generated", "fonts.mc").read_text()
+    assert "IS_AMOLED" not in source
+    for name, size in [("REGULAR", 3), ("SMALL", 2), ("TINY", 1)]:
+        assert f"(:display_mip)\n\tconst SPACING_{name} = {size};" in source
+        assert f"(:display_amoled)\n\tconst SPACING_{name} = {size + 1};" in source
+
+
+@pytest.mark.parametrize(
+    "style",
+    [
+        fonts.STYLE_4,
+        fonts.STYLE_4_THIN,
+        fonts.STYLE_3,
+        fonts.STYLE_2_BOLD,
+    ],
+)
+def test_larger_styles_draw_exact_pixel_blocks(style: Style) -> None:
+    typeface = Typeface("Sample", [SourceGlyph("A", ["101", "000", "101"])])
+    _, atlas, _, _ = parse_typeface_and_style(typeface, style)
+    for y in range(3 * style.size):
+        for x in range(3 * style.size):
+            expected = (
+                x // style.size in (0, 2)
+                and y // style.size in (0, 2)
+                and x % style.size < style.weight
+                and y % style.size < style.weight
+            )
+            assert bool(atlas.getpixel((x, y))) == expected

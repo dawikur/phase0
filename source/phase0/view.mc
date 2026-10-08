@@ -22,9 +22,21 @@ module Phase0 {
 
 		typedef Bases as Lang.Array<Widgets.Base>;
 
+		(:display_mip)
 		static const UPDATE_MODE_HIGH_POWER = 0;
+		(:display_mip)
 		static const UPDATE_MODE_LOW_POWER = 1;
+		(:display_mip)
 		static const UPDATE_MODE_LIMITED_POWER = 2;
+
+		(:display_amoled)
+		static const DISPLAY_MODE_NORMAL = 0;
+		(:display_amoled)
+		static const DISPLAY_MODE_MINIMAL = 1;
+		(:display_amoled)
+		static const DISPLAY_MODE_HIDDEN = 2;
+		(:display_amoled)
+		static const DISPLAY_MODE_OFF = 3;
 
 		// ---- fields ----
 
@@ -32,12 +44,17 @@ module Phase0 {
 		// The device may still provide partial updates in low-power mode. This
 		// becomes exhausted only when Garmin reports its partial-update budget
 		// has been exceeded.
+		(:display_mip)
 		hidden var update_mode_ as Lang.Number = UPDATE_MODE_HIGH_POWER;
-		hidden var is_night_mode_ as Lang.Boolean = false;
+		(:display_amoled)
+		hidden var display_mode_ as Lang.Number = DISPLAY_MODE_HIDDEN;
+		(:display_mip)
 		hidden var is_visible_ as Lang.Boolean = false;
+		hidden var is_night_mode_ as Lang.Boolean = false;
 
 		hidden var needs_reposition_ as Lang.Boolean = false;
 
+		(:memory_not_low)
 		hidden var bitmap_ as Graphics.BufferedBitmap? = null;
 
 		// -- refresh --
@@ -71,42 +88,156 @@ module Phase0 {
 			WatchFace.initialize();
 		}
 
+		(:display_mip)
 		function onShow() as Void {
 			self.is_visible_ = true;
 			self.invalidate_();
 		}
 
+		(:display_mip)
 		function onHide() as Void {
 			self.is_visible_ = false;
 		}
 
+		(:display_amoled)
+		function onShow() as Void {
+			self.refreshDisplayMode_();
+			if (self.isVisibleMode_()) {
+				self.invalidate_();
+			}
+		}
+
+		(:display_amoled)
+		function onHide() as Void {
+			self.display_mode_ = DISPLAY_MODE_HIDDEN;
+		}
+
+		(:display_amoled)
+		function handleDisplayModeChanged() as Void {
+			if (self.display_mode_ == DISPLAY_MODE_HIDDEN) {
+				return;
+			}
+
+			var was_display_off = self.display_mode_ == DISPLAY_MODE_OFF;
+			var was_minimal = self.isMinimalMode_();
+			self.refreshDisplayMode_();
+
+			if (!self.isVisibleMode_()) {
+				return;
+			}
+
+			if (was_display_off or self.isMinimalMode_() != was_minimal) {
+				self.invalidate_();
+				WatchUi.requestUpdate();
+			}
+		}
+
+		(:display_amoled)
+		hidden function refreshDisplayMode_() as Void {
+			// Read the system mode only on show and display-mode notifications.
+			// Hidden views defer system-mode changes until onShow.
+			// Partial-update power budgets remain independent.
+			self.display_mode_ = DISPLAY_MODE_NORMAL;
+
+			if (System has :getDisplayMode) {
+				switch (System.getDisplayMode()) {
+					case System.DISPLAY_MODE_OFF:
+						self.display_mode_ = DISPLAY_MODE_OFF;
+						break;
+					case System.DISPLAY_MODE_LOW_POWER:
+						self.display_mode_ = DISPLAY_MODE_MINIMAL;
+						break;
+					default:
+						self.display_mode_ = DISPLAY_MODE_NORMAL;
+						break;
+				}
+			}
+
+			Runtime.refreshCalendar();
+			self.is_night_mode_ = self.isNightMode_();
+		}
+
+		(:display_mip)
+		hidden function isMinimalMode_() as Lang.Boolean {
+			return self.is_night_mode_;
+		}
+
+		(:display_mip)
+		hidden function isVisibleMode_() as Lang.Boolean {
+			return self.is_visible_;
+		}
+
+		(:display_amoled)
+		hidden function isMinimalMode_() as Lang.Boolean {
+			return
+				self.display_mode_ == DISPLAY_MODE_MINIMAL or
+				self.is_night_mode_;
+		}
+
+		(:display_amoled)
+		hidden function isVisibleMode_() as Lang.Boolean {
+			return
+				self.display_mode_ != DISPLAY_MODE_HIDDEN and
+				self.display_mode_ != DISPLAY_MODE_OFF;
+		}
+
+		(:display_mip)
 		function onEnterSleep() as Void {
 			self.update_mode_ = UPDATE_MODE_LOW_POWER;
 
-			WatchUi.requestUpdate();
+			if (self.isVisibleMode_()) {
+				WatchUi.requestUpdate();
+			}
 		}
 
+		(:display_amoled)
+		function onEnterSleep() as Void {
+			if (self.isVisibleMode_()) {
+				WatchUi.requestUpdate();
+			}
+		}
+
+		(:display_mip)
 		function onExitSleep() as Void {
 			self.update_mode_ = UPDATE_MODE_HIGH_POWER;
 
-			WatchUi.requestUpdate();
+			if (self.isVisibleMode_()) {
+				WatchUi.requestUpdate();
+			}
+		}
+
+		(:display_amoled)
+		function onExitSleep() as Void {
+			if (self.isVisibleMode_()) {
+				WatchUi.requestUpdate();
+			}
 		}
 
 		function onSettingsChanged(_properties as Properties) as Void {
 			self.rebuildWidgets_(_properties);
 
-			WatchUi.requestUpdate();
+			if (self.isVisibleMode_()) {
+				WatchUi.requestUpdate();
+			}
 		}
 
+		(:display_mip)
 		function handlePowerBudgetExceeded() as Void {
 			self.update_mode_ = UPDATE_MODE_LIMITED_POWER;
 
-			WatchUi.requestUpdate();
+			if (self.isVisibleMode_()) {
+				WatchUi.requestUpdate();
+			}
 		}
 
+		(:input_touch)
 		function handlePress(
 			_click_event as WatchUi.ClickEvent
 		) as Lang.Boolean {
+			if (!self.isVisibleMode_()) {
+				return false;
+			}
+
 			var coordinates = _click_event.getCoordinates();
 			var pos_x = coordinates[0];
 			var pos_y = coordinates[1];
@@ -117,7 +248,7 @@ module Phase0 {
 				return true;
 			}
 
-			if (!self.is_night_mode_) {
+			if (!self.isMinimalMode_()) {
 				var widgets_per_hour_size = self.widgets_per_hour_.size();
 				for (var i = 0; i < widgets_per_hour_size; ++i) {
 					var widget = self.widgets_per_hour_[i];
@@ -158,14 +289,7 @@ module Phase0 {
 				!self.bottom_outer_.isEmpty()
 			);
 
-			self.bitmap_ = self.createBitmap_(
-				layout.screen_size_x,
-				layout.screen_size_y
-			);
-
-			if (self.bitmap_ != null) {
-				System.println("Using buffered bitmap");
-			}
+			self.prepareBitmap_(layout.screen_size_x, layout.screen_size_y);
 
 			self.invalidate_();
 
@@ -224,13 +348,14 @@ module Phase0 {
 			self.needs_reposition_ = false;
 		}
 
+		(:display_mip)
 		function onPartialUpdate(_dc as Graphics.Dc) as Void {
 			// ---- header ----
 
-			if (!self.is_visible_) {
+			if (!self.isVisibleMode_()) {
 				return;
 			}
-			if (self.is_night_mode_) {
+			if (self.isMinimalMode_()) {
 				return;
 			}
 
@@ -245,7 +370,7 @@ module Phase0 {
 		}
 
 		function onUpdate(_dc as Graphics.Dc) as Void {
-			if (!self.is_visible_) {
+			if (!self.isVisibleMode_()) {
 				return;
 			}
 
@@ -257,31 +382,26 @@ module Phase0 {
 
 			if (self.last_refresh_min_ != Runtime.day_minute) {
 				Runtime.refreshCalendar();
-				var is_night_mode = self.isNightMode_();
-
-				if (self.is_night_mode_ != is_night_mode) {
-					self.is_night_mode_ = is_night_mode;
-
+				var was_minimal = self.isMinimalMode_();
+				self.is_night_mode_ = self.isNightMode_();
+				if (self.isMinimalMode_() != was_minimal) {
 					self.invalidate_();
 				}
 			}
 
-			if (self.is_night_mode_) {
+			if (self.isMinimalMode_()) {
 				self.updateMinimal_(_dc);
 			} else {
 				self.updateNormal_(_dc);
 			}
 		}
 
+		(:display_mip)
 		hidden function updateMinimal_(_dc as Graphics.Dc) as Void {
-			Render.clear(_dc);
-
-			// The minimal face has little reusable content, so a full-screen
-			// bitmap copy costs more than rendering it directly.
+			Render.clear(_dc, Render.background);
 
 			if (self.last_refresh_min_ != Runtime.day_minute) {
 				self.last_refresh_min_ = Runtime.day_minute;
-
 				self.clock_.refresh(_dc);
 			}
 			self.status_.refresh(_dc);
@@ -294,6 +414,54 @@ module Phase0 {
 			for (var i = 0; i < batteries_size; ++i) {
 				self.batteries_[i].renderMinimal(_dc);
 			}
+		}
+
+		(:display_amoled)
+		hidden function updateMinimal_(_dc as Graphics.Dc) as Void {
+			Render.clear(_dc, Graphics.COLOR_BLACK);
+
+			// The minimal face has little reusable content, so a full-screen
+			// bitmap copy costs more than rendering it directly.
+
+			if (self.last_refresh_min_ != Runtime.day_minute) {
+				self.last_refresh_min_ = Runtime.day_minute;
+
+				self.clock_.refresh(_dc);
+			}
+			self.status_.refresh(_dc);
+			self.refreshWidgets_(_dc, self.batteries_);
+
+			var phase = Runtime.day_minute % BurnIn.PHASE_COUNT;
+			var offset_x = BurnIn.OFFSETS_X[phase];
+			var offset_y = BurnIn.OFFSETS_Y[phase];
+
+			self.renderMinimalShifted_(_dc, self.clock_, offset_x, offset_y);
+			self.renderMinimalShifted_(_dc, self.status_, offset_x, offset_y);
+
+			var batteries_size = self.batteries_.size();
+			for (var i = 0; i < batteries_size; ++i) {
+				self.renderMinimalShifted_(
+					_dc, self.batteries_[i], offset_x, offset_y
+				);
+			}
+		}
+
+		(:display_amoled)
+		hidden function renderMinimalShifted_(
+			_dc as Graphics.Dc,
+			_widget as Widgets.Base,
+			_offset_x as Lang.Number,
+			_offset_y as Lang.Number
+		) as Void {
+			// Restore layout coordinates immediately; normal rendering and hit
+			// areas must not inherit the AMOLED minimal offset.
+			var pos_x = _widget.pos_x;
+			var pos_y = _widget.pos_y;
+			_widget.pos_x = pos_x + _offset_x;
+			_widget.pos_y = pos_y + _offset_y;
+			_widget.renderMinimal(_dc);
+			_widget.pos_x = pos_x;
+			_widget.pos_y = pos_y;
 		}
 
 		hidden function updateNormal_(_dc as Graphics.Dc) as Void {
@@ -313,6 +481,22 @@ module Phase0 {
 			self.refreshChangedWidgets_(_dc, self.widgets_per_min_);
 			self.refreshChangedWidgets_(_dc, self.widgets_per_sec_);
 
+			self.renderNormalWidgets_(_dc);
+			self.seconds_.refresh(_dc);
+			self.renderSeconds_(_dc);
+		}
+
+		(:memory_low)
+		hidden function renderNormalWidgets_(_dc as Graphics.Dc) as Void {
+			Render.clear(_dc, Render.background);
+
+			self.renderWidgets_(_dc, self.widgets_per_hour_);
+			self.renderWidgets_(_dc, self.widgets_per_min_);
+			self.renderWidgets_(_dc, self.widgets_per_sec_);
+		}
+
+		(:memory_not_low)
+		hidden function renderNormalWidgets_(_dc as Graphics.Dc) as Void {
 			if (self.bitmap_ != null) {
 				var dc = self.bitmap_.getDc();
 				dc.clearClip();
@@ -324,19 +508,26 @@ module Phase0 {
 				_dc.clearClip();
 				_dc.drawBitmap(0, 0, self.bitmap_ as Graphics.BufferedBitmap);
 			} else {
-				Render.clear(_dc);
+				Render.clear(_dc, Render.background);
 
 				self.renderWidgets_(_dc, self.widgets_per_hour_);
 				self.renderWidgets_(_dc, self.widgets_per_min_);
 				self.renderWidgets_(_dc, self.widgets_per_sec_);
 			}
+		}
 
-			self.seconds_.refresh(_dc);
+		(:display_mip)
+		hidden function renderSeconds_(_dc as Graphics.Dc) as Void {
 			if (self.update_mode_ != UPDATE_MODE_LIMITED_POWER) {
 				self.seconds_.render(_dc);
 			} else {
 				self.seconds_.renderMinimal(_dc);
 			}
+		}
+
+		(:display_amoled)
+		hidden function renderSeconds_(_dc as Graphics.Dc) as Void {
+			self.seconds_.render(_dc);
 		}
 
 		hidden function rebuildWidgets_(_properties as Properties) as Void {
@@ -346,7 +537,7 @@ module Phase0 {
 			self.last_refresh_hour_ = -1;
 
 			self.needs_reposition_ = true;
-			self.bitmap_ = null;
+			self.resetBitmap_();
 
 			self.batteries_ = [];
 
@@ -549,11 +740,38 @@ module Phase0 {
 		}
 
 		(:memory_low)
-		hidden function createBitmap_(
+		hidden function prepareBitmap_(
 			_size_x as Lang.Number,
 			_size_y as Lang.Number
-		) as Graphics.BufferedBitmap? {
-			return null;
+		) as Void {}
+
+		(:memory_not_low)
+		hidden function prepareBitmap_(
+			_size_x as Lang.Number,
+			_size_y as Lang.Number
+		) as Void {
+			self.bitmap_ = self.createBitmap_(_size_x, _size_y);
+			if (self.bitmap_ != null) {
+				System.println("Using buffered bitmap");
+			}
+		}
+
+		(:memory_low)
+		hidden function resetBitmap_() as Void {}
+
+		(:memory_not_low)
+		hidden function resetBitmap_() as Void {
+			self.bitmap_ = null;
+		}
+
+		(:memory_low)
+		hidden function clearBitmap_() as Void {}
+
+		(:memory_not_low)
+		hidden function clearBitmap_() as Void {
+			if (self.bitmap_ != null) {
+				Render.clear(self.bitmap_.getDc(), Render.background);
+			}
 		}
 
 		(:memory_not_low)
@@ -710,6 +928,7 @@ module Phase0 {
 			}
 		}
 
+		(:memory_not_low)
 		hidden function updateWidgets_(
 			_dc as Graphics.Dc,
 			_widgets as Bases
@@ -735,9 +954,7 @@ module Phase0 {
 			self.invalidateWidgets_(self.widgets_per_min_);
 			self.invalidateWidgets_(self.widgets_per_sec_);
 
-			if (self.bitmap_ != null) {
-				Render.clear(self.bitmap_.getDc());
-			}
+			self.clearBitmap_();
 		}
 
 		hidden static function DistributeWidgetsInBox_(

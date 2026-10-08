@@ -11,6 +11,7 @@ from data.devices import (
     ScreenShape,
     ScreenType,
 )
+from scripts.utils.resources_jungle import supported_devices
 
 
 def test_devices_contains_all_converted_rows() -> None:
@@ -35,6 +36,7 @@ def test_devices_preserve_source_order_and_representative_values() -> None:
         Resolution(390, 390),
         ScreenType.AMOLED,
         "approachs50",
+        supports_touch=True,
         memory=Memory(watch_face=131072),
         api_version="5.1",
     )
@@ -44,6 +46,7 @@ def test_devices_preserve_source_order_and_representative_values() -> None:
             Resolution(280, 280),
             ScreenType.MIP64,
             "fenix7x",
+            supports_touch=True,
             memory=Memory(watch_face=131072),
             api_version="5.2",
         )
@@ -54,6 +57,7 @@ def test_devices_preserve_source_order_and_representative_values() -> None:
         Resolution(390, 390),
         ScreenType.AMOLED,
         "vivoactive6",
+        supports_touch=True,
         memory=Memory(watch_face=131072),
         api_version="6.0",
     )
@@ -235,3 +239,17 @@ def test_manifest_products_match_supported_connect_iq_ids() -> None:
     device_ids = {device.connect_iq_id for device in DEVICES if device.connect_iq_id}
 
     assert products <= device_ids
+
+
+def test_supported_devices_have_touch_capability() -> None:
+    devices = supported_devices(Path("manifest.xml.tmpl"))
+    assert all(isinstance(device.supports_touch, bool) for device in devices)
+    capabilities = {device.connect_iq_id: device.supports_touch for device in devices}
+    assert capabilities["descentmk2s"] is False
+    assert capabilities["fr955"] is True
+    assert capabilities["venu2"] is True
+
+
+def test_unknown_touch_capability_is_distinct_from_no_touch() -> None:
+    device = Device("Unknown", Resolution(240, 240), ScreenType.MIP64)
+    assert device.supports_touch is None

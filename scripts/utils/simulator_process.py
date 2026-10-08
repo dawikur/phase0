@@ -3,6 +3,7 @@
 """Shared Connect IQ simulator and watch-face process lifecycle."""
 
 import os
+import re
 import subprocess
 import sys
 import time
@@ -17,6 +18,7 @@ SIMULATOR_STOP_TIMEOUT = 3
 WATCH_FACE_START_TIMEOUT = 30
 SIMULATOR_POLL_INTERVAL = 0.1
 APP_CRASH_MARKER = "Encountered an app crash."
+APP_FAILURE_PATTERN = re.compile(r"^\s*(?:Error:|ERROR\b)|\b(?:FAIL|FAILED)\b")
 APP_READY_MARKER = "Phase0 initialized"
 LINE_BUFFER_COMMAND = ("stdbuf", "-oL", "-eL")
 
@@ -62,8 +64,13 @@ def start_simulator(
 ) -> Simulator:
     """Start Connect IQ once and stop it if startup fails."""
     signals = SmokeSignals(Event())
+    # The Linux connectiq shell launcher does not exec its simulator child.
+    # Own the simulator process directly so stopping it cannot orphan the GUI.
+    executable = (
+        connectiq.with_name("simulator") if sys.platform == "linux" else connectiq
+    )
     process, output_thread = start_logged_process(
-        [str(connectiq)], signals, env_overrides=env_overrides, cwd=cwd
+        [str(executable)], signals, env_overrides=env_overrides, cwd=cwd
     )
     simulator = Simulator(process, signals, output_thread)
     try:
@@ -119,7 +126,7 @@ def watch_simulator_output(output: TextIO | None, signals: SmokeSignals) -> None
     with output:
         for line in output:
             print(line, end="", file=sys.stdout, flush=True)
-            if APP_CRASH_MARKER in line:
+            if APP_CRASH_MARKER in line or APP_FAILURE_PATTERN.search(line):
                 signals.crashed.set()
                 if signals.ready is not None:
                     signals.ready.set()

@@ -26,6 +26,11 @@ class App extends Application.AppBase {
 		return [self.view_, self.delegate_];
 	}
 
+	(:display_amoled)
+	function onDisplayModeChanged() as Void {
+		self.view_.handleDisplayModeChanged();
+	}
+
 	function onSettingsChanged() as Void {
 		Data.Units.refresh();
 

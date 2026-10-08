@@ -177,7 +177,16 @@ def test_run_smoke_test_reuses_one_simulator_for_all_devices(
 
     assert popen.call_args_list == [
         call(
-            ["stdbuf", "-oL", "-eL", str(sdk_dir / "bin" / "connectiq")],
+            [
+                "stdbuf",
+                "-oL",
+                "-eL",
+                str(
+                    sdk_dir
+                    / "bin"
+                    / ("simulator" if sys.platform == "linux" else "connectiq")
+                ),
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -335,6 +344,36 @@ def test_start_simulator_stops_process_if_startup_check_fails() -> None:
     assert stopped_simulator.output_thread is output_thread
 
 
+@pytest.mark.parametrize(
+    ("platform", "executable"),
+    [("linux", "simulator"), ("darwin", "connectiq")],
+)
+def test_start_simulator_owns_linux_binary(platform: str, executable: str) -> None:
+    process = MagicMock()
+    process.poll.return_value = None
+    output_thread = MagicMock()
+    with (
+        patch("scripts.utils.simulator_process.sys.platform", platform),
+        patch(
+            "scripts.utils.simulator_process.start_logged_process",
+            return_value=(process, output_thread),
+        ) as start,
+        patch("scripts.utils.simulator_process.time.sleep"),
+    ):
+        simulator = start_simulator(
+            Path("/sdk/bin/connectiq"),
+            env_overrides={"GDK_BACKEND": "x11"},
+            cwd=Path("/tmp"),
+        )
+
+    assert start.call_args.args[0] == [f"/sdk/bin/{executable}"]
+    assert start.call_args.kwargs == {
+        "env_overrides": {"GDK_BACKEND": "x11"},
+        "cwd": Path("/tmp"),
+    }
+    assert simulator.process is process
+
+
 def test_start_logged_process_stops_process_if_output_thread_fails() -> None:
     process = MagicMock()
     thread = MagicMock()
@@ -465,6 +504,63 @@ def test_simulator_output_marks_watch_face_ready() -> None:
     watch_simulator_output(StringIO("Phase0 initialized\n"), signals)
 
     assert signals.ready is not None and signals.ready.is_set()
+
+
+@pytest.mark.parametrize(
+    "output",
+    [
+        'Error: Symbol Not Found Error\nDetails: "floorsClimbed"\n',
+        "ERROR\nPhase0 initialized\n",
+        "SmokeTest: FAIL\n",
+        "SmokeTest: FAILED\n",
+    ],
+)
+def test_simulator_output_marks_errors_and_failed_tests(output: str) -> None:
+    signals = SmokeSignals(Event(), Event())
+
+    watch_simulator_output(StringIO(output), signals)
+
+    assert signals.crashed.is_set()
+    assert signals.ready is not None and signals.ready.is_set()
+
+
+def test_smoke_stops_before_next_device_on_failed_test() -> None:
+    simulator = Simulator(MagicMock(), SmokeSignals(Event()), MagicMock())
+    loader = MagicMock()
+
+    def fail_test(*_args: object) -> None:
+        watch_simulator_output(
+            StringIO("Error: Symbol Not Found Error\n"), simulator.signals
+        )
+        check_simulator(simulator, "approachs50")
+
+    with (
+        patch(
+            "scripts.utils.smoke.supported_devices",
+            return_value=["approachs50", "fr955"],
+        ),
+        patch("scripts.utils.smoke.start_simulator", return_value=simulator),
+        patch("scripts.utils.smoke._build") as build,
+        patch("scripts.utils.smoke._start_watch_face", return_value=loader) as start,
+        patch("scripts.utils.smoke.wait_for_watch_face", side_effect=fail_test),
+        patch("scripts.utils.smoke.stop_watch_face_loader") as stop_loader,
+        patch("scripts.utils.smoke.stop_simulator") as stop,
+        pytest.raises(ApplicationCrashError, match="approachs50"),
+    ):
+        run_smoke_test(
+            Path("manifest.xml"),
+            "make",
+            "phase0",
+            Path("build"),
+            Path("sdk"),
+            10,
+            mode="test",
+        )
+
+    build.assert_called_once_with("make", "phase0", "approachs50", "test")
+    start.assert_called_once()
+    stop_loader.assert_called_once_with(loader)
+    stop.assert_called_once_with(simulator)
 
 
 def test_smoke_helpers_handle_missing_ready_output_and_process_failures(

@@ -10,8 +10,24 @@ from PIL import Image, ImageDraw  # pylint: disable=import-error
 
 from data import fonts
 from scripts.utils.args_parse import Folders
+from scripts.utils.burn_in import generate_burn_in
 from scripts.utils.mc_document import McDocument, McScope
 from scripts.utils.xml_document import XmlDocument
+
+FONT_STYLES = {
+    "mip": {
+        "regular": fonts.STYLE_3,
+        "regular_thin": fonts.STYLE_3_THIN,
+        "small": fonts.STYLE_2,
+        "tiny": fonts.STYLE_1,
+    },
+    "amoled": {
+        "regular": fonts.STYLE_4,
+        "regular_thin": fonts.STYLE_4_THIN,
+        "small": fonts.STYLE_3,
+        "tiny": fonts.STYLE_2_BOLD,
+    },
+}
 
 
 class Atlas:
@@ -287,17 +303,27 @@ def parse_typeface_and_style(  # pylint:disable=too-many-locals, too-many-branch
     return fnt.name, atlas.img, str(fnt), names_comments
 
 
-def generate_fonts(  # pylint: disable=too-many-locals
-    folders: Folders, required_glyphs: str
+def _generate_font_profile(  # pylint: disable=too-many-locals
+    folders: Folders, required_glyphs: str, profile: str
 ) -> None:
     fonts_xml = XmlDocument.resource("fonts")
     fonts_mc = McDocument.create()
 
+    def parse_font(
+        typeface: fonts.Typeface,
+        role: str,
+        name: str,
+        required_glyphs: str | None = None,
+    ) -> tuple[str, Image.Image, str, dict[str, str]]:
+        return parse_typeface_and_style(
+            typeface, FONT_STYLES[profile][role], name, required_glyphs
+        )
+
     def __store_font(font_name: str, atlas: Image.Image, fnt: str) -> None:
-        font_png = folders.resources("base/generated", f"{font_name}.png")
+        font_png = folders.resources(f"fonts/{profile}/generated", f"{font_name}.png")
         atlas.save(font_png)
 
-        font_fnt = folders.resources("base/generated", f"{font_name}.fnt")
+        font_fnt = folders.resources(f"fonts/{profile}/generated", f"{font_name}.fnt")
         font_fnt.write_text(fnt)
 
         font_name = font_name.upper()
@@ -314,6 +340,7 @@ def generate_fonts(  # pylint: disable=too-many-locals
     # Header
 
     fonts_mc.line("import Toybox.Application;")
+    fonts_mc.line("import Toybox.Lang;")
     fonts_mc.line("import Toybox.WatchUi;")
 
     with McScope(fonts_mc, "module Fonts {") as _module:
@@ -323,44 +350,42 @@ def generate_fonts(  # pylint: disable=too-many-locals
         for digits_meta_data in [
             (
                 fonts.TYPEFACE_DIGITS,
-                fonts.STYLE_REGULAR,
+                "regular",
                 "digits_regular",
                 ":0123456789",
             ),
             (
                 fonts.TYPEFACE_DIGITS,
-                fonts.STYLE_REGULAR_THIN,
+                "regular_thin",
                 "digits_regular_thin",
                 ":8",
             ),
             (
                 fonts.TYPEFACE_DIGITS_SMALL,
-                fonts.STYLE_REGULAR,
+                "regular",
                 "digits_small",
                 ":0123456789",
             ),
             (
                 fonts.TYPEFACE_DIGITS_SMALL,
-                fonts.STYLE_REGULAR_THIN,
+                "regular_thin",
                 "digits_small_thin",
                 ":8",
             ),
         ]:
-            name, atlas, fnt, names_comments = parse_typeface_and_style(
-                *digits_meta_data
-            )
+            name, atlas, fnt, names_comments = parse_font(*digits_meta_data)
             __store_font(name, atlas, fnt)
 
         # #########################################################################
         # Dots
 
         for dot_meta_data in [
-            (fonts.TYPEFACE_DOT, fonts.STYLE_REGULAR),
-            (fonts.TYPEFACE_DOT, fonts.STYLE_REGULAR_THIN),
-            (fonts.TYPEFACE_DOT, fonts.STYLE_SMALL),
-            (fonts.TYPEFACE_DOT, fonts.STYLE_TINY),
+            (fonts.TYPEFACE_DOT, "regular", "dot_regular"),
+            (fonts.TYPEFACE_DOT, "regular_thin", "dot_regular_thin"),
+            (fonts.TYPEFACE_DOT, "small", "dot_small"),
+            (fonts.TYPEFACE_DOT, "tiny", "dot_tiny"),
         ]:
-            name, atlas, fnt, names_comments = parse_typeface_and_style(
+            name, atlas, fnt, names_comments = parse_font(
                 *dot_meta_data, required_glyphs=required_glyphs
             )
             __store_font(name, atlas, fnt)
@@ -372,9 +397,9 @@ def generate_fonts(  # pylint: disable=too-many-locals
         fonts_mc.line("// Icons")
         fonts_mc.line()
         for icon_meta_data in [
-            (fonts.TYPEFACE_ICONS, fonts.STYLE_SMALL, "icons"),
+            (fonts.TYPEFACE_ICONS, "small", "icons"),
         ]:
-            name, atlas, fnt, names_comments = parse_typeface_and_style(*icon_meta_data)
+            name, atlas, fnt, names_comments = parse_font(*icon_meta_data)
             __store_font(name, atlas, fnt)
 
             fonts_mc.line()
@@ -395,15 +420,41 @@ def generate_fonts(  # pylint: disable=too-many-locals
         fonts_mc.line()
         fonts_mc.line("// Styles")
         fonts_mc.line()
-        for style in [
-            (fonts.STYLE_REGULAR),
-            (fonts.STYLE_SMALL),
-            (fonts.STYLE_TINY),
-        ]:
-            fonts_mc.line(f"const SPACING_{style.name.upper()} = {style.size};")
+        for role in ("regular", "small", "tiny"):
+            for spacing_profile, styles in FONT_STYLES.items():
+                fonts_mc.line(f"(:display_{spacing_profile})")
+                fonts_mc.line(f"const SPACING_{role.upper()} = {styles[role].size};")
 
     # #########################################################################
     # Write
 
-    folders.source("generated", "fonts.mc").write_text(fonts_mc.render())
-    folders.resources("base/generated", "fonts.xml").write_text(fonts_xml.render())
+    if profile == "mip":
+        folders.source("generated", "fonts.mc").write_text(fonts_mc.render())
+    folders.resources(f"fonts/{profile}/generated", "fonts.xml").write_text(
+        fonts_xml.render()
+    )
+
+
+def generate_fonts(folders: Folders, required_glyphs: str) -> None:
+    for profile in ("mip", "amoled"):
+        _generate_font_profile(folders, required_glyphs, profile)
+
+    display_mc = McDocument.create()
+    display_mc.line("import Toybox.Lang;")
+    with McScope(display_mc, "module Display {"):
+        for profile in FONT_STYLES:
+            display_mc.line(f"(:display_{profile})")
+            is_amoled = "true" if profile == "amoled" else "false"
+            display_mc.line(f"const IS_AMOLED as Lang.Boolean = {is_amoled};")
+    folders.source("generated", "display.mc").write_text(display_mc.render())
+
+    generate_burn_in(
+        folders.resources("fonts/amoled/generated"),
+        folders.source("generated", "burn_in.mc"),
+        FONT_STYLES["amoled"]["tiny"].size // 2,
+    )
+
+    # Retire only the old font outputs; other shared resources stay in place.
+    old_fonts = folders.resources("base/generated")
+    for output in folders.resources("fonts/mip/generated").iterdir():
+        (old_fonts / output.name).unlink(missing_ok=True)

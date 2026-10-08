@@ -76,17 +76,17 @@ module Widgets {
 					_dc,
 					Render.SIZE_SMALL,
 					show_label,
-					false,
-					false,
+					Render.HIDE_ICON,
+					Render.HIDE_GAUGE,
 					_size_x,
 					_size_y
 				) or
 				self.tryApplyCandidate_(
 					_dc,
 					Render.SIZE_SMALL,
-					false,
-					false,
-					false,
+					Render.HIDE_LABEL,
+					Render.HIDE_ICON,
+					Render.HIDE_GAUGE,
 					_size_x,
 					_size_y
 				)

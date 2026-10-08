@@ -70,11 +70,19 @@ module Widgets {
 
 			var percentage = system_stats.battery;
 			var value = percentage.toNumber();
-			var value_suffix = ' ';
+			var value_suffix = '%';
 
 			switch (self.data_) {
 				case Properties.DATA_BATTERY_DAYS_REMAINING:
-					var days = system_stats.batteryInDays;
+					var days =
+						system_stats has :batteryInDays ?
+						system_stats.batteryInDays :
+						null;
+
+					if (days == null) {
+						break;
+					}
+
 					if (1.0 <= days) {
 						value = days.toNumber();
 						value_suffix = 'd';
@@ -89,6 +97,7 @@ module Widgets {
 						}
 					}
 					break;
+
 				case Properties.DATA_BATTERY_ICON:
 					value = Math.round(
 						(percentage / 100) * self.bar_all_count_
