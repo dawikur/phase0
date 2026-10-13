@@ -17,7 +17,9 @@ from data.settings import (
     Token,
     Widgets,
 )
-from data.settings.data import MemoryHigh, MemoryLow, MemoryMedium
+from data.settings.data import MemoryHigh, MemoryLow, MemoryMedium, MetricWidths
+from data.settings.data import Options as SettingOptions
+from data.settings.data import Sizes
 
 
 class Options(IntEnum):
@@ -114,3 +116,60 @@ def test_settings_supports_indexed_and_named_access() -> None:
     assert settings.get("missing") is None
     assert list(settings) == [clock]
     assert len(settings) == 1
+
+
+def test_auto_options_share_minus_one_and_preserve_other_option_ids() -> None:
+    assert SettingOptions.AUTO == Sizes.AUTO == MetricWidths.AUTO == -1
+    assert [
+        (option.name, option.value)
+        for option in SettingOptions
+        if option.name != "AUTO"
+    ] == [
+        ("NONE", 1),
+        ("ALARM", 2),
+        ("BATTERY_DAYS_REMAINING", 4),
+        ("BATTERY_ICON", 5),
+        ("BATTERY_PERCENTAGE", 6),
+        ("BLUETOOTH_CONNECTED", 7),
+        ("BLUETOOTH_DISCONNECTED", 8),
+        ("DAWN_AND_DUSK", 9),
+        ("DAWN_AND_DUSK_MOON", 10),
+        ("DAWN_AND_DUSK_SUN", 11),
+        ("DAWN_OR_DUSK", 12),
+        ("DAWN_OR_DUSK_MOON", 13),
+        ("DAWN_OR_DUSK_SUN", 14),
+        ("GAUGE", 15),
+        ("ICON", 16),
+        ("NOTIFICATIONS", 17),
+        ("SMALL", 18),
+    ]
+
+
+def test_relative_humidity_is_available_for_icons_and_gauges() -> None:
+    data = Source(Path("source/data"))
+    assert data.with_icon.RELATIVE_HUMIDITY == data.RELATIVE_HUMIDITY
+    assert data.with_value_max.RELATIVE_HUMIDITY == data.RELATIVE_HUMIDITY
+
+
+def test_move_bar_is_available_for_icons_and_gauges() -> None:
+    data = Source(Path("source/data"))
+    assert data.with_icon.MOVE_BAR == data.MOVE_BAR
+    assert data.with_value_max.MOVE_BAR == data.MOVE_BAR
+
+
+@pytest.mark.parametrize("metric", ["BATTERY_PERCENTAGE", "BODY_BATTERY"])
+def test_battery_metrics_are_available_for_icons_and_gauges(metric: str) -> None:
+    data = Source(Path("source/data"))
+    assert getattr(data.with_icon, metric) == getattr(data, metric)
+    assert getattr(data.with_value_max, metric) == getattr(data, metric)
+
+
+def test_battery_days_remaining_is_available_for_icons() -> None:
+    data = Source(Path("source/data"))
+    assert data.with_icon.BATTERY_DAYS_REMAINING == data.BATTERY_DAYS_REMAINING
+
+
+def test_solar_intensity_is_available_for_icons_and_gauges() -> None:
+    data = Source(Path("source/data"))
+    assert data.with_icon.SOLAR_INTENSITY == data.SOLAR_INTENSITY
+    assert data.with_value_max.SOLAR_INTENSITY == data.SOLAR_INTENSITY

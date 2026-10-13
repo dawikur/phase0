@@ -12,7 +12,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_VO2MAX_BIKE
 					: null,
 				Resources.get(Rez.Strings.LABEL_VO2_BIKE),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 		}
 

@@ -217,6 +217,33 @@ def test_generated_profiles_preserve_ids_glyphs_and_mip_bitmaps(tmp_path: Path) 
     assert "(:display_mip)\n\tconst IS_AMOLED as Lang.Boolean = false;" in source
     assert "(:display_amoled)\n\tconst IS_AMOLED as Lang.Boolean = true;" in source
     source = folders.source("generated", "fonts.mc").read_text()
+    for name in (
+        "TEMPERATURE_0",
+        "TEMPERATURE_1",
+        "TEMPERATURE_2",
+        "TEMPERATURE_3",
+        "TEMPERATURE_4",
+        "TEMPERATURE_5",
+        "TEMPERATURE_6",
+        "MOVE_BAR_0",
+        "MOVE_BAR_1",
+        "MOVE_BAR_2",
+        "MOVE_BAR_3",
+        "MOVE_BAR_4",
+        "MOVE_BAR_5",
+        "BATTERY_0",
+        "BATTERY_1",
+        "BATTERY_2",
+        "BATTERY_3",
+        "BATTERY_4",
+        "SOLAR_0",
+        "SOLAR_1",
+        "SOLAR_2",
+        "SOLAR_3",
+        "SOLAR_4",
+    ):
+        assert source.count(f"const ICON_{name} =") == 1
+    assert "ICON_UV_" not in source
     assert "IS_AMOLED" not in source
     for name, size in [("REGULAR", 3), ("SMALL", 2), ("TINY", 1)]:
         assert f"(:display_mip)\n\tconst SPACING_{name} = {size};" in source

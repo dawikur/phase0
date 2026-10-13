@@ -12,7 +12,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_VO2MAX_RUN
 					: null,
 				Resources.get(Rez.Strings.LABEL_VO2_RUN),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 		}
 

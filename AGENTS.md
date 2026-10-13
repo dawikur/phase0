@@ -169,9 +169,14 @@ Components should not know about each other.
 Use the inherited `Base.is_small` for widget font size selection and rendering.
 Do not duplicate this state in subclasses; layout and widgets share the same field.
 
+All settings named Auto use `-1`. Preserve the stored IDs of other options
+when changing shared option enums.
+
 Color settings outside the Global group may select Global (`-1`). Resolve that
 choice against the matching Global color when constructing the widget, so
-rendering uses a concrete color. Metric Width uses `-1` for Auto; resolve it
+rendering uses a concrete color. Metric Width offers None (stored as `0`) to hide the numeric value while retaining the selected
+icon/gauge and normal label handling. Skip number formatting and reserve no
+numeric width in that mode. Metric Width uses `-1` for Auto; resolve it
 once from the data object's default width when constructing the metric.
 
 ---

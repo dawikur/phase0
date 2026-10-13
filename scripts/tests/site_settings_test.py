@@ -121,6 +121,7 @@ def test_site_settings_resolves_labels_and_options() -> None:
 
     assert size["key"] == "ClockSize"
     assert size["type"] == "list"
+    assert size["options"][0] == {"value": "-1", "label": "Auto"}
     assert [option["label"] for option in size["options"]] == [
         "Auto",
         "Small",
@@ -168,6 +169,7 @@ def test_site_settings_preserves_metric_width_options_and_regions() -> None:
     assert settings["Metric N Width"]["type"] == "list"
     assert settings["Metric N Width"]["options"] == [
         {"label": "Auto", "value": "-1"},
+        {"label": "None", "value": "0"},
         *({"label": str(width), "value": str(width)} for width in range(1, 11)),
     ]
     assert settings["Metric N"]["options"]
@@ -207,7 +209,7 @@ def test_metric_width_defaults_are_auto_in_every_memory_profile() -> None:
             assert config is not None and config.get("type") == "list"
             assert [entry.get("value") for entry in config.findall("listEntry")] == [
                 "-1",
-                *(str(width) for width in range(1, 11)),
+                *(str(width) for width in range(0, 11)),
             ]
 
 

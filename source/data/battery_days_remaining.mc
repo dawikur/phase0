@@ -12,8 +12,9 @@ module Data {
 					? Complications.COMPLICATION_TYPE_BATTERY
 					: null,
 				Resources.get(Rez.Strings.LABEL_BATTERY_DAYS_REMAINING),
-				RefreshRate.SEC
+				Data.RefreshRate.SEC
 			);
+			self.icon = Fonts.ICON_NONE;
 		}
 
 		function defaultWidth() as Lang.Number {
@@ -24,10 +25,11 @@ module Data {
 			var stats = System.getSystemStats();
 			var days = stats has :batteryInDays ? stats.batteryInDays : null;
 			self.value = days != null ? days.toNumber() : null;
+			self.icon = batteryIcon(stats.battery.toNumber());
 		}
 
 		function refreshRate() as Lang.Number {
-			return RefreshRate.SEC;
+			return Data.RefreshRate.SEC;
 		}
 	}
 } // module Data

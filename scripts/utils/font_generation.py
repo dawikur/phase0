@@ -407,7 +407,7 @@ def _generate_font_profile(  # pylint: disable=too-many-locals
             fonts_mc.line()
 
             for elem_id, comment in names_comments.items():
-                name = "_".join(comment.split()).upper()
+                name = "_".join(comment.replace("-", "_").split()).upper()
 
                 if elem_id in ('"', "\\"):
                     elem_id = f"\\{elem_id}"

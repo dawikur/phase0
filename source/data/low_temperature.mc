@@ -14,11 +14,17 @@ module Data {
 				WeatherProvider.refresh_rate
 			);
 
+			self.icon = Fonts.ICON_NONE;
+
 			WeatherProvider.register("low_temperature");
 		}
 
 		function refresh() as Void {
-			self.value = WeatherProvider.get("low_temperature");
+			var temperature_c = WeatherProvider.get("low_temperature");
+			self.icon = temperatureIcon(temperature_c);
+			self.value = temperature_c == null
+				? null
+				: Units.convertTemperature(temperature_c);
 		}
 
 		function refreshRevision() as Lang.Number? {

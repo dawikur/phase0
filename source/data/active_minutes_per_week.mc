@@ -12,7 +12,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_INTENSITY_MINUTES
 					: null,
 				Resources.get(Rez.Strings.LABEL_ACTIVE_MINUTES_PER_WEEK),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 
 			var info = ActivityMonitor.getInfo();

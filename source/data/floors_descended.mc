@@ -12,7 +12,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_INVALID
 					: null,
 				Resources.get(Rez.Strings.LABEL_FLOORS_DESCENDED),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 		}
 

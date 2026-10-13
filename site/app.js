@@ -11,7 +11,7 @@ const featureContent = {
 	top: {
 		kicker: "Top Metrics",
 		title: "Context above the clock",
-		copy: "The upper middle slots can show weather, environmental and other compact metrics. Each slot can choose data and width. Auto width uses the selected data's default.",
+		copy: "The upper middle slots can show weather, environmental and other compact metrics. Each slot can choose data and width. Auto width uses the selected data's default. Width None hides the value, keeping the icon or gauge and label.",
 		alternativeCopy: "Top Metrics can also have alternative settings. When alternatives are configured, long-pressing the clock switches between the base and alternative top metrics.",
 		regions: ["top"],
 	},
@@ -42,7 +42,7 @@ const featureContent = {
 	bottom: {
 		kicker: "Bottom Metrics",
 		title: "Activity, health and progress data",
-		copy: "Lower slots are built for metric-heavy activity, health and progress data. Each middle slot can choose data and width. Auto width uses the selected data's default.",
+		copy: "Lower slots are built for metric-heavy activity, health and progress data. Each middle slot can choose data and width. Auto width uses the selected data's default. Width None hides the value, keeping the icon or gauge and label.",
 		alternativeCopy: "Bottom Metrics can also have alternative settings. When alternatives are configured, long-pressing the clock switches between the base and alternative bottom metrics.",
 		regions: ["bottom"],
 	},

@@ -13,14 +13,16 @@ module Data {
 					? Complications.COMPLICATION_TYPE_BATTERY
 					: null,
 				Resources.get(Rez.Strings.LABEL_BATTERY_PERCENTAGE),
-				RefreshRate.SEC
+				Data.RefreshRate.SEC
 			);
 
 			self.value_max = 100;
+			self.icon = Fonts.ICON_NONE;
 		}
 
 		function refresh() as Void {
 			self.value = System.getSystemStats().battery.toNumber();
+			self.icon = batteryIcon(self.value);
 		}
 	}
 } // module Data

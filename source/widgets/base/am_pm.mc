@@ -21,7 +21,7 @@ module Widgets {
 		hidden var fallback_width_ as Lang.Number = 0;
 
 		function initialize() {
-			Base.initialize(null, RefreshRate.HOUR);
+			Base.initialize(null, Data.RefreshRate.HOUR);
 		}
 
 		function resize(

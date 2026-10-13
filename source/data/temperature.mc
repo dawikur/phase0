@@ -3,7 +3,6 @@
 import Toybox.Complications;
 import Toybox.Lang;
 import Toybox.SensorHistory;
-import Toybox.UserProfile;
 
 module Data {
 	class Temperature extends Base {
@@ -13,19 +12,24 @@ module Data {
 					? Complications.COMPLICATION_TYPE_CURRENT_TEMPERATURE
 					: null,
 				Resources.get(Rez.Strings.LABEL_TEMPERATURE),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
+
+			self.icon = Fonts.ICON_NONE;
 		}
 
 		function refresh() as Void {
+			var temperature_c = null;
 			if (SensorHistory has :getTemperatureHistory) {
-				self.value = SensorProvider.get(
+				temperature_c = SensorProvider.get(
 					self.name,
 					SensorHistory.getTemperatureHistory(SensorProvider.OPTIONS)
 				);
-			} else {
-				self.value = null;
 			}
+			self.icon = temperatureIcon(temperature_c);
+			self.value = temperature_c == null
+				? null
+				: Units.convertTemperature(temperature_c);
 		}
 	}
 } // module Data

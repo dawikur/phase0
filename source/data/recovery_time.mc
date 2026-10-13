@@ -13,7 +13,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_RECOVERY_TIME
 					: null,
 				Resources.get(Rez.Strings.LABEL_RECOVERY_TIME),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 		}
 

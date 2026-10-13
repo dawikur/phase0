@@ -43,7 +43,7 @@ module WeatherProvider {
 	var last_observed_seconds_ as Lang.Number = 0;
 	var revision as Lang.Number = 0;
 
-	const refresh_rate as Lang.Number = RefreshRate.HOUR;
+	const refresh_rate as Lang.Number = Data.RefreshRate.HOUR;
 
 	function register(_key as Lang.String) as Void {
 		if (!fields_.hasKey(_key)) {

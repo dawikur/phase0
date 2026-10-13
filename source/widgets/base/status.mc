@@ -12,7 +12,7 @@ module Widgets {
 		hidden var state_ as Lang.Number = -1;
 
 		function initialize(_properties as Lang.Array<Properties.Status>) {
-			Base.initialize(null, RefreshRate.SEC);
+			Base.initialize(null, Data.RefreshRate.SEC);
 
 			self.all_ = "";
 			self.slots_ = [];
@@ -113,9 +113,8 @@ module Widgets {
 				case Properties.ALARM:
 					return Fonts.ICON_ALARM;
 				case Properties.BLUETOOTH_CONNECTED:
-					return Fonts.ICON_BLUETOOTH;
 				case Properties.BLUETOOTH_DISCONNECTED:
-					return Fonts.ICON_BLUETOOTH;
+					return Fonts.ICON_BLUETOOTH_ON;
 				case Properties.NOTIFICATIONS:
 					return Fonts.ICON_NOTIFICATION;
 
@@ -139,7 +138,7 @@ module Widgets {
 
 				case Properties.BLUETOOTH_CONNECTED:
 					if (_device_settings.phoneConnected) {
-						return Fonts.ICON_BLUETOOTH;
+						return Fonts.ICON_BLUETOOTH_ON;
 					}
 					return Fonts.ICON_EMPTY;
 

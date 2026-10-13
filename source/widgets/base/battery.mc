@@ -27,7 +27,7 @@ module Widgets {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_BATTERY
 					: null,
-				RefreshRate.SEC
+				Data.RefreshRate.SEC
 			);
 
 			self.data_ = _properties.data;

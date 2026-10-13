@@ -15,7 +15,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_PULSE_OX
 					: null,
 				Resources.get(Rez.Strings.LABEL_SATURATION),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 
 			self.value_max = 100;

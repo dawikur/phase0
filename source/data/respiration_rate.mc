@@ -12,7 +12,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_RESPIRATION_RATE
 					: null,
 				Resources.get(Rez.Strings.LABEL_RESPIRATION_RATE),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 		}
 

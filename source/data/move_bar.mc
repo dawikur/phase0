@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
+import Toybox.ActivityMonitor;
 import Toybox.Complications;
 import Toybox.Lang;
-import Toybox.UserProfile;
 
 module Data {
 	class MoveBar extends Base {
@@ -12,10 +12,11 @@ module Data {
 					? Complications.COMPLICATION_TYPE_INVALID
 					: null,
 				Resources.get(Rez.Strings.LABEL_MOVE_BAR),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 
 			self.value_max = ActivityMonitor.MOVE_BAR_LEVEL_MAX;
+			self.icon = Fonts.ICON_NONE;
 		}
 
 		function defaultWidth() as Lang.Number {
@@ -24,6 +25,7 @@ module Data {
 
 		function refresh() as Void {
 			self.value = ActivityMonitor.getInfo().moveBarLevel;
+			self.icon = moveBarIcon(self.value);
 		}
 	}
 } // module Data

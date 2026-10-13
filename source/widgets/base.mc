@@ -44,11 +44,11 @@ module Widgets {
 		hidden var is_dirty_ as Lang.Boolean = true;
 
 		static function None() as Base {
-			return new Base(null, RefreshRate.NONE);
+			return new Base(null, Data.RefreshRate.NONE);
 		}
 
 		function isEmpty() as Lang.Boolean {
-			return self.refresh_rate == RefreshRate.NONE;
+			return self.refresh_rate == Data.RefreshRate.NONE;
 		}
 
 		function initialize(

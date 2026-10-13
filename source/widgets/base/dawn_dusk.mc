@@ -49,7 +49,7 @@ module Widgets {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_SUNRISE
 					: null,
-				RefreshRate.HOUR
+				Data.RefreshRate.HOUR
 			);
 
 			self.mode_ = _mode;

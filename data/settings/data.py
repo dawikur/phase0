@@ -12,8 +12,9 @@ class Options(IntEnum):
     NONE = auto()
 
     ALARM = auto()
-    AUTO = auto()
-    BATTERY_DAYS_REMAINING = auto()
+    AUTO = -1
+    # Preserve persisted option IDs after changing Auto from 3 to -1.
+    BATTERY_DAYS_REMAINING = 4
     BATTERY_ICON = auto()
     BATTERY_PERCENTAGE = auto()
     BLUETOOTH_CONNECTED = auto()
@@ -50,7 +51,8 @@ class Sizes(IntEnum):
 
 
 class MetricWidths(IntEnum):
-    AUTO = -1
+    AUTO = Options.AUTO.value
+    NONE = 0
     WIDTH_1 = 1
     WIDTH_2 = 2
     WIDTH_3 = 3

@@ -15,7 +15,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_SEA_LEVEL_PRESSURE
 					: null,
 				Resources.get(Rez.Strings.LABEL_PRESSURE),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 
 			self.value_max = 100;

@@ -37,9 +37,8 @@ module Widgets {
 			Base.initialize(_impl.type, _impl.refresh_rate);
 
 			self.impl_ = _impl;
-			// Width 0 was Auto in earlier releases.
 			self.width_ =
-				_properties.width <= 0
+				_properties.width < 0
 					? _impl.defaultWidth()
 					: _properties.width;
 			self.style_ = _style;
@@ -52,6 +51,41 @@ module Widgets {
 			var show_label = Render.accent != Render.COLOR_NONE;
 			var show_icon = self.style_ == Properties.ICON;
 			var show_gauge = self.style_ == Properties.GAUGE;
+
+			if (self.width_ == 0) {
+				if (
+					self.tryApplyCandidate_(
+						_dc,
+						Render.SIZE_REGULAR,
+						show_label,
+						show_icon,
+						show_gauge,
+						_size_x,
+						_size_y
+					) or
+					self.tryApplyCandidate_(
+						_dc,
+						Render.SIZE_SMALL,
+						show_label,
+						show_icon,
+						show_gauge,
+						_size_x,
+						_size_y
+					) or
+					self.tryApplyCandidate_(
+						_dc,
+						Render.SIZE_SMALL,
+						Render.HIDE_LABEL,
+						show_icon,
+						show_gauge,
+						_size_x,
+						_size_y
+					)
+				) {
+				}
+				self.is_dirty_ = true;
+				return;
+			}
 
 			if (
 				self.tryApplyCandidate_(
@@ -105,19 +139,21 @@ module Widgets {
 				!self.is_value_prepared_ or self.value_ != value;
 			if (is_value_changed) {
 				self.value_ = value;
-				self.value_text_ = Render.NumberFormat(
-					self.width_,
-					self.value_
-				);
-				self.value_bg_ = Render.NumberBgForText(
-					self.width_,
-					self.value_text_
-				);
-				self.value_bg_width_ = Render.NumberBgWidth(
-					_dc,
-					self.value_bg_,
-					self.is_small
-				);
+				if (0 < self.width_) {
+					self.value_text_ = Render.NumberFormat(
+						self.width_,
+						self.value_
+					);
+					self.value_bg_ = Render.NumberBgForText(
+						self.width_,
+						self.value_text_
+					);
+					self.value_bg_width_ = Render.NumberBgWidth(
+						_dc,
+						self.value_bg_,
+						self.is_small
+					);
+				}
 				self.is_value_prepared_ = true;
 			}
 
@@ -137,7 +173,7 @@ module Widgets {
 			}
 
 			if (
-				is_value_changed or
+				((0 < self.width_ or self.show_gauge_) and is_value_changed) or
 				(self.show_gauge_ and is_value_max_changed) or
 				is_icon_changed
 			) {
@@ -175,23 +211,25 @@ module Widgets {
 
 			// ---- value ----
 
-			Render.NumberPrepared(
-				_dc,
-				pos_x,
-				value_pos_y,
-				self.value_bg_,
-				self.value_bg_width_,
-				self.value_text_,
-				self.is_small
-			);
-			pos_x += self.number_width_;
+			if (0 < self.width_) {
+				Render.NumberPrepared(
+					_dc,
+					pos_x,
+					value_pos_y,
+					self.value_bg_,
+					self.value_bg_width_,
+					self.value_text_,
+					self.is_small
+				);
+				pos_x += self.number_width_;
+			}
 
 			// ---- gauge ----
 
 			if (self.show_gauge_) {
 				var value = Render.Ratio(self.value_, self.value_max_);
 				if (value != null and 0 < self.gauge_height_) {
-					pos_x += Render.SPACING / 2;
+					pos_x += self.width_ == 0 ? 0 : Render.SPACING / 2;
 
 					Render.Gauge(
 						_dc,
@@ -202,7 +240,7 @@ module Widgets {
 						value
 					);
 
-					pos_x += Render.SPACING / 2;
+					pos_x += self.width_ == 0 ? 0 : Render.SPACING / 2;
 				}
 			}
 
@@ -229,17 +267,21 @@ module Widgets {
 			_available_x as Lang.Number,
 			_available_y as Lang.Number
 		) as Lang.Boolean {
-			var number_width = Render.NumberWidth(_dc, self.width_, _is_small);
+			var number_width = self.width_ == 0
+				? 0
+				: Render.NumberWidth(_dc, self.width_, _is_small);
 			var number_height = Render.NumberHeight(_dc, _is_small);
 			var icon_height = _show_icon ? Render.IconsHeight(_dc) : 0;
 			var icon_width = _show_icon
-				? Render.IconsWidth(_dc, Fonts.ICON_EMPTY) + Render.SPACING
+				? Render.IconsWidth(_dc, Fonts.ICON_EMPTY) +
+					(self.width_ == 0 ? 0 : Render.SPACING)
 				: 0;
 			var gauge_height = number_height - 3 * Render.SPACING;
 
 			var body_width = number_width + icon_width;
 			if (_show_gauge) {
-				body_width += Render.SPACING / 2 + Render.SPACING;
+				body_width +=
+					(self.width_ == 0 ? 0 : Render.SPACING / 2) + Render.SPACING;
 			}
 
 			var has_label = _show_label and self.impl_.name.length() != 0;
@@ -254,7 +296,9 @@ module Widgets {
 				_show_icon and _is_small
 					? AlignCenter(0, Render.IconsHeight(_dc), number_height)
 					: 0;
-			var body_height = number_height + value_offset_y;
+			var body_height = self.width_ == 0 and !_show_gauge
+				? 0
+				: number_height + value_offset_y;
 			if (body_height < icon_height) {
 				body_height = icon_height;
 			}

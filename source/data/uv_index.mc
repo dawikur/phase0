@@ -32,15 +32,15 @@ module Data {
 				self.value = uv_index.toNumber();
 
 				if (self.value < 2) {
-					self.icon = Fonts.ICON_UV_LOW;
+					self.icon = Fonts.ICON_SOLAR_0;
 				} else if (self.value < 5) {
-					self.icon = Fonts.ICON_UV_MODERATE;
+					self.icon = Fonts.ICON_SOLAR_1;
 				} else if (self.value < 7) {
-					self.icon = Fonts.ICON_UV_HIGH;
+					self.icon = Fonts.ICON_SOLAR_2;
 				} else if (self.value < 9) {
-					self.icon = Fonts.ICON_UV_VERY_HIGH;
+					self.icon = Fonts.ICON_SOLAR_3;
 				} else {
-					self.icon = Fonts.ICON_UV_EXTREME;
+					self.icon = Fonts.ICON_SOLAR_4;
 				}
 			}
 		}

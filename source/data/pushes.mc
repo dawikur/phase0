@@ -12,7 +12,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_WHEELCHAIR_PUSHES
 					: null,
 				Resources.get(Rez.Strings.LABEL_PUSHES),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 
 			var info = ActivityMonitor.getInfo();

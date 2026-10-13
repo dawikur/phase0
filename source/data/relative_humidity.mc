@@ -14,12 +14,14 @@ module Data {
 				WeatherProvider.refresh_rate
 			);
 			self.value_max = 100;
+			self.icon = Fonts.ICON_NONE;
 
 			WeatherProvider.register("relative_humidity");
 		}
 
 		function refresh() as Void {
 			self.value = WeatherProvider.get("relative_humidity");
+			self.icon = humidityIcon(self.value);
 		}
 
 		function refreshRevision() as Lang.Number? {

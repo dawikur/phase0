@@ -15,7 +15,7 @@ module Widgets {
 		hidden var digit_width_ as Lang.Number = -1;
 
 		function initialize() {
-			Base.initialize(null, RefreshRate.SEC);
+			Base.initialize(null, Data.RefreshRate.SEC);
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {

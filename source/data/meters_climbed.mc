@@ -12,7 +12,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_INVALID
 					: null,
 				Resources.get(Rez.Strings.LABEL_METERS_CLIMBED),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 		}
 

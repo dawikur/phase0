@@ -10,7 +10,7 @@ module Widgets {
 				Toybox has :Complications
 					? Complications.COMPLICATION_TYPE_DATE
 					: null,
-				RefreshRate.HOUR
+				Data.RefreshRate.HOUR
 			);
 		}
 

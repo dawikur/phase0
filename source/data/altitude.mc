@@ -15,7 +15,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_ALTITUDE
 					: null,
 				Resources.get(Rez.Strings.LABEL_ALTITUDE),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 		}
 

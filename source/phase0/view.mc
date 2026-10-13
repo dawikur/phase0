@@ -712,18 +712,18 @@ module Phase0 {
 
 		hidden function addWidget_(_widget as Widgets.Base) as Void {
 			switch (_widget.refresh_rate) {
-				case RefreshRate.NONE:
+				case Data.RefreshRate.NONE:
 					break;
 
-				case RefreshRate.HOUR:
+				case Data.RefreshRate.HOUR:
 					self.widgets_per_hour_.add(_widget);
 					break;
 
-				case RefreshRate.MIN:
+				case Data.RefreshRate.MIN:
 					self.widgets_per_min_.add(_widget);
 					break;
 
-				case RefreshRate.SEC:
+				case Data.RefreshRate.SEC:
 					self.widgets_per_sec_.add(_widget);
 					break;
 

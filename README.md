@@ -183,3 +183,74 @@ settings stay separate.
 - [TODO.md](TODO.md) — product and technical backlog.
 - [CHANGELOG.md](CHANGELOG.md) — release history.
 - [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — build, upload, and watch checks.
+
+## Temperatures
+
+Temperature reads the watch's temperature sensor once per minute, using the
+sensor provider's cache when no fresh sample is available. Wrist heat can affect
+this reading. Feels-like temperature and daily high/low values use weather data
+and share the weather provider's refresh, retry and cache policy.
+Temperature, feels-like temperature, and daily high/low values follow the watch's
+temperature units (Celsius or Fahrenheit). Their icons are selected in Celsius,
+with thresholds at −25, −15, −5, 5, 15 and 25 °C; a value exactly on a threshold
+uses the warmer icon. Missing values clear both the value and icon.
+
+On FR955 (MIP64) and Venu2 (AMOLED), manually check all four metrics in both
+unit systems, including negative values, icon thresholds and missing sensor/weather data.
+For example, 0 °C should display as 32 °F with the same icon. Check that newly
+available weather updates the face and unchanged values do not cause redraws.
+
+## Metric width
+
+Metric Width offers Auto (the data's default), None and 1–10. None (stored as 0)
+hides the numeric value and its spacing while retaining the selected icon or gauge and
+the usual label. A metric without an icon/gauge shows only its label. Hidden
+values are not formatted, and icon-only widgets redraw only when their icon
+changes. Gauge widgets still update from the underlying value.
+
+Stored width 0 previously meant Auto; it now selects None and hides the value.
+Use Auto (−1) to retain automatic width. On FR955 and Venu2, check Width None
+with icon, gauge and plain metrics, labels enabled/disabled, missing data and
+both narrow side slots and middle rows.
+
+All Auto settings use −1, including Clock Size and Metric Width. Previously
+saved Clock Size = 3 still behaves as Auto; the IDs of other options remain
+unchanged.
+
+## Humidity icons
+
+Relative humidity supports both icon and gauge widgets. The five droplet icons
+represent 0–24%, 25–29%, 30–59%, 60–69% and 70–100%, respectively. Missing
+weather data clears the value and icon. Width None can display only the icon
+with the usual label. On FR955 and Venu2, check each threshold and missing data.
+
+## Move Bar icons
+
+Move Bar supports icon and gauge widgets. Each level from 0 through 5 selects
+its matching icon; level 0 uses an empty icon. Missing data clears the icon.
+Width None hides the number while retaining the icon and usual label.
+On FR955 and Venu2, check all six levels, missing data and icon-only rendering.
+
+## Battery metric icons
+
+Battery Percentage and Body Battery share five battery icons: 0–9 → 0,
+10–36 → 1, 37–63 → 2, 64–90 → 3 and 91–100 → 4. The three middle ranges
+contain 27 integer values each. Missing data clears the icon. Both metrics
+support icon and gauge widgets, including Width None to hide the number.
+On FR955 and Venu2, check each boundary, missing Body Battery data and
+icon-only rendering.
+
+Battery Days Remaining uses the same battery icons and percentage thresholds,
+while its numeric value remains the estimated number of days. It reuses the
+system-stats snapshot already read for that estimate. If the estimate is
+unavailable, the percentage icon still appears, including with Width None.
+On FR955 and Venu2, check percentage boundaries and an unavailable day estimate.
+
+## Solar icons
+
+UV Index and Solar Intensity share the five `solar 0` through `solar 4` icons.
+UV keeps its existing thresholds at 2, 5, 7 and 9. Solar Intensity selects icons
+at 20, 40, 60 and 80 on its 0–100 scale. Missing or negative solar readings
+clear the value and icon. Solar Intensity supports both icon and gauge widgets.
+On FR955 Solar, check each solar threshold and negative readings; on Venu2,
+check that unsupported solar data remains empty. Check UV icons on both devices.

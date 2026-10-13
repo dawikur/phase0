@@ -13,15 +13,17 @@ module Data {
 					? Complications.COMPLICATION_TYPE_SOLAR_INPUT
 					: null,
 				Resources.get(Rez.Strings.LABEL_SOLAR_INTENSITY),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 
 			self.value_max = 100;
+			self.icon = Fonts.ICON_NONE;
 		}
 
 		function refresh() as Void {
 			var value = System.getSystemStats().solarIntensity;
 			self.value = value != null and 0 <= value ? value : null;
+			self.icon = solarIntensityIcon(self.value);
 		}
 	}
 } // module Data

@@ -12,7 +12,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_CALORIES
 					: null,
 				Resources.get(Rez.Strings.LABEL_CALORIES),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 		}
 

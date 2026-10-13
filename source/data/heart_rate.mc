@@ -15,7 +15,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_HEART_RATE
 					: null,
 				Resources.get(Rez.Strings.LABEL_HEART_RATE),
-				RefreshRate.SEC
+				Data.RefreshRate.SEC
 			);
 
 			var current_sport = UserProfile.getCurrentSport();

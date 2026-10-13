@@ -25,7 +25,7 @@ module Widgets {
 		hidden var size_ as Lang.Number;
 
 		function initialize(_properties as Properties.Clock) {
-			Base.initialize(null, RefreshRate.MIN);
+			Base.initialize(null, Data.RefreshRate.MIN);
 
 			self.font_fg_ =
 				Application.loadResource(Rez.Fonts.DIGITS_REGULAR) as

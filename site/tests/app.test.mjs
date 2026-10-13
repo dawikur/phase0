@@ -525,7 +525,7 @@ test("middle metric feature copy matches exposed settings", () => {
 		assert.match(html, /Data/);
 		assert.match(html, /Width/);
 		assert.match(html, /Auto width/);
-		assert.doesNotMatch(html, /\bicon\b/i);
+		assert.match(html, /Width None hides the value/);
 		assert.doesNotMatch(html, /\bpadding\b/i);
 		assert.doesNotMatch(html, /\bgauge behavior\b/i);
 	}

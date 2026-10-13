@@ -12,7 +12,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_FLOORS_CLIMBED
 					: null,
 				Resources.get(Rez.Strings.LABEL_FLOORS_CLIMBED),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 
 			var info = ActivityMonitor.getInfo();

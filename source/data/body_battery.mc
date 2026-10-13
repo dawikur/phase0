@@ -15,10 +15,11 @@ module Data {
 					? Complications.COMPLICATION_TYPE_BODY_BATTERY
 					: null,
 				Resources.get(Rez.Strings.LABEL_BODY_BATTERY),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 
 			self.value_max = 100;
+			self.icon = Fonts.ICON_NONE;
 		}
 
 		function refresh() as Void {
@@ -30,6 +31,7 @@ module Data {
 			} else {
 				self.value = null;
 			}
+			self.icon = batteryIcon(self.value);
 		}
 	}
 } // module Data

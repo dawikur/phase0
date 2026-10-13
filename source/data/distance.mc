@@ -14,7 +14,7 @@ module Data {
 					? Complications.COMPLICATION_TYPE_INVALID
 					: null,
 				Resources.get(Rez.Strings.LABEL_DISTANCE),
-				RefreshRate.MIN
+				Data.RefreshRate.MIN
 			);
 		}
 
