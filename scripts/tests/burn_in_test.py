@@ -50,10 +50,13 @@ def test_generation_recomputes_cycle_from_actual_amoled_fonts(tmp_path: Path) ->
     generate_fonts(folders, "0123456789dhm")
     output = folders.source("generated", "burn_in.mc")
     original = output.read_text()
-    cycle = generate_burn_in(folders.resources("fonts/amoled/generated"), output, 1)
+    icons_folder = folders.resources("memory/high/generated/fonts/amoled")
+    cycle = generate_burn_in(
+        folders.resources("fonts/amoled/generated"), output, 1, icons_folder
+    )
     assert output.read_text() == original
     assert len(cycle) == 4
-    masks = minimal_masks(folders.resources("fonts/amoled/generated"), 1)
+    masks = minimal_masks(folders.resources("fonts/amoled/generated"), 1, icons_folder)
     assert all(
         not frozenset.intersection(*(translate(mask, offset) for offset in cycle))
         for mask in masks
@@ -67,5 +70,7 @@ def test_generation_recomputes_cycle_from_actual_amoled_fonts(tmp_path: Path) ->
     with Image.open(atlas_path) as atlas:
         Image.new("1", atlas.size, 1).save(atlas_path)
     with pytest.raises(ValueError, match="No burn-in cycle"):
-        generate_burn_in(folders.resources("fonts/amoled/generated"), output, 1)
+        generate_burn_in(
+            folders.resources("fonts/amoled/generated"), output, 1, icons_folder
+        )
     assert output.read_text() == original

@@ -129,6 +129,22 @@ def test_required_glyphs_reports_invalid_and_missing_strings(tmp_path, capsys) -
     assert "Error reading" in capsys.readouterr().out
 
 
+def assert_generated_font_matches(
+    output: Path,
+    typeface: Typeface,
+    style: Style,
+    name: str,
+    required_glyphs: str | None,
+) -> None:
+    _, expected_atlas, expected_fnt, _ = parse_typeface_and_style(
+        typeface, style, name, required_glyphs
+    )
+    assert (output / f"{name}.fnt").read_text() == expected_fnt
+    with Image.open(output / f"{name}.png") as actual:
+        assert actual.size == expected_atlas.size
+        assert actual.tobytes() == expected_atlas.tobytes()
+
+
 def test_generated_profiles_preserve_ids_glyphs_and_mip_bitmaps(tmp_path: Path) -> None:
     folders = Folders(tmp_path / "build", tmp_path / "resources", tmp_path / "source")
     legacy = folders.resources("base/generated")
@@ -201,17 +217,18 @@ def test_generated_profiles_preserve_ids_glyphs_and_mip_bitmaps(tmp_path: Path) 
         output = folders.resources(f"fonts/{profile}/generated")
         definitions = ET.parse(output / "fonts.xml").getroot()
         assert {item.attrib["id"] for item in definitions} == {
-            case[3].upper() for case in cases
+            case[3].upper() for case in cases if case[3] != "icons"
         }
         assert all(item.attrib["antialias"] == "false" for item in definitions)
         for case in cases:
-            _, expected_atlas, expected_fnt, _ = parse_typeface_and_style(
-                case[0], case[style_index], case[3], case[4]
+            font_output = (
+                folders.resources(f"memory/high/generated/fonts/{profile}")
+                if case[3] == "icons"
+                else output
             )
-            assert (output / f"{case[3]}.fnt").read_text() == expected_fnt
-            with Image.open(output / f"{case[3]}.png") as actual:
-                assert actual.size == expected_atlas.size
-                assert actual.tobytes() == expected_atlas.tobytes()
+            assert_generated_font_matches(
+                font_output, case[0], case[style_index], case[3], case[4]
+            )
     source = folders.source("generated", "display.mc").read_text()
     assert "module Display {" in source
     assert "(:display_mip)\n\tconst IS_AMOLED as Lang.Boolean = false;" in source
@@ -271,3 +288,63 @@ def test_larger_styles_draw_exact_pixel_blocks(style: Style) -> None:
                 and y % style.size < style.weight
             )
             assert bool(atlas.getpixel((x, y))) == expected
+
+
+def test_icon_memory_profiles_share_character_ids_and_omit_conditions(
+    tmp_path: Path,
+) -> None:
+    folders = Folders(tmp_path / "build", tmp_path / "resources", tmp_path / "source")
+    # Old shared atlases must disappear when regenerating resources.
+    for profile in ("mip", "amoled"):
+        for filename in ("icons.png", "icons.fnt"):
+            folders.resources(f"fonts/{profile}/generated", filename).write_text("old")
+    generate_fonts(folders, "0123456789")
+    source = folders.source("generated", "fonts.mc").read_text()
+    assert source.count('const ICON_NONE = "";') == 1
+    for profile, style in [("mip", fonts.STYLE_2), ("amoled", fonts.STYLE_3)]:
+        low = folders.resources(f"memory/low/generated/fonts/{profile}")
+        high = folders.resources(f"memory/high/generated/fonts/{profile}")
+        _, _, _, full_comments = parse_typeface_and_style(
+            fonts.TYPEFACE_ICONS, style, "icons"
+        )
+        expected = parse_typeface_and_style(
+            fonts.TYPEFACE_ICONS_GENERAL, style, "icons"
+        )
+        low_comments = expected[3]
+        assert low_comments == {
+            char: comment
+            for char, comment in full_comments.items()
+            if comment not in fonts.EXTRA_NAMES
+        }
+        assert set(low_comments.values()) >= {
+            "alarm",
+            "dawn",
+            "dot full",
+            "battery empty",
+        }
+        assert len(low_comments) == 34
+        assert not set(low_comments.values()) & fonts.EXTRA_NAMES
+        assert len(full_comments) - len(low_comments) == 57
+        assert (low / "icons.fnt").read_text() == expected[2]
+        with Image.open(low / "icons.png") as actual, Image.open(
+            high / "icons.png"
+        ) as full:
+            assert actual.tobytes() == expected[1].tobytes()
+            assert actual.size == ((462, 18) if profile == "mip" else (693, 27))
+            assert full.size == ((1242, 22) if profile == "mip" else (1863, 33))
+            assert actual.width * actual.height < full.width * full.height
+        for filename in ("icons.fnt", "icons.png", "fonts.xml"):
+            assert (
+                folders.resources(
+                    f"memory/medium/generated/fonts/{profile}", filename
+                ).read_bytes()
+                == (high / filename).read_bytes()
+            )
+        assert [
+            item.attrib["id"] for item in ET.parse(low / "fonts.xml").getroot()
+        ] == ["ICONS"]
+        assert not folders.resources(f"fonts/{profile}/generated", "icons.png").exists()
+        assert not folders.resources(f"fonts/{profile}/generated", "icons.fnt").exists()
+    for comment in fonts.EXTRA_NAMES:
+        name = comment.replace(" ", "_").upper()
+        assert f"(:memory_not_low)\n\tconst ICON_{name} =" in source

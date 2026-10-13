@@ -22,6 +22,10 @@ files, so review the diff afterward. `make smoke_test` and `make smoke` build
 and run every supported device in the Connect IQ simulator. Both stop at the
 first application error or failed test, clean up the simulator processes, and
 exit with an error.
+`make simulate_test` (`make st`) finishes after the test summary and stops its
+simulator. It requires an explicit passing summary with no failures or errors;
+this also handles SDK 9.2.0 returning exit code 1 because its summary parser
+expects a space that the simulator no longer prints.
 `make all_tests` runs `lint`, `test`, `smoke_test`, and `smoke` in that order,
 stopping at the first failure, including when invoked with `-j`.
 
@@ -46,8 +50,10 @@ shared site UI before rebuilding.
 
 ## Display font profiles
 
-Fonts are generated from the same bitmap glyphs into
+Shared fonts are generated from the same bitmap glyphs into
 `resources/fonts/mip/generated/` and `resources/fonts/amoled/generated/`.
+Icon fonts are generated separately in
+`resources/memory/{low,medium,high}/generated/fonts/{mip,amoled}/`.
 Generated `build/resources.jungle` selects one font set using the device
 catalog's screen type and selects its memory profile independently. Other display types use the MIP set.
 Resource IDs and user settings are identical across profiles. Supported AMOLED
@@ -143,6 +149,16 @@ direct rendering when memory is insufficient. Only MIP includes partial updates
 and their power-budget state. AMOLED keeps normal second rendering while awake
 and retains display-mode handling for LOW/OFF.
 
+Icon fonts are selected at compile time by memory profile. Low-memory devices
+include only the 34 general icons (status, dawn/dusk, moon phases and the
+battery-bar widget). Their MIP icon atlas is 462 × 18. Medium/high devices
+also include all 57 conditions icons: rain, wind, solar/UV, temperature,
+humidity, battery levels and move bar. The essential/extra split is removed.
+This reduces the font allocation and excludes conditions icon-selection code
+on low-memory devices. All metric values, labels and gauges remain available;
+Style = Icon reserves no space for a conditions icon on low. Digit and text
+fonts continue to use the shared display profiles.
+
 Touch handlers are included only with `input_touch`. The device catalog records
 `supports_touch` from the SDK's `simulator.json` (`display.isTouch`); generating
 Jungle does not require the SDK and rejects supported devices whose capability
@@ -202,7 +218,7 @@ available weather updates the face and unchanged values do not cause redraws.
 
 ## Metric width
 
-Metric Width offers Auto (the data's default), None and 1–10. None (stored as 0)
+Metric Width offers Auto (the data's default), None and 1–10. None (`Properties.NONE`)
 hides the numeric value and its spacing while retaining the selected icon or gauge and
 the usual label. A metric without an icon/gauge shows only its label. Hidden
 values are not formatted, and icon-only widgets redraw only when their icon
@@ -254,3 +270,14 @@ at 20, 40, 60 and 80 on its 0–100 scale. Missing or negative solar readings
 clear the value and icon. Solar Intensity supports both icon and gauge widgets.
 On FR955 Solar, check each solar threshold and negative readings; on Venu2,
 check that unsupported solar data remains empty. Check UV icons on both devices.
+
+Metric setting IDs are stable hashes of `DATA_` plus the metric name, computed
+once during resource generation. Adding a metric no longer shifts existing
+choices. Filtered metric lists and extra widget options retain their original
+IDs. During beta, setting IDs may change without migrating previous choices.
+
+Auto and None use stable hashed option IDs just like other named options.
+Runtime checks use `Properties.AUTO` and `Properties.NONE`; numeric metric
+widths remain 1–10. Settings are read directly using current IDs.
+The Global color choice uses the shared hashed `Properties.GLOBAL` ID;
+widgets resolve it to the corresponding global color during construction.

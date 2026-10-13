@@ -511,73 +511,13 @@ module WeatherProvider {
 		revision = 0;
 	}
 
-	function assertNull_(_value as Lang.Object?) as Void {
-		Test.assertEqual(_value == null, true);
-	}
-
-	function assertNumberEqual_(
-		_actual as Lang.Number?,
-		_expected as Lang.Number?
-	) as Void {
-		if (_expected == null) {
-			assertNull_(_actual);
-			return;
-		}
-
-		Test.assertEqual(_actual != null, true);
-		Test.assertEqual(_actual as Lang.Number, _expected as Lang.Number);
-	}
-
-	function assertCacheValueEqual_(
-		_key as Lang.String,
-		_ttl_in_hours as Lang.Number,
-		_expected as Lang.Number?
-	) as Void {
-		var cached = Cache.getValue(_key, _ttl_in_hours);
-		if (_expected == null) {
-			assertNull_(cached);
-			return;
-		}
-
-		Test.assertEqual(cached != null, true);
-		Test.assertEqual(cached as Lang.Number, _expected as Lang.Number);
-	}
-
-	function assertForecastValue_(
-		_key as Lang.String,
-		_hour as Lang.Number,
-		_expected as Lang.Number?
-	) as Void {
-		var snapshot = loadForecastSnapshot_();
-		if (_expected == null) {
-			if (snapshot == null) {
-				return;
-			}
-			assertNull_(
-				snapshotValue_(
-					snapshot as ForecastSnapshot,
-					forecastKey_(_key, _hour)
-				)
-			);
-			return;
-		}
-
-		Test.assertEqual(snapshot != null, true);
-		assertNumberEqual_(
-			snapshotValue_(
-				snapshot as ForecastSnapshot,
-				forecastKey_(_key, _hour)
-			),
-			_expected
-		);
-	}
-
 	(:test)
 	function WeatherProviderCurrentCacheTest(
 		_logger as Test.Logger
 	) as Lang.Boolean {
 		clearWeatherProviderTestState_();
 
+		var value;
 		var field = "weather_provider_test_temperature";
 		last_forecast_refresh_hour_ = 42;
 		next_refresh_seconds_ = 42;
@@ -587,34 +527,42 @@ module WeatherProvider {
 
 		Test.assertEqual(forecastKey_(field, 42), "forecast_" + field + "_42");
 
-		assertNumberEqual_(refreshCurrentValue_(field, null, false), null);
+		Test.assert(refreshCurrentValue_(field, null, false) == null);
 
 		Cache.setValue(field, 12);
-		assertNumberEqual_(refreshCurrentValue_(field, null, false), 12);
+		Test.assert(refreshCurrentValue_(field, null, false) == 12);
 
-		assertNumberEqual_(refreshCurrentValue_(field, 27.8, false), 27);
-		assertCacheValueEqual_(field, CURRENT_CACHE_TTL_HOURS, 12);
+		Test.assert(refreshCurrentValue_(field, 27.8, false) == 27);
+		value = Cache.getValue(field, CURRENT_CACHE_TTL_HOURS);
+		Test.assert(value != null);
+		Test.assertEqual(value as Lang.Number, 12);
 
-		assertNumberEqual_(refreshCurrentValue_(field, 33, true), 33);
-		assertCacheValueEqual_(field, CURRENT_CACHE_TTL_HOURS, 33);
+		Test.assert(refreshCurrentValue_(field, 33, true) == 33);
+		value = Cache.getValue(field, CURRENT_CACHE_TTL_HOURS);
+		Test.assert(value != null);
+		Test.assertEqual(value as Lang.Number, 33);
 
 		Application.Storage.setValue(field + "_timestamp", 1);
-		assertNumberEqual_(refreshCurrentValue_(field, 33, true), 33);
+		Test.assert(refreshCurrentValue_(field, 33, true) == 33);
 		Test.assertEqual(
 			Application.Storage.getValue(field + "_timestamp") as Lang.Number,
 			1
 		);
 
-		assertNumberEqual_(refreshCurrentValue_(field, 34, true), 34);
-		assertCacheValueEqual_(field, CURRENT_CACHE_TTL_HOURS, 34);
+		Test.assert(refreshCurrentValue_(field, 34, true) == 34);
+		value = Cache.getValue(field, CURRENT_CACHE_TTL_HOURS);
+		Test.assert(value != null);
+		Test.assertEqual(value as Lang.Number, 34);
 
 		Cache.clearValue(field);
 		current_cache_refresh_seconds_.put(
 			field,
 			Runtime.now.value() - CURRENT_CACHE_REFRESH_INTERVAL_SECONDS
 		);
-		assertNumberEqual_(refreshCurrentValue_(field, 34, true), 34);
-		assertCacheValueEqual_(field, CURRENT_CACHE_TTL_HOURS, 34);
+		Test.assert(refreshCurrentValue_(field, 34, true) == 34);
+		value = Cache.getValue(field, CURRENT_CACHE_TTL_HOURS);
+		Test.assert(value != null);
+		Test.assertEqual(value as Lang.Number, 34);
 
 		clearWeatherProviderTestState_();
 		return true;
@@ -691,24 +639,31 @@ module WeatherProvider {
 		storeForecastSnapshotValue_(snapshot, temperature, now_hour + 2, 21);
 		storeForecastSnapshot_(snapshot);
 
-		assertNumberEqual_(
-			nextForecastValue_(snapshot, condition, now_hour),
+		Test.assert(
+			nextForecastValue_(snapshot, condition, now_hour) ==
 			7
 		);
-		assertNumberEqual_(
-			nextForecastValue_(snapshot, temperature, now_hour),
+		Test.assert(
+			nextForecastValue_(snapshot, temperature, now_hour) ==
 			21
 		);
-		assertNumberEqual_(
-			nextForecastValue_(snapshot, temperature, now_hour + 2),
+		Test.assert(
+			nextForecastValue_(snapshot, temperature, now_hour + 2) ==
 			null
 		);
 
 		refreshForecastFallback_([condition, temperature], now_hour);
-		assertNumberEqual_(get(condition), 7);
-		assertNumberEqual_(get(temperature), 21);
+		Test.assert(get(condition) == 7);
+		Test.assert(get(temperature) == 21);
 
-		assertForecastValue_(temperature, now_hour + 1, null);
+		snapshot = loadForecastSnapshot_();
+		Test.assert(snapshot != null);
+		Test.assert(
+			snapshotValue_(
+				snapshot as ForecastSnapshot,
+				forecastKey_(temperature, now_hour + 1)
+			) == null
+		);
 
 		clearWeatherProviderTestState_();
 		return true;
@@ -741,16 +696,13 @@ module WeatherProvider {
 
 		clearForecast_();
 
-		Test.assertEqual(loadForecastSnapshot_() == null, true);
-		assertForecastValue_(condition, snapshot_hour + 1, null);
-		assertForecastValue_(condition, snapshot_hour + 2, null);
-		assertForecastValue_(temperature, snapshot_hour + 1, null);
+		Test.assert(loadForecastSnapshot_() == null);
 
 		Cache.setValue(condition, 44);
 		refreshForecastFallback_([condition], snapshot_hour);
-		assertNumberEqual_(get(condition), 44);
+		Test.assert(get(condition) == 44);
 
 		clearWeatherProviderTestState_();
 		return true;
 	}
-} // get("module") WeatherProvider
+} // WeatherProvider

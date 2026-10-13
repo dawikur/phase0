@@ -65,6 +65,7 @@ def apply_property_defaults(
 
 
 def render_data_mc(data: Any) -> str:
+    data = list(data)
     doc = McDocument.create()
     doc.line("import Toybox.Lang;")
     doc.line("import Toybox.Test;")
@@ -84,11 +85,9 @@ def render_data_mc(data: Any) -> str:
         with McScope(
             doc, "function SmokeTest(_logger as Test.Logger) as Lang.Boolean {"
         ) as _smoke_test:
-            with McScope(doc, "for (var i = 1; ; ++i) {") as _for:
-                doc.line("var data = Data.get(i);")
-                with McScope(doc, "if (data == null) {") as _if:
-                    doc.line("break;")
-
+            doc.line("var data;")
+            for datum in data:
+                doc.line(f"data = Data.get({datum.value}) as Base;")
                 doc.line("data.refresh();")
                 doc.line("data.refreshRevision();")
 

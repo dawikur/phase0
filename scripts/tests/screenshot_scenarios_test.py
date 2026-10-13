@@ -12,6 +12,7 @@ from data.screenshots import (
     SCENARIOS,
 )
 from data.settings.colors import Colors
+from data.settings.data import Options
 from scripts.utils.manifest import supported_connect_iq_ids
 from scripts.utils.resources_jungle import memory_class_for_limit
 from scripts.utils.store_screenshots import validate_scenarios
@@ -116,15 +117,15 @@ def test_compact_magenta_and_focused_scenario_widgets() -> None:
 
 def test_minimal_flexible_and_aod_scenario_widgets() -> None:
     minimal = next(s for s in SCENARIOS if s.name == "essentials")
-    assert minimal.properties["TopMiddleData0"] == 0
-    assert minimal.properties["BottomMiddleData3"] == 0
+    assert minimal.properties["TopMiddleData0"] == Options.NONE.value
+    assert minimal.properties["BottomMiddleData3"] == Options.NONE.value
     assert minimal.properties["BottomOuterData"] == minimal.properties["TopOuterData"]
 
     flexible = next(s for s in SCENARIOS if s.name == "flexible-layout")
-    assert flexible.properties["TopMiddleData0"] == 0
-    assert flexible.properties["TopMiddleData1"] == 0
-    assert flexible.properties["TopMiddleData2"] == 0
-    assert flexible.properties["BottomMiddleData2"] == 0
+    assert flexible.properties["TopMiddleData0"] == Options.NONE.value
+    assert flexible.properties["TopMiddleData1"] == Options.NONE.value
+    assert flexible.properties["TopMiddleData2"] == Options.NONE.value
+    assert flexible.properties["BottomMiddleData2"] == Options.NONE.value
     assert flexible.properties["BottomMiddleWidth1"] == 5
     assert flexible.properties["GlobalBackground"] == flexible.properties["ClockShade"]
     assert flexible.properties["GlobalBackground"] == Colors.GREEN.value

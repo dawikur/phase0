@@ -16,7 +16,7 @@ module Data {
 			);
 
 			self.value_max = ActivityMonitor.MOVE_BAR_LEVEL_MAX;
-			self.icon = Fonts.ICON_NONE;
+			self.icon = moveBarIcon(null);
 		}
 
 		function defaultWidth() as Lang.Number {

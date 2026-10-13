@@ -319,17 +319,25 @@ def _generate_font_profile(  # pylint: disable=too-many-locals
             typeface, FONT_STYLES[profile][role], name, required_glyphs
         )
 
-    def __store_font(font_name: str, atlas: Image.Image, fnt: str) -> None:
-        font_png = folders.resources(f"fonts/{profile}/generated", f"{font_name}.png")
+    def __store_font(
+        font_name: str,
+        atlas: Image.Image,
+        fnt: str,
+        resource_folder: str | None = None,
+        definitions: XmlDocument | None = None,
+    ) -> None:
+        resource_folder = resource_folder or f"fonts/{profile}/generated"
+        definitions = definitions or fonts_xml
+        font_png = folders.resources(resource_folder, f"{font_name}.png")
         atlas.save(font_png)
 
-        font_fnt = folders.resources(f"fonts/{profile}/generated", f"{font_name}.fnt")
+        font_fnt = folders.resources(resource_folder, f"{font_name}.fnt")
         font_fnt.write_text(fnt)
 
         font_name = font_name.upper()
 
-        fonts_xml.subelement(
-            fonts_xml.root,
+        definitions.subelement(
+            definitions.root,
             "font",
             id=font_name,
             filename=font_fnt.name,
@@ -400,7 +408,19 @@ def _generate_font_profile(  # pylint: disable=too-many-locals
             (fonts.TYPEFACE_ICONS, "small", "icons"),
         ]:
             name, atlas, fnt, names_comments = parse_font(*icon_meta_data)
-            __store_font(name, atlas, fnt)
+            for memory in ("low", "medium", "high"):
+                icon_xml = XmlDocument.resource("fonts")
+                resource_folder = f"memory/{memory}/generated/fonts/{profile}"
+                if memory == "low":
+                    _, icon_atlas, icon_fnt, _ = parse_font(
+                        fonts.TYPEFACE_ICONS_GENERAL, "small", "icons"
+                    )
+                else:
+                    icon_atlas, icon_fnt = atlas, fnt
+                __store_font(name, icon_atlas, icon_fnt, resource_folder, icon_xml)
+                folders.resources(resource_folder, "fonts.xml").write_text(
+                    icon_xml.render()
+                )
 
             fonts_mc.line()
             fonts_mc.line('const ICON_NONE = "";')
@@ -412,6 +432,8 @@ def _generate_font_profile(  # pylint: disable=too-many-locals
                 if elem_id in ('"', "\\"):
                     elem_id = f"\\{elem_id}"
 
+                if comment in fonts.EXTRA_NAMES:
+                    fonts_mc.line("(:memory_not_low)")
                 fonts_mc.line(f'const ICON_{name} = "{elem_id}";')
 
         # #########################################################################
@@ -438,6 +460,10 @@ def _generate_font_profile(  # pylint: disable=too-many-locals
 def generate_fonts(folders: Folders, required_glyphs: str) -> None:
     for profile in ("mip", "amoled"):
         _generate_font_profile(folders, required_glyphs, profile)
+        for suffix in ("png", "fnt"):
+            folders.resources(f"fonts/{profile}/generated", f"icons.{suffix}").unlink(
+                missing_ok=True
+            )
 
     display_mc = McDocument.create()
     display_mc.line("import Toybox.Lang;")
@@ -452,9 +478,12 @@ def generate_fonts(folders: Folders, required_glyphs: str) -> None:
         folders.resources("fonts/amoled/generated"),
         folders.source("generated", "burn_in.mc"),
         FONT_STYLES["amoled"]["tiny"].size // 2,
+        icons_folder=folders.resources("memory/high/generated/fonts/amoled"),
     )
 
     # Retire only the old font outputs; other shared resources stay in place.
     old_fonts = folders.resources("base/generated")
+    for suffix in ("png", "fnt"):
+        (old_fonts / f"icons.{suffix}").unlink(missing_ok=True)
     for output in folders.resources("fonts/mip/generated").iterdir():
         (old_fonts / output.name).unlink(missing_ok=True)

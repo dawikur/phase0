@@ -14,7 +14,7 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_BATTERY_DAYS_REMAINING),
 				Data.RefreshRate.SEC
 			);
-			self.icon = Fonts.ICON_NONE;
+			self.icon = batteryIcon(null);
 		}
 
 		function defaultWidth() as Lang.Number {

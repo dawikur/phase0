@@ -5,15 +5,16 @@ from enum import IntEnum, auto, unique
 from typing import Any, cast
 
 from .colors import Colors
-from .model import Array, Boolean, Select, Settings, Single
+from .model import Array, Select, Settings, Single
 from .options import StableOptions
 from .source import Datum, Source
 
 
 @unique
 class Options(StableOptions):
-    AUTO = -1
-    NONE = 0
+    AUTO = auto()
+    NONE = auto()
+    GLOBAL = auto()
 
     ALARM = auto()
     BATTERY_DAYS_REMAINING = auto()
@@ -55,16 +56,17 @@ class Sizes(IntEnum):
 class MetricWidths(IntEnum):
     AUTO = Options.AUTO.value
     NONE = Options.NONE.value
-    WIDTH_1 = auto()
-    WIDTH_2 = auto()
-    WIDTH_3 = auto()
-    WIDTH_4 = auto()
-    WIDTH_5 = auto()
-    WIDTH_6 = auto()
-    WIDTH_7 = auto()
-    WIDTH_8 = auto()
-    WIDTH_9 = auto()
-    WIDTH_10 = auto()
+    WIDTH_1 = 1
+    WIDTH_2 = 2
+    WIDTH_3 = 3
+    WIDTH_4 = 4
+    WIDTH_5 = 5
+    WIDTH_6 = 6
+    WIDTH_7 = 7
+    WIDTH_8 = 8
+    WIDTH_9 = 9
+    WIDTH_10 = 10
+
 
 class MetricStyle(IntEnum):
     AUTO = Options.AUTO.value
@@ -78,7 +80,10 @@ ColorOptions = cast(
     Any,
     IntEnum(
         "ColorOptions",
-        {"GLOBAL": -1, **{color.name: color.value for color in Colors}},
+        {
+            "GLOBAL": Options.GLOBAL.value,
+            **{color.name: color.value for color in Colors},
+        },
     ),
 )
 
@@ -221,7 +226,6 @@ def MemoryMedium(  # pylint: disable=invalid-name
     widgets: Any,
 ) -> Settings:
     DataAll = data.all
-    DataWithIcon = data.with_icon
     DataWithValueMax = data.with_value_max
 
     return Settings(

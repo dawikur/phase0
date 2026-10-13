@@ -14,7 +14,7 @@ module Data {
 				Resources.get(Rez.Strings.LABEL_UV_INDEX),
 				WeatherProvider.refresh_rate
 			);
-			self.icon = Fonts.ICON_NONE;
+			self.icon = uvIcon(null);
 
 			WeatherProvider.register("uv_index");
 		}
@@ -25,24 +25,8 @@ module Data {
 
 		function refresh() as Void {
 			var uv_index = WeatherProvider.get("uv_index");
-			if (uv_index == null) {
-				self.value = null;
-				self.icon = Fonts.ICON_NONE;
-			} else {
-				self.value = uv_index.toNumber();
-
-				if (self.value < 2) {
-					self.icon = Fonts.ICON_SOLAR_0;
-				} else if (self.value < 5) {
-					self.icon = Fonts.ICON_SOLAR_1;
-				} else if (self.value < 7) {
-					self.icon = Fonts.ICON_SOLAR_2;
-				} else if (self.value < 9) {
-					self.icon = Fonts.ICON_SOLAR_3;
-				} else {
-					self.icon = Fonts.ICON_SOLAR_4;
-				}
-			}
+			self.value = uv_index != null ? uv_index.toNumber() : null;
+			self.icon = uvIcon(self.value);
 		}
 
 		function refreshRevision() as Lang.Number? {

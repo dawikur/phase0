@@ -21,7 +21,7 @@ module Widgets {
 
 			self.impl_ = _impl;
 			self.accent_ =
-				_properties.accent == Render.COLOR_GLOBAL
+				_properties.accent == Properties.GLOBAL
 					? Render.accent
 					: _properties.accent;
 

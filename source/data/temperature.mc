@@ -15,7 +15,7 @@ module Data {
 				Data.RefreshRate.MIN
 			);
 
-			self.icon = Fonts.ICON_NONE;
+			self.icon = temperatureIcon(null);
 		}
 
 		function refresh() as Void {

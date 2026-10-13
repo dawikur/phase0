@@ -30,9 +30,9 @@ def test_render_resources_jungle_maps_supported_devices() -> None:
     assert jungle.count(".resourcePath =") == len(
         supported_devices(Path("manifest.xml.tmpl"))
     )
-    assert jungle.count("../resources/memory/low") == 12
-    assert jungle.count("../resources/memory/medium") == 3
-    assert jungle.count("../resources/memory/high") == sum(
+    assert jungle.count("../resources/memory/low/generated/settings.xml;") == 12
+    assert jungle.count("../resources/memory/medium/generated/settings.xml;") == 3
+    assert jungle.count("../resources/memory/high/generated/settings.xml;") == sum(
         device.memory.watch_face == 131072
         for device in supported_devices(Path("manifest.xml.tmpl"))
     )
@@ -94,7 +94,21 @@ def test_font_profiles_match_every_supported_device() -> None:
             for line in lines
             if line.startswith(f"{device.connect_iq_id}.excludeAnnotations =")
         )
-        assert resources.count("/fonts/") == 1
+        paths = resources.split(" = ", 1)[1].split(";")
+        # Select XML files directly so recursive resource discovery cannot
+        # include both display variants beneath the memory folder.
+        assert (
+            f"../resources/memory/{memory_class_for_limit(device.memory.watch_face)}"
+            not in paths
+        )
+        assert resources.count("/fonts/") == 2
+        memory = memory_class_for_limit(device.memory.watch_face)
+        assert (
+            resources.split(" = ", 1)[1]
+            .split(";")
+            .count(f"../resources/memory/{memory}/generated/fonts/{profile}")
+            == 1
+        )
         assert resources.endswith(f"/fonts/{profile}/generated")
         assert f"display_{excluded}" in annotations.split(" = ", 1)[1].split(";")
         assert f"display_{profile}" not in annotations

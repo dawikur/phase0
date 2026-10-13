@@ -1,25 +1,32 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
 import re
-from dataclasses import dataclass
-from enum import IntEnum
+from dataclasses import dataclass, field
+from enum import auto
 from pathlib import Path
 from typing import Any, Callable, Iterator, cast
 
+from .options import StableOptions, stable_id
 
-@dataclass
+
+@dataclass(frozen=True)
 class Datum:
     name: str
-    value: int
+    value: int = field(init=False)
 
     has_icon: bool
     has_value_max: bool
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "value", stable_id(f"DATA_{self.name}"))
 
 
 class Source:
     CLASS_PARTS_RE = re.compile(r"(?<!^)(?=[A-Z])")
     CLASS_RE = re.compile(r"\bclass\s+([A-Za-z_]\w*)\s+extends Base\b")
-    ICON_ASSIGN_RE = re.compile(r"\bself\.icon\s*=\s*Fonts\.ICON_\w+")
+    ICON_ASSIGN_RE = re.compile(
+        r"\bself\.icon\s*=\s*(?:Fonts\.ICON_\w+\b|\w+Icon\s*\()"
+    )
     INITIALIZE_RE = re.compile(
         r"function\s+initialize\s*\(\s*\)(.*?)(?=\n\s*function|\Z)", re.DOTALL
     )
@@ -64,12 +71,14 @@ class Source:
             )
 
         self.__items = [
-            Datum(name, index, *args)
-            for index, (name, *args) in enumerate(
-                sorted(items, key=lambda item: item[0]),
-                start=1,
-            )
+            Datum(name, *args)
+            for name, *args in sorted(items, key=lambda item: item[0])
         ]
+        ids: set[int] = set()
+        for datum in self.__items:
+            if datum.value in ids:
+                raise ValueError(f"Metric ID collision for {datum.name}: {datum.value}")
+            ids.add(datum.value)
 
     @property
     def all(self) -> Any:
@@ -86,10 +95,10 @@ class Source:
     def __filter(self, name: str, predicate: Callable[[Datum], bool]) -> Any:
         return cast(
             Any,
-            IntEnum(
+            StableOptions(
                 name,
                 {
-                    "NONE": 0,
+                    "NONE": auto(),
                     **{
                         datum.name: datum.value
                         for datum in self.__items

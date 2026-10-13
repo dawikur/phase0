@@ -60,7 +60,10 @@ def render_resources_jungle(manifest_xml: Path) -> str:
         lines.extend(
             [
                 f"{qualifier}.resourcePath = ../resources/base/strings.xml;"
-                f"../resources/base/generated;../resources/memory/{memory_class};"
+                f"../resources/base/generated;"
+                f"../resources/memory/{memory_class}/generated/settings.xml;"
+                f"../resources/memory/{memory_class}/generated/properties.xml;"
+                f"../resources/memory/{memory_class}/generated/fonts/{font_profile};"
                 f"../resources/fonts/{font_profile}/generated",
                 f"{qualifier}.excludeAnnotations = "
                 f"{excluded_annotations};display_{excluded_font_profile};{excluded_input}",

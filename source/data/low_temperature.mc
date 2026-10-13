@@ -14,7 +14,7 @@ module Data {
 				WeatherProvider.refresh_rate
 			);
 
-			self.icon = Fonts.ICON_NONE;
+			self.icon = temperatureIcon(null);
 
 			WeatherProvider.register("low_temperature");
 		}

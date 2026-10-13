@@ -26,7 +26,6 @@ module Render {
 	// Settings
 
 	const COLOR_NONE as Lang.Number = -1;
-	const COLOR_GLOBAL as Lang.Number = -1;
 
 	const SPACING as Lang.Number = Fonts.SPACING_SMALL;
 	const SHADOW_OFFSET as Lang.Number = 1;

@@ -3,6 +3,7 @@
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
+from data.settings.data import Options
 from scripts.utils.site_settings import (
     build_site_settings,
     display_group_id,
@@ -97,7 +98,7 @@ def test_site_settings_resolves_labels_and_options() -> None:
     assert groups["Global"]["title"] == "Global"
     assert groups["Global"]["settings"][0]["key"] == "GlobalAccent"
     assert all(
-        option["value"] != "-1"
+        option["value"] != str(Options.GLOBAL.value)
         for setting in groups["Global"]["settings"]
         for option in setting["options"]
     )
@@ -107,11 +108,11 @@ def test_site_settings_resolves_labels_and_options() -> None:
     assert groups["Clock"]["settings"][1]["key"] == "ClockShade"
     assert groups["Clock"]["settings"][1]["title"] == "Shade"
     assert groups["Clock"]["settings"][0]["options"][0] == {
-        "value": "-1",
+        "value": str(Options.GLOBAL.value),
         "label": "Global",
     }
     assert groups["Clock"]["settings"][1]["options"][0] == {
-        "value": "-1",
+        "value": str(Options.GLOBAL.value),
         "label": "Global",
     }
 
@@ -121,7 +122,7 @@ def test_site_settings_resolves_labels_and_options() -> None:
 
     assert size["key"] == "ClockSize"
     assert size["type"] == "list"
-    assert size["options"][0] == {"value": "-1", "label": "Auto"}
+    assert size["options"][0] == {"value": "1345308750", "label": "Auto"}
     assert [option["label"] for option in size["options"]] == [
         "Auto",
         "Small",
@@ -156,7 +157,7 @@ def test_site_settings_preserves_metric_width_options_and_regions() -> None:
     assert "Gauges0" not in groups
     assert "BottomMiddle0" not in groups
     assert "BottomMiddleAlt0" not in groups
-    assert len(top_middle["settings"]) == 2
+    assert len(top_middle["settings"]) == 3
     assert [setting["title"] for setting in gauges] == ["Gauge N", "Gauge N Accent"]
     assert [setting["title"] for setting in groups["Status"]["settings"]] == [
         "Status N"
@@ -164,12 +165,16 @@ def test_site_settings_preserves_metric_width_options_and_regions() -> None:
     assert [setting["title"] for setting in groups["BottomMiddle"]["settings"]] == [
         "Metric N",
         "Metric N Width",
+        "Metric N Style",
     ]
-    assert gauges[1]["options"][0] == {"value": "-1", "label": "Global"}
+    assert gauges[1]["options"][0] == {
+        "value": str(Options.GLOBAL.value),
+        "label": "Global",
+    }
     assert settings["Metric N Width"]["type"] == "list"
     assert settings["Metric N Width"]["options"] == [
-        {"label": "Auto", "value": "-1"},
-        {"label": "None", "value": "0"},
+        {"label": "Auto", "value": "1345308750"},
+        {"label": "None", "value": "1225125243"},
         *({"label": str(width), "value": str(width)} for width in range(1, 11)),
     ]
     assert settings["Metric N"]["options"]
@@ -193,7 +198,8 @@ def test_metric_width_defaults_are_auto_in_every_memory_profile() -> None:
 
         assert len(widths) == (4 if memory == "low" else 8)
         assert all(
-            prop.get("type") == "Number" and prop.text == "-1" for prop in widths
+            prop.get("type") == "Number" and prop.text == str(Options.AUTO.value)
+            for prop in widths
         )
 
         width_settings = [
@@ -208,8 +214,9 @@ def test_metric_width_defaults_are_auto_in_every_memory_profile() -> None:
             config = setting.find("settingConfig")
             assert config is not None and config.get("type") == "list"
             assert [entry.get("value") for entry in config.findall("listEntry")] == [
-                "-1",
-                *(str(width) for width in range(0, 11)),
+                str(Options.AUTO.value),
+                str(Options.NONE.value),
+                *(str(width) for width in range(1, 11)),
             ]
 
 
@@ -221,7 +228,8 @@ def test_local_colors_can_inherit_from_global_in_every_memory_profile() -> None:
         global_group = settings.find("group[@id='Global']")
         assert global_group is not None
         assert all(
-            entry.get("value") != "-1" for entry in global_group.iter("listEntry")
+            entry.get("value") != str(Options.GLOBAL.value)
+            for entry in global_group.iter("listEntry")
         )
 
         local_colors = [
@@ -241,7 +249,7 @@ def test_local_colors_can_inherit_from_global_in_every_memory_profile() -> None:
             assert config is not None
             first = config.find("listEntry")
             assert first is not None
-            assert first.get("value") == "-1"
+            assert first.get("value") == str(Options.GLOBAL.value)
             assert first.text == "@Strings.SETTING_GLOBAL"
 
 

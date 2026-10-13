@@ -556,8 +556,7 @@ module Phase0 {
 			// ---- top middle ----
 
 			self.top_middle_ = self.CreateMetricWidgets_(
-				_properties.top_middle,
-				Properties.ICON
+				_properties.top_middle
 			);
 			self.addWidgets_(self.top_middle_);
 
@@ -604,8 +603,7 @@ module Phase0 {
 			// ---- bottom middle ----
 
 			self.bottom_middle_ = self.CreateMetricWidgets_(
-				_properties.bottom_middle,
-				Properties.GAUGE
+				_properties.bottom_middle
 			);
 			self.addWidgets_(self.bottom_middle_);
 
@@ -802,8 +800,7 @@ module Phase0 {
 		}
 
 		hidden static function CreateMetricWidgets_(
-			_properties as Lang.Array<Properties.Metric>,
-			_style as Lang.Number
+			_properties as Lang.Array<Properties.Metric>
 		) as Bases {
 			var widgets = [];
 			var properties_size = _properties.size();
@@ -815,11 +812,12 @@ module Phase0 {
 					continue;
 				}
 
+				var style = Properties.AUTO;
 				if (properties has :style) {
-					_style = properties.style as Lang.Number;
+					style = properties.style as Lang.Number;
 				}
 
-				widgets.add(new Widgets.Metric(properties, _style, data));
+				widgets.add(new Widgets.Metric(properties, style, data));
 			}
 			return widgets;
 		}

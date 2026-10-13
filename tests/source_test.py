@@ -3,6 +3,7 @@
 from enum import IntEnum
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 
@@ -20,6 +21,7 @@ from data.settings import (
 from data.settings.data import MemoryHigh, MemoryLow, MemoryMedium, MetricWidths
 from data.settings.data import Options as SettingOptions
 from data.settings.data import Sizes
+from data.settings.source import Datum
 
 
 class Options(IntEnum):
@@ -82,15 +84,16 @@ def test_data_reads_metrics_and_filters_their_features(tmp_path: Path) -> None:
     (tmp_path / "nested").mkdir()
 
     data = Source(tmp_path)
+    assert len(data) == 2
 
     assert [(item.name, item.value) for item in data] == [
-        ("BATTERY", 1),
-        ("STEPS", 2),
+        ("BATTERY", 1482787097),
+        ("STEPS", 1991171812),
     ]
     assert [item.name for item in data.all] == ["NONE", "BATTERY", "STEPS"]
     assert [item.name for item in data.with_icon] == ["NONE", "STEPS"]
     assert [item.name for item in data.with_value_max] == ["NONE", "STEPS"]
-    assert data.STEPS == 2
+    assert data.STEPS == 1991171812
     with pytest.raises(AttributeError, match="UNKNOWN"):
         _ = data.UNKNOWN
 
@@ -99,8 +102,10 @@ def test_settings_builds_data_widget_values_from_data() -> None:
     data = Source(Path("source/data"))
     data_widget: Any = Widgets(data)
 
-    assert data_widget.NONE == len(data) + 1
-    assert data_widget.BATTERY_DAYS_REMAINING > data_widget.NONE
+    assert data_widget.NONE == SettingOptions.NONE
+    for name in ("BATTERY_DAYS_REMAINING", "BATTERY_ICON", "BATTERY_PERCENTAGE"):
+        assert getattr(data_widget, name) == getattr(SettingOptions, name)
+        assert getattr(data_widget, name) not in {datum.value for datum in data}
     assert MemoryLow(data, data_widget)
     assert MemoryMedium(data, data_widget)
     assert MemoryHigh(data, data_widget)
@@ -118,30 +123,35 @@ def test_settings_supports_indexed_and_named_access() -> None:
     assert len(settings) == 1
 
 
-def test_auto_options_share_minus_one_and_preserve_other_option_ids() -> None:
-    assert SettingOptions.AUTO == Sizes.AUTO == MetricWidths.AUTO == -1
+def test_auto_options_share_stable_ids_and_preserve_other_option_ids() -> None:
+    assert SettingOptions.AUTO == Sizes.AUTO == MetricWidths.AUTO == 1345308750
+    assert MetricWidths.NONE == SettingOptions.NONE == 1225125243
+    assert [
+        width.value for width in MetricWidths if width.name.startswith("WIDTH_")
+    ] == list(range(1, 11))
     assert [
         (option.name, option.value)
         for option in SettingOptions
         if option.name != "AUTO"
     ] == [
-        ("NONE", 1),
-        ("ALARM", 2),
-        ("BATTERY_DAYS_REMAINING", 4),
-        ("BATTERY_ICON", 5),
-        ("BATTERY_PERCENTAGE", 6),
-        ("BLUETOOTH_CONNECTED", 7),
-        ("BLUETOOTH_DISCONNECTED", 8),
-        ("DAWN_AND_DUSK", 9),
-        ("DAWN_AND_DUSK_MOON", 10),
-        ("DAWN_AND_DUSK_SUN", 11),
-        ("DAWN_OR_DUSK", 12),
-        ("DAWN_OR_DUSK_MOON", 13),
-        ("DAWN_OR_DUSK_SUN", 14),
-        ("GAUGE", 15),
-        ("ICON", 16),
-        ("NOTIFICATIONS", 17),
-        ("SMALL", 18),
+        ("NONE", 1225125243),
+        ("GLOBAL", 1492995077),
+        ("ALARM", 1137411181),
+        ("BATTERY_DAYS_REMAINING", 2133686479),
+        ("BATTERY_ICON", 1505374502),
+        ("BATTERY_PERCENTAGE", 1198069765),
+        ("BLUETOOTH_CONNECTED", 1174323477),
+        ("BLUETOOTH_DISCONNECTED", 1258132274),
+        ("DAWN_AND_DUSK", 1955290810),
+        ("DAWN_AND_DUSK_MOON", 1607138032),
+        ("DAWN_AND_DUSK_SUN", 1368050790),
+        ("DAWN_OR_DUSK", 1496803785),
+        ("DAWN_OR_DUSK_MOON", 1537828135),
+        ("DAWN_OR_DUSK_SUN", 1764953824),
+        ("GAUGE", 1554042010),
+        ("ICON", 1392624751),
+        ("NOTIFICATIONS", 1179431478),
+        ("SMALL", 1108420771),
     ]
 
 
@@ -173,3 +183,12 @@ def test_solar_intensity_is_available_for_icons_and_gauges() -> None:
     data = Source(Path("source/data"))
     assert data.with_icon.SOLAR_INTENSITY == data.SOLAR_INTENSITY
     assert data.with_value_max.SOLAR_INTENSITY == data.SOLAR_INTENSITY
+
+
+def test_widget_ids_reject_collision_with_metric_ids() -> None:
+    with patch(
+        "data.settings.source.stable_id", return_value=SettingOptions.BATTERY_ICON.value
+    ):
+        datum = Datum("COLLIDING_METRIC", False, False)
+    with pytest.raises(ValueError, match="Widget ID collision for BATTERY_ICON"):
+        Widgets([datum])

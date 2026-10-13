@@ -420,18 +420,41 @@ iq: # build release IQ package
 s simulate: build # run simulator
 	$(Q)echo " [ $(call LOG_TAG,simulate) ] $(MODE)"
 	cleanup() {
+		if [[ -n "$$TEST_LOG" ]]; then
+			rm -f "$$TEST_LOG"
+		fi
 		if [[ -n "$$SIM_PID" ]] && kill -0 "$$SIM_PID" 2>/dev/null; then
 			kill "$$SIM_PID"
 			wait "$$SIM_PID" || true
 		fi
 	}
 	trap cleanup EXIT
-	$(CONNECTIQ)&
+	SIMULATOR="$(CONNECTIQ)"
+	if [[ "$$(uname -s)" == Linux ]]; then
+		SIMULATOR="$(SDK_DIR)bin/simulator"
+	fi
+	"$$SIMULATOR" &
 	SIM_PID=$$!
 	sleep 3
 	if ! kill -0 "$$SIM_PID" 2>/dev/null; then
 		wait "$$SIM_PID"
 		exit 1
+	fi
+	MONKEYDO_STATUS=0
+	if [[ "$(MODE)" == test ]]; then
+		TEST_LOG=$$(mktemp)
+		# SDK 9.2.0 expects an extra space in the test summary and returns 1
+		# even when every test passes. Require an explicit successful summary.
+		$(MONKEYDO) $(PRG) $(DEVICE) \
+			-a $(BUILD_DIR)$(OUT)-settings.json:GARMIN/Settings/$(APP_SETTINGS) \
+			$(FLAG_SIMULATE) 2>&1 | tee "$$TEST_LOG" || MONKEYDO_STATUS=$$?
+		if (( MONKEYDO_STATUS > 1 )) || \
+			! grep -Eq '^PASSED \(passed=[1-9][0-9]*, failed=0 *, errors=0\)[[:space:]]*$$' "$$TEST_LOG" || \
+			grep -Eq 'Encountered an app crash\.|^[[:space:]]*(Error:|ERROR\b)|\b(FAIL|FAILED)\b' "$$TEST_LOG"; then
+			echo "Connect IQ tests failed or did not report a successful summary (monkeydo exit $$MONKEYDO_STATUS)." >&2
+			exit 1
+		fi
+		exit 0
 	fi
 	$(MONKEYDO) \
 		$(PRG) \

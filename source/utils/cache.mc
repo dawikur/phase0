@@ -70,23 +70,6 @@ module Cache {
 		Application.Storage.deleteValue(_name + "_timestamp");
 	}
 
-	function assertNull_(_value as Lang.Object?) as Void {
-		Test.assertEqual(_value == null, true);
-	}
-
-	function assertNumberEqual_(
-		_actual as Lang.Number?,
-		_expected as Lang.Number?
-	) as Void {
-		if (_expected == null) {
-			assertNull_(_actual);
-			return;
-		}
-
-		Test.assertEqual(_actual != null, true);
-		Test.assertEqual(_actual as Lang.Number, _expected as Lang.Number);
-	}
-
 	function clearTestValue_(_name as Lang.String) as Void {
 		Application.Storage.deleteValue(_name);
 		Application.Storage.deleteValue(_name + "_timestamp");
@@ -94,16 +77,20 @@ module Cache {
 
 	(:test)
 	function CacheRoundTripTest(_logger as Test.Logger) as Lang.Boolean {
+		var value;
 		var key = "cache_test_round_trip";
 		clearTestValue_(key);
 
 		setValue(key, 123);
-		Test.assertEqual(hasValue(key, 1), true);
-		assertNumberEqual_(getValue(key, 1) as Lang.Number?, 123);
+		Test.assert(hasValue(key, 1));
+		value = getValue(key, 1);
+		Test.assert(value != null);
+		Test.assertEqual(value as Lang.Number, 123);
 
 		clearValue(key);
-		Test.assertEqual(hasValue(key, 1), false);
-		assertNull_(getValue(key, 1));
+		Test.assert(!hasValue(key, 1));
+		value = getValue(key, 1);
+		Test.assert(value == null);
 
 		return true;
 	}
@@ -114,19 +101,19 @@ module Cache {
 		clearTestValue_(key);
 
 		setValue(key, 55);
-		Test.assertEqual(hasValue(key, 0), false);
-		assertNull_(getValue(key, 1));
+		Test.assert(!hasValue(key, 0));
+		Test.assert(getValue(key, 1) == null);
 
 		Application.Storage.setValue(key, 77);
 		Application.Storage.setValue(key + "_timestamp", "bad");
-		assertNull_(getValue(key, 1));
-		assertNull_(Application.Storage.getValue(key));
-		assertNull_(Application.Storage.getValue(key + "_timestamp"));
+		Test.assert(getValue(key, 1) == null);
+		Test.assert(Application.Storage.getValue(key) == null);
+		Test.assert(Application.Storage.getValue(key + "_timestamp") == null);
 
 		Application.Storage.setValue(key, 88);
-		assertNull_(getValue(key, 1));
-		assertNull_(Application.Storage.getValue(key));
-		assertNull_(Application.Storage.getValue(key + "_timestamp"));
+		Test.assert(getValue(key, 1) == null);
+		Test.assert(Application.Storage.getValue(key) == null);
+		Test.assert(Application.Storage.getValue(key + "_timestamp") == null);
 
 		return true;
 	}
@@ -138,20 +125,18 @@ module Cache {
 
 		Application.Storage.setValue(key, 123);
 		Application.Storage.setValue(key + "_timestamp", 1);
-		Test.assertEqual(refreshValue(key), true);
+		Test.assert(refreshValue(key));
 
-		assertNumberEqual_(
+		Test.assertEqual(
 			Application.Storage.getValue(key) as Lang.Number,
 			123
 		);
-		Test.assertEqual(
-			(Application.Storage.getValue(key + "_timestamp") as Lang.Number) >
-				1,
-			true
+		Test.assert(
+			1 < (Application.Storage.getValue(key + "_timestamp") as Lang.Number)
 		);
 
 		clearTestValue_(key);
-		Test.assertEqual(refreshValue(key), false);
+		Test.assert(!refreshValue(key));
 		return true;
 	}
 } // module Cache

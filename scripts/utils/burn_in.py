@@ -65,10 +65,14 @@ def with_shadow(mask: Mask, shadow: int) -> Mask:
     return mask | translate(mask, (shadow, shadow))
 
 
-def minimal_masks(folder: Path, shadow: int) -> list[Mask]:
+def minimal_masks(
+    folder: Path, shadow: int, icons_folder: Path | None = None
+) -> list[Mask]:
     masks: set[Mask] = set()
     for name in ("digits_regular", "digits_small", "icons", "dot_small"):
-        font = BitmapFont.read(folder, name)
+        font = BitmapFont.read(
+            icons_folder if name == "icons" and icons_folder else folder, name
+        )
         masks.update(font.glyphs.values())
         if name.startswith("digits_"):
             # Fixed clock slots: include every possible digit at each position,
@@ -192,8 +196,10 @@ def _movement(cycle: Cycle) -> tuple[int, int, Cycle]:
     )
 
 
-def generate_burn_in(folder: Path, output: Path, shadow: int) -> Cycle:
-    cycle = find_cycle(minimal_masks(folder, shadow))
+def generate_burn_in(
+    folder: Path, output: Path, shadow: int, icons_folder: Path | None = None
+) -> Cycle:
+    cycle = find_cycle(minimal_masks(folder, shadow, icons_folder))
     document = McDocument.create()
     document.line("import Toybox.Lang;")
     document.line()

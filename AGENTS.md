@@ -169,19 +169,29 @@ Components should not know about each other.
 Use the inherited `Base.is_small` for widget font size selection and rendering.
 Do not duplicate this state in subclasses; layout and widgets share the same field.
 
-All settings named Auto use `-1`. Preserve the stored IDs of other options
-when changing shared option enums.
-Shared `Options` assigns automatic IDs from CRC32 of the exact enum name in
-the range `0x40000000`–`0x7fffffff`; `AUTO = -1` and `NONE = 0` stay explicit.
-Keep the algorithm and existing names stable: renaming changes persisted IDs.
-Generation rejects collisions. Extra widget IDs use these values directly,
-without an offset based on the number of data metrics.
+Shared `Options` assigns all automatic IDs from CRC32 of the exact enum name
+in the range `0x40000000`–`0x7fffffff`, including `AUTO` and `NONE` declared
+with `auto()`. Keep the algorithm and existing names stable: renaming changes
+persisted IDs. Generation rejects collisions. Filtered metric enums use the
+same automatic `NONE` ID. Extra widget IDs use their existing values directly,
+without an offset based on the number of data metrics. Runtime settings checks
+use `Properties.AUTO` / `Properties.NONE`, never numeric sentinel comparisons.
+Metric Width's numeric options retain literal widths 1–10. Color Global uses the shared hashed `Options.GLOBAL` ID.
 
-Color settings outside the Global group may select Global (`-1`). Resolve that
+Metric `Datum.value` is computed once from CRC32 of `DATA_` plus the exact
+metric enum name, in the same signed range as StableOptions. Datum is immutable;
+renaming a metric changes its stored ID. Reject collisions between metrics and
+between metrics and extra widgets. Filtered metric enums and combined option
+sets must copy existing IDs without reindexing or offsets. The app is currently in beta; setting IDs may change without migration.
+Read current setting IDs directly; do not generate legacy ID tables or migration
+helpers.
+Generated smoke tests enumerate actual IDs, never a consecutive numeric range.
+
+Color settings outside the Global group may select Global (`Properties.GLOBAL`). Resolve that
 choice against the matching Global color when constructing the widget, so
-rendering uses a concrete color. Metric Width offers None (stored as `0`) to hide the numeric value while retaining the selected
+rendering uses a concrete color. Metric Width offers None (`Properties.NONE`) to hide the numeric value while retaining the selected
 icon/gauge and normal label handling. Skip number formatting and reserve no
-numeric width in that mode. Metric Width uses `-1` for Auto; resolve it
+numeric width in that mode. Metric Width uses `Properties.AUTO` for Auto; resolve it
 once from the data object's default width when constructing the metric.
 
 ---
@@ -202,6 +212,9 @@ initializers as `true` / `false`; a named assignment already explains its meanin
 For equality comparisons involving instance state, keep `self.<field>` on the
 left. For ordered comparisons, use only `<` or `<=`, with the larger value on
 the right.
+
+Monkey C local variable types are inferred. Do not emit `var local as Type;`;
+use an untyped declaration and cast the assigned expression when needed.
 
 Avoid:
 
@@ -266,6 +279,15 @@ Examples are preferred.
 ---
 
 ## Testing
+
+Use `Test.assert(condition)` for Boolean checks instead of
+`Test.assertEqual(condition, true)` or `Test.assertEqual(condition, false)`;
+negate the condition when asserting false. For equality between non-null
+values, use `Test.assertEqual(actual, expected)` instead of
+`Test.assert(actual == expected)`. For equality with null, put null on the right:
+`Test.assertEqual(actual as Lang.Object, null)`. Its first parameter is
+`Lang.Object`; its second accepts `Lang.Object or Null`. Keep inequality checks
+as `Test.assert(...)`, since `Test.assertEqual` asserts equality.
 
 When changing behaviour:
 
@@ -426,6 +448,10 @@ Screenshot capture tracks the X11 window
 IDs opened during its run and closes only those windows.
 `make smoke` and `make smoke_test` must stop on the first application error or
 failed test, clean up their processes, and exit with a nonzero status.
+`make simulate_test` must require a successful test summary and stop its
+simulator after completion. SDK 9.2.0's `monkeydo` can return 1 for passing tests
+because its summary parser expects an extra space before the `failed` comma;
+accept that status only with an explicit passing summary and no reported errors.
 Screenshot scenarios live in
 `data/screenshots.py`; device, app-property overrides, and gallery title,
 description and alt text belong together there. Simulator time display and
@@ -458,7 +484,7 @@ instead explain assumptions.
 
 ## Display font profiles
 
-Font outputs live in `resources/fonts/mip/generated/` and
+Shared font outputs live in `resources/fonts/mip/generated/` and
 `resources/fonts/amoled/generated/`; do not edit them by hand. `build/resources.jungle`, generated by
 `scripts/generate_resources_jungle`, chooses exactly one font profile from the manifest-supported device's
 `ScreenType`, independently of memory class. AMOLED increases each grid step
@@ -468,6 +494,21 @@ profiles and select `Fonts.SPACING_*` with the `display_mip` / `display_amoled`
 source annotations at compile time. Keep device memory and font resource paths
 and exclusions together in this generated Jungle; `monkey.jungle` contains only
 shared settings. Do not scale fonts during rendering.
+
+Icon font outputs live in
+`resources/memory/{low,medium,high}/generated/fonts/{mip,amoled}/`.
+Generate exactly one `ICONS` resource per device: low includes only the
+34 general icons; medium/high also include all 57 conditions icons.
+Keep conditions in one set; do not split them into essential/extra.
+The low-memory MIP atlas is 462 × 18. Digit and text fonts remain shared by
+display profile. Select memory settings/properties XML files explicitly in
+Jungle so recursive resource discovery cannot include both icon display variants.
+Preserve character IDs between subsets. Compile conditions constants and
+threshold logic only with `memory_not_low`; low helpers return null to mark
+unsupported icons, including during metric construction. Unsupported icons
+reserve no space even with Style = Icon. Burn-in generation reads the full
+AMOLED icon font from the high-memory output independently of the shared
+digit font path.
 
 Name physical font styles `STYLE_1` through `STYLE_4`, with `_BOLD` and `_THIN`
 suffixes for weight variants. The number denotes the grid step in pixels.

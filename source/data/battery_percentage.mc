@@ -17,7 +17,7 @@ module Data {
 			);
 
 			self.value_max = 100;
-			self.icon = Fonts.ICON_NONE;
+			self.icon = batteryIcon(null);
 		}
 
 		function refresh() as Void {

@@ -14,7 +14,7 @@ module Data {
 				WeatherProvider.refresh_rate
 			);
 			self.value_max = 100;
-			self.icon = Fonts.ICON_NONE;
+			self.icon = humidityIcon(null);
 
 			WeatherProvider.register("relative_humidity");
 		}

@@ -35,11 +35,11 @@ module Widgets {
 				WatchUi.FontResource;
 
 			self.foreground_ =
-				_properties.foreground == Render.COLOR_GLOBAL
+				_properties.foreground == Properties.GLOBAL
 					? Render.foreground
 					: _properties.foreground;
 			self.shade_ =
-				_properties.shade == Render.COLOR_GLOBAL
+				_properties.shade == Properties.GLOBAL
 					? Render.shade
 					: _properties.shade;
 			self.size_ = _properties.size;

@@ -8,7 +8,9 @@ from typing import Any
 
 import pytest
 
-from data.settings import Array, Boolean, Number, Select, Settings, Single
+from data.settings import Array, Boolean, Number, Select, Settings, Single, Source
+from data.settings.data import MemoryLow, Widgets
+from data.settings.source import Datum
 from scripts.utils.settings_generation import (
     apply_property_defaults,
     render_data_mc,
@@ -343,3 +345,18 @@ def test_render_data_and_widgets_mc_include_cases_and_default() -> None:
     assert "default: return null;" in data_mc
     assert "case Properties.DATA_HEART_RATE: return new HeartRate(" in widgets_mc
     assert "default: return Widgets.Base.None();" in widgets_mc
+
+
+def test_stable_metric_properties_use_current_ids_directly() -> None:
+    data = Source(Path("source/data"))
+    widgets = Widgets(data)
+    generated = render_properties_mc(MemoryLow(data, widgets), widgets, "memory_low")
+    for key in ("TopMiddleData0", "TopOuterData", "TopMiddleWidth0"):
+        assert f'Application.Properties.getValue("{key}")' in generated
+    generated_data = render_data_mc([Datum("STEPS", True, True)])
+    assert "var data;" in generated_data
+    assert "var data as " not in generated_data
+    assert "case 1991171812: return new Steps();" in generated_data
+    assert "data = Data.get(1991171812) as Base;" in generated_data
+    assert "for (var i = 1" not in generated_data
+    assert "Application.Properties.setValue" not in generated_data
