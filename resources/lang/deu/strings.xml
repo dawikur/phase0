@@ -152,7 +152,9 @@
 	<string id="SETTING_FLOORS_CLIMBED">Etagen überwunden</string>
 	<string id="SETTING_FLOORS_DESCENDED">Etagen abgestiegen</string>
 	<string id="SETTING_FOREGROUND">Vordergrund</string>
+	<string id="SETTING_GAUGE">Anzeige</string>
 	<string id="SETTING_GAUGES">Messgeräte</string>
+	<string id="SETTING_ICON">Symbol</string>
 	<string id="SETTING_GLOBAL">Global</string>
 	<string id="SETTING_GREEN">Grün</string>
 	<string id="SETTING_HEART_RATE">Herzfrequenz</string>
@@ -230,10 +232,14 @@
 	<string id="SETTING_GAUGE_4_ACCENT">Anzeige 4 Akzent</string>
 	<string id="SETTING_METRIC_1_DATA">Metrik 1</string>
 	<string id="SETTING_METRIC_1_WIDTH">Metrik 1 Breite</string>
+	<string id="SETTING_METRIC_1_STYLE">Metrik 1 Stil</string>
 	<string id="SETTING_METRIC_2_DATA">Metrik 2</string>
 	<string id="SETTING_METRIC_2_WIDTH">Metrik 2 Breite</string>
+	<string id="SETTING_METRIC_2_STYLE">Metrik 2 Stil</string>
 	<string id="SETTING_METRIC_3_DATA">Metrik 3</string>
 	<string id="SETTING_METRIC_3_WIDTH">Metrik 3 Breite</string>
+	<string id="SETTING_METRIC_3_STYLE">Metrik 3 Stil</string>
 	<string id="SETTING_METRIC_4_DATA">Metrik 4</string>
 	<string id="SETTING_METRIC_4_WIDTH">Metrik 4 Breite</string>
+	<string id="SETTING_METRIC_4_STYLE">Metrik 4 Stil</string>
 </strings>

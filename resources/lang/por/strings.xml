@@ -152,7 +152,9 @@
 	<string id="SETTING_FLOORS_CLIMBED">Pisos Subidos</string>
 	<string id="SETTING_FLOORS_DESCENDED">Andares Descidos</string>
 	<string id="SETTING_FOREGROUND">Primeiro plano</string>
+	<string id="SETTING_GAUGE">Medidor</string>
 	<string id="SETTING_GAUGES">Medidores</string>
+	<string id="SETTING_ICON">Ícone</string>
 	<string id="SETTING_GLOBAL">Global</string>
 	<string id="SETTING_GREEN">Verde</string>
 	<string id="SETTING_HEART_RATE">Frequência cardíaca</string>
@@ -230,10 +232,14 @@
 	<string id="SETTING_GAUGE_4_ACCENT">Medidor 4 Destaque</string>
 	<string id="SETTING_METRIC_1_DATA">Métrica 1</string>
 	<string id="SETTING_METRIC_1_WIDTH">Métrica 1 Largura</string>
+	<string id="SETTING_METRIC_1_STYLE">Métrica 1 Estilo</string>
 	<string id="SETTING_METRIC_2_DATA">Métrica 2</string>
 	<string id="SETTING_METRIC_2_WIDTH">Métrica 2 Largura</string>
+	<string id="SETTING_METRIC_2_STYLE">Métrica 2 Estilo</string>
 	<string id="SETTING_METRIC_3_DATA">Métrica 3</string>
 	<string id="SETTING_METRIC_3_WIDTH">Métrica 3 Largura</string>
+	<string id="SETTING_METRIC_3_STYLE">Métrica 3 Estilo</string>
 	<string id="SETTING_METRIC_4_DATA">Métrica 4</string>
 	<string id="SETTING_METRIC_4_WIDTH">Métrica 4 Largura</string>
+	<string id="SETTING_METRIC_4_STYLE">Métrica 4 Estilo</string>
 </strings>

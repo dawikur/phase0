@@ -155,7 +155,9 @@
 	<string id="SETTING_FLOORS_CLIMBED">Floors Climbed</string>
 	<string id="SETTING_FLOORS_DESCENDED">Floors Descended</string>
 	<string id="SETTING_FOREGROUND">Foreground</string>
+	<string id="SETTING_GAUGE">Gauge</string>
 	<string id="SETTING_GAUGES">Gauges</string>
+	<string id="SETTING_ICON">Icon</string>
 	<string id="SETTING_GLOBAL">Global</string>
 	<string id="SETTING_GREEN">Green</string>
 	<string id="SETTING_HEART_RATE">Heart Rate</string>
@@ -233,10 +235,14 @@
 	<string id="SETTING_GAUGE_4_ACCENT">Gauge 4 Accent</string>
 	<string id="SETTING_METRIC_1_DATA">Metric 1</string>
 	<string id="SETTING_METRIC_1_WIDTH">Metric 1 Width</string>
+	<string id="SETTING_METRIC_1_STYLE">Metric 1 Style</string>
 	<string id="SETTING_METRIC_2_DATA">Metric 2</string>
 	<string id="SETTING_METRIC_2_WIDTH">Metric 2 Width</string>
+	<string id="SETTING_METRIC_2_STYLE">Metric 2 Style</string>
 	<string id="SETTING_METRIC_3_DATA">Metric 3</string>
 	<string id="SETTING_METRIC_3_WIDTH">Metric 3 Width</string>
+	<string id="SETTING_METRIC_3_STYLE">Metric 3 Style</string>
 	<string id="SETTING_METRIC_4_DATA">Metric 4</string>
 	<string id="SETTING_METRIC_4_WIDTH">Metric 4 Width</string>
+	<string id="SETTING_METRIC_4_STYLE">Metric 4 Style</string>
 </strings>

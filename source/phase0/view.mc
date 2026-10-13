@@ -815,6 +815,10 @@ module Phase0 {
 					continue;
 				}
 
+				if (properties has :style) {
+					_style = properties.style as Lang.Number;
+				}
+
 				widgets.add(new Widgets.Metric(properties, _style, data));
 			}
 			return widgets;

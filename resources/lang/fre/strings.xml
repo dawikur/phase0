@@ -152,7 +152,9 @@
 	<string id="SETTING_FLOORS_CLIMBED">Étages gravis</string>
 	<string id="SETTING_FLOORS_DESCENDED">Étages descendus</string>
 	<string id="SETTING_FOREGROUND">Premier plan</string>
+	<string id="SETTING_GAUGE">Jauge</string>
 	<string id="SETTING_GAUGES">Jauges</string>
+	<string id="SETTING_ICON">Icône</string>
 	<string id="SETTING_GLOBAL">Global</string>
 	<string id="SETTING_GREEN">Vert</string>
 	<string id="SETTING_HEART_RATE">Fréquence cardiaque</string>
@@ -230,10 +232,14 @@
 	<string id="SETTING_GAUGE_4_ACCENT">Jauge 4 Accent</string>
 	<string id="SETTING_METRIC_1_DATA">Métrique 1</string>
 	<string id="SETTING_METRIC_1_WIDTH">Métrique 1 Largeur</string>
+	<string id="SETTING_METRIC_1_STYLE">Métrique 1 Style</string>
 	<string id="SETTING_METRIC_2_DATA">Métrique 2</string>
 	<string id="SETTING_METRIC_2_WIDTH">Métrique 2 Largeur</string>
+	<string id="SETTING_METRIC_2_STYLE">Métrique 2 Style</string>
 	<string id="SETTING_METRIC_3_DATA">Métrique 3</string>
 	<string id="SETTING_METRIC_3_WIDTH">Métrique 3 Largeur</string>
+	<string id="SETTING_METRIC_3_STYLE">Métrique 3 Style</string>
 	<string id="SETTING_METRIC_4_DATA">Métrique 4</string>
 	<string id="SETTING_METRIC_4_WIDTH">Métrique 4 Largeur</string>
+	<string id="SETTING_METRIC_4_STYLE">Métrique 4 Style</string>
 </strings>

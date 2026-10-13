@@ -171,6 +171,11 @@ Do not duplicate this state in subclasses; layout and widgets share the same fie
 
 All settings named Auto use `-1`. Preserve the stored IDs of other options
 when changing shared option enums.
+Shared `Options` assigns automatic IDs from CRC32 of the exact enum name in
+the range `0x40000000`–`0x7fffffff`; `AUTO = -1` and `NONE = 0` stay explicit.
+Keep the algorithm and existing names stable: renaming changes persisted IDs.
+Generation rejects collisions. Extra widget IDs use these values directly,
+without an offset based on the number of data metrics.
 
 Color settings outside the Global group may select Global (`-1`). Resolve that
 choice against the matching Global color when constructing the widget, so

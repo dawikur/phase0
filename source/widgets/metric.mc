@@ -49,8 +49,14 @@ module Widgets {
 			_size_y as Lang.Number
 		) as Void {
 			var show_label = Render.accent != Render.COLOR_NONE;
-			var show_icon = self.style_ == Properties.ICON;
-			var show_gauge = self.style_ == Properties.GAUGE;
+			var show_icon = self.style_ == Properties.ICON or (
+				self.style_ == Properties.AUTO and
+				self.impl_.icon != null
+			);
+			var show_gauge = self.style_ == Properties.GAUGE or (
+				self.style_ == Properties.AUTO and
+				self.impl_.value_max != null
+			);
 
 			if (self.width_ == 0) {
 				if (

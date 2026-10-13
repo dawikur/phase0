@@ -1,20 +1,22 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
-from enum import IntEnum, auto
+from collections.abc import Iterable
+from enum import IntEnum, auto, unique
 from typing import Any, cast
 
 from .colors import Colors
-from .model import Array, Select, Settings, Single
-from .source import Source
+from .model import Array, Boolean, Select, Settings, Single
+from .options import StableOptions
+from .source import Datum, Source
 
 
-class Options(IntEnum):
-    NONE = auto()
+@unique
+class Options(StableOptions):
+    AUTO = -1
+    NONE = 0
 
     ALARM = auto()
-    AUTO = -1
-    # Preserve persisted option IDs after changing Auto from 3 to -1.
-    BATTERY_DAYS_REMAINING = 4
+    BATTERY_DAYS_REMAINING = auto()
     BATTERY_ICON = auto()
     BATTERY_PERCENTAGE = auto()
     BLUETOOTH_CONNECTED = auto()
@@ -52,17 +54,24 @@ class Sizes(IntEnum):
 
 class MetricWidths(IntEnum):
     AUTO = Options.AUTO.value
-    NONE = 0
-    WIDTH_1 = 1
-    WIDTH_2 = 2
-    WIDTH_3 = 3
-    WIDTH_4 = 4
-    WIDTH_5 = 5
-    WIDTH_6 = 6
-    WIDTH_7 = 7
-    WIDTH_8 = 8
-    WIDTH_9 = 9
-    WIDTH_10 = 10
+    NONE = Options.NONE.value
+    WIDTH_1 = auto()
+    WIDTH_2 = auto()
+    WIDTH_3 = auto()
+    WIDTH_4 = auto()
+    WIDTH_5 = auto()
+    WIDTH_6 = auto()
+    WIDTH_7 = auto()
+    WIDTH_8 = auto()
+    WIDTH_9 = auto()
+    WIDTH_10 = auto()
+
+class MetricStyle(IntEnum):
+    AUTO = Options.AUTO.value
+    NONE = Options.NONE.value
+
+    ICON = Options.ICON.value
+    GAUGE = Options.GAUGE.value
 
 
 ColorOptions = cast(
@@ -83,21 +92,18 @@ class Status(IntEnum):
     NOTIFICATIONS = Options.NOTIFICATIONS.value
 
 
-class MetricStyle(IntEnum):
-    NONE = Options.NONE.value
-
-    ICON = Options.ICON.value
-    GAUGE = Options.GAUGE.value
-
-
 def Widgets(  # pylint: disable=invalid-name
-    data: Source,
+    data: Iterable[Datum],
 ) -> type[IntEnum]:
+    data_ids = {datum.value for datum in data}
+    for option in EXTRA_WIDGETS:
+        if option.value in data_ids:
+            raise ValueError(f"Widget ID collision for {option.name}: {option.value}")
     DataWidget = cast(
         Any,
         IntEnum(
             "Widget",
-            {datum.name: datum.value + len(data) for datum in EXTRA_WIDGETS},
+            {datum.name: datum.value for datum in EXTRA_WIDGETS},
         ),
     )
 
@@ -218,43 +224,132 @@ def MemoryMedium(  # pylint: disable=invalid-name
     DataWithIcon = data.with_icon
     DataWithValueMax = data.with_value_max
 
-    return (
-        MemoryLow(data, widgets)
-        .extend(
+    return Settings(
+        Single(
+            "global",
+            "Global",
+            [
+                Select("accent", Colors.ORANGE),
+                Select("foreground", Colors.WHITE),
+                Select("shade", Colors.CHARCOAL),
+                Select("background", Colors.BLACK),
+            ],
+        ),
+        Single(
+            "clock",
+            "Clock",
+            [
+                Select("foreground", ColorOptions.LIGHT_ORANGE),
+                Select("shade", ColorOptions.GLOBAL),
+                Select("size", Sizes.AUTO),
+            ],
+        ),
+        Array(
             "status",
+            "Status",
             [
-                Select("data", Status.NONE),
+                [
+                    Select("data", Status.ALARM),
+                ],
+                [
+                    Select("data", Status.BLUETOOTH_CONNECTED),
+                ],
+                [
+                    Select("data", Status.NOTIFICATIONS),
+                ],
+                [
+                    Select("data", Status.NONE),
+                ],
             ],
-        )
-        .extend(
+        ),
+        Array(
             "gauges",
+            "Gauge",
             [
-                Select("data", DataWithValueMax.NONE),
-                Select("accent", ColorOptions.BLUE),
+                [
+                    Select("data", DataWithValueMax.BODY_BATTERY),
+                    Select("accent", ColorOptions.CYAN),
+                ],
+                [
+                    Select("data", DataWithValueMax.STRESS),
+                    Select("accent", ColorOptions.YELLOW),
+                ],
+                [
+                    Select("data", DataWithValueMax.MOVE_BAR),
+                    Select("accent", ColorOptions.RED),
+                ],
+                [
+                    Select("data", DataWithValueMax.NONE),
+                    Select("accent", ColorOptions.BLUE),
+                ],
             ],
-        )
-        .extend(
+        ),
+        Single(
+            "top outer",
+            "Widget",
+            [
+                Select("data", widgets.DAWN_OR_DUSK_MOON),
+            ],
+        ),
+        Array(
             "top middle",
+            "Metric",
             [
-                Select("data", DataWithIcon.WIND),
-                Select("width", MetricWidths.AUTO),
+                [
+                    Select("data", DataAll.RAIN),
+                    Select("width", MetricWidths.AUTO),
+                    Select("style", MetricStyle.AUTO),
+                ],
+                [
+                    Select("data", DataAll.UV_INDEX),
+                    Select("width", MetricWidths.AUTO),
+                    Select("style", MetricStyle.AUTO),
+                ],
+                [
+                    Select("data", DataAll.WIND),
+                    Select("width", MetricWidths.AUTO),
+                    Select("style", MetricStyle.AUTO),
+                ],
+                [
+                    Select("data", DataAll.NONE),
+                    Select("width", MetricWidths.AUTO),
+                    Select("style", MetricStyle.AUTO),
+                ],
             ],
-            [
-                Select("data", DataWithIcon.NONE),
-                Select("width", MetricWidths.AUTO),
-            ],
-        )
-        .extend(
+        ),
+        Array(
             "bottom middle",
+            "Metric",
             [
-                Select("data", DataAll.FLOORS_CLIMBED),
-                Select("width", MetricWidths.AUTO),
+                [
+                    Select("data", DataAll.HEART_RATE),
+                    Select("width", MetricWidths.AUTO),
+                    Select("style", MetricStyle.AUTO),
+                ],
+                [
+                    Select("data", DataAll.STEPS),
+                    Select("width", MetricWidths.AUTO),
+                    Select("style", MetricStyle.AUTO),
+                ],
+                [
+                    Select("data", DataAll.FLOORS_CLIMBED),
+                    Select("width", MetricWidths.AUTO),
+                    Select("style", MetricStyle.AUTO),
+                ],
+                [
+                    Select("data", DataAll.NONE),
+                    Select("width", MetricWidths.AUTO),
+                    Select("style", MetricStyle.AUTO),
+                ],
             ],
+        ),
+        Single(
+            "bottom outer",
+            "Widget",
             [
-                Select("data", DataAll.NONE),
-                Select("width", MetricWidths.AUTO),
+                Select("data", widgets.BATTERY_ICON),
             ],
-        )
+        ),
     )
 
 

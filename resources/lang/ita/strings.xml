@@ -152,7 +152,9 @@
 	<string id="SETTING_FLOORS_CLIMBED">Piani saliti</string>
 	<string id="SETTING_FLOORS_DESCENDED">Piani scesi</string>
 	<string id="SETTING_FOREGROUND">Primo piano</string>
+	<string id="SETTING_GAUGE">Indicatore</string>
 	<string id="SETTING_GAUGES">Indicatori</string>
+	<string id="SETTING_ICON">Icona</string>
 	<string id="SETTING_GLOBAL">Globale</string>
 	<string id="SETTING_GREEN">Verde</string>
 	<string id="SETTING_HEART_RATE">Frequenza cardiaca</string>
@@ -230,10 +232,14 @@
 	<string id="SETTING_GAUGE_4_ACCENT">Indicatore 4 Accento</string>
 	<string id="SETTING_METRIC_1_DATA">Metrica 1</string>
 	<string id="SETTING_METRIC_1_WIDTH">Metrica 1 Larghezza</string>
+	<string id="SETTING_METRIC_1_STYLE">Metrica 1 Stile</string>
 	<string id="SETTING_METRIC_2_DATA">Metrica 2</string>
 	<string id="SETTING_METRIC_2_WIDTH">Metrica 2 Larghezza</string>
+	<string id="SETTING_METRIC_2_STYLE">Metrica 2 Stile</string>
 	<string id="SETTING_METRIC_3_DATA">Metrica 3</string>
 	<string id="SETTING_METRIC_3_WIDTH">Metrica 3 Larghezza</string>
+	<string id="SETTING_METRIC_3_STYLE">Metrica 3 Stile</string>
 	<string id="SETTING_METRIC_4_DATA">Metrica 4</string>
 	<string id="SETTING_METRIC_4_WIDTH">Metrica 4 Larghezza</string>
+	<string id="SETTING_METRIC_4_STYLE">Metrica 4 Stile</string>
 </strings>

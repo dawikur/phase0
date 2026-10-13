@@ -152,7 +152,9 @@
 	<string id="SETTING_FLOORS_CLIMBED">Piętra w górę</string>
 	<string id="SETTING_FLOORS_DESCENDED">Piętra w dół</string>
 	<string id="SETTING_FOREGROUND">Pierwszy plan</string>
+	<string id="SETTING_GAUGE">Wskaźnik</string>
 	<string id="SETTING_GAUGES">Wskaźniki</string>
+	<string id="SETTING_ICON">Ikona</string>
 	<string id="SETTING_GLOBAL">Globalne</string>
 	<string id="SETTING_GREEN">Zielony</string>
 	<string id="SETTING_HEART_RATE">Tętno</string>
@@ -230,10 +232,14 @@
 	<string id="SETTING_GAUGE_4_ACCENT">Wskaźnik 4 Akcent</string>
 	<string id="SETTING_METRIC_1_DATA">Metryka 1</string>
 	<string id="SETTING_METRIC_1_WIDTH">Metryka 1 Szerokość</string>
+	<string id="SETTING_METRIC_1_STYLE">Metryka 1 Styl</string>
 	<string id="SETTING_METRIC_2_DATA">Metryka 2</string>
 	<string id="SETTING_METRIC_2_WIDTH">Metryka 2 Szerokość</string>
+	<string id="SETTING_METRIC_2_STYLE">Metryka 2 Styl</string>
 	<string id="SETTING_METRIC_3_DATA">Metryka 3</string>
 	<string id="SETTING_METRIC_3_WIDTH">Metryka 3 Szerokość</string>
+	<string id="SETTING_METRIC_3_STYLE">Metryka 3 Styl</string>
 	<string id="SETTING_METRIC_4_DATA">Metryka 4</string>
 	<string id="SETTING_METRIC_4_WIDTH">Metryka 4 Szerokość</string>
+	<string id="SETTING_METRIC_4_STYLE">Metryka 4 Styl</string>
 </strings>
