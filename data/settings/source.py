@@ -86,11 +86,13 @@ class Source:
 
     @property
     def with_icon(self) -> Any:
-        return self.__filter("DataWithIcon", lambda d: d.has_icon)
+        return self.__filter("DataWithIcon", lambda d: d.has_icon or d.name == "EMPTY")
 
     @property
     def with_value_max(self) -> Any:
-        return self.__filter("DataWithValueMax", lambda d: d.has_value_max)
+        return self.__filter(
+            "DataWithValueMax", lambda d: d.has_value_max or d.name == "EMPTY"
+        )
 
     def __filter(self, name: str, predicate: Callable[[Datum], bool]) -> Any:
         return cast(

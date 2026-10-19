@@ -218,6 +218,15 @@ available weather updates the face and unchanged values do not cause redraws.
 
 ## Metric width
 
+Select **Empty** to reserve a blank metric slot. For example, `HR | Empty | Steps`
+keeps three items in the row; disabling the middle slot leaves only two.
+Empty reserves the width of a three-digit metric and ignores Width and Style.
+It draws nothing and requires no periodic data refreshes on either display profile.
+Manual check on FR955 (MIP64) and Venu2 (AMOLED): select `HR | Empty | Steps`
+in each middle row, then disable the middle slot and confirm that the layout
+changes from three items to two. Check normal and minimal modes, a row containing
+only Empty, and Width/Style changes on Empty (which must remain blank).
+
 Metric Width offers Auto (the data's default), None and 1–10. None (`Properties.NONE`)
 hides the numeric value and its spacing while retaining the selected icon or gauge and
 the usual label. A metric without an icon/gauge shows only its label. Hidden

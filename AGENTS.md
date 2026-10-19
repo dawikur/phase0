@@ -166,6 +166,10 @@ Example:
 
 Components should not know about each other.
 
+The Empty metric is a layout spacer, unlike a disabled slot, which is omitted.
+Keep it in the metric array with a three-digit width, independent of Width and
+Style, without periodic refreshes or drawing operations.
+
 Use the inherited `Base.is_small` for widget font size selection and rendering.
 Do not duplicate this state in subclasses; layout and widgets share the same field.
 

@@ -812,6 +812,11 @@ module Phase0 {
 					continue;
 				}
 
+				if (data instanceof Data.Empty) {
+					widgets.add(new Widgets.Empty());
+					continue;
+				}
+
 				var style = Properties.AUTO;
 				if (properties has :style) {
 					style = properties.style as Lang.Number;

@@ -8,7 +8,6 @@
   * Pressure (a trend would help more),
   * VO2 Run/Bike,
   * Used Memory
-- [ ] Empty widget
 - [ ] Support for Instinct: _second_ display
 - [ ] Allow swapping the Status and Gauge positions
 - [ ] Every widget can go anywhere

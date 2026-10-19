@@ -360,3 +360,24 @@ def test_stable_metric_properties_use_current_ids_directly() -> None:
     assert "data = Data.get(1991171812) as Base;" in generated_data
     assert "for (var i = 1" not in generated_data
     assert "Application.Properties.setValue" not in generated_data
+
+
+def test_empty_metric_is_selectable_without_icon_or_gauge() -> None:
+    data = Source(Path("source/data"))
+    empty_id = Datum("EMPTY", False, False).value
+    assert data.all.EMPTY.value == empty_id
+    assert empty_id != data.all.NONE.value
+    assert "EMPTY" in data.with_icon.__members__
+    assert "EMPTY" in data.with_value_max.__members__
+    assert f"case {empty_id}: return new Empty();" in render_data_mc(data)
+    settings = MemoryLow(data, Widgets(data))
+    for section in ("top middle", "bottom middle"):
+        metrics = settings[section]
+        assert isinstance(metrics, Array)
+        for entries in metrics.entries:
+            select = entries[0]
+            assert isinstance(select, Select)
+            assert any(
+                token.name == "EMPTY" and value == str(empty_id)
+                for token, value in select.options.items()
+            )
