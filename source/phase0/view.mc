@@ -289,8 +289,6 @@ module Phase0 {
 				!self.bottom_outer_.isEmpty()
 			);
 
-			self.prepareBitmap_(layout.screen_size_x, layout.screen_size_y);
-
 			self.invalidate_();
 
 			// ---- top outer ----
@@ -346,6 +344,8 @@ module Phase0 {
 			// ---- footer ----
 
 			self.needs_reposition_ = false;
+
+			self.prepareBitmap_(layout.screen_size_x, layout.screen_size_y);
 		}
 
 		(:display_mip)

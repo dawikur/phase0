@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
+
+# Distrobox runs init hooks as root. Keep runtime installation in the box and
+# install project dependencies as its regular user in dedicated volumes.
+set -euo pipefail
+
+project_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+
+if [[ ! -e /run/.containerenv && ! -e /.dockerenv ]]; then
+	printf '%s\n' 'Run this script through distrobox assemble, not on the host.' >&2
+	exit 1
+fi
+
+if [[ "${1:-}" == --project ]]; then
+	cd "$project_dir"
+	make .venv/.installed.stamp PATH="/usr/bin:/usr/local/bin:/bin"
+	lock_hash=$(sha256sum package-lock.json)
+	if [[ ! -f node_modules/.phase0-lock-hash ]] ||
+		[[ "$(cat node_modules/.phase0-lock-hash)" != "$lock_hash" ]]; then
+		npm ci
+		printf '%s\n' "$lock_hash" > node_modules/.phase0-lock-hash
+	fi
+	exit 0
+fi
+
+if [[ $EUID != 0 || $# != 1 ]]; then
+	printf '%s\n' 'Expected a root init hook with the Distrobox username.' >&2
+	exit 1
+fi
+
+if [[ "$(uname -m)" != x86_64 ]]; then
+	printf '%s\n' 'The Garmin Linux SDK requires an x86_64 box.' >&2
+	exit 1
+fi
+
+node_version=22.22.1
+export PATH="/usr/local/bin:$PATH"
+
+if [[ ! -x /usr/local/bin/node ]] ||
+	[[ "$(/usr/local/bin/node --version)" != "v$node_version" ]]; then
+	download_dir=$(mktemp -d)
+	trap 'rm -rf "$download_dir"' EXIT
+	archive="node-v${node_version}-linux-x64.tar.xz"
+	curl -fsSL "https://nodejs.org/dist/v${node_version}/${archive}" -o "$download_dir/$archive"
+	curl -fsSL "https://nodejs.org/dist/v${node_version}/SHASUMS256.txt" -o "$download_dir/SHASUMS256.txt"
+	(cd "$download_dir" && grep "  ${archive}$" SHASUMS256.txt | sha256sum --check --strict)
+	tar -xJf "$download_dir/$archive" -C /usr/local --strip-components=1
+fi
+
+# Login shells enter the mounted checkout without changing shared home dotfiles.
+cat > /etc/profile.d/phase0-project.sh <<'PROFILE'
+case $- in
+	*i*) cd /opt/phase0-src ;;
+esac
+PROFILE
+# Ubuntu's Zsh login startup does not read /etc/profile.d.
+zsh_project_hook='. /etc/profile.d/phase0-project.sh'
+if ! grep -Fxq "$zsh_project_hook" /etc/zsh/zprofile; then
+	printf '\n%s\n' "$zsh_project_hook" >> /etc/zsh/zprofile
+fi
+
+# Only change ownership of the volume roots; never recurse over the shared repo.
+chown "$1:$(id -gn "$1")" "$project_dir/.venv" "$project_dir/node_modules"
+runuser -u "$1" -- env PATH="/usr/local/bin:/usr/bin:/bin" \
+	bash "$project_dir/scripts/setup-distrobox" --project

@@ -5,7 +5,7 @@ see the [phase0 website](https://dawikur.dev/phase0).
 
 ## Getting started
 
-You need Python 3, Node.js 22, and the Garmin Connect IQ SDK. The Makefile reads
+You need Python 3.10 or newer, Node.js 22, and the Garmin Connect IQ SDK. The Makefile reads
 the active SDK from `~/.Garmin/ConnectIQ/current-sdk.cfg` and creates `.venv`
 for Python targets. Release builds also need `CONNECTIQ_DEVELOPER_KEY` and the
 pinned Node dependencies (`npm ci`).
@@ -28,6 +28,56 @@ this also handles SDK 9.2.0 returning exit code 1 because its summary parser
 expects a space that the simulator no longer prints.
 `make all_tests` runs `lint`, `test`, `smoke_test`, and `smoke` in that order,
 stopping at the first failure, including when invoked with `-j`.
+
+## Ubuntu 22.04 development box
+
+The Garmin Linux SDK depends on WebKitGTK 4.0, which is unavailable in newer
+Ubuntu releases. Use the repository's [Distrobox manifest](distrobox.ini) to
+keep those libraries in Ubuntu 22.04 while sharing the host desktop and home.
+Install Distrobox and Podman (or Docker) on the host first. On an x86_64 host,
+run these commands from the repository root:
+
+```sh
+distrobox assemble create --file distrobox.ini
+distrobox enter phase0-ciq
+```
+
+Creation starts the box and installs Java 17, SDK GUI libraries, X11 screenshot
+tools, Node.js 22.22.1 and Ubuntu's Python 3.10 with venv and pip support.
+Pillow is pinned to 12.3.0 to retain Python 3.10 compatibility. The init hook
+installs all of `requirements.txt` in `.venv` and runs `npm ci`. Subsequent
+starts reuse installed runtimes and only refresh project dependencies when
+their manifests change.
+
+Distrobox mounts this checkout at `/opt/phase0-src` to give project commands a
+stable path inside the box. Source edits there update the host checkout
+directly. Interactive Bash and Zsh login shells automatically enter that
+directory, so `distrobox enter phase0-ciq` is enough. The startup configuration
+lives inside the box and does not modify shared home dotfiles. Use the usual
+`make` commands there. Container-only
+named volumes cover `/opt/phase0-src/.venv` and
+`/opt/phase0-src/node_modules`, avoiding reuse of host Python binaries or
+changes to host Node packages.
+Those volumes survive removal of the box. Keep this checkout in place while
+using the box; its init hook reads `scripts/setup-distrobox` from the checkout.
+If you already created an earlier version of this box, recreate it with
+`distrobox assemble create --replace --file distrobox.ini` from the repository
+root. The Python 3.10 configuration uses a new venv volume so it does not reuse
+the old interpreter.
+
+The shared home exposes an existing `~/.Garmin/ConnectIQ` installation and
+`current-sdk.cfg`. On a new machine, install the SDK and supported device
+definitions with Garmin's SDK Manager inside the box; Garmin login and license
+acceptance remain manual. The configuration does not download the SDK or create
+a developer key. Set `CONNECTIQ_DEVELOPER_KEY` in the box for signed builds.
+Screenshot capture requires a graphical host session with X11 or XWayland;
+the capture script selects GTK's X11 backend on Wayland.
+
+Inside the box, use the usual `make` commands. To check setup without compiling,
+run `node --version`, `.venv/bin/python --version`, `java -version`, and
+`make test`. After an SDK update, check its simulator's shared libraries with
+`ldd "$(cat ~/.Garmin/ConnectIQ/current-sdk.cfg)/bin/simulator"`; there should
+be no `not found` entries.
 
 ## Repository layout
 
@@ -185,7 +235,10 @@ mode before and after changes; the whole PRG file size is not a RAM measurement.
 on a watch, select its channel, for example `make build CHANNEL=alpha`. To
 create uploadable, release-mode IQ packages, run `make alpha`, `make beta`, or
 `make iq` (`build/phase0.iq` for the public release). Run `npm ci` before these
-release builds.
+release builds. The wrapper uses optimizer 1.2.7 for Monkey C source optimization before
+compilation, with no separate post-build binary optimization stage. Direct npm
+and Python dependencies use exact versions; `package-lock.json` also pins
+transitive npm dependencies.
 
 The manifest generator assigns a stable ID to each channel using the shared
 `manifest.xml.tmpl`. Developer is for PRG testing; alpha is a private Garmin

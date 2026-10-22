@@ -405,6 +405,24 @@ outputs, fetched site UI cache, virtual environments, Python caches, and root-le
 
 The release optimizer is pinned in `package-lock.json`; install its Node
 dependencies with `npm ci` before producing a release build.
+`distrobox.ini` provisions the supported Ubuntu 22.04 SDK environment through
+`scripts/setup-distrobox`. Keep Node pinned and use Ubuntu's system Python 3.10.
+Keep Python dependencies compatible with 3.10, including Pillow 12.x; do not
+introduce another Python installer for the box. Mount the host checkout at
+`/opt/phase0-src` and use that stable path for project commands inside the box.
+Interactive Bash and Zsh login shells enter that directory through container-only
+startup configuration; do not modify shared home dotfiles.
+Do not copy the source. Named volumes isolate `.venv` and `node_modules` under
+that path from the host.
+The SDK and device definitions remain in the shared Garmin home directory;
+SDK installation and license acceptance are manual. Provisioning must not
+run project builds or launch the simulator.
+Keep direct npm and Python dependencies pinned to exact versions, including
+Python package metadata and pre-commit additional dependencies. Commit the npm
+lockfile to pin transitive Node dependencies. Run formatter hooks through the
+local npm installation. The optimizer chooses its own output filename; use its
+returned compiler command to preserve the requested filename and compiler
+sidecar files.
 
 `manifest.xml.tmpl` is the shared source for developer, alpha, beta and release
 manifest files. `make build` defaults to the developer PRG. `make alpha`,

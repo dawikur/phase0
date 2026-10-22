@@ -24,3 +24,4 @@ site/devices-data.js
 phase.egg-info
 
 __pycache__
+node_modules

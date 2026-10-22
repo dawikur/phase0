@@ -1,5 +1,7 @@
-import { buildOptimizedProject, getConfig } from "@markw65/monkeyc-optimizer";
-import { optimizeProgram } from "@markw65/monkeyc-optimizer/sdk-util.js";
+import optimizer from "@markw65/monkeyc-optimizer";
+import { spawn } from "node:child_process";
+
+const { buildOptimizedProject } = optimizer;
 import * as path from "node:path";
 
 const cwd = process.cwd();
@@ -13,15 +15,8 @@ const parsed = {
   checkTypes: "ERROR",
   compilerWarnings: true,
   enforceStatic: "YES",
-  extraReferenceTypeChecks: true,
-  iterateOptimizer: true,
-  iterateOptimizer: true,
   minimizeLocals: true,
-  minimizeModules: true,
-  postBuildOptimizer: true,
-  postBuildPRE: true,
   propagateTypes: true,
-  removeArgc: true,
   skipOptimization: false,
   trustDeclaredTypes: true,
   typeCheckLevel: "Strict",
@@ -43,26 +38,25 @@ for (let i = 0; i < args.length; i++) {
         parsed.workspace = path.dirname(jungleFiles[0]);
       }
       break;
-    case "--private-key" :
+    case "--private-key":
       parsed.developerKeyPath = path.resolve(args[++i]);
       break;
-    case "--simulator" :
+    case "--simulator":
       parsed.simulatorBuild = true;
       break;
-    case "--warn" :
+    case "--warn":
       parsed.compilerWarnings = true;
       break;
-    case "--release" :
+    case "--release":
       parsed.releaseBuild = true;
       break;
-    case "--unit-test" :
+    case "--unit-test":
       parsed.testBuild = true;
-      parsed.runTests = true;
       break;
     case "--output":
-      parsed.program = args[++i];
-      parsed.buildDir = parsed.program.split("/")[0]
-      parsed.outputPath = `${parsed.buildDir}/optimized`;
+      parsed.program = path.resolve(cwd, args[++i]);
+      parsed.buildDir = path.dirname(parsed.program);
+      parsed.outputPath = path.join(parsed.buildDir, "optimized");
       break;
 
     default:
@@ -71,17 +65,40 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
-getConfig({
-  ...parsed,
-}).then((options) =>
-  buildOptimizedProject(parsed.device, options)
-    .then((result) =>
-      optimizeProgram(
-        result.program,
-        options.developerKeyPath,
-        options.program,
-        options
-      )
-    )
-    .then((result) => console.log("OPTIMIZATION SUCCESSFUL"))
-);
+try {
+  if (!parsed.program) {
+    throw new Error("Missing required flag: --output");
+  }
+
+  // The optimizer resolves configuration internally and chooses its own output
+  // name. Request the command so Makefile's output path also names debug files.
+  const result = await buildOptimizedProject(parsed.device ?? null, {
+    ...parsed,
+    returnCommand: true,
+  });
+  const outputIndex = result.args.indexOf("-o");
+  if (outputIndex < 0 || outputIndex + 1 >= result.args.length) {
+    throw new Error("Optimizer returned a compiler command without an output path");
+  }
+  const compilerArgs = [...result.args];
+  compilerArgs[outputIndex + 1] = parsed.program;
+
+  await new Promise((resolve, reject) => {
+    const compiler = spawn(result.exe, compilerArgs, {
+      cwd: parsed.workspace ?? cwd,
+      stdio: "inherit",
+    });
+    compiler.on("error", reject);
+    compiler.on("close", (code, signal) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Compiler failed (${signal ?? code})`));
+      }
+    });
+  });
+  console.log("OPTIMIZATION SUCCESSFUL");
+} catch (error) {
+  console.error(error);
+  process.exitCode = 1;
+}

@@ -326,9 +326,10 @@ def test_icon_memory_profiles_share_character_ids_and_omit_conditions(
         assert not set(low_comments.values()) & fonts.EXTRA_NAMES
         assert len(full_comments) - len(low_comments) == 57
         assert (low / "icons.fnt").read_text() == expected[2]
-        with Image.open(low / "icons.png") as actual, Image.open(
-            high / "icons.png"
-        ) as full:
+        with (
+            Image.open(low / "icons.png") as actual,
+            Image.open(high / "icons.png") as full,
+        ):
             assert actual.tobytes() == expected[1].tobytes()
             assert actual.size == ((462, 18) if profile == "mip" else (693, 27))
             assert full.size == ((1242, 22) if profile == "mip" else (1863, 33))
