@@ -84,7 +84,7 @@ PYTHON_FILES := $(shell rg --files -g '*.py') \
 	scripts/generate_manifest \
 	scripts/generate_resources_settings \
 	scripts/generate_site_devices scripts/generate_site_settings scripts/generate_site_screenshots \
-	scripts/generate_resources_jungle scripts/smoke
+	scripts/generate_resources_jungle scripts/smoke scripts/render_braille
 
 SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release deploy alpha beta iq
 

@@ -582,7 +582,9 @@ AMOLED minimal minute offsets are computed during font generation from the
 generated atlases and minimal-rendering shadows, then written to
 `source/generated/burn_in.mc`. Do not hardcode or manually edit the cycle.
 Keep `scripts/utils/burn_in.py` masks aligned with minimal font, shadow and
-battery rendering changes. Generation rejects cycles that cannot fit within
+battery rendering changes. Dot masks cover only battery digits and `d`/`h`/`m`
+suffixes used in minimal mode; normal-mode letters and punctuation must not
+constrain the cycle. Generation rejects cycles that cannot fit within
 ±2 px and four minute phases. Mask checks do not replace device luminance,
 layout or heat-map validation.
 

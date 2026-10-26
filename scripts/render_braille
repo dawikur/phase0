@@ -1,0 +1,187 @@
+#!/usr/bin/env python3
+# Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
+
+import argparse
+import ast
+import os
+import sys
+from pathlib import Path
+
+from data.fonts import dot
+from data.fonts.dot import TYPEFACE
+
+# Braille dots in row order, with the left column first in each pair.
+DOT_BITS = ((0, 3), (1, 4), (2, 5), (6, 7))
+GLYPHS = {
+    glyph.name[1:] if glyph.name in ("\\'", "\\\\") else glyph.name: glyph
+    for glyph in TYPEFACE.glyphs
+}
+MONOSPACE_WIDTH = max(glyph.xadvance for glyph in TYPEFACE.glyphs)
+
+
+def parse_escapes(text: str) -> str:
+    output = []
+    index = 0
+    while index < len(text):
+        character = text[index]
+        output.append(character)
+        index += 1
+    return "".join(output)
+
+
+def text_lines(text: str) -> list[str]:
+    lines = []
+    current = []
+    for character in text:
+        if character in "\n\v\f":
+            lines.append("".join(current))
+            current = []
+        elif character == "\r":
+            current = []
+        elif character == "\b":
+            if current:
+                current.pop()
+        elif character == "\t":
+            current.extend(" " * (8 - len(current) % 8))
+        elif character != "\a":
+            current.append(character)
+    lines.append("".join(current))
+    return lines
+
+
+def render_text(text: str, monospace: bool = False, columns: int | None = None) -> str:
+    output = []
+    for line in text_lines(text):
+        current = ""
+        pixels = 0
+        for character in line:
+            glyph = GLYPHS.get(character)
+            if glyph is None:
+                raise ValueError(
+                    f"Unsupported character: {character!r} (U+{ord(character):04X})"
+                )
+            width = MONOSPACE_WIDTH if monospace else len(glyph.bitmap[0])
+            next_pixels = pixels + bool(current) + width
+            if columns is not None and current and columns * 2 < next_pixels:
+                output.append(render_line(current, monospace, columns))
+                current = ""
+                pixels = 0
+            pixels += bool(current) + width
+            current += character
+        output.append(render_line(current, monospace, columns))
+    return "\n".join(output)
+
+
+def glyph_groups() -> list[str]:
+    """Read glyph order and comment-separated subsets from the font source."""
+    source = Path(dot.__file__).read_text(encoding="utf-8")
+    lines = source.splitlines()
+    groups = []
+    current = []
+    previous_end = 0
+    for node in ast.walk(ast.parse(source)):
+        if not (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "Glyph"
+        ):
+            continue
+        if current and any(
+            line.lstrip().startswith("#")
+            for line in lines[previous_end : node.lineno - 1]
+        ):
+            groups.append("".join(current))
+            current = []
+        current.append(ast.literal_eval(node.args[0]))
+        previous_end = node.end_lineno
+    if current:
+        groups.append("".join(current))
+    return groups
+
+
+def render_line(text: str, monospace: bool, columns: int | None = None) -> str:
+    rows = ["" for _ in range(8)]
+    for index, character in enumerate(text):
+        glyph = GLYPHS.get(character)
+        if glyph is None:
+            raise ValueError(
+                f"Unsupported character: {character!r} (U+{ord(character):04X})"
+            )
+        for y, row in enumerate(glyph.bitmap):
+            if index:
+                rows[y] += "0"
+            rows[y] += row.center(MONOSPACE_WIDTH, "0") if monospace else row
+
+    output = []
+    for y in range(0, 8, 4):
+        line = []
+        for x in range(0, len(rows[0]), 2):
+            bits = 0
+            for dy in range(4):
+                for dx in range(2):
+                    if x + dx < len(rows[y + dy]) and rows[y + dy][x + dx] == "1":
+                        bits |= 1 << DOT_BITS[dy][dx]
+            line.append(chr(0x2800 + bits))
+        output.append("".join(line))
+    if not text:
+        return ""
+    # A terminal narrower than one glyph must split that glyph across blocks.
+    if columns is not None:
+        return "\n".join(
+            row[start : start + columns]
+            for start in range(0, len(output[0]), columns)
+            for row in output
+        )
+    return "\n".join(output)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Render text with the Dot font using Unicode Braille cells."
+    )
+    parser.add_argument(
+        "text",
+        nargs="?",
+        help=r"Text to render; supports \n \t \b \r \f \v \a \\ \' \" escapes",
+    )
+    parser.add_argument(
+        "--ls",
+        "--list",
+        dest="list_glyphs",
+        action="store_true",
+        help="Render all glyphs in comment-separated subsets from dot.py",
+    )
+    parser.add_argument(
+        "--mono",
+        "--monospace",
+        dest="monospace",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Center every glyph in the font's maximum glyph width (default: on)",
+    )
+    args = parser.parse_args()
+    if args.list_glyphs and args.text is not None:
+        parser.error("text cannot be combined with --list")
+    try:
+        if args.list_glyphs:
+            text = "\n".join(glyph_groups())
+        else:
+            if args.text is None:
+                parser.error("provide text or --list")
+                return
+            text = parse_escapes(args.text)
+        columns = None
+        if sys.stdout.isatty():
+            try:
+                columns = os.get_terminal_size(sys.stdout.fileno()).columns or None
+            except OSError:
+                pass
+        rendered = render_text(text, args.monospace, columns)
+    except ValueError as error:
+        parser.error(str(error))
+    else:
+        print(rendered)
+
+
+if __name__ == "__main__":
+    main()

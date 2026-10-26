@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
+from data import fonts
 from scripts.utils.args_parse import Folders
 from scripts.utils.burn_in import (
     find_cycle,
@@ -47,7 +48,8 @@ def test_shadow_is_part_of_the_lit_mask() -> None:
 
 def test_generation_recomputes_cycle_from_actual_amoled_fonts(tmp_path: Path) -> None:
     folders = Folders(tmp_path / "build", tmp_path / "resources", tmp_path / "source")
-    generate_fonts(folders, "0123456789dhm")
+    # Include normal-mode punctuation and translated labels as production does.
+    generate_fonts(folders, "".join(glyph.name for glyph in fonts.TYPEFACE_DOT.glyphs))
     output = folders.source("generated", "burn_in.mc")
     original = output.read_text()
     icons_folder = folders.resources("memory/high/generated/fonts/amoled")

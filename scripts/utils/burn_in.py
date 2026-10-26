@@ -73,7 +73,11 @@ def minimal_masks(
         font = BitmapFont.read(
             icons_folder if name == "icons" and icons_folder else folder, name
         )
-        masks.update(font.glyphs.values())
+        # Dot is shared with normal rendering and translated labels. Minimal
+        # battery text uses only digits and remaining-time suffixes; unrelated
+        # glyphs must not constrain its offset cycle.
+        if name != "dot_small":
+            masks.update(font.glyphs.values())
         if name.startswith("digits_"):
             # Fixed clock slots: include every possible digit at each position,
             # so changing the time cannot fill a hole between cycle phases.
@@ -91,7 +95,11 @@ def minimal_masks(
                 pos_x += font.advances[ord(char)]
             masks.add(frozenset(pixels))
         elif name == "dot_small":
-            masks.update(with_shadow(mask, shadow) for mask in font.glyphs.values())
+            masks.update(
+                with_shadow(font.glyphs[ord(char)], shadow)
+                for char in "0123456789dhm"
+                if ord(char) in font.glyphs
+            )
             # Percentages and representative remaining-time values, including
             # suffixes and adjacent characters with their actual advances.
             values = itertools.chain(

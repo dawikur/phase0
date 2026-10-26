@@ -171,9 +171,10 @@ tables and the shifting helper are included only in the AMOLED profile.
 The generated `Display.IS_AMOLED` identifies the display profile; `Fonts`
 contains font resources and spacing constants.
 
-The generator checks static glyphs, both clock sizes with all possible digits,
+The generator checks static glyphs used in minimal mode, both clock sizes with all possible digits,
 battery percentages, remaining-time examples up to 999 with `d`/`h`/`m` suffixes,
-and battery bars up to 32 segments. Each tested mask has a black phase in every
+and battery bars up to 32 segments. Dot letters and punctuation used only in
+normal mode do not constrain the cycle. Each tested mask has a black phase in every
 cycle, allowing at most three consecutive lit minutes with regular minute
 updates. This does not certify arbitrary battery-value transitions, overlapping
 widgets or device luminance. Validate screen margins, heat maps and the 10%
@@ -357,3 +358,36 @@ Status strip these same sources show icons only, with inactive states dimmed.
 
 Empty in the Status strip reserves one blank icon position, while None omits
 the slot. Empty requires no periodic refresh and draws no visible pixels.
+
+## Braille text renderer
+
+Render `data/fonts/dot.py` bitmaps using Unicode Braille (2 × 4 pixels per cell):
+
+```sh
+PYTHONPATH=. python3 scripts/render_braille 'Hello, phase0!'
+PYTHONPATH=. python3 scripts/render_braille --monospace 'Hello, phase0!'
+PYTHONPATH=. python3 scripts/render_braille --list
+```
+
+`--list` (alias `--ls`) renders every glyph, with each comment-separated subset
+from `dot.py` on its own Braille text line. It also supports `--monospace`.
+Terminal output wraps between glyphs to fit the terminal width, preserving both
+Braille rows together. Extremely narrow terminals split oversized glyphs into
+blocks. Output piped to another command or redirected to a file stays unwrapped.
+
+Case and special characters retain their font glyphs; unsupported characters
+produce an error. One blank pixel column separates glyphs. By default, glyphs
+retain their original widths, including the 3-pixel space and 1-pixel colon.
+`--monospace` centers every glyph in a cell as wide as the widest glyph in the
+font (currently 5 pixels), keeping text columns aligned. `--no-monospace`
+explicitly restores the default. Quote text to preserve spaces and shell
+special characters. Use `--` before text beginning with `-`.
+
+Escape sequences are decoded once: `\n` starts a new line, `\t` advances to
+the next 8-character tab stop, and `\b` removes the preceding character in
+the current line. `\r` clears the current line; `\f` and `\v` start a new
+line. The bell (`\a`) is ignored because it has no visual representation.
+Use `\\` for a literal backslash; `\'` and `\"` also produce literal quotes.
+Unknown escapes and a trailing unpaired backslash produce an error.
+For example, `'Hello\nphase0'` renders two lines, while `'\\n'` renders a
+backslash followed by the letter n. Use single shell quotes to preserve escapes.
