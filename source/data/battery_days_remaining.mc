@@ -5,6 +5,7 @@ import Toybox.Lang;
 import Toybox.System;
 
 module Data {
+	(:data_icon)
 	class BatteryDaysRemaining extends Base {
 		function initialize() {
 			Base.initialize(

@@ -5,6 +5,7 @@ import Toybox.Lang;
 import Toybox.SensorHistory;
 
 module Data {
+	(:data_icon)
 	class Temperature extends Base {
 		function initialize() {
 			Base.initialize(

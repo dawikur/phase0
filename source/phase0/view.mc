@@ -352,6 +352,10 @@ module Phase0 {
 		function onPartialUpdate(_dc as Graphics.Dc) as Void {
 			// ---- header ----
 
+			// Settings replace widgets before the next full update lays them out.
+			if (self.needs_reposition_) {
+				return;
+			}
 			if (!self.isVisibleMode_()) {
 				return;
 			}
@@ -750,6 +754,8 @@ module Phase0 {
 		) as Void {
 			self.bitmap_ = self.createBitmap_(_size_x, _size_y);
 			if (self.bitmap_ != null) {
+				// Uncovered areas, including seconds, must contain only background.
+				self.clearBitmap_();
 				System.println("Using buffered bitmap");
 			}
 		}

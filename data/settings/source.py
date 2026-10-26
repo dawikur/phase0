@@ -16,6 +16,7 @@ class Datum:
 
     has_icon: bool
     has_value_max: bool
+    is_status: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "value", stable_id(f"DATA_{self.name}"))
@@ -24,14 +25,10 @@ class Datum:
 class Source:
     CLASS_PARTS_RE = re.compile(r"(?<!^)(?=[A-Z])")
     CLASS_RE = re.compile(r"\bclass\s+([A-Za-z_]\w*)\s+extends Base\b")
-    ICON_ASSIGN_RE = re.compile(
-        r"\bself\.icon\s*=\s*(?:Fonts\.ICON_\w+\b|\w+Icon\s*\()"
-    )
-    INITIALIZE_RE = re.compile(
-        r"function\s+initialize\s*\(\s*\)(.*?)(?=\n\s*function|\Z)", re.DOTALL
+    ANNOTATIONS_RE = re.compile(
+        r"\((\s*:\w+(?:\s*,\s*:\w+)*\s*)\)\s*class\s+\w+\s+extends Base\b"
     )
     LABEL_RE = re.compile(r"LABEL_(\w+)")
-    VALUE_MAX_ASSIGN_RE = re.compile(r"\bself\.value_max\s*=")
 
     __items: list[Datum]
 
@@ -62,11 +59,19 @@ class Source:
 
             assert class_parts == label_parts, f"{class_parts} vs {label_parts}"
 
+            annotation_match = self.ANNOTATIONS_RE.search(data_text)
+            annotations = (
+                set(re.findall(r":(\w+)", annotation_match.group(1)))
+                if annotation_match
+                else set()
+            )
+
             items.append(
                 (
                     "_".join(class_parts).upper(),
-                    self.__has_icon(data_text),
-                    self.__has_value_max(data_text),
+                    "data_icon" in annotations,
+                    "data_gauge" in annotations,
+                    "data_status" in annotations,
                 )
             )
 
@@ -83,6 +88,10 @@ class Source:
     @property
     def all(self) -> Any:
         return self.__filter("DataAll", lambda _: True)
+
+    @property
+    def status(self) -> Any:
+        return self.__filter("DataStatus", lambda d: d.is_status)
 
     @property
     def with_icon(self) -> Any:
@@ -121,19 +130,3 @@ class Source:
             if item.name == name:
                 return item.value
         raise AttributeError(name)
-
-    def __has_value_max(self, data_text: str) -> bool:
-        initialize_match = self.INITIALIZE_RE.search(data_text)
-        return (
-            bool(self.VALUE_MAX_ASSIGN_RE.search(initialize_match.group(1)))
-            if initialize_match
-            else False
-        )
-
-    def __has_icon(self, data_text: str) -> bool:
-        initialize_match = self.INITIALIZE_RE.search(data_text)
-        return (
-            bool(self.ICON_ASSIGN_RE.search(initialize_match.group(1)))
-            if initialize_match
-            else False
-        )

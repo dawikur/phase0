@@ -6,6 +6,7 @@ import Toybox.Lang;
 import Toybox.System;
 
 module Data {
+	(:data_gauge,:data_icon)
 	class BatteryPercentage extends Base {
 		function initialize() {
 			Base.initialize(

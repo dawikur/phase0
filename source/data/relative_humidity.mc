@@ -4,6 +4,7 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 module Data {
+	(:data_gauge,:data_icon)
 	class RelativeHumidity extends Base {
 		function initialize() {
 			Base.initialize(

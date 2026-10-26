@@ -41,6 +41,9 @@ module Widgets {
 				_properties.width == Properties.AUTO
 					? _impl.defaultWidth()
 					: _properties.width;
+			if (self.width_ == 0) {
+				self.width_ = Properties.NONE;
+			}
 			self.style_ = _style;
 		}
 		function resize(

@@ -55,6 +55,7 @@ def test_widget_collisions_are_rejected() -> None:
 def test_metric_ids_survive_new_metrics_and_filtering(tmp_path: Path) -> None:
     for name in ("steps", "battery"):
         tmp_path.joinpath(f"{name}.mc").write_text(
+            "(:data_gauge,:data_icon)\n"
             f"class {name.capitalize()} extends Base {{\n"
             f"const LABEL_{name.upper()} = 1;\n"
             "function initialize() {\nself.icon = Fonts.ICON_NONE;\nself.value_max = 100;\n}\n}"
@@ -83,3 +84,20 @@ def test_global_color_uses_shared_stable_option_id() -> None:
     assert [option.value for option in ColorOptions if option.name != "GLOBAL"] == [
         color.value for color in Colors
     ]
+
+
+def test_status_sources_share_metric_ids() -> None:
+    data = Source(Path("source/data"))
+    names = {
+        "ALARM",
+        "NOTIFICATIONS",
+        "BLUETOOTH_CONNECTED",
+        "BLUETOOTH_DISCONNECTED",
+        "EMPTY",
+    }
+    assert {option.name for option in data.status} == names | {"NONE"}
+    assert data.status.NONE.value == Options.NONE.value
+    for name in names:
+        assert data.status[name].value == data.all[name].value
+        assert data.status[name].value == data.with_icon[name].value
+    assert all(datum.is_status == (datum.name in names) for datum in data)

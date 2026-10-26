@@ -8,6 +8,7 @@ import Toybox.SensorHistory;
 import Toybox.UserProfile;
 
 module Data {
+	(:data_gauge,:data_icon)
 	class BodyBattery extends Base {
 		function initialize() {
 			Base.initialize(

@@ -13,7 +13,7 @@ from typing import Any, cast
 
 from data.settings import Source, Widgets
 from data.settings.colors import Colors
-from data.settings.data import Status
+from data.settings.data import Options
 from scripts.utils.store_screenshots import Scenario
 
 _DATA = Source(Path(__file__).resolve().parent.parent / "source" / "data")
@@ -69,9 +69,9 @@ SCENARIOS = (
             "GlobalBackground": Colors.BLACK.value,
             "ClockForeground": Colors.LIGHT_PINK.value,
             "ClockShade": Colors.BLACK.value,
-            "StatusData0": Status.NONE.value,
-            "StatusData1": Status.NONE.value,
-            "StatusData2": Status.NONE.value,
+            "StatusData0": Options.NONE.value,
+            "StatusData1": Options.NONE.value,
+            "StatusData2": Options.NONE.value,
             "GaugesData0": _DATA_WITH_VALUE_MAX.STRESS.value,
             "GaugesAccent0": Colors.LIGHT_PINK.value,
             "GaugesData1": _DATA_WITH_VALUE_MAX.NONE.value,
@@ -108,9 +108,9 @@ SCENARIOS = (
             "GlobalBackground": Colors.BLUE.value,
             "ClockForeground": Colors.WHITE.value,
             "ClockShade": Colors.BLUE.value,
-            "StatusData0": Status.NONE.value,
-            "StatusData1": Status.NONE.value,
-            "StatusData2": Status.NONE.value,
+            "StatusData0": Options.NONE.value,
+            "StatusData1": Options.NONE.value,
+            "StatusData2": Options.NONE.value,
             "GaugesData0": _DATA_WITH_VALUE_MAX.NONE.value,
             "GaugesData1": _DATA_WITH_VALUE_MAX.NONE.value,
             "GaugesData2": _DATA_WITH_VALUE_MAX.NONE.value,

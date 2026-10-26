@@ -5,6 +5,7 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 module Data {
+	(:data_icon)
 	class UvIndex extends Base {
 		function initialize() {
 			Base.initialize(

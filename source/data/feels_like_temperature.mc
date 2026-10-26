@@ -4,6 +4,7 @@ import Toybox.Complications;
 import Toybox.Lang;
 
 module Data {
+	(:data_icon)
 	class FeelsLikeTemperature extends Base {
 		function initialize() {
 			Base.initialize(

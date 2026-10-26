@@ -2,14 +2,13 @@
 
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.System;
 
 module Widgets {
 	class Status extends Base {
 		hidden var enabled_ as Lang.String = "";
 		hidden var all_ as Lang.String;
-		hidden var slots_ as Lang.Array<Lang.Number> = [];
-		hidden var state_ as Lang.Number = -1;
+		hidden var slots_ as Lang.Array<Data.Base> = [];
+		hidden var icons_ as Lang.Array<Lang.String> = [];
 
 		function initialize(_properties as Lang.Array<Properties.Status>) {
 			Base.initialize(null, Data.RefreshRate.SEC);
@@ -20,49 +19,39 @@ module Widgets {
 			for (var i = 0; i < properties_size; ++i) {
 				var property = _properties[i];
 
-				var icon = self.GetIcon_(property.data);
-				if (icon.length() != 0) {
-					self.slots_.add(property.data);
-					self.all_ = self.AppendIcon_(self.all_, icon);
+				var data = Data.get(property.data);
+				if (data != null and data.icon != null) {
+					self.slots_.add(data);
+					self.icons_.add(Fonts.ICON_EMPTY);
+					self.all_ = self.AppendIcon_(self.all_, data.icon as Lang.String);
+					self.enabled_ = self.AppendIcon_(self.enabled_, Fonts.ICON_EMPTY);
 				}
 			}
 		}
 
 		function refresh(_dc as Graphics.Dc) as Void {
-			var device_settings = System.getDeviceSettings();
-			var state = 0;
-			if (0 < device_settings.alarmCount) {
-				state += 1;
-			}
-			if (device_settings.phoneConnected) {
-				state += 2;
-			}
-			if (
-				device_settings has :doNotDisturb and
-				device_settings.doNotDisturb
-			) {
-				state += 4;
-			}
-			if (0 < device_settings.notificationCount) {
-				state += 8;
-			}
-
-			if (self.state_ == state) {
-				return;
-			}
-			self.state_ = state;
-			self.is_dirty_ = true;
-
-			self.enabled_ = "";
-			var slot_size = self.slots_.size();
-			for (var i = 0; i < slot_size; ++i) {
-				var slot = self.slots_[i];
-
-				var icon = self.GetStatus_(slot, device_settings);
-				if (icon.length() != 0) {
-					self.enabled_ = self.AppendIcon_(self.enabled_, icon);
+			var changed = false;
+			var size = self.slots_.size();
+			for (var i = 0; i < size; ++i) {
+				var data = self.slots_[i];
+				if (data.refresh_rate == Data.RefreshRate.NONE) {
+					continue;
+				}
+				data.refresh();
+				var icon = data.icon as Lang.String;
+				if (self.icons_[i] != icon) {
+					self.icons_[i] = icon;
+					changed = true;
 				}
 			}
+			if (!changed) {
+				return;
+			}
+			self.enabled_ = "";
+			for (var i = 0; i < size; ++i) {
+				self.enabled_ = self.AppendIcon_(self.enabled_, self.icons_[i]);
+			}
+			self.is_dirty_ = true;
 		}
 
 		function render(_dc as Graphics.Dc) as Void {
@@ -108,63 +97,5 @@ module Widgets {
 			return _icons.length() == 0 ? _icon : _icons + "\n" + _icon;
 		}
 
-		static function GetIcon_(_id as Lang.Number) as Lang.String {
-			switch (_id) {
-				case Properties.ALARM:
-					return Fonts.ICON_ALARM;
-				case Properties.BLUETOOTH_CONNECTED:
-				case Properties.BLUETOOTH_DISCONNECTED:
-					return Fonts.ICON_BLUETOOTH_ON;
-				case Properties.NOTIFICATIONS:
-					return Fonts.ICON_NOTIFICATION;
-
-				default:
-					break;
-			}
-
-			return "";
-		}
-
-		static function GetStatus_(
-			_id as Lang.Number,
-			_device_settings as System.DeviceSettings
-		) as Lang.String {
-			switch (_id) {
-				case Properties.ALARM:
-					if (0 < _device_settings.alarmCount) {
-						return Fonts.ICON_ALARM;
-					}
-					return Fonts.ICON_EMPTY;
-
-				case Properties.BLUETOOTH_CONNECTED:
-					if (_device_settings.phoneConnected) {
-						return Fonts.ICON_BLUETOOTH_ON;
-					}
-					return Fonts.ICON_EMPTY;
-
-				case Properties.BLUETOOTH_DISCONNECTED:
-					if (!_device_settings.phoneConnected) {
-						return Fonts.ICON_BLUETOOTH_OFF;
-					}
-					return Fonts.ICON_EMPTY;
-
-				case Properties.NOTIFICATIONS:
-					if (
-						_device_settings has :doNotDisturb and
-						_device_settings.doNotDisturb
-					) {
-						return Fonts.ICON_DO_NOT_DISTURB;
-					}
-					if (0 < _device_settings.notificationCount) {
-						return Fonts.ICON_NOTIFICATION;
-					}
-					return Fonts.ICON_EMPTY;
-
-				default:
-					break;
-			}
-
-			return "";
-		}
 	}
 } // module Widgets

@@ -111,6 +111,10 @@ Prefer:
 - cached values
 - cached layouts
 
+Clear each newly allocated rendering buffer to the configured background before
+use, including after settings changes. Partial updates must wait until replacement
+widgets have been laid out by a full update.
+
 Center gauge guide dots within the full bar width. For even widths, use the
 right of the two center pixels.
 
@@ -581,3 +585,15 @@ Keep `scripts/utils/burn_in.py` masks aligned with minimal font, shadow and
 battery rendering changes. Generation rejects cycles that cannot fit within
 ±2 px and four minute phases. Mask checks do not replace device luminance,
 layout or heat-map validation.
+
+Status sources live in `source/data/` and carry the `data_status` annotation.
+The settings generator selects Status options from it while keeping those
+sources available as ordinary metrics. Default width 0 resolves to
+`Properties.NONE` when constructing a metric, without number formatting or space.
+Declare icon and gauge capabilities with `data_icon` and `data_gauge` class
+annotations rather than detecting constructor assignments. Sort annotations
+alphabetically within one list, e.g. `(:data_gauge,:data_icon)`; consecutive
+annotation lists are invalid Monkey C syntax.
+
+Empty is also a Status source: its transparent icon reserves one status position,
+whereas None omits the slot. Status skips sources with `RefreshRate.NONE`.

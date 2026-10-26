@@ -8,6 +8,7 @@ import Toybox.SensorHistory;
 import Toybox.UserProfile;
 
 module Data {
+	(:data_gauge)
 	class Saturation extends Base {
 		function initialize() {
 			Base.initialize(

@@ -6,6 +6,7 @@ import Toybox.System;
 import Toybox.UserProfile;
 
 module Data {
+	(:data_gauge,:data_icon)
 	class SolarIntensity extends Base {
 		function initialize() {
 			Base.initialize(

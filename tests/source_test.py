@@ -69,6 +69,7 @@ def test_array_rejects_inconsistent_rows() -> None:
 def test_data_reads_metrics_and_filters_their_features(tmp_path: Path) -> None:
     (tmp_path / "ignored.mc").write_text("module Ignored {}", encoding="utf-8")
     (tmp_path / "steps.mc").write_text(
+        "(:data_gauge,:data_icon)\n"
         "class Steps extends Base {\n"
         "const LABEL_STEPS = 1;\n"
         "function initialize() {\n"
@@ -192,3 +193,39 @@ def test_widget_ids_reject_collision_with_metric_ids() -> None:
         datum = Datum("COLLIDING_METRIC", False, False)
     with pytest.raises(ValueError, match="Widget ID collision for BATTERY_ICON"):
         Widgets([datum])
+
+
+@pytest.mark.parametrize("has_icon", [False, True])
+@pytest.mark.parametrize("has_gauge", [False, True])
+@pytest.mark.parametrize("is_status", [False, True])
+def test_capabilities_use_annotations(
+    tmp_path: Path, has_icon: bool, has_gauge: bool, is_status: bool
+) -> None:
+    markers = ",".join(
+        f":{name}"
+        for name, enabled in (
+            ("data_gauge", has_gauge),
+            ("data_icon", has_icon),
+            ("data_status", is_status),
+        )
+        if enabled
+    )
+    annotations = f"({markers})" if markers else ""
+    metric = tmp_path / "sample.mc"
+    metric.write_text(
+        annotations + "\nclass Sample extends Base { const LABEL_SAMPLE = 1; }"
+    )
+    data = Source(tmp_path)
+    datum = next(iter(data))
+    assert datum.has_icon == has_icon
+    assert datum.has_value_max == has_gauge
+    assert datum.is_status == is_status
+    assert ("SAMPLE" in data.with_icon.__members__) == has_icon
+    assert ("SAMPLE" in data.with_value_max.__members__) == has_gauge
+    assert ("SAMPLE" in data.status.__members__) == is_status
+    metric.write_text(
+        annotations + "\nclass Sample extends Base {\n"
+        "const LABEL_SAMPLE = 1;\nfunction initialize() {\n"
+        "self.icon = Fonts.ICON_EMPTY;\nself.value_max = 100;\n}\n}"
+    )
+    assert list(Source(tmp_path)) == [datum]

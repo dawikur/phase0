@@ -6,6 +6,7 @@ import Toybox.SensorHistory;
 import Toybox.UserProfile;
 
 module Data {
+	(:data_gauge)
 	class Stress extends Base {
 		function initialize() {
 			Base.initialize(

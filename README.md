@@ -199,6 +199,11 @@ direct rendering when memory is insufficient. Only MIP includes partial updates
 and their power-budget state. AMOLED keeps normal second rendering while awake
 and retains display-mode handling for LOW/OFF.
 
+New rendering buffers are cleared to the configured background before use,
+including after settings changes. This prevents stale pixels in areas such as
+seconds, which are drawn directly over the buffer. MIP partial updates wait
+until the replacement widgets have been laid out by a full update.
+
 Icon fonts are selected at compile time by memory profile. Low-memory devices
 include only the 34 general icons (status, dawn/dusk, moon phases and the
 battery-bar widget). Their MIP icon atlas is 462 × 18. Medium/high devices
@@ -343,3 +348,12 @@ Runtime checks use `Properties.AUTO` and `Properties.NONE`; numeric metric
 widths remain 1–10. Settings are read directly using current IDs.
 The Global color choice uses the shared hashed `Properties.GLOBAL` ID;
 widgets resolve it to the corresponding global color during construction.
+
+Status sources are also available in Top Middle and Bottom Middle: Alarm shows
+its count (Auto width 1), Notifications shows its count (Auto width 2) and uses
+the Do Not Disturb icon while that mode is active. Bluetooth Connected and
+Bluetooth Disconnected show only an icon by default (Auto width 0). In the
+Status strip these same sources show icons only, with inactive states dimmed.
+
+Empty in the Status strip reserves one blank icon position, while None omits
+the slot. Empty requires no periodic refresh and draws no visible pixels.

@@ -88,15 +88,6 @@ ColorOptions = cast(
 )
 
 
-class Status(IntEnum):
-    NONE = Options.NONE.value
-
-    ALARM = Options.ALARM.value
-    BLUETOOTH_CONNECTED = Options.BLUETOOTH_CONNECTED.value
-    BLUETOOTH_DISCONNECTED = Options.BLUETOOTH_DISCONNECTED.value
-    NOTIFICATIONS = Options.NOTIFICATIONS.value
-
-
 def Widgets(  # pylint: disable=invalid-name
     data: Iterable[Datum],
 ) -> type[IntEnum]:
@@ -119,6 +110,7 @@ def MemoryLow(  # pylint: disable=invalid-name
     data: Source,
     widgets: Any,
 ) -> Settings:
+    DataStatus = data.status
     DataAll = data.all
     DataWithIcon = data.with_icon
     DataWithValueMax = data.with_value_max
@@ -148,13 +140,13 @@ def MemoryLow(  # pylint: disable=invalid-name
             "Status",
             [
                 [
-                    Select("data", Status.ALARM),
+                    Select("data", DataStatus.ALARM),
                 ],
                 [
-                    Select("data", Status.BLUETOOTH_CONNECTED),
+                    Select("data", DataStatus.BLUETOOTH_CONNECTED),
                 ],
                 [
-                    Select("data", Status.NOTIFICATIONS),
+                    Select("data", DataStatus.NOTIFICATIONS),
                 ],
             ],
         ),
@@ -225,6 +217,7 @@ def MemoryMedium(  # pylint: disable=invalid-name
     data: Source,
     widgets: Any,
 ) -> Settings:
+    DataStatus = data.status
     DataAll = data.all
     DataWithValueMax = data.with_value_max
 
@@ -253,16 +246,16 @@ def MemoryMedium(  # pylint: disable=invalid-name
             "Status",
             [
                 [
-                    Select("data", Status.ALARM),
+                    Select("data", DataStatus.ALARM),
                 ],
                 [
-                    Select("data", Status.BLUETOOTH_CONNECTED),
+                    Select("data", DataStatus.BLUETOOTH_CONNECTED),
                 ],
                 [
-                    Select("data", Status.NOTIFICATIONS),
+                    Select("data", DataStatus.NOTIFICATIONS),
                 ],
                 [
-                    Select("data", Status.NONE),
+                    Select("data", DataStatus.NONE),
                 ],
             ],
         ),
