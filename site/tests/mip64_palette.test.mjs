@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
+import { Element } from "./dom_helpers.mjs";
 
-const palettePage = readFileSync(new URL("../mip64-palette/index.html", import.meta.url), "utf8");
 const paletteApp = readFileSync(new URL("../mip64-palette/app.js", import.meta.url), "utf8");
 const context = { window: {} };
 vm.createContext(context);
@@ -21,25 +21,63 @@ test("exports all 64 Garmin MIP color names", () => {
 	assert.equal(names["#FFFFFF"], "White");
 });
 
-test("palette page shows only color names supplied by settings data", () => {
-	assert.doesNotMatch(palettePage, /color-names\.js/);
-	assert.match(palettePage, /<script src="app\.js"><\/script>/);
-	assert.match(paletteApp, /settingColorNamesByHex\.get\(hex\) \|\| ""/);
+function harness(mode = "hue") {
+	const palette = new Element();
+	const buttons = ["hue", "lightness", "rgb"].map((sortMode) => new Element({ sortMode }));
+	const root = new Element({ paletteSort: mode });
+	const copied = [];
+	vm.runInNewContext(paletteApp, {
+		window: {
+			PHASE_SETTINGS: { groups: [{ id: "Global", settings: [{ key: "GlobalAccent", options: [
+				{ value: 0xffaa00, label: "Orange from settings" },
+				{ value: -1, label: "Invalid" },
+			] }] }] },
+			phaseTheme: { updateTransferLinks() {} },
+			SiteUi: { copy: { withFeedback: async (_button, text) => copied.push(text) } },
+		},
+		document: {
+			documentElement: root,
+			getElementById: () => palette,
+			querySelectorAll: () => buttons,
+			createElement: () => new Element(),
+		},
+	});
+	return { palette, buttons, root, copied, hexes: () => palette.children.map((card) => card.children[1].textContent) };
+}
+
+test("renders 64 distinct colors and uses names from settings", async () => {
+	const page = harness();
+	assert.equal(page.palette.children.length, 64);
+	assert.equal(new Set(page.hexes()).size, 64);
+	const orange = page.palette.children.find((card) => card.children[1].textContent === "#FFAA00");
+	assert.equal(orange.children[2].textContent, "Orange from settings");
+	const black = page.palette.children.find((card) => card.children[1].textContent === "#000000");
+	assert.equal(black.children[2].textContent, "");
+	await orange.children[0].listeners.click();
+	assert.deepEqual(page.copied, ["0xFFAA00"]);
 });
 
-test("palette page offers accessible in-session sorting controls", () => {
-	assert.match(palettePage, /aria-label="Palette sort order"/);
-	assert.match(palettePage, /class="ui-segmented-option ui-sort-option" type="button" data-sort-mode="hue"/);
-	assert.doesNotMatch(palettePage, /class="ui-theme-option" type="button" data-sort-mode=/);
-	assert.match(palettePage, /data-sort-mode="hue" aria-pressed="true">Hue/);
-	assert.match(palettePage, /data-sort-mode="lightness" aria-pressed="false">Lightness/);
-	assert.match(palettePage, /data-sort-mode="rgb" aria-pressed="false">RGB/);
-	assert.match(paletteApp, /sortPalette\(document\.documentElement\.dataset\.paletteSort \|\| "hue"\)/);
+test("sort controls reorder cards and update selection", () => {
+	const page = harness();
+	const hueOrder = page.hexes();
+	page.buttons[2].listeners.click();
+	assert.deepEqual(page.hexes(), [...hueOrder].sort());
+	assert.equal(page.root.dataset.paletteSort, "rgb");
+	assert.equal(page.buttons[2].attributes["aria-pressed"], "true");
+	assert.equal(page.buttons[0].attributes["aria-pressed"], "false");
+	page.buttons[1].listeners.click();
+	const lightness = page.hexes().map((hex) => {
+		const rgb = hex.slice(1).match(/../g).map((part) => Number.parseInt(part, 16));
+		return Math.min(...rgb) + Math.max(...rgb);
+	});
+	assert.deepEqual(lightness, [...lightness].sort((a, b) => a - b));
+	page.buttons[0].listeners.click();
+	assert.deepEqual(page.hexes(), hueOrder);
+	assert.equal(page.palette.children.length, 64);
 });
 
-test("palette page keeps deterministic ordering for each sort mode", () => {
-	assert.match(paletteApp, /first\.hue - second\.hue \|\| first\.saturation - second\.saturation \|\| first\.lightness - second\.lightness/);
-	assert.match(paletteApp, /first\.lightness - second\.lightness \|\| first\.hue - second\.hue \|\| first\.saturation - second\.saturation/);
-	assert.match(paletteApp, /first\.red - second\.red \|\| first\.green - second\.green \|\| first\.blue - second\.blue/);
-	assert.match(paletteApp, /palette\.appendChild\(color\.card\)/);
+test("restores sort mode and falls back for unknown modes", () => {
+	assert.deepEqual(harness("rgb").hexes(), [...harness().hexes()].sort());
+	assert.deepEqual(harness("invalid").hexes(), harness("hue").hexes());
+	assert.equal(harness("invalid").root.dataset.paletteSort, "hue");
 });

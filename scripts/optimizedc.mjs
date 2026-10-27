@@ -1,7 +1,9 @@
 import optimizer from "@markw65/monkeyc-optimizer";
+import sdkUtil from "@markw65/monkeyc-optimizer/sdk-util.js";
 import { spawn } from "node:child_process";
 
 const { buildOptimizedProject } = optimizer;
+const { optimizeProgram } = sdkUtil;
 import * as path from "node:path";
 
 const cwd = process.cwd();
@@ -15,8 +17,14 @@ const parsed = {
   checkTypes: "ERROR",
   compilerWarnings: true,
   enforceStatic: "YES",
+  extraReferenceTypeChecks: true,
+  iterateOptimizer: true,
   minimizeLocals: true,
+  minimizeModules: true,
+  postBuildOptimizer: true,
+  postBuildPRE: true,
   propagateTypes: true,
+  removeArgc: true,
   skipOptimization: false,
   trustDeclaredTypes: true,
   typeCheckLevel: "Strict",
@@ -97,6 +105,12 @@ try {
       }
     });
   });
+  await optimizeProgram(
+    parsed.program,
+    parsed.developerKeyPath,
+    parsed.program,
+    parsed,
+  );
   console.log("OPTIMIZATION SUCCESSFUL");
 } catch (error) {
   console.error(error);

@@ -3,6 +3,7 @@
 import Toybox.Complications;
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.Test;
 
 module Widgets {
 	class Metric extends Base {
@@ -17,6 +18,7 @@ module Widgets {
 		hidden var show_gauge_ as Lang.Boolean = false;
 		hidden var show_icon_ as Lang.Boolean = false;
 		hidden var show_label_ as Lang.Boolean = true;
+		(:memory_not_low)
 		hidden var style_ as Lang.Number = Properties.NONE;
 		hidden var value_ as Lang.Number? = null;
 		hidden var value_bg_ as Lang.String = "";
@@ -34,7 +36,7 @@ module Widgets {
 			_style as Lang.Number,
 			_impl as Data.Base
 		) {
-			Base.initialize(_impl.type, _impl.refresh_rate);
+			Base.initialize(_impl.getType(), _impl.refresh_rate);
 
 			self.impl_ = _impl;
 			self.width_ =
@@ -44,23 +46,79 @@ module Widgets {
 			if (self.width_ == 0) {
 				self.width_ = Properties.NONE;
 			}
+			self.setStyle_(_style);
+		}
+
+		(:memory_low)
+		hidden function setStyle_(_style as Lang.Number) as Void {}
+
+		(:memory_not_low)
+		hidden function setStyle_(_style as Lang.Number) as Void {
 			self.style_ = _style;
 		}
+
+		(:memory_low)
+		hidden function showIcon_() as Lang.Boolean {
+			return self.impl_.icon != null;
+		}
+
+		(:memory_not_low)
+		hidden function showIcon_() as Lang.Boolean {
+			return self.impl_.icon != null and (
+				self.style_ == Properties.ICON or self.style_ == Properties.AUTO
+			);
+		}
+
+		(:memory_low)
+		hidden function showGauge_(_show_icon as Lang.Boolean) as Lang.Boolean {
+			return !_show_icon and self.impl_.value_max != null;
+		}
+
+		(:memory_not_low)
+		hidden function showGauge_(_show_icon as Lang.Boolean) as Lang.Boolean {
+			return !_show_icon and (
+				self.style_ == Properties.GAUGE or (
+					self.style_ == Properties.AUTO and self.impl_.value_max != null
+				)
+			);
+		}
+
+		(:test)
+		static function MetricAutomaticStyleTest(
+			_logger as Test.Logger
+		) as Lang.Boolean {
+			var data = new Data.Base(null, "", Data.RefreshRate.NONE);
+			var metric = new Widgets.MetricStyleTest(
+				Properties.GetTopMiddle()[0],
+				Properties.AUTO,
+				data
+			);
+			return metric.testAutomaticStyle_();
+		}
+
+		(:memory_not_low,:test)
+		static function MetricExplicitStyleTest(
+			_logger as Test.Logger
+		) as Lang.Boolean {
+			var data = new Data.Base(null, "", Data.RefreshRate.NONE);
+			data.icon = Fonts.ICON_EMPTY;
+			data.value_max = 100;
+			var metric = new Widgets.MetricStyleTest(
+				Properties.GetTopMiddle()[0],
+				Properties.NONE,
+				data
+			);
+			return metric.testExplicitStyle_();
+		}
+
 		function resize(
 			_dc as Graphics.Dc,
 			_size_x as Lang.Number,
 			_size_y as Lang.Number
 		) as Void {
 			var show_label = Render.accent != Render.COLOR_NONE;
-			var show_icon = self.impl_.icon != null and (
-				self.style_ == Properties.ICON or self.style_ == Properties.AUTO
-			);
-			var show_gauge = !show_icon and (
-				self.style_ == Properties.GAUGE or (
-					self.style_ == Properties.AUTO and
-					self.impl_.value_max != null
-				)
-			);
+			var show_icon = self.showIcon_();
+			var show_gauge = self.showGauge_(show_icon);
 
 			if (self.width_ == Properties.NONE) {
 				if (
@@ -331,6 +389,42 @@ module Widgets {
 			self.is_small = _is_small;
 
 			return Fits(size_x, size_y, _available_x, _available_y);
+		}
+	}
+
+	// Keep helper methods out of the test runner while excluding them from production.
+	(:test)
+	class MetricStyleTest extends Metric {
+		function initialize(
+			_properties as Properties.Metric,
+			_style as Lang.Number,
+			_impl as Data.Base
+		) {
+			Metric.initialize(_properties, _style, _impl);
+		}
+
+		function testAutomaticStyle_() as Lang.Boolean {
+			Test.assert(!self.showIcon_());
+			Test.assert(!self.showGauge_(self.showIcon_()));
+			self.impl_.value_max = 100;
+			Test.assert(self.showGauge_(self.showIcon_()));
+			self.impl_.icon = Fonts.ICON_EMPTY;
+			Test.assert(self.showIcon_());
+			Test.assert(!self.showGauge_(self.showIcon_()));
+			return true;
+		}
+
+		(:memory_not_low)
+		function testExplicitStyle_() as Lang.Boolean {
+			Test.assert(!self.showIcon_());
+			Test.assert(!self.showGauge_(self.showIcon_()));
+			self.setStyle_(Properties.GAUGE);
+			Test.assert(!self.showIcon_());
+			Test.assert(self.showGauge_(self.showIcon_()));
+			self.setStyle_(Properties.ICON);
+			Test.assert(self.showIcon_());
+			Test.assert(!self.showGauge_(self.showIcon_()));
+			return true;
 		}
 	}
 } // module Widgets

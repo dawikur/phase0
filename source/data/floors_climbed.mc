@@ -24,6 +24,9 @@ module Data {
 
 		function refresh() as Void {
 			var info = ActivityMonitor.getInfo();
+			self.value_max = info has :floorsClimbedGoal
+				? info.floorsClimbedGoal
+				: null;
 			self.value = info has :floorsClimbed ? info.floorsClimbed : null;
 		}
 	}

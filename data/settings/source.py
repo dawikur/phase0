@@ -21,6 +21,10 @@ class Datum:
     def __post_init__(self) -> None:
         object.__setattr__(self, "value", stable_id(f"DATA_{self.name}"))
 
+    @property
+    def is_metric(self) -> bool:
+        return not self.is_status or self.name == "EMPTY"
+
 
 class Source:
     CLASS_PARTS_RE = re.compile(r"(?<!^)(?=[A-Z])")
@@ -87,7 +91,7 @@ class Source:
 
     @property
     def all(self) -> Any:
-        return self.__filter("DataAll", lambda _: True)
+        return self.__filter("DataAll", lambda d: d.is_metric)
 
     @property
     def status(self) -> Any:
@@ -95,12 +99,15 @@ class Source:
 
     @property
     def with_icon(self) -> Any:
-        return self.__filter("DataWithIcon", lambda d: d.has_icon or d.name == "EMPTY")
+        return self.__filter(
+            "DataWithIcon", lambda d: d.is_metric and (d.has_icon or d.name == "EMPTY")
+        )
 
     @property
     def with_value_max(self) -> Any:
         return self.__filter(
-            "DataWithValueMax", lambda d: d.has_value_max or d.name == "EMPTY"
+            "DataWithValueMax",
+            lambda d: d.is_metric and (d.has_value_max or d.name == "EMPTY"),
         )
 
     def __filter(self, name: str, predicate: Callable[[Datum], bool]) -> Any:

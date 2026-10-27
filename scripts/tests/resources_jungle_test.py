@@ -24,41 +24,34 @@ def test_memory_class_for_limit_rejects_unknown_limit() -> None:
         memory_class_for_limit(65536)
 
 
-def test_render_resources_jungle_maps_supported_devices() -> None:
-    jungle = render_resources_jungle(Path("manifest.xml.tmpl"))
-
-    assert jungle.count(".resourcePath =") == len(
-        supported_devices(Path("manifest.xml.tmpl"))
-    )
-    assert jungle.count("../resources/memory/low/generated/settings.xml;") == 12
-    assert jungle.count("../resources/memory/medium/generated/settings.xml;") == 3
-    assert jungle.count("../resources/memory/high/generated/settings.xml;") == sum(
-        device.memory.watch_face == 131072
-        for device in supported_devices(Path("manifest.xml.tmpl"))
-    )
-    assert (
-        "descentmk2s.resourcePath = ../resources/base/strings.xml;"
-        "../resources/base/generated;../resources/memory/low" in jungle
-    )
-    assert (
-        "enduro.excludeAnnotations = "
-        "memory_low;memory_high;memory_not_medium" in jungle
-    )
-    assert (
-        "fr955.excludeAnnotations = "
-        "memory_low;memory_medium;memory_not_high" in jungle
-    )
-    assert (
-        "descentmk2s.excludeAnnotations = "
-        "memory_medium;memory_high;memory_not_low" in jungle
-    )
+def jungle_settings(manifest: Path) -> dict[str, list[str]]:
+    return {
+        key.strip(): value.strip().split(";")
+        for line in render_resources_jungle(manifest).splitlines()
+        if "=" in line
+        for key, value in [line.split("=", 1)]
+    }
 
 
-def test_render_resources_jungle_ignores_unsupported_devices() -> None:
-    jungle = render_resources_jungle(Path("manifest.xml.tmpl"))
-
-    assert "venu.resourcePath" not in jungle
-    assert "fr745" not in jungle
+def test_resources_are_selected_only_for_supported_devices() -> None:
+    manifest = Path("manifest.xml.tmpl")
+    settings = jungle_settings(manifest)
+    assert {
+        key.removesuffix(".resourcePath")
+        for key in settings
+        if key.endswith(".resourcePath")
+    } == {device.connect_iq_id for device in supported_devices(manifest)}
+    for device in supported_devices(manifest):
+        memory = memory_class_for_limit(device.memory.watch_face)
+        paths = settings[f"{device.connect_iq_id}.resourcePath"]
+        selected = {path for path in paths if path.endswith("/settings.xml")}
+        assert selected == {f"../resources/memory/{memory}/generated/settings.xml"}
+        excluded = set(settings[f"{device.connect_iq_id}.excludeAnnotations"])
+        assert f"memory_{memory}" not in excluded
+        assert f"memory_not_{memory}" in excluded
+        assert {
+            f"memory_{other}" for other in ("low", "medium", "high") if other != memory
+        } <= excluded
 
 
 def test_render_resources_jungle_rejects_unknown_supported_device(
@@ -80,53 +73,27 @@ def test_render_resources_jungle_rejects_unknown_supported_device(
 
 def test_font_profiles_match_every_supported_device() -> None:
     manifest = Path("manifest.xml.tmpl")
-    lines = render_resources_jungle(manifest).splitlines()
+    settings = jungle_settings(manifest)
     for device in supported_devices(manifest):
         profile = "amoled" if device.screen_type == ScreenType.AMOLED else "mip"
         excluded = "mip" if profile == "amoled" else "amoled"
-        resources = next(
-            line
-            for line in lines
-            if line.startswith(f"{device.connect_iq_id}.resourcePath =")
-        )
-        annotations = next(
-            line
-            for line in lines
-            if line.startswith(f"{device.connect_iq_id}.excludeAnnotations =")
-        )
-        paths = resources.split(" = ", 1)[1].split(";")
-        # Select XML files directly so recursive resource discovery cannot
-        # include both display variants beneath the memory folder.
-        assert (
-            f"../resources/memory/{memory_class_for_limit(device.memory.watch_face)}"
-            not in paths
-        )
-        assert resources.count("/fonts/") == 2
+        paths = settings[f"{device.connect_iq_id}.resourcePath"]
+        annotations = settings[f"{device.connect_iq_id}.excludeAnnotations"]
         memory = memory_class_for_limit(device.memory.watch_face)
-        assert (
-            resources.split(" = ", 1)[1]
-            .split(";")
-            .count(f"../resources/memory/{memory}/generated/fonts/{profile}")
-            == 1
-        )
-        assert resources.endswith(f"/fonts/{profile}/generated")
-        assert f"display_{excluded}" in annotations.split(" = ", 1)[1].split(";")
+        assert f"../resources/memory/{memory}" not in paths
+        assert {path for path in paths if "/fonts/" in path} == {
+            f"../resources/memory/{memory}/generated/fonts/{profile}",
+            f"../resources/fonts/{profile}/generated",
+        }
+        assert f"display_{excluded}" in annotations
         assert f"display_{profile}" not in annotations
 
 
 def test_input_profiles_match_every_supported_device() -> None:
     manifest = Path("manifest.xml.tmpl")
-    lines = render_resources_jungle(manifest).splitlines()
+    settings = jungle_settings(manifest)
     for device in supported_devices(manifest):
-        annotations = (
-            next(
-                line
-                for line in lines
-                if line.startswith(f"{device.connect_iq_id}.excludeAnnotations =")
-            )
-            .split(" = ", 1)[1]
-            .split(";")
-        )
+        annotations = settings[f"{device.connect_iq_id}.excludeAnnotations"]
         excluded = "input_not_touch" if device.supports_touch else "input_touch"
         included = "input_touch" if device.supports_touch else "input_not_touch"
         assert excluded in annotations

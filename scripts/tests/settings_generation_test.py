@@ -1,5 +1,7 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
+import json
+import runpy
 import xml.etree.ElementTree as ET
 from enum import IntEnum
 from pathlib import Path
@@ -11,14 +13,14 @@ import pytest
 from data.settings import Array, Boolean, Number, Select, Settings, Single, Source
 from data.settings.data import MemoryLow, Widgets
 from data.settings.source import Datum
+from scripts.utils.args_parse import Folders
 from scripts.utils.settings_generation import (
     apply_property_defaults,
-    render_data_mc,
     render_properties_mc,
     render_properties_xml,
     render_settings_xml,
-    render_widgets_mc,
 )
+from scripts.utils.site_settings import parse_settings
 
 
 class SampleOptions(IntEnum):
@@ -29,6 +31,10 @@ class SampleOptions(IntEnum):
 class SampleData(IntEnum):
     NONE = 0
     HEART_RATE = 1
+
+
+# Preserve the exact external name handled by the generator's disabled option.
+ExportWidgets = IntEnum("ExportWidgets", {"Disabled": 0, "NONE": 1, "HEART_RATE": 2})
 
 
 def test_apply_property_defaults_updates_single_and_array_settings() -> None:
@@ -49,18 +55,13 @@ def test_apply_property_defaults_updates_single_and_array_settings() -> None:
     )
 
     assert applied == {"GlobalAccent", "StatusWidth0", "StatusWidth1", "ClockVisible"}
-    assert (
-        '<property id="GlobalAccent" type="Number">2</property>'
-        in render_properties_xml(settings)
-    )
-    assert (
-        '<property id="StatusWidth0" type="Number">5</property>'
-        in render_properties_xml(settings)
-    )
-    assert (
-        '<property id="ClockVisible" type="Boolean">False</property>'
-        in render_properties_xml(settings)
-    )
+    properties = ET.fromstring(render_properties_xml(settings))
+    assert {item.get("id"): (item.get("type"), item.text) for item in properties} == {
+        "GlobalAccent": ("Number", "2"),
+        "StatusWidth0": ("Number", "5"),
+        "StatusWidth1": ("Number", "6"),
+        "ClockVisible": ("Boolean", "False"),
+    }
     assert apply_property_defaults(settings, {}) == set()
 
 
@@ -113,10 +114,13 @@ def test_render_properties_xml_handles_single_and_array_settings() -> None:
         ]
     )
 
-    assert '<property id="ClockSize" type="Number">1</property>' in xml
-    assert '<property id="ClockVisible" type="Boolean">True</property>' in xml
-    assert '<property id="StatusWidth0" type="Number">2</property>' in xml
-    assert '<property id="StatusWidth1" type="Number">4</property>' in xml
+    root = ET.fromstring(xml)
+    assert {item.get("id"): (item.get("type"), item.text) for item in root} == {
+        "ClockSize": ("Number", "1"),
+        "ClockVisible": ("Boolean", "True"),
+        "StatusWidth0": ("Number", "2"),
+        "StatusWidth1": ("Number", "4"),
+    }
 
 
 def test_render_settings_xml_includes_setting_config_by_entry_type() -> None:
@@ -134,10 +138,17 @@ def test_render_settings_xml_includes_setting_config_by_entry_type() -> None:
         ]
     )
 
-    assert '<settingConfig type="list" required="true">' in xml
-    assert '<listEntry value="1">@Strings.SETTING_AUTO</listEntry>' in xml
-    assert '<settingConfig type="numeric" min="0" max="10" required="true" />' in xml
-    assert '<settingConfig type="boolean" required="true" />' in xml
+    root = ET.fromstring(xml)
+    configs = root.findall(".//settingConfig")
+    assert [config.attrib for config in configs] == [
+        {"type": "list", "required": "true"},
+        {"type": "numeric", "min": "0", "max": "10", "required": "true"},
+        {"type": "boolean", "required": "true"},
+    ]
+    assert [(entry.get("value"), entry.text) for entry in configs[0]] == [
+        ("1", "@Strings.SETTING_AUTO"),
+        ("2", "@Strings.SETTING_LARGE"),
+    ]
 
 
 def test_render_settings_xml_handles_array_settings() -> None:
@@ -203,48 +214,6 @@ def test_array_setting_labels_are_translated() -> None:
         assert expected <= strings, path
 
 
-def test_render_properties_mc_reuses_matching_property_classes() -> None:
-    mc = render_properties_mc(
-        [
-            Single("top", "Widget", [Number("width", 2)]),
-            Single("bottom", "Widget", [Number("width", 3)]),
-        ],
-        SampleData,
-        "memory_annotation",
-    )
-
-    assert mc.count("class Widget {") == 1
-    assert "var top as Widget;" in mc
-    assert "var bottom as Widget;" in mc
-    assert "function initialize()" in mc
-    assert "self.top = new Widget(" in mc
-    assert "self.bottom = new Widget(" in mc
-    assert '"TopWidth") as Lang.Number' in mc
-    assert '"BottomWidth") as Lang.Number' in mc
-
-
-def test_render_properties_mc_handles_array_settings() -> None:
-    mc = render_properties_mc(
-        [Array("status", "Status", [[Number("width", 2)]])],
-        SampleData,
-        "memory_annotation",
-    )
-
-    assert "var status as Lang.Array<Status>;" in mc
-    assert "self.status = [" in mc
-
-
-def test_render_properties_mc_skips_disabled_extra_data() -> None:
-    extra_data = [
-        SimpleNamespace(name="Disabled", value=0),
-        SimpleNamespace(name="HeartRate", value=1),
-    ]
-    mc = render_properties_mc([], extra_data, "memory_annotation")  # type: ignore[arg-type]
-
-    assert "DATA_HEARTRATE" in mc
-    assert "DATA_DISABLED" not in mc
-
-
 def test_render_generators_reject_unsupported_types() -> None:
     unsupported = SimpleNamespace(klass="Unsupported")
 
@@ -259,23 +228,6 @@ def test_render_generators_reject_unsupported_types() -> None:
     with pytest.raises(AssertionError, match="Unsupported type"):
         render_settings_xml([unsupported])  # type: ignore[list-item]
 
-    class ChangesBetweenPasses:  # pylint: disable=too-few-public-methods
-        def __init__(self) -> None:
-            self.pass_number = 0
-
-        def __iter__(self):
-            self.pass_number += 1
-            if self.pass_number == 1:
-                return iter([Single("sample", "Sample", [])])
-            return iter([object()])
-
-    with pytest.raises(AssertionError, match="Unsupported type"):
-        render_properties_mc(
-            ChangesBetweenPasses(),  # type: ignore[arg-type]
-            SampleData,
-            "memory_annotation",
-        )
-
 
 def test_render_settings_xml_rejects_unsupported_entry_type() -> None:
     unsupported: Any = SimpleNamespace(hidden=False, setting="UNKNOWN", id="Unknown")
@@ -284,7 +236,7 @@ def test_render_settings_xml_rejects_unsupported_entry_type() -> None:
         render_settings_xml([Single("sample", "Sample", [unsupported])])
 
 
-def test_hidden_settings_keep_defaults_without_generated_properties() -> None:
+def test_hidden_settings_are_not_exposed_in_device_configuration() -> None:
     settings = [
         Single(
             "metric",
@@ -296,22 +248,19 @@ def test_hidden_settings_keep_defaults_without_generated_properties() -> None:
         )
     ]
 
-    mc = render_properties_mc(settings, SampleData, "memory_annotation")
     properties_xml = render_properties_xml(settings)
     settings_xml = render_settings_xml(settings)
 
-    assert "var icon as Lang.Boolean;" in mc
-    assert "_icon as Lang.Boolean" in mc
-    assert "true" in mc
-    assert '"MetricWidth") as Lang.Number' in mc
-    assert '"MetricIcon") as Lang.Boolean;' not in mc
-
-    assert '<property id="MetricWidth" type="Number">2</property>' in properties_xml
-    assert "MetricIcon" not in properties_xml
-
-    assert 'propertyKey="@Properties.MetricWidth"' in settings_xml
-    assert "MetricIcon" not in settings_xml
-    assert "SETTING_ICON" not in settings_xml
+    properties = ET.fromstring(properties_xml)
+    assert [(item.get("id"), item.get("type"), item.text) for item in properties] == [
+        ("MetricWidth", "Number", "2"),
+    ]
+    settings_root = ET.fromstring(settings_xml)
+    assert [
+        item.get("propertyKey") for item in settings_root.findall(".//setting")
+    ] == [
+        "@Properties.MetricWidth",
+    ]
 
 
 def test_settings_extend_appends_array_entries() -> None:
@@ -332,36 +281,6 @@ def test_settings_extend_rejects_non_array_settings() -> None:
         settings.extend("clock", [Number("width", 4)])
 
 
-def test_render_data_and_widgets_mc_include_cases_and_default() -> None:
-    data = [
-        SimpleNamespace(name="heart_rate", value=1),
-        SimpleNamespace(name="steps", value=2),
-    ]
-    data_mc = render_data_mc(data)
-    widgets_mc = render_widgets_mc(SampleData)
-
-    assert "case 1: return new HeartRate();" in data_mc
-    assert "case 2: return new Steps();" in data_mc
-    assert "default: return null;" in data_mc
-    assert "case Properties.DATA_HEART_RATE: return new HeartRate(" in widgets_mc
-    assert "default: return Widgets.Base.None();" in widgets_mc
-
-
-def test_stable_metric_properties_use_current_ids_directly() -> None:
-    data = Source(Path("source/data"))
-    widgets = Widgets(data)
-    generated = render_properties_mc(MemoryLow(data, widgets), widgets, "memory_low")
-    for key in ("TopMiddleData0", "TopOuterData", "TopMiddleWidth0"):
-        assert f'Application.Properties.getValue("{key}")' in generated
-    generated_data = render_data_mc([Datum("STEPS", True, True)])
-    assert "var data;" in generated_data
-    assert "var data as " not in generated_data
-    assert "case 1991171812: return new Steps();" in generated_data
-    assert "data = Data.get(1991171812) as Base;" in generated_data
-    assert "for (var i = 1" not in generated_data
-    assert "Application.Properties.setValue" not in generated_data
-
-
 def test_empty_metric_is_selectable_without_icon_or_gauge() -> None:
     data = Source(Path("source/data"))
     empty_id = Datum("EMPTY", False, False).value
@@ -369,7 +288,6 @@ def test_empty_metric_is_selectable_without_icon_or_gauge() -> None:
     assert empty_id != data.all.NONE.value
     assert "EMPTY" in data.with_icon.__members__
     assert "EMPTY" in data.with_value_max.__members__
-    assert f"case {empty_id}: return new Empty();" in render_data_mc(data)
     settings = MemoryLow(data, Widgets(data))
     for section in ("top middle", "bottom middle"):
         metrics = settings[section]
@@ -381,3 +299,99 @@ def test_empty_metric_is_selectable_without_icon_or_gauge() -> None:
                 token.name == "EMPTY" and value == str(empty_id)
                 for token, value in select.options.items()
             )
+
+
+@pytest.mark.parametrize(
+    ("overrides", "error"),
+    [
+        (None, None),
+        ({"TopWidth": 7}, None),
+        ([], "must be an object"),
+        ({"TopWidth": "invalid"}, "numbers or booleans"),
+        ({"Unknown": 2}, "Unknown screenshot setting properties"),
+        ({123: 2}, "keys must be property IDs"),
+    ],
+)
+def test_settings_export_produces_consumable_resources_and_source_artifacts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, overrides: Any, error: str | None
+) -> None:
+    folders = Folders(tmp_path / "build", tmp_path / "resources", tmp_path / "source")
+    folders.source("data", "steps.mc").write_text(
+        "class Steps extends Base { const LABEL_STEPS = 1; }"
+    )
+    folders.resources("base", "strings.xml").write_text("<resources />")
+
+    def settings_for_export(_data, _widgets):
+        return Settings(
+            Single("top", "Widget", [Number("width", 2)]),
+            Single("bottom", "Widget", [Number("width", 3)]),
+            Array("status", "Status", [[Number("width", 2)], [Number("width", 4)]]),
+            Single("clock", "Clock", [Boolean("visible", True, hidden=True)]),
+        )
+
+    monkeypatch.setattr("scripts.utils.args_parse.parse_folders", lambda: folders)
+    monkeypatch.setattr("data.settings.Widgets", lambda _data: ExportWidgets)
+    for profile in ("Low", "Medium", "High"):
+        monkeypatch.setattr(f"data.settings.data.Memory{profile}", settings_for_export)
+    if overrides is not None:
+        monkeypatch.setenv("PHASE0_STORE_SCREENSHOT_OVERRIDES", json.dumps(overrides))
+        if isinstance(overrides, dict) and any(
+            not isinstance(key, str) for key in overrides
+        ):
+            # JSON keys are strings. Simulate an invalid decoder result at the
+            # input boundary to exercise the command's defensive validation.
+            monkeypatch.setattr(json, "loads", lambda _payload: overrides)
+    else:
+        monkeypatch.delenv("PHASE0_STORE_SCREENSHOT_OVERRIDES", raising=False)
+
+    if error is not None:
+        with pytest.raises(ValueError, match=error):
+            runpy.run_path("scripts/generate_resources_settings", run_name="__main__")
+        assert not folders.resources("memory/high/generated", "settings.xml").exists()
+        return
+    runpy.run_path("scripts/generate_resources_settings", run_name="__main__")
+
+    # These are public build artifacts. Runtime behaviour of the Monkey C
+    # artifacts still belongs to CIQ tests; do not infer it from source text.
+    artifacts = folders.source("generated")
+    assert {path.name for path in artifacts.iterdir()} == {
+        "data.mc",
+        "widgets.mc",
+        "properties_memory_low.mc",
+        "properties_memory_medium.mc",
+        "properties_memory_high.mc",
+    }
+    assert all(path.stat().st_size for path in artifacts.iterdir())
+    for profile in ("low", "medium", "high"):
+        output = folders.resources(f"memory/{profile}/generated")
+        properties = ET.parse(output / "properties.xml").getroot()
+        assert {item.get("id"): item.text for item in properties} == {
+            "TopWidth": "7" if overrides else "2",
+            "BottomWidth": "3",
+            "StatusWidth0": "2",
+            "StatusWidth1": "4",
+        }
+        website = parse_settings(output / "settings.xml", folders.resources())
+        by_group = {group["id"]: group for group in website["groups"]}
+        assert by_group["Top"]["settings"][0]["key"] == "TopWidth"
+        assert by_group["Bottom"]["settings"][0]["key"] == "BottomWidth"
+        assert [item["key"] for item in by_group["Status"]["settings"]] == [
+            "StatusWidth0"
+        ]
+        assert by_group["Clock"]["settings"] == []
+
+
+def test_property_generation_rejects_incompatible_shared_types() -> None:
+    settings = [
+        Single("top", "Widget", [Number("width", 2)]),
+        Single("bottom", "Widget", [Boolean("visible", True)]),
+    ]
+    with pytest.raises(AssertionError, match="Klass mismatch"):
+        render_properties_mc(settings, SampleData, "memory_low")
+
+
+def test_property_generation_accepts_single_pass_iterables() -> None:
+    settings = [Single("top", "Widget", [Number("width", 2)])]
+    assert render_properties_mc(iter(settings), SampleData, "memory_low") == (
+        render_properties_mc(settings, SampleData, "memory_low")
+    )

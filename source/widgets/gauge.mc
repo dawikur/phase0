@@ -17,7 +17,7 @@ module Widgets {
 			_properties as Properties.Gauge,
 			_impl as Data.Base
 		) {
-			Base.initialize(_impl.type, _impl.refresh_rate);
+			Base.initialize(_impl.getType(), _impl.refresh_rate);
 
 			self.impl_ = _impl;
 			self.accent_ =

@@ -18,6 +18,7 @@ import pytest
         ([], "failure.prg", "launch"),
         ([], "failure.prg", "compiler"),
         ([], "failure.prg", "output"),
+        ([], "failure.prg", "postbuild"),
     ],
 )
 def test_optimizer_command(
@@ -29,6 +30,13 @@ def test_optimizer_command(
     package.mkdir(parents=True)
     (package / "package.json").write_text(
         json.dumps({"main": "index.cjs"}), encoding="utf-8"
+    )
+    (package / "sdk-util.js").write_text(
+        "exports.optimizeProgram = async (input, key, output, options) => {\n"
+        "  console.log('postbuild:', JSON.stringify({input, key, output, options}));\n"
+        + ("  throw new Error('postbuild failed');\n" if failure == "postbuild" else "")
+        + "};\n",
+        encoding="utf-8",
     )
     compiler = tmp_path / "compiler.cjs"
     compiler.write_text(
@@ -80,7 +88,7 @@ def test_optimizer_command(
     assert options.get("testBuild", False) == ("--unit-test" in flags)
     assert options.get("simulatorBuild", False) == ("--simulator" in flags)
     assert options["outputPath"] == str((tmp_path / output).parent / "optimized")
-    if not failure or failure == "compiler":
+    if failure in ("", "compiler", "postbuild"):
         arguments = json.loads(
             result.stdout.splitlines()[1].removeprefix("compiler args: ")
         )
@@ -94,3 +102,24 @@ def test_optimizer_command(
         ]
     if failure:
         assert result.stderr
+
+    for option in (
+        "extraReferenceTypeChecks",
+        "iterateOptimizer",
+        "minimizeModules",
+        "postBuildOptimizer",
+        "postBuildPRE",
+        "removeArgc",
+    ):
+        assert options[option] is True
+    postbuild_lines = [
+        line.removeprefix("postbuild: ")
+        for line in result.stdout.splitlines()
+        if line.startswith("postbuild: ")
+    ]
+    assert len(postbuild_lines) == (1 if failure in ("", "postbuild") else 0)
+    if postbuild_lines:
+        postbuild = json.loads(postbuild_lines[0])
+        assert postbuild["input"] == postbuild["output"] == str(tmp_path / output)
+        assert postbuild["key"] == str(tmp_path / "developer key.der")
+        assert postbuild["options"]["postBuildPRE"] is True

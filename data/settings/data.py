@@ -106,11 +106,25 @@ def Widgets(  # pylint: disable=invalid-name
     return DataWidget
 
 
+def Status(data: Source) -> Any:  # pylint: disable=invalid-name
+    return IntEnum(
+        "Status",
+        {
+            "NONE": Options.NONE.value,
+            "EMPTY": data.EMPTY,
+            "ALARM": Options.ALARM.value,
+            "BLUETOOTH_CONNECTED": Options.BLUETOOTH_CONNECTED.value,
+            "BLUETOOTH_DISCONNECTED": Options.BLUETOOTH_DISCONNECTED.value,
+            "NOTIFICATIONS": Options.NOTIFICATIONS.value,
+        },
+    )
+
+
 def MemoryLow(  # pylint: disable=invalid-name
     data: Source,
     widgets: Any,
 ) -> Settings:
-    DataStatus = data.status
+    DataStatus = Status(data)
     DataAll = data.all
     DataWithIcon = data.with_icon
     DataWithValueMax = data.with_value_max
@@ -217,7 +231,7 @@ def MemoryMedium(  # pylint: disable=invalid-name
     data: Source,
     widgets: Any,
 ) -> Settings:
-    DataStatus = data.status
+    DataStatus = Status(data)
     DataAll = data.all
     DataWithValueMax = data.with_value_max
 

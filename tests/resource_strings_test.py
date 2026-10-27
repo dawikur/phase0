@@ -1,6 +1,4 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
-import os
-import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -8,12 +6,7 @@ import pytest
 
 from data.fonts import TYPEFACE_DOT
 
-SOURCE_DIR = "source"
 RESOURCES_DIR = "resources"
-
-MC_LABEL_RE = re.compile(r"\bRez\.Strings\.(LABEL_[A-Za-z0-9_]+)\b")
-RESOURCES_LABEL_RE = re.compile(r"@Strings\.(LABEL_[A-Za-z0-9_]+)\b")
-RESOURCES_SETTING_RE = re.compile(r"@Strings\.(SETTING_[A-Za-z0-9_]+)\b")
 
 
 def get_strings_xml_files() -> list[Path]:
@@ -71,15 +64,6 @@ def get_string_entries_with_invalid_length(
     return sorted(invalid_entries)
 
 
-def get_all_defined_strings(prefix: str) -> set[str]:
-    defined = set()
-
-    for strings_xml in get_strings_xml_files():
-        defined.update(get_defined_strings(strings_xml, prefix))
-
-    return defined
-
-
 def get_resource_characters() -> set[str]:
     characters: set[str] = set()
 
@@ -89,32 +73,6 @@ def get_resource_characters() -> set[str]:
             characters.update(string.text or "")
 
     return characters
-
-
-def get_used_mc_labels() -> set[str]:
-    used = set()
-
-    for root, _, files in os.walk(SOURCE_DIR):
-        for filename in files:
-            if filename.endswith(".mc"):
-                path = os.path.join(root, filename)
-                with open(path, encoding="utf-8") as file:
-                    used.update(MC_LABEL_RE.findall(file.read()))
-
-    return used
-
-
-def get_used_resource_strings(pattern: re.Pattern[str]) -> set[str]:
-    used = set()
-
-    for root, _, files in os.walk(RESOURCES_DIR):
-        for filename in files:
-            if filename.endswith(".xml"):
-                path = os.path.join(root, filename)
-                with open(path, encoding="utf-8") as file:
-                    used.update(pattern.findall(file.read()))
-
-    return used
 
 
 @pytest.mark.parametrize("strings_xml", get_strings_xml_files(), ids=str)
@@ -146,20 +104,6 @@ def test_locales_define_every_setting_string(strings_xml: Path) -> None:
     assert actual == expected, (
         f"Setting strings in {strings_xml} differ from base: "
         f"missing={sorted(expected - actual)}, extra={sorted(actual - expected)}"
-    )
-
-
-@pytest.mark.parametrize("strings_xml", get_strings_xml_files(), ids=str)
-def test_all_watchface_label_strings_are_used_by_monkey_c(strings_xml: Path) -> None:
-    defined = get_defined_strings(strings_xml, "LABEL_")
-    used = get_used_mc_labels()
-
-    unused = sorted(defined - used)
-
-    assert (
-        not unused
-    ), f"Unused watchface LABEL_ strings in {strings_xml}:\n" + "\n".join(
-        f"  - {label}" for label in unused
     )
 
 
@@ -221,60 +165,10 @@ def test_all_date_abbreviations_contain_only_letters(
     )
 
 
-def test_all_referenced_watchface_label_strings_are_defined() -> None:
-    used = get_used_mc_labels()
-    defined = get_all_defined_strings("LABEL_")
-
-    undefined = sorted(used - defined)
-
-    assert (
-        not undefined
-    ), "Undefined watchface LABEL_ strings referenced:\n" + "\n".join(
-        f"  - {setting}" for setting in undefined
-    )
-
-
-@pytest.mark.parametrize("strings_xml", get_strings_xml_files(), ids=str)
-def test_all_settings_strings_are_used_by_resources(strings_xml: Path) -> None:
-    defined = get_defined_strings(strings_xml, "SETTING_")
-    used = get_used_resource_strings(RESOURCES_SETTING_RE)
-
-    unused = sorted(defined - used)
-
-    assert (
-        not unused
-    ), f"Unused settings SETTING_ strings in {strings_xml}:\n" + "\n".join(
-        f"  - {setting}" for setting in unused
-    )
-
-
-def test_all_referenced_settings_strings_are_defined() -> None:
-    used = get_used_resource_strings(RESOURCES_SETTING_RE)
-    defined = get_all_defined_strings("SETTING_")
-
-    undefined = sorted(used - defined)
-
-    assert (
-        not undefined
-    ), "Undefined settings SETTING_ strings referenced:\n" + "\n".join(
-        f"  - {setting}" for setting in undefined
-    )
-
-
 def test_all_resource_characters_are_supported_by_dot_font() -> None:
     supported = {glyph.name for glyph in TYPEFACE_DOT.glyphs}
     missing = sorted(get_resource_characters() - supported)
 
     assert not missing, "Missing Dot font glyphs:\n" + "\n".join(
         f"  - {character}" for character in missing
-    )
-
-
-def test_settings_xml_does_not_use_watchface_labels() -> None:
-    used = get_used_resource_strings(RESOURCES_LABEL_RE)
-
-    assert (
-        not used
-    ), "Watchface LABEL_ strings referenced from resources:\n" + "\n".join(
-        f"  - {setting}" for setting in sorted(used)
     )

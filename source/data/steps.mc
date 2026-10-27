@@ -20,7 +20,9 @@ module Data {
 		}
 
 		function refresh() as Void {
-			self.value = ActivityMonitor.getInfo().steps;
+			var info = ActivityMonitor.getInfo();
+			self.value = info.steps;
+			self.value_max = info.stepGoal;
 		}
 	}
 } // module Data

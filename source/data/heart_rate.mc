@@ -10,6 +10,8 @@ import Toybox.UserProfile;
 module Data {
 	(:data_gauge)
 	class HeartRate extends Base {
+		hidden var last_zones_minute_ as Lang.Number = -1;
+
 		function initialize() {
 			Base.initialize(
 				Toybox has :Complications
@@ -19,14 +21,26 @@ module Data {
 				Data.RefreshRate.SEC
 			);
 
+			self.refreshZones_();
+		}
+
+		hidden function refreshZones_() as Void {
+			var seconds = Runtime.now.value();
+			var minute = (seconds - (seconds % 60)) / 60;
+			if (self.last_zones_minute_ == minute) {
+				return;
+			}
+			self.last_zones_minute_ = minute;
 			var current_sport = UserProfile.getCurrentSport();
 			var zones = UserProfile.getHeartRateZones(current_sport);
-			if (zones != null and 5 < zones.size()) {
-				self.value_max = zones[5] as Lang.Number;
-			}
+			self.value_max = zones != null and 5 < zones.size()
+				? zones[5] as Lang.Number
+				: null;
 		}
 
 		function refresh() as Void {
+			self.refreshZones_();
+
 			// Heart rate represents a live reading; never show a persisted value
 			// after the sensor stops reporting.
 			self.value = null;

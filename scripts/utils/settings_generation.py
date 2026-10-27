@@ -8,6 +8,7 @@ from enum import IntEnum
 from typing import Any, Mapping
 
 from data.settings import Array, Boolean, Entry, Number, Options, Select, Single
+from data.settings.options import stable_id
 from scripts.utils.mc_document import McDocument, McScope
 from scripts.utils.xml_document import XmlDocument
 
@@ -133,18 +134,22 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
     extra_data: type[IntEnum],
     annotation: str,
 ) -> str:
+    settings = list(settings)
+    for section in settings:
+        if not isinstance(section, (Single, Array)):
+            raise AssertionError(f"Unsupported type {type(section)}")
     doc = McDocument.create()
     doc.line("import Toybox.Application;")
     doc.line("import Toybox.Lang;")
     doc.line()
     doc.line(f"(:{annotation})")
-    with McScope(doc, "class Properties {") as _module:
+    with McScope(doc, "module Properties {") as _module:
         doc.line()
         doc.line("// options")
         doc.line()
 
         for opt in Options:
-            doc.line(f"static const {opt.name.upper()} = {opt.value};")
+            doc.line(f"const {opt.name.upper()} = {opt.value};")
 
         doc.line()
         doc.line("// extra data")
@@ -154,9 +159,11 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
             if datum.name == "Disabled":
                 continue
 
-            doc.line(f"static const DATA_{datum.name.upper()} = {datum.value};")
+            doc.line(f"const DATA_{datum.name.upper()} = {datum.value};")
 
         doc.line()
+        doc.line(f"const STATUS_EMPTY = {stable_id('DATA_EMPTY')};")
+
         doc.line("// fields")
         doc.line()
 
@@ -199,43 +206,36 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
                         for entry in entries:
                             doc.line(f"self.{entry.variable} = _{entry.variable};")
 
-            if isinstance(single_or_array, Single):
-                doc.line(f"var {single_or_array.variable} as {single_or_array.klass};")
-                continue
+        for single_or_array in settings:
 
+            def render_widget(
+                top: Top, widget: Widget, widget_idx: int | None = None
+            ) -> None:
+                prop_id = f"{widget_idx}" if widget_idx is not None else ""
+
+                for entry_idx, entry in enumerate(widget):
+                    comma = "," if entry_idx != len(widget) - 1 else ""
+
+                    if entry.hidden:
+                        doc.line(f"{str(entry.default).lower()}{comma}")
+                    else:
+                        doc.line(
+                            "Application.Properties.getValue("
+                            f'"{top.id}{entry.id}{prop_id}") '
+                            f"as Lang.{entry.klass}{comma}"
+                        )
+
+            getter = "Get" + "".join(
+                part.capitalize() for part in single_or_array.variable.split("_")
+            )
+            result_type = single_or_array.klass
             if isinstance(single_or_array, Array):
-                doc.line(
-                    f"var {single_or_array.variable} as Lang.Array<{single_or_array.klass}>;"
-                )
-                continue
-
-            assert False, f"Unsupported type {type(single_or_array)}"
-
-        with McScope(doc, "function initialize() {") as _refresh:
-            for single_or_array in settings:
-
-                def render_widget(
-                    top: Top, widget: Widget, widget_idx: int | None = None
-                ) -> None:
-                    prop_id = f"{widget_idx}" if widget_idx is not None else ""
-
-                    for entry_idx, entry in enumerate(widget):
-                        comma = "," if entry_idx != len(widget) - 1 else ""
-
-                        if entry.hidden:
-                            doc.line(f"{str(entry.default).lower()}{comma}")
-                        else:
-                            doc.line(
-                                "Application.Properties.getValue("
-                                f'"{top.id}{entry.id}{prop_id}") '
-                                f"as Lang.{entry.klass}{comma}"
-                            )
-
+                result_type = f"Lang.Array<{result_type}>"
+            with McScope(doc, f"function {getter}() as {result_type} {{"):
                 if isinstance(single_or_array, Single):
                     with McScope(
                         doc,
-                        f"self.{single_or_array.variable} = "
-                        f"new {single_or_array.klass}(",
+                        f"return new Properties.{single_or_array.klass}(",
                         ";",
                     ) as _field:
                         render_widget(single_or_array, single_or_array)
@@ -244,19 +244,17 @@ def render_properties_mc(  # pylint: disable=too-many-branches,too-many-locals,t
                 if isinstance(single_or_array, Array):
                     with McScope(
                         doc,
-                        f"self.{single_or_array.variable} = [",
+                        "return [",
                         ";",
                     ) as _field:
                         for idy, widget in enumerate(single_or_array):
                             with McScope(
                                 doc,
-                                f"new {single_or_array.klass}(",
+                                f"new Properties.{single_or_array.klass}(",
                                 "," if idy != len(single_or_array) - 1 else "",
                             ) as _entry:
                                 render_widget(single_or_array, widget, idy)
                     continue
-
-                assert False, f"Unsupported type {type(single_or_array)}"
 
     return doc.render()
 

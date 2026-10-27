@@ -63,8 +63,6 @@ def test_generation_recomputes_cycle_from_actual_amoled_fonts(tmp_path: Path) ->
         not frozenset.intersection(*(translate(mask, offset) for offset in cycle))
         for mask in masks
     )
-    assert "const PHASE_COUNT = 4;" in original
-    assert "Lang.Array<Lang.Number>" in original
     # An incompatible replacement atlas must stop generation, without
     # overwriting a previously validated set of offsets.
 

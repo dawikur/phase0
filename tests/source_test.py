@@ -220,8 +220,11 @@ def test_capabilities_use_annotations(
     assert datum.has_icon == has_icon
     assert datum.has_value_max == has_gauge
     assert datum.is_status == is_status
-    assert ("SAMPLE" in data.with_icon.__members__) == has_icon
-    assert ("SAMPLE" in data.with_value_max.__members__) == has_gauge
+    assert ("SAMPLE" in data.all.__members__) == (not is_status)
+    assert ("SAMPLE" in data.with_icon.__members__) == (has_icon and not is_status)
+    assert ("SAMPLE" in data.with_value_max.__members__) == (
+        has_gauge and not is_status
+    )
     assert ("SAMPLE" in data.status.__members__) == is_status
     metric.write_text(
         annotations + "\nclass Sample extends Base {\n"
@@ -229,3 +232,11 @@ def test_capabilities_use_annotations(
         "self.icon = Fonts.ICON_EMPTY;\nself.value_max = 100;\n}\n}"
     )
     assert list(Source(tmp_path)) == [datum]
+
+
+def test_single_setting_supports_indexed_access() -> None:
+    width = Number("width", 2)
+    single = Single("clock", "Clock", [width])
+    assert single[0] is width
+    with pytest.raises(IndexError):
+        _ = single[1]

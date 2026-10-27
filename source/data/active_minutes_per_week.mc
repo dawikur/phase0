@@ -24,6 +24,9 @@ module Data {
 
 		function refresh() as Void {
 			var info = ActivityMonitor.getInfo();
+			self.value_max = info has :activeMinutesWeekGoal
+				? info.activeMinutesWeekGoal
+				: null;
 			var active_minutes =
 				info has :activeMinutesWeek ? info.activeMinutesWeek : null;
 			self.value = active_minutes != null ? active_minutes.total : null;

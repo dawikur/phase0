@@ -1,11 +1,11 @@
 # Copyright (c) 2026 Dawid Kurek <hello@dawikur.dev>
 
-import json
 from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
+from scripts.tests.javascript_helpers import window_value
 from scripts.utils.site_screenshots import build_site_screenshots
 from scripts.utils.store_screenshots import Scenario
 
@@ -24,15 +24,7 @@ def test_site_screenshots_writes_gallery_metadata_safely(tmp_path: Path) -> None
 
     build_site_screenshots([scenario], output)
 
-    content = output.read_text(encoding="utf-8")
-    assert content.startswith("window.PHASE_SCREENSHOTS = ")
-    assert content.endswith(";\n")
-    assert "<" not in content
-    assert "\u2028" not in content
-    assert "\u2029" not in content
-    assert json.loads(
-        content.removeprefix("window.PHASE_SCREENSHOTS = ").removesuffix(";\n")
-    ) == [
+    assert window_value(output, "PHASE_SCREENSHOTS") == [
         {
             "name": "preview",
             "title": "Sunrise <view>",

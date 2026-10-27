@@ -243,8 +243,4 @@
 	<string id="SETTING_WIDTH_9">9</string>
 	<string id="SETTING_WIND">Wind</string>
 	<string id="SETTING_YELLOW">Yellow</string>
-	<string id="LABEL_ALARM">Alarm</string>
-	<string id="LABEL_NOTIFICATIONS">Notif</string>
-	<string id="LABEL_BLUETOOTH_CONNECTED">BT On</string>
-	<string id="LABEL_BLUETOOTH_DISCONNECTED">BTOff</string>
 </strings>

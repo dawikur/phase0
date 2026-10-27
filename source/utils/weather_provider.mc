@@ -8,6 +8,7 @@ import Toybox.Time;
 import Toybox.Weather;
 
 module WeatherProvider {
+	(:memory_not_low)
 	typedef ForecastSnapshot as
 		Lang.Dictionary<
 			Application.Storage.KeyType,
@@ -26,18 +27,24 @@ module WeatherProvider {
 	// - Forecast refresh and its persistent-cache rewrite remain hourly, even
 	//   during fast current-condition retries, to limit storage and battery use.
 
+	const STORE_CURRENT_CACHE as Lang.Boolean = true;
 	const CURRENT_CACHE_TTL_HOURS as Lang.Number = 4;
+	(:memory_not_low)
 	const FORECAST_CACHE_TTL_HOURS as Lang.Number = 24;
+	(:memory_not_low)
 	const FORECAST_SNAPSHOT_KEY as Lang.String = "weather_forecast_snapshot";
+	(:memory_not_low)
 	const FORECAST_SNAPSHOT_HOUR_KEY as Lang.String = "snapshot_hour";
 	const RETRY_INTERVAL_SECONDS as Lang.Number = 60;
 	const CURRENT_CACHE_REFRESH_INTERVAL_SECONDS as Lang.Number = 60 * 60;
-	const SHOULD_USE_FORECAST = 40 * 1024 < System.getSystemStats().freeMemory;
+	(:memory_not_low)
+	const FORECAST_MIN_FREE_MEMORY as Lang.Number = 40 * 1024;
 
 	var fields_ as Lang.Dictionary<Lang.String, Lang.Number?> = {};
 	var current_cache_values_ as Lang.Dictionary<Lang.String, Lang.Number> = {};
 	var current_cache_refresh_seconds_ as
 		Lang.Dictionary<Lang.String, Lang.Number> = {};
+	(:memory_not_low)
 	var last_forecast_refresh_hour_ as Lang.Number = -1;
 	var next_refresh_seconds_ as Lang.Number = 0;
 	var last_observed_seconds_ as Lang.Number = 0;
@@ -48,7 +55,7 @@ module WeatherProvider {
 	function register(_key as Lang.String) as Void {
 		if (!fields_.hasKey(_key)) {
 			fields_.put(_key, null);
-			last_forecast_refresh_hour_ = -1;
+			resetForecast_();
 			next_refresh_seconds_ = 0;
 		}
 	}
@@ -57,7 +64,7 @@ module WeatherProvider {
 		fields_ = {};
 		current_cache_values_ = {};
 		current_cache_refresh_seconds_ = {};
-		last_forecast_refresh_hour_ = -1;
+		resetForecast_();
 		next_refresh_seconds_ = 0;
 		last_observed_seconds_ = 0;
 		revision = 0;
@@ -82,28 +89,7 @@ module WeatherProvider {
 
 		var now_hour = (now_seconds - (now_seconds % 3600)) / 3600;
 		var weather = Weather.getCurrentConditions();
-		var had_valid_forecast = SHOULD_USE_FORECAST and hasValidForecast_();
-		var stored_forecast = false;
-		if (SHOULD_USE_FORECAST and last_forecast_refresh_hour_ != now_hour) {
-			stored_forecast = refreshForecast_(fields, now_hour);
-			last_forecast_refresh_hour_ = now_hour;
-		}
-		var has_missing_current_fields = true;
-
-		if (weather != null) {
-			has_missing_current_fields = refreshCurrentConditions_(
-				fields,
-				weather,
-				!SHOULD_USE_FORECAST or
-					(!stored_forecast and !had_valid_forecast)
-			);
-		} else if (SHOULD_USE_FORECAST and stored_forecast) {
-			refreshForecastFallback_(fields, now_hour);
-		} else if (SHOULD_USE_FORECAST) {
-			refreshForecastFallback_(fields, now_hour);
-		} else {
-			refreshCurrentCache_(fields);
-		}
+		var has_missing_current_fields = refreshFields_(fields, weather, now_hour);
 
 		next_refresh_seconds_ = nextRefreshSeconds_(
 			now_seconds,
@@ -112,10 +98,69 @@ module WeatherProvider {
 		);
 	}
 
+	(:memory_low)
+	function resetForecast_() as Void {}
+
+	(:memory_not_low)
+	function resetForecast_() as Void {
+		last_forecast_refresh_hour_ = -1;
+	}
+
+	(:memory_low)
+	function refreshFields_(
+		_fields as Lang.Array<Lang.String>,
+		_weather as Weather.CurrentConditions?,
+		_now_hour as Lang.Number
+	) as Lang.Boolean {
+		if (_weather != null) {
+			return refreshCurrentConditions_(
+				_fields,
+				_weather,
+				STORE_CURRENT_CACHE
+			);
+		}
+		refreshCurrentCache_(_fields);
+		return true;
+	}
+
+	(:memory_not_low)
+	function refreshFields_(
+		_fields as Lang.Array<Lang.String>,
+		_weather as Weather.CurrentConditions?,
+		_now_hour as Lang.Number
+	) as Lang.Boolean {
+		// Check after widgets/layout exist, before loading forecast snapshots.
+		var use_forecast = FORECAST_MIN_FREE_MEMORY < System.getSystemStats().freeMemory;
+		var had_valid_forecast = use_forecast and hasValidForecast_();
+		var stored_forecast = false;
+		if (use_forecast and last_forecast_refresh_hour_ != _now_hour) {
+			stored_forecast = refreshForecast_(_fields, _now_hour);
+			last_forecast_refresh_hour_ = _now_hour;
+		}
+		var has_missing_current_fields = true;
+
+		if (_weather != null) {
+			has_missing_current_fields = refreshCurrentConditions_(
+				_fields,
+				_weather,
+				!use_forecast or
+					(!stored_forecast and !had_valid_forecast)
+			);
+		} else if (use_forecast and stored_forecast) {
+			refreshForecastFallback_(_fields, _now_hour);
+		} else if (use_forecast) {
+			refreshForecastFallback_(_fields, _now_hour);
+		} else {
+			refreshCurrentCache_(_fields);
+		}
+
+		return has_missing_current_fields;
+	}
+
 	function observeTime_(_now_seconds as Lang.Number) as Void {
 		if (_now_seconds < last_observed_seconds_) {
 			next_refresh_seconds_ = 0;
-			last_forecast_refresh_hour_ = -1;
+			resetForecast_();
 		}
 		last_observed_seconds_ = _now_seconds;
 	}
@@ -155,6 +200,7 @@ module WeatherProvider {
 		return has_missing_current_fields;
 	}
 
+	(:memory_not_low)
 	function refreshForecast_(
 		_fields as Lang.Array<Lang.String>,
 		_now_hour as Lang.Number
@@ -216,6 +262,7 @@ module WeatherProvider {
 		return true;
 	}
 
+	(:memory_not_low)
 	function refreshForecastFallback_(
 		_fields as Lang.Array<Lang.String>,
 		_now_hour as Lang.Number
@@ -309,6 +356,7 @@ module WeatherProvider {
 		return null;
 	}
 
+	(:memory_not_low)
 	function newForecastSnapshot_(
 		_now_hour as Lang.Number
 	) as ForecastSnapshot {
@@ -317,6 +365,7 @@ module WeatherProvider {
 		return snapshot;
 	}
 
+	(:memory_not_low)
 	function storeForecastSnapshotValue_(
 		_snapshot as ForecastSnapshot,
 		_key as Lang.String,
@@ -331,10 +380,12 @@ module WeatherProvider {
 		}
 	}
 
+	(:memory_not_low)
 	function storeForecastSnapshot_(_snapshot as ForecastSnapshot) as Void {
 		Application.Storage.setValue(FORECAST_SNAPSHOT_KEY, _snapshot);
 	}
 
+	(:memory_not_low)
 	function nextForecastValue_(
 		_snapshot as ForecastSnapshot,
 		_key as Lang.String,
@@ -357,6 +408,7 @@ module WeatherProvider {
 		return null;
 	}
 
+	(:memory_not_low)
 	function hasValidForecast_() as Lang.Boolean {
 		var snapshot = loadForecastSnapshot_();
 		if (snapshot == null) {
@@ -368,6 +420,7 @@ module WeatherProvider {
 		return isValidForecastSnapshot_(snapshot as ForecastSnapshot, now_hour);
 	}
 
+	(:memory_not_low)
 	function isValidForecastSnapshot_(
 		_snapshot as ForecastSnapshot,
 		_now_hour as Lang.Number
@@ -439,6 +492,7 @@ module WeatherProvider {
 		return null;
 	}
 
+	(:memory_not_low)
 	function forecastKey_(
 		_key as Lang.String,
 		_hour as Lang.Number
@@ -446,6 +500,7 @@ module WeatherProvider {
 		return "forecast_" + _key + "_" + _hour.format("%d");
 	}
 
+	(:memory_not_low)
 	function forecastHour_(
 		_forecast as Weather.HourlyForecast
 	) as Lang.Number? {
@@ -458,10 +513,12 @@ module WeatherProvider {
 		return (forecast_seconds - (forecast_seconds % 3600)) / 3600;
 	}
 
+	(:memory_not_low)
 	function clearForecast_() as Void {
 		Application.Storage.deleteValue(FORECAST_SNAPSHOT_KEY);
 	}
 
+	(:memory_not_low)
 	function loadForecastSnapshot_() as ForecastSnapshot? {
 		var stored_snapshot = Application.Storage.getValue(
 			FORECAST_SNAPSHOT_KEY
@@ -482,6 +539,7 @@ module WeatherProvider {
 		}
 	}
 
+	(:memory_not_low)
 	function snapshotValue_(
 		_snapshot as ForecastSnapshot,
 		_key as Lang.String
@@ -498,34 +556,63 @@ module WeatherProvider {
 		}
 	}
 
-	function clearWeatherProviderTestState_() as Void {
-		Cache.clearValue("weather_provider_test_condition");
-		Cache.clearValue("weather_provider_test_temperature");
-		clearForecast_();
-		fields_ = {};
-		current_cache_values_ = {};
-		current_cache_refresh_seconds_ = {};
-		last_forecast_refresh_hour_ = -1;
-		next_refresh_seconds_ = 0;
-		last_observed_seconds_ = 0;
-		revision = 0;
+	(:test)
+	module TestState {
+		(:memory_low)
+		function clearForecastTestCache_() as Void {}
+
+		(:memory_not_low)
+		function clearForecastTestCache_() as Void {
+			WeatherProvider.clearForecast_();
+		}
+
+		function clearWeatherProviderTestState_() as Void {
+			Cache.clearValue("weather_provider_test_condition");
+			Cache.clearValue("weather_provider_test_temperature");
+			clearForecastTestCache_();
+			WeatherProvider.fields_ = {};
+			WeatherProvider.current_cache_values_ = {};
+			WeatherProvider.current_cache_refresh_seconds_ = {};
+			WeatherProvider.resetForecast_();
+			WeatherProvider.next_refresh_seconds_ = 0;
+			WeatherProvider.last_observed_seconds_ = 0;
+			WeatherProvider.revision = 0;
+		}
+	}
+
+	(:memory_low,:test)
+	function WeatherProviderLowCurrentCacheTest(
+		_logger as Test.Logger
+	) as Lang.Boolean {
+		TestState.clearWeatherProviderTestState_();
+		var field = "weather_provider_test_temperature";
+		register(field);
+		Test.assert(refreshFields_([field], null, 0));
+		Test.assert(get(field) == null);
+		Cache.setValue(field, 12);
+		Test.assert(refreshFields_([field], null, 0));
+		Test.assertEqual(get(field) as Lang.Number, 12);
+		Test.assertEqual(nextRefreshSeconds_(750, 0, true), 810);
+		last_observed_seconds_ = 42;
+		next_refresh_seconds_ = 84;
+		observeTime_(41);
+		Test.assertEqual(next_refresh_seconds_, 0);
+		TestState.clearWeatherProviderTestState_();
+		return true;
 	}
 
 	(:test)
 	function WeatherProviderCurrentCacheTest(
 		_logger as Test.Logger
 	) as Lang.Boolean {
-		clearWeatherProviderTestState_();
+		TestState.clearWeatherProviderTestState_();
 
 		var value;
 		var field = "weather_provider_test_temperature";
-		last_forecast_refresh_hour_ = 42;
 		next_refresh_seconds_ = 42;
 		register(field);
-		Test.assertEqual(last_forecast_refresh_hour_, -1);
 		Test.assertEqual(next_refresh_seconds_, 0);
 
-		Test.assertEqual(forecastKey_(field, 42), "forecast_" + field + "_42");
 
 		Test.assert(refreshCurrentValue_(field, null, false) == null);
 
@@ -564,7 +651,7 @@ module WeatherProvider {
 		Test.assert(value != null);
 		Test.assertEqual(value as Lang.Number, 34);
 
-		clearWeatherProviderTestState_();
+		TestState.clearWeatherProviderTestState_();
 		return true;
 	}
 
@@ -583,7 +670,7 @@ module WeatherProvider {
 	function WeatherProviderRevisionTest(
 		_logger as Test.Logger
 	) as Lang.Boolean {
-		clearWeatherProviderTestState_();
+		TestState.clearWeatherProviderTestState_();
 
 		var field = "weather_provider_test_temperature";
 		register(field);
@@ -596,7 +683,7 @@ module WeatherProvider {
 		setField_(field, null);
 		Test.assertEqual(revision, 2);
 
-		clearWeatherProviderTestState_();
+		TestState.clearWeatherProviderTestState_();
 		return true;
 	}
 
@@ -604,26 +691,34 @@ module WeatherProvider {
 	function WeatherProviderClockRollbackTest(
 		_logger as Test.Logger
 	) as Lang.Boolean {
-		clearWeatherProviderTestState_();
+		TestState.clearWeatherProviderTestState_();
 
 		last_observed_seconds_ = 42;
 		next_refresh_seconds_ = 84;
-		last_forecast_refresh_hour_ = 1;
 		observeTime_(41);
 
 		Test.assertEqual(last_observed_seconds_, 41);
 		Test.assertEqual(next_refresh_seconds_, 0);
-		Test.assertEqual(last_forecast_refresh_hour_, -1);
 
-		clearWeatherProviderTestState_();
+		TestState.clearWeatherProviderTestState_();
 		return true;
 	}
 
-	(:test)
+	(:memory_not_low,:test)
 	function WeatherProviderForecastCacheTest(
 		_logger as Test.Logger
 	) as Lang.Boolean {
-		clearWeatherProviderTestState_();
+		TestState.clearWeatherProviderTestState_();
+
+		var field = "weather_provider_test_temperature";
+		Test.assertEqual(forecastKey_(field, 42), "forecast_" + field + "_42");
+		last_forecast_refresh_hour_ = 42;
+		register(field);
+		Test.assertEqual(last_forecast_refresh_hour_, -1);
+		last_forecast_refresh_hour_ = 42;
+		last_observed_seconds_ = 42;
+		observeTime_(41);
+		Test.assertEqual(last_forecast_refresh_hour_, -1);
 
 		var condition = "weather_provider_test_condition";
 		var temperature = "weather_provider_test_temperature";
@@ -665,15 +760,15 @@ module WeatherProvider {
 			) == null
 		);
 
-		clearWeatherProviderTestState_();
+		TestState.clearWeatherProviderTestState_();
 		return true;
 	}
 
-	(:test)
+	(:memory_not_low,:test)
 	function WeatherProviderForecastCleanupTest(
 		_logger as Test.Logger
 	) as Lang.Boolean {
-		clearWeatherProviderTestState_();
+		TestState.clearWeatherProviderTestState_();
 
 		var condition = "weather_provider_test_condition";
 		var temperature = "weather_provider_test_temperature";
@@ -702,7 +797,7 @@ module WeatherProvider {
 		refreshForecastFallback_([condition], snapshot_hour);
 		Test.assert(get(condition) == 44);
 
-		clearWeatherProviderTestState_();
+		TestState.clearWeatherProviderTestState_();
 		return true;
 	}
 } // WeatherProvider

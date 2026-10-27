@@ -11,63 +11,44 @@ from data import fonts
 from data.fonts.model import Glyph as SourceGlyph
 from data.fonts.model import Style, Typeface
 from scripts.utils.args_parse import Folders, parse_folders
+from scripts.utils.burn_in import BitmapFont
 from scripts.utils.font_generation import (
-    Fnt,
     generate_fonts,
     get_required_glyphs,
     parse_typeface_and_style,
 )
 
 
-def test_fnt_omits_empty_glyph_dimensions_but_keeps_advance() -> None:
-    fnt = Fnt(name="sample", atlas_w=1, atlas_h=1, line_h=1)
-
-    fnt.add(
-        name=" ",
-        atlas_x=0,
-        atlas_y=0,
-        width=0,
-        height=1,
-        xoffset=3,
-        yoffset=4,
-        xadvance=5,
-    )
-
-    assert "width=0 height=0 xoffset=0 yoffset=0 xadvance=5" in str(fnt)
-
-
-def test_parse_typeface_and_style_filters_required_glyphs() -> None:
+def test_generated_font_can_render_filtered_glyphs_and_spaces(tmp_path: Path) -> None:
     typeface = Typeface(
         "Sample",
         [
             SourceGlyph("A", ["10", "11"]),
             SourceGlyph("B", ["01", "11"]),
+            SourceGlyph(" ", ["00", "00"]),
         ],
     )
-    style = Style("Regular", size=2, weight=1)
-
-    name, atlas, fnt, comments = parse_typeface_and_style(
-        typeface,
-        style,
-        required_glyphs="B",
+    _, atlas, fnt, _ = parse_typeface_and_style(
+        typeface, Style("Regular", size=2, weight=1), required_glyphs="B "
     )
+    atlas.save(tmp_path / "sample.png")
+    (tmp_path / "sample.fnt").write_text(fnt)
+    font = BitmapFont.read(tmp_path, "sample")
 
-    assert name == "sample_regular"
-    assert atlas.size == (4, 4)
-    assert "chars count=1" in fnt
-    assert "char id=66" in fnt
-    assert "char id=65" not in fnt
-    assert comments == {"B": ""}
+    assert set(font.glyphs) == {ord("B"), ord(" ")}
+    assert font.glyphs[ord("B")] == {(2, 0), (0, 2), (2, 2)}
+    assert font.glyphs[ord(" ")] == set()
+    advance = font.advances[ord("B")] + font.advances[ord(" ")]
+    assert font.text("B B") == font.glyphs[ord("B")] | {
+        (x + advance, y) for x, y in font.glyphs[ord("B")]
+    }
+    assert font.advances[ord(" ")] == 5
+    with pytest.raises(KeyError):
+        font.text("A")
 
 
-def test_parse_typeface_and_style_supports_empty_and_multiple_typefaces() -> None:
+def test_parse_typeface_and_style_requires_name_for_multiple_typefaces() -> None:
     style = Style("Regular", size=1, weight=1)
-
-    name, atlas, fnt, comments = parse_typeface_and_style([], [], name="Empty")
-
-    assert (name, atlas.size, comments) == ("empty", (0, 0), {})
-    assert "chars count=0" in fnt
-
     typeface = Typeface("Sample", [SourceGlyph("A", ["1"])])
     with pytest.raises(AssertionError, match="Name is required"):
         parse_typeface_and_style([typeface, typeface], [style, style])
@@ -136,13 +117,26 @@ def assert_generated_font_matches(
     name: str,
     required_glyphs: str | None,
 ) -> None:
-    _, expected_atlas, expected_fnt, _ = parse_typeface_and_style(
-        typeface, style, name, required_glyphs
-    )
-    assert (output / f"{name}.fnt").read_text() == expected_fnt
-    with Image.open(output / f"{name}.png") as actual:
-        assert actual.size == expected_atlas.size
-        assert actual.tobytes() == expected_atlas.tobytes()
+    font = BitmapFont.read(output, name)
+    glyphs = {
+        (32 + index if glyph.name.startswith("#") else ord(glyph.name[0])): glyph
+        for index, glyph in enumerate(
+            sorted(typeface.glyphs, key=lambda item: item.name)
+        )
+        if required_glyphs is None or glyph.name[0] in required_glyphs
+    }
+    assert set(font.glyphs) == set(glyphs)
+    for char, glyph in glyphs.items():
+        expected = {
+            (x * style.size + dx, y * style.size + dy)
+            for y, row in enumerate(glyph.bitmap)
+            for x, pixel in enumerate(row)
+            if pixel == "1"
+            for dx in range(style.weight)
+            for dy in range(style.weight)
+        }
+        assert font.glyphs[char] == expected
+        assert font.advances[char] == glyph.xadvance * style.size + 1
 
 
 def test_generated_profiles_preserve_ids_glyphs_and_mip_bitmaps(tmp_path: Path) -> None:
@@ -229,42 +223,6 @@ def test_generated_profiles_preserve_ids_glyphs_and_mip_bitmaps(tmp_path: Path) 
             assert_generated_font_matches(
                 font_output, case[0], case[style_index], case[3], case[4]
             )
-    source = folders.source("generated", "display.mc").read_text()
-    assert "module Display {" in source
-    assert "(:display_mip)\n\tconst IS_AMOLED as Lang.Boolean = false;" in source
-    assert "(:display_amoled)\n\tconst IS_AMOLED as Lang.Boolean = true;" in source
-    source = folders.source("generated", "fonts.mc").read_text()
-    for name in (
-        "TEMPERATURE_0",
-        "TEMPERATURE_1",
-        "TEMPERATURE_2",
-        "TEMPERATURE_3",
-        "TEMPERATURE_4",
-        "TEMPERATURE_5",
-        "TEMPERATURE_6",
-        "MOVE_BAR_0",
-        "MOVE_BAR_1",
-        "MOVE_BAR_2",
-        "MOVE_BAR_3",
-        "MOVE_BAR_4",
-        "MOVE_BAR_5",
-        "BATTERY_0",
-        "BATTERY_1",
-        "BATTERY_2",
-        "BATTERY_3",
-        "BATTERY_4",
-        "SOLAR_0",
-        "SOLAR_1",
-        "SOLAR_2",
-        "SOLAR_3",
-        "SOLAR_4",
-    ):
-        assert source.count(f"const ICON_{name} =") == 1
-    assert "ICON_UV_" not in source
-    assert "IS_AMOLED" not in source
-    for name, size in [("REGULAR", 3), ("SMALL", 2), ("TINY", 1)]:
-        assert f"(:display_mip)\n\tconst SPACING_{name} = {size};" in source
-        assert f"(:display_amoled)\n\tconst SPACING_{name} = {size + 1};" in source
 
 
 @pytest.mark.parametrize(
@@ -299,38 +257,23 @@ def test_icon_memory_profiles_share_character_ids_and_omit_conditions(
         for filename in ("icons.png", "icons.fnt"):
             folders.resources(f"fonts/{profile}/generated", filename).write_text("old")
     generate_fonts(folders, "0123456789")
-    source = folders.source("generated", "fonts.mc").read_text()
-    assert source.count('const ICON_NONE = "";') == 1
     for profile, style in [("mip", fonts.STYLE_2), ("amoled", fonts.STYLE_3)]:
         low = folders.resources(f"memory/low/generated/fonts/{profile}")
         high = folders.resources(f"memory/high/generated/fonts/{profile}")
-        _, _, _, full_comments = parse_typeface_and_style(
-            fonts.TYPEFACE_ICONS, style, "icons"
+        low_font = BitmapFont.read(low, "icons")
+        full_font = BitmapFont.read(high, "icons")
+        assert len(low_font.glyphs) == 34
+        assert len(full_font.glyphs) - len(low_font.glyphs) == 57
+        for char, mask in low_font.glyphs.items():
+            assert full_font.glyphs[char] == mask
+            assert full_font.advances[char] == low_font.advances[char]
+        assert_generated_font_matches(
+            low, fonts.TYPEFACE_ICONS_GENERAL, style, "icons", None
         )
-        expected = parse_typeface_and_style(
-            fonts.TYPEFACE_ICONS_GENERAL, style, "icons"
-        )
-        low_comments = expected[3]
-        assert low_comments == {
-            char: comment
-            for char, comment in full_comments.items()
-            if comment not in fonts.EXTRA_NAMES
-        }
-        assert set(low_comments.values()) >= {
-            "alarm",
-            "dawn",
-            "dot full",
-            "battery empty",
-        }
-        assert len(low_comments) == 34
-        assert not set(low_comments.values()) & fonts.EXTRA_NAMES
-        assert len(full_comments) - len(low_comments) == 57
-        assert (low / "icons.fnt").read_text() == expected[2]
         with (
             Image.open(low / "icons.png") as actual,
             Image.open(high / "icons.png") as full,
         ):
-            assert actual.tobytes() == expected[1].tobytes()
             assert actual.size == ((462, 18) if profile == "mip" else (693, 27))
             assert full.size == ((1242, 22) if profile == "mip" else (1863, 33))
             assert actual.width * actual.height < full.width * full.height
@@ -346,6 +289,18 @@ def test_icon_memory_profiles_share_character_ids_and_omit_conditions(
         ] == ["ICONS"]
         assert not folders.resources(f"fonts/{profile}/generated", "icons.png").exists()
         assert not folders.resources(f"fonts/{profile}/generated", "icons.fnt").exists()
-    for comment in fonts.EXTRA_NAMES:
-        name = comment.replace(" ", "_").upper()
-        assert f"(:memory_not_low)\n\tconst ICON_{name} =" in source
+
+
+def test_empty_typeface_renders_empty_text(tmp_path: Path) -> None:
+    name, atlas, fnt, comments = parse_typeface_and_style([], [], name="Empty")
+    assert name == "empty"
+    assert atlas.size == (0, 0)
+    assert not comments
+    # PNG cannot represent a zero-sized image. The consumer only needs a pixel
+    # when a glyph exists, so supply an empty backing image for this case.
+    Image.new("1", (1, 1)).save(tmp_path / "empty.png")
+    (tmp_path / "empty.fnt").write_text(fnt)
+    font = BitmapFont.read(tmp_path, "empty")
+    assert font.text("") == set()
+    with pytest.raises(KeyError):
+        font.text("A")

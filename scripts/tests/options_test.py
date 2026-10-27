@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pytest
 
 from data.settings.colors import Colors
-from data.settings.data import ColorOptions, Options, Widgets
+from data.settings.data import ColorOptions, Options, Status, Widgets
 from data.settings.options import StableOptions
 from data.settings.source import Datum, Source
 
@@ -86,18 +86,15 @@ def test_global_color_uses_shared_stable_option_id() -> None:
     ]
 
 
-def test_status_sources_share_metric_ids() -> None:
+def test_status_options_do_not_create_metric_sources() -> None:
     data = Source(Path("source/data"))
-    names = {
-        "ALARM",
-        "NOTIFICATIONS",
-        "BLUETOOTH_CONNECTED",
-        "BLUETOOTH_DISCONNECTED",
-        "EMPTY",
-    }
-    assert {option.name for option in data.status} == names | {"NONE"}
-    assert data.status.NONE.value == Options.NONE.value
+    options = Status(data)
+    names = {"ALARM", "NOTIFICATIONS", "BLUETOOTH_CONNECTED", "BLUETOOTH_DISCONNECTED"}
+    assert set(options.__members__) == names | {"NONE", "EMPTY"}
+    assert options.NONE.value == Options.NONE.value
+    assert options.EMPTY.value == data.EMPTY
     for name in names:
-        assert data.status[name].value == data.all[name].value
-        assert data.status[name].value == data.with_icon[name].value
-    assert all(datum.is_status == (datum.name in names) for datum in data)
+        assert options[name].value == Options[name].value
+        assert name not in {datum.name for datum in data}
+        for metrics in (data.all, data.with_icon, data.with_value_max):
+            assert name not in metrics.__members__

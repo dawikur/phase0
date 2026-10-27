@@ -4,6 +4,7 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 from data.settings.data import Options
+from scripts.tests.javascript_helpers import window_value
 from scripts.utils.site_settings import (
     build_site_settings,
     display_group_id,
@@ -82,8 +83,10 @@ def test_site_settings_writers_create_javascript_outputs(tmp_path: Path) -> None
     built = tmp_path / "built.js"
     build_site_settings(resources.parent, settings, manifest, built)
 
-    assert "window.PHASE_SETTINGS = {" in output.read_text(encoding="utf-8")
-    assert built.read_text(encoding="utf-8").startswith("window.PHASE_SETTINGS = {")
+    assert window_value(output, "PHASE_SETTINGS") == data
+    assert window_value(built, "PHASE_SETTINGS") == parse_settings(
+        settings, resources.parent, manifest
+    )
 
 
 def test_site_settings_resolves_labels_and_options() -> None:

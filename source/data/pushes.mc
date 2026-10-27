@@ -24,6 +24,7 @@ module Data {
 
 		function refresh() as Void {
 			var info = ActivityMonitor.getInfo();
+			self.value_max = info has :pushGoal ? info.pushGoal : null;
 			self.value = info has :pushes ? info.pushes : null;
 		}
 	}

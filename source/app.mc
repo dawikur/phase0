@@ -37,14 +37,17 @@ class App extends Application.AppBase {
 		SensorProvider.clearCache();
 		WeatherProvider.clearCache();
 
-		var properties = new Properties();
+		self.refreshColors_();
 
-		Render.accent = properties.global.accent;
-		Render.foreground = properties.global.foreground;
-		Render.shade = properties.global.shade;
-		Render.background = properties.global.background;
+		self.view_.onSettingsChanged();
+	}
 
-		self.view_.onSettingsChanged(properties);
+	hidden function refreshColors_() as Void {
+		var properties = Properties.GetGlobal();
+		Render.accent = properties.accent;
+		Render.foreground = properties.foreground;
+		Render.shade = properties.shade;
+		Render.background = properties.background;
 	}
 }
 

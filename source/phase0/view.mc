@@ -213,8 +213,8 @@ module Phase0 {
 			}
 		}
 
-		function onSettingsChanged(_properties as Properties) as Void {
-			self.rebuildWidgets_(_properties);
+		function onSettingsChanged() as Void {
+			self.rebuildWidgets_();
 
 			if (self.isVisibleMode_()) {
 				WatchUi.requestUpdate();
@@ -534,7 +534,7 @@ module Phase0 {
 			self.seconds_.render(_dc);
 		}
 
-		hidden function rebuildWidgets_(_properties as Properties) as Void {
+		hidden function rebuildWidgets_() as Void {
 			// ---- header ----
 
 			self.last_refresh_min_ = -1;
@@ -542,6 +542,20 @@ module Phase0 {
 
 			self.needs_reposition_ = true;
 			self.resetBitmap_();
+
+			// Drop every owner of the previous widgets before allocating replacements.
+			var empty = Widgets.Base.None();
+			self.status_ = empty;
+			self.clock_ = empty;
+			self.seconds_ = empty;
+			self.top_outer_ = empty;
+			self.top_inner_ = empty;
+			self.bottom_inner_date_ = empty;
+			self.bottom_inner_am_pm_ = empty;
+			self.bottom_outer_ = empty;
+			self.top_middle_ = [];
+			self.bottom_middle_ = [];
+			self.gauges_ = [];
 
 			self.batteries_ = [];
 
@@ -551,16 +565,13 @@ module Phase0 {
 
 			// ---- top outer ----
 
-			self.top_outer_ = Widgets.get(_properties.top_outer, Render.TOP);
-			if (self.IsBatteryData_(_properties.top_outer.data)) {
-				self.batteries_.add(self.top_outer_ as Widgets.Battery);
-			}
+			self.top_outer_ = self.createOuterWidget_(Render.TOP);
 			self.addWidget_(self.top_outer_);
 
 			// ---- top middle ----
 
 			self.top_middle_ = self.CreateMetricWidgets_(
-				_properties.top_middle
+				Properties.GetTopMiddle()
 			);
 			self.addWidgets_(self.top_middle_);
 
@@ -571,24 +582,13 @@ module Phase0 {
 
 			// ---- main ----
 
-			self.status_ = new Widgets.Status(_properties.status);
+			self.status_ = new Widgets.Status(Properties.GetStatus());
 			self.addWidget_(self.status_);
 
-			self.clock_ = new Widgets.Clock(_properties.clock);
+			self.clock_ = new Widgets.Clock(Properties.GetClock());
 			self.addWidget_(self.clock_);
 
-			self.gauges_ = [];
-			var gauges_size = _properties.gauges.size();
-			for (var i = 0; i < gauges_size; ++i) {
-				var properties = _properties.gauges[i];
-
-				var data = Data.get(properties.data);
-				if (data == null) {
-					continue;
-				}
-
-				self.gauges_.add(new Widgets.Gauge(properties, data));
-			}
+			self.gauges_ = self.createGauges_();
 			self.addWidgets_(self.gauges_);
 
 			// ---- bottom inner ----
@@ -607,20 +607,44 @@ module Phase0 {
 			// ---- bottom middle ----
 
 			self.bottom_middle_ = self.CreateMetricWidgets_(
-				_properties.bottom_middle
+				Properties.GetBottomMiddle()
 			);
 			self.addWidgets_(self.bottom_middle_);
 
 			// ---- bottom outer ----
 
-			self.bottom_outer_ = Widgets.get(
-				_properties.bottom_outer,
-				Render.BOTTOM
-			);
-			if (self.IsBatteryData_(_properties.bottom_outer.data)) {
-				self.batteries_.add(self.bottom_outer_ as Widgets.Battery);
-			}
+			self.bottom_outer_ = self.createOuterWidget_(Render.BOTTOM);
 			self.addWidget_(self.bottom_outer_);
+		}
+
+		hidden function createOuterWidget_(
+			_on_top as Lang.Boolean
+		) as Widgets.Base {
+			var properties = _on_top
+				? Properties.GetTopOuter()
+				: Properties.GetBottomOuter();
+			var widget = Widgets.get(properties, _on_top);
+			if (self.IsBatteryData_(properties.data)) {
+				self.batteries_.add(widget as Widgets.Battery);
+			}
+			return widget;
+		}
+
+		hidden function createGauges_() as Bases {
+			var gauges = [];
+			var gauge_properties = Properties.GetGauges();
+			var gauges_size = gauge_properties.size();
+			for (var i = 0; i < gauges_size; ++i) {
+				var properties = gauge_properties[i];
+
+				var data = Data.get(properties.data);
+				if (data == null) {
+					continue;
+				}
+
+				gauges.add(new Widgets.Gauge(properties, data));
+			}
+			return gauges;
 		}
 
 		hidden function isNightMode_() as Lang.Boolean {

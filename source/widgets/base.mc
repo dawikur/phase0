@@ -40,6 +40,7 @@ module Widgets {
 
 		var refresh_rate as Lang.Number;
 
+		(:input_touch)
 		hidden var type_ as Complications.Type?;
 		hidden var is_dirty_ as Lang.Boolean = true;
 
@@ -55,9 +56,17 @@ module Widgets {
 			_type as Complications.Type?,
 			_refresh_rate as Lang.Number
 		) {
-			self.type_ = _type;
+			self.setType_(_type);
 			self.refresh_rate = _refresh_rate;
 		}
+
+		(:input_touch)
+		hidden function setType_(_type as Complications.Type?) as Void {
+			self.type_ = _type;
+		}
+
+		(:input_not_touch)
+		hidden function setType_(_type as Complications.Type?) as Void {}
 
 		function resize(
 			_dc as Graphics.Dc,
@@ -88,6 +97,7 @@ module Widgets {
 			return pos_x <= _x and _x <= end_x and pos_y <= _y and _y <= end_y;
 		}
 
+		(:input_touch)
 		function open() as Lang.Boolean {
 			if (
 				Toybox has :Complications and
@@ -101,6 +111,11 @@ module Widgets {
 				return true;
 			}
 
+			return false;
+		}
+
+		(:input_not_touch)
+		function open() as Lang.Boolean {
 			return false;
 		}
 

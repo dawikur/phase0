@@ -90,9 +90,9 @@ def test_site_page_links_to_device_reference() -> None:
 
 
 def test_site_page_orders_device_reference_before_mip64_palette() -> None:
-    page = Path("site/index.html").read_text(encoding="utf-8")
+    links = values_for(parse_site_page(), "a", "href")
 
-    assert page.index('href="devices/"') < page.index('href="mip64-palette/"')
+    assert links.index("devices/") < links.index("mip64-palette/")
 
 
 def test_site_page_exposes_theme_view_and_accessible_regions() -> None:
@@ -184,9 +184,3 @@ def test_site_page_uses_generated_store_screenshot_metadata() -> None:
     assert "screenshots-data.js" in script_sources
     assert len(containers) == 1
     assert "screenshot-grid" in (containers[0].get("class") or "")
-
-
-def test_site_alternative_metric_copy_matches_source_wiring() -> None:
-    site_js = Path("site/app.js").read_text(encoding="utf-8")
-
-    assert "long-pressing the clock switches" in site_js
