@@ -700,7 +700,7 @@ h help: # print help message
 	in_arguments && /^# ----/ { exit } \
 	in_arguments && /^# / { description = substr($$0, 3); next } \
 	in_arguments && /^[[:alpha:]_][[:alnum:]_]*[[:space:]]*\?=/ { \
-		split($$0, assignment, "?="); \
+		split($$0, assignment, /[?]=/); \
 		name = assignment[1]; \
 		default_value = assignment[2]; \
 		gsub(/[[:space:]]/, "", name); \
