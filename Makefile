@@ -649,20 +649,25 @@ c clean: # remove build directory and files
 h help: # print help message
 	$(Q)echo " [ $(call LOG_TAG,help) ]"
 
-	N="\033[m"
-	B="\033[1m"
-	I="\033[3m"
-	U="\033[4m"
+	N="" B="" I="" U="" C="" G="" E=""
+	if [ -t 1 ] && [ "$${TERM:-dumb}" != dumb ] && [ -z "$${NO_COLOR:-}" ]; then
+		N=$$'\033[0m'
+		B=$$'\033[1;34m'
+		I=$$'\033[3m'
+		U=$$'\033[36m'
+		C=$$'\033[36m'
+		G=$$'\033[32m'
+		E=$$'\033[1;35m'
+	fi
 
+	printf " %bUsage%b\n" "$$B" "$$N"
+	printf "     %bmake%b [%btarget%b] [%barguments%b]...\n" "$$E" "$$N" "$$U" "$$N" "$$U" "$$N"
 	printf "\n"
 	printf " Makefile for ConnectIQ project.\n"
 	printf "\n"
-	printf " %bUsage%b\n" "$$B" "$$N"
-	printf "     %bmake%b [%btarget%b] [%barguments%b]...\n" "$$B" "$$N" "$$U" "$$N" "$$U" "$$N"
-	printf "\n"
 	# ---- targets ----
 	printf " %bTargets%b\n" "$$B" "$$N"
-	awk -v description_column=$(HELP_DESCRIPTION_COLUMN) -F'#' '\
+	awk -v color="$$C" -v reset="$$N" -v italic="$$I" -v value_color="$$G" -v description_column=$(HELP_DESCRIPTION_COLUMN) -F'#' '\
 	/^[[:alnum:]_-]+([[:space:]][[:alnum:]_-]+)*:.*#/ { \
 		target_part = $$1; \
 		sub(/:.*/, "", target_part); \
@@ -689,13 +694,13 @@ h help: # print help message
 			} \
 			padding = description_column - indent - length(label) - 1; \
 			if (padding < 1) padding = 1; \
-			printf "%*s%s%*s%s\n", indent, "", label, padding, "", desc[i]; \
+			printf "%*s%s%s%s%*s%s\n", indent, "", color, label, reset, padding, "", desc[i]; \
 		} \
 	}' $(MAKEFILE_LIST)
 	printf "\n"
 	# ---- arguments ----
 	printf " %bArguments%b\n" "$$B" "$$N"
-	awk -v description_column=$(HELP_DESCRIPTION_COLUMN) '\
+	awk -v color="$$C" -v reset="$$N" -v italic="$$I" -v value_color="$$G" -v description_column=$(HELP_DESCRIPTION_COLUMN) '\
 	/^# ---- arguments ----$$/ { in_arguments = 1; next } \
 	in_arguments && /^# ----/ { exit } \
 	in_arguments && /^# / { description = substr($$0, 3); next } \
@@ -717,14 +722,23 @@ h help: # print help message
 		if (max_name > description_width) \
 			description_width = max_name; \
 		for (i = 1; i <= n; i++) { \
-			printf "     %-" description_width "s %s\n", names[i], descriptions[i]; \
-			printf "%" (description_width + 6) "s\033[3mdefault:\033[m %s\n", "", defaults[i]; \
+			printf "     %s%-" description_width "s%s %s\n", color, names[i], reset, descriptions[i]; \
+			printf "%" (description_width + 6) "s%sdefault:%s %s%s%s\n", "", italic, reset, value_color, defaults[i], reset; \
 		} \
 	}' $(MAKEFILE_LIST)
 	printf "\n"
 	# ---- devices ----
 	printf " %bDevices%b\n" "$$B" "$$N"
-	awk '
+	terminal_width=$${COLUMNS:-80}
+	if [ -t 1 ]; then
+		exec 3>&1
+		terminal_size=$$(stty size <&3 2>/dev/null) || terminal_size=""
+		exec 3>&-
+		if [[ "$$terminal_size" =~ ^[0-9]+[[:space:]]+([1-9][0-9]*)$$ ]]; then
+			terminal_width=$${BASH_REMATCH[1]}
+		fi
+	fi
+	awk -v terminal_width="$$terminal_width" -v color="$$C" -v reset="$$N" '
 	/iq:product id="/ {
 		device = $$0;
 		sub(/^.*iq:product id="/, "", device);
@@ -733,16 +747,26 @@ h help: # print help message
 		if (length(device) > max_length) max_length = length(device);
 	}
 	END {
-		middle = int((count + 1) / 2);
-		for (i = 1; i <= middle; i++) {
-			right = (i + middle <= count) ? devices[i + middle] : "";
-			printf "     %-*s     %s\n", max_length, devices[i], right;
+		columns = int(terminal_width / (max_length + 5));
+		if (columns < 1) columns = 1;
+		if (4 < columns) columns = 4;
+		rows = int((count + columns - 1) / columns);
+		for (i = 1; i <= rows; i++) {
+			printf "     %s", color;
+			for (column = 0; column < columns; column++) {
+				index_ = i + column * rows;
+				if (count < index_) break;
+				printf "%s", devices[index_];
+				if (column + 1 < columns && index_ + rows <= count)
+					printf "%*s", max_length - length(devices[index_]) + 5, "";
+			}
+			printf "%s\n", reset;
 		}
 	}' $(MANIFEST_TEMPLATE)
 	printf "\n"
 	# ---- modes ----
 	printf " %bModes%b\n" "$$B" "$$N"
-	awk -v description_column=$(HELP_DESCRIPTION_COLUMN) '\
+	awk -v color="$$C" -v reset="$$N" -v italic="$$I" -v value_color="$$G" -v description_column=$(HELP_DESCRIPTION_COLUMN) '\
 	/^# ---- options ----$$/ { in_options = 1; next } \
 	in_options && /^# ----/ { exit } \
 	in_options && /^# / { description = substr($$0, 3); next } \
@@ -759,12 +783,12 @@ h help: # print help message
 		if (max_mode > description_width) \
 			description_width = max_mode; \
 		for (i = 1; i <= n; i++) \
-			printf "     %-" description_width "s %s\n", modes[i], descriptions[i]; \
+			printf "     %s%-" description_width "s%s %s\n", color, modes[i], reset, descriptions[i]; \
 	}' $(MAKEFILE_LIST)
 	printf "\n"
 	# ---- channels ----
 	printf " %bChannels%b\n" "$$B" "$$N"
-	awk -v description_column=$(HELP_DESCRIPTION_COLUMN) '\
+	awk -v color="$$C" -v reset="$$N" -v italic="$$I" -v value_color="$$G" -v description_column=$(HELP_DESCRIPTION_COLUMN) '\
 	/^[[:space:]]*CHANNEL_DESCRIPTION\.[[:alnum:]_-]+[[:space:]]*:=/ { \
 		split($$1, name_parts, "."); \
 		++n; \
@@ -778,7 +802,7 @@ h help: # print help message
 		if (max_channel > description_width) \
 			description_width = max_channel; \
 		for (i = 1; i <= n; i++) \
-			printf "     %-" description_width "s %s\n", channels[i], descriptions[i]; \
+			printf "     %s%-" description_width "s%s %s\n", color, channels[i], reset, descriptions[i]; \
 	}' $(MAKEFILE_LIST)
 	printf "\n"
 .PHONY: help
