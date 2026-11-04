@@ -22,7 +22,7 @@ def test_jungle_paths_point_to_existing_source_and_resource_directories() -> Non
     )
 
 
-@pytest.mark.parametrize("target", ("alpha", "beta", "iq"))
+@pytest.mark.parametrize("target", ("beta", "iq"))
 @pytest.mark.parametrize("mode", ("debug", "test", "optimized"))
 def test_package_helpers_reject_other_explicit_modes(target: str, mode: str) -> None:
     result = subprocess.run(
@@ -33,4 +33,4 @@ def test_package_helpers_reject_other_explicit_modes(target: str, mode: str) -> 
     )
 
     assert result.returncode != 0
-    assert "alpha, beta and iq require MODE=release" in result.stderr
+    assert "beta and iq require MODE=release" in result.stderr

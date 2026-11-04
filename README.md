@@ -64,8 +64,8 @@ shared site UI before rebuilding.
 ## Build channels
 
 `make build` creates a device-specific developer PRG. To test a Store identity
-on a watch, select its channel, for example `make build CHANNEL=alpha`. To
-create uploadable, release-mode IQ packages, run `make alpha`, `make beta`, or
+on a watch, select its channel, for example `make build CHANNEL=beta`. To
+create uploadable, release-mode IQ packages, run `make beta` or
 `make iq` (`build/phase0.iq` for the public release). Run `npm ci` before these
 release builds. The wrapper uses optimizer 1.2.7 for Monkey C source optimization before
 compilation, with no separate post-build binary optimization stage. Direct npm
@@ -73,7 +73,10 @@ and Python dependencies use exact versions; `package-lock.json` also pins
 transitive npm dependencies.
 
 The manifest generator assigns a stable ID to each channel using the shared
-`manifest.xml.tmpl`. Developer is for PRG testing; alpha is a private Garmin
-Beta App; beta is a separate public test listing; release is the public watch
-face. Keep each ID with its existing Store listing so installations and
-settings stay separate.
+`manifest.xml.tmpl`. Developer is for PRG testing; beta is a private Garmin
+Beta App; release is the public watch face and uses the former beta listing
+ID (`acbbdc44-3573-4970-ab72-978ab5656212`). Developer and beta retain their
+separate IDs.
+
+`make store` generates one shared artwork set in `build/store/` for beta and
+release, without channel labels.

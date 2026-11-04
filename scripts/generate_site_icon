@@ -9,7 +9,6 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from scripts.utils.icon_generation import render_svg
-from scripts.utils.store_ribbon import add_ribbon
 
 BACKGROUND = (0x55, 0x55, 0x55, 0xFF)
 SVG_NAMESPACE = "{http://www.w3.org/2000/svg}"
@@ -80,15 +79,10 @@ def main() -> None:
     source.add_argument("--font-profile", choices=("mip", "amoled"))
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--size", type=int, required=True)
-    parser.add_argument(
-        "--channel", choices=("release", "alpha", "beta"), default="release"
-    )
     args = parser.parse_args()
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     icon = render_icon(args.input, args.size, args.font_profile or "mip")
-    if args.channel != "release":
-        icon = add_ribbon(icon, args.channel)
     icon.save(args.output, format="PNG", optimize=True)
 
 

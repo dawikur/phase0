@@ -8,9 +8,8 @@ from pathlib import Path
 
 CHANNELS = {
     "developer": ("5c5797bf-915b-480b-a36b-93fd5b07428a", "APP_NAME_DEVELOPER"),
-    "alpha": ("f294c665-ad17-495e-9c19-876c411fcb89", "APP_NAME_ALPHA"),
-    "beta": ("acbbdc44-3573-4970-ab72-978ab5656212", "APP_NAME_BETA"),
-    "release": ("8f820e83-a1b0-4a36-85f4-fbab5c13bac4", "APP_NAME"),
+    "beta": ("f294c665-ad17-495e-9c19-876c411fcb89", "APP_NAME_BETA"),
+    "release": ("acbbdc44-3573-4970-ab72-978ab5656212", "APP_NAME"),
 }
 
 

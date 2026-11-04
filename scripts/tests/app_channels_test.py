@@ -27,7 +27,7 @@ def test_rendered_channels_have_distinct_ids_and_shared_configuration() -> None:
         application.set("id", "")
         application.set("name", "")
         shared.append(ET.tostring(application))
-    assert len(set(ids)) == 4
+    assert len(set(ids)) == 3
     assert len(set(shared)) == 1
 
 
@@ -59,6 +59,13 @@ def test_render_manifest_requires_version_four_uuid(
         '<iq:application id="{ID}" name="{APP_NAME}" /></iq:manifest>',
         encoding="utf-8",
     )
-    monkeypatch.setitem(CHANNELS, "alpha", (str(uuid.uuid1()), "APP_NAME_ALPHA"))
+    monkeypatch.setitem(CHANNELS, "beta", (str(uuid.uuid1()), "APP_NAME_BETA"))
     with pytest.raises(ValueError, match="Invalid version 4"):
-        render_manifest(template, "alpha")
+        render_manifest(template, "beta")
+
+
+def test_release_preserves_store_identity() -> None:
+    application = ET.fromstring(render_manifest(TEMPLATE, "release")).find(APPLICATION)
+    assert application is not None
+    assert application.get("id") == "acbbdc44-3573-4970-ab72-978ab5656212"
+    assert application.get("name") == "@Strings.APP_NAME"

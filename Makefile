@@ -20,19 +20,18 @@ ifneq ($(filter $(MODE),$(VALID_MODES)),$(MODE))
 $(error Unsupported MODE='$(MODE)'; choose one of: $(VALID_MODES))
 endif
 
-PACKAGE_TARGETS := alpha beta iq
+PACKAGE_TARGETS := beta iq
 ifneq ($(filter $(PACKAGE_TARGETS),$(MAKECMDGOALS)),)
 ifneq ($(origin MODE),file)
 ifneq ($(MODE),release)
-$(error alpha, beta and iq require MODE=release)
+$(error beta and iq require MODE=release)
 endif
 endif
 endif
 
-VALID_CHANNELS := developer alpha beta release
+VALID_CHANNELS := developer beta release
 CHANNEL_DESCRIPTION.developer := Local development builds
-CHANNEL_DESCRIPTION.alpha     := Alpha Store listing
-CHANNEL_DESCRIPTION.beta      := Beta Store listing
+CHANNEL_DESCRIPTION.beta     := Beta Store listing
 CHANNEL_DESCRIPTION.release   := Public Store listing
 ifneq ($(filter $(CHANNEL),$(VALID_CHANNELS)),$(CHANNEL))
 $(error Unsupported CHANNEL='$(CHANNEL)'; choose one of: $(VALID_CHANNELS))
@@ -86,7 +85,7 @@ PYTHON_FILES := $(shell rg --files -g '*.py') \
 	scripts/generate_site_devices scripts/generate_site_settings scripts/generate_site_screenshots \
 	scripts/generate_resources_jungle scripts/smoke scripts/render_braille
 
-SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release deploy alpha beta iq
+SDK_TARGETS := b build build_optimized bo build_release br s simulate st simulate_test so simulate_optimized sr simulate_release deploy beta iq
 
 ifneq ($(strip $(MAKECMDGOALS)),)
 ifneq ($(filter $(SDK_TARGETS),$(MAKECMDGOALS)),)
@@ -183,7 +182,6 @@ ICON_DEPS           := scripts/generate_resources_icon            \
 ICON_STAMP          := $(BUILD_DIR).icon.stamp
 STORE_ICONS         := $(STORE_OUTPUT_DIR)icon_128.png $(STORE_OUTPUT_DIR)icon_512.png $(STORE_OUTPUT_DIR)icon_128_amoled.png
 STORE_HERO          := $(STORE_OUTPUT_DIR)hero.png
-STORE_VARIANTS      := $(foreach channel,alpha beta,$(addprefix $(STORE_OUTPUT_DIR)$(channel)/,icon_128.png icon_512.png hero.png data-rich.png))
 STORE_HERO_SCREENSHOTS := $(addprefix $(SITE_DIR)assets/screenshots/,data-rich.png data-rich-aod.png)
 STORE_SCREENSHOT_SOURCES := $(filter-out %-aod.png,$(wildcard $(SITE_DIR)assets/screenshots/*.png)) \
                             $(SITE_DIR)assets/screenshots/data-rich-aod.png
@@ -348,7 +346,7 @@ $(SITE_ICON): $(ICON_STAMP) $(SITE_COPY_STAMP)
 $(SITE_DEVICE_OVERLAY_LIGHT): $(SITE_COPY_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
-	convert $(SITE_DEVICE_OVERLAY_SRC) -alpha extract $@.orig-alpha.png
+	convert $(SITE_DEVICE_OVERLAY_SRC) -alpha extract $@.orig-beta.png
 	convert $(SITE_DEVICE_OVERLAY_SRC) \
 		-alpha on \
 		-bordercolor white \
@@ -358,15 +356,15 @@ $(SITE_DEVICE_OVERLAY_LIGHT): $(SITE_COPY_STAMP)
 		-draw 'color 0,0 floodfill' \
 		-shave 1x1 \
 		-alpha extract \
-		$@.bg-alpha.png
-	convert $@.orig-alpha.png $@.bg-alpha.png -compose Darken -composite -threshold 99% $@.alpha.png
-	convert $(SITE_DEVICE_OVERLAY_SRC) $@.alpha.png -alpha off -compose CopyOpacity -composite $@
-	$(RM) $@.orig-alpha.png $@.bg-alpha.png $@.alpha.png
+		$@.bg-beta.png
+	convert $@.orig-beta.png $@.bg-beta.png -compose Darken -composite -threshold 99% $@.beta.png
+	convert $(SITE_DEVICE_OVERLAY_SRC) $@.beta.png -alpha off -compose CopyOpacity -composite $@
+	$(RM) $@.orig-beta.png $@.bg-beta.png $@.beta.png
 
 $(SITE_DEVICE_OVERLAY_DARK): $(SITE_COPY_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
-	convert $(SITE_DEVICE_OVERLAY_SRC) -alpha extract $@.orig-alpha.png
+	convert $(SITE_DEVICE_OVERLAY_SRC) -alpha extract $@.orig-beta.png
 	convert $(SITE_DEVICE_OVERLAY_SRC) \
 		-alpha off \
 		-bordercolor white \
@@ -376,13 +374,13 @@ $(SITE_DEVICE_OVERLAY_DARK): $(SITE_COPY_STAMP)
 		-draw 'color 0,0 floodfill' \
 		-shave 1x1 \
 		-alpha extract \
-		$@.external-alpha.png
-	convert $@.orig-alpha.png $@.external-alpha.png -compose Darken -composite -threshold 99% $@.alpha.png
-	convert $@.external-alpha.png -negate -morphology Dilate Disk:1 $@.external-dilate.png
-	convert $@.external-dilate.png $@.alpha.png -compose Multiply -composite $@.edge-mask.png
+		$@.external-beta.png
+	convert $@.orig-beta.png $@.external-beta.png -compose Darken -composite -threshold 99% $@.beta.png
+	convert $@.external-beta.png -negate -morphology Dilate Disk:1 $@.external-dilate.png
+	convert $@.external-dilate.png $@.beta.png -compose Multiply -composite $@.edge-mask.png
 	convert $(SITE_DEVICE_OVERLAY_SRC) \( +clone -fill '#1d2020' -colorize 100 \) $@.edge-mask.png -compose Over -composite $@.edge-rgb.png
-	convert $@.edge-rgb.png $@.alpha.png -alpha off -compose CopyOpacity -composite $@
-	$(RM) $@.orig-alpha.png $@.external-alpha.png $@.alpha.png $@.external-dilate.png $@.edge-mask.png $@.edge-rgb.png
+	convert $@.edge-rgb.png $@.beta.png -alpha off -compose CopyOpacity -composite $@
+	$(RM) $@.orig-beta.png $@.external-beta.png $@.beta.png $@.external-dilate.png $@.edge-mask.png $@.edge-rgb.png
 
 # ---- aliases ----
 
@@ -404,10 +402,6 @@ br build_release: # build developer PRG in release mode
 	$(Q)echo " [ $(call LOG_TAG,build_release) ]"
 	$(Q)$(MAKE) NAME=$(NAME) DEVICE=$(DEVICE) MODE=release CHANNEL=$(CHANNEL) build
 .PHONY: br build_release
-
-alpha: # build alpha IQ package
-	$(Q)$(MAKE) NAME=$(NAME) MODE=release CHANNEL=alpha $(BUILD_DIR)$(NAME)-alpha.iq
-.PHONY: alpha
 
 beta: # build beta IQ package
 	$(Q)$(MAKE) NAME=$(NAME) MODE=release CHANNEL=beta $(BUILD_DIR)$(NAME)-beta.iq
@@ -496,37 +490,11 @@ $(STORE_OUTPUT_DIR)icon_%.png: $(ICON_STAMP) scripts/generate_site_icon
 		--output $@ \
 		--size $*
 
-$(STORE_OUTPUT_DIR)%/icon_128.png: $(ICON_STAMP) scripts/generate_site_icon scripts/utils/store_ribbon.py
-	$(Q)PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_icon \
-		--input $(RESOURCES_GENERATED_DIR)icon.svg \
-		--output $@ \
-		--size 128 \
-		--channel $*
-
-$(STORE_OUTPUT_DIR)%/icon_512.png: $(ICON_STAMP) scripts/generate_site_icon scripts/utils/store_ribbon.py
-	$(Q)PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_icon \
-		--input $(RESOURCES_GENERATED_DIR)icon.svg \
-		--output $@ \
-		--size 512 \
-		--channel $*
-
 $(STORE_HERO): scripts/generate_site_hero $(STORE_HERO_SCREENSHOTS) $(VENV_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_hero \
 		--screenshots $(SITE_DIR)assets/screenshots \
 		--output $@
-
-$(STORE_OUTPUT_DIR)%/hero.png: scripts/generate_site_hero scripts/utils/store_ribbon.py $(STORE_HERO_SCREENSHOTS) $(VENV_STAMP)
-	$(Q)PYTHONPATH=. $(VENV_PYTHON) scripts/generate_site_hero \
-		--screenshots $(SITE_DIR)assets/screenshots \
-		--output $@ \
-		--channel $*
-
-$(STORE_OUTPUT_DIR)%/data-rich.png: $(SITE_DIR)assets/screenshots/data-rich.png scripts/utils/store_ribbon.py $(VENV_STAMP)
-	$(Q)PYTHONPATH=. $(VENV_PYTHON) -m scripts.utils.store_ribbon \
-		--input $< \
-		--output $@ \
-		--channel $*
 
 $(STORE_SCREENSHOTS): $(STORE_OUTPUT_DIR)%: $(SITE_DIR)assets/screenshots/%
 	$(Q)mkdir -p $(STORE_OUTPUT_DIR)
@@ -567,7 +535,7 @@ site_update: # fetch the latest site UI and rebuild the site
 	$(Q)$(MAKE) SITE_UI_REFRESH=1 site
 .PHONY: site_update
 
-store: $(STORE_ICONS) $(STORE_HERO) $(STORE_VARIANTS) $(STORE_SCREENSHOTS) # generate store assets
+store: $(STORE_ICONS) $(STORE_HERO) $(STORE_SCREENSHOTS) # generate store assets
 	$(Q)echo " [ $(call LOG_TAG,store) ]"
 .PHONY: store
 
