@@ -132,8 +132,6 @@ SITE_UI_REMOTE_REPOSITORY := https://github.com/dawikur/site-ui.git
 SITE_UI_STAMP    := $(SITE_UI_DIR)/.fetch.stamp
 SITE_FILES := $(shell find site -type f \
 	! -name 'icon.svg' \
-	! -name 'fr955-light.png' \
-	! -name 'fr955-dark.png' \
 	! -name 'settings-data.js' \
 	! -name 'devices-data.js')
 VENV_DIR    := .venv
@@ -216,11 +214,6 @@ SITE_DEVICES_DEPS   := scripts/generate_site_devices              \
                        $(DATA_DEVICES_DEPS)
 SITE_DEVICES        := $(SITE_OUTPUT_DIR)devices-data.js
 SITE_ICON           := $(SITE_OUTPUT_DIR)assets/icon.svg
-DEVICE_OVERLAY_SRC  := $(SITE_DIR)assets/fr955.png
-SITE_DEVICE_OVERLAY_SRC := $(SITE_OUTPUT_DIR)assets/fr955.png
-SITE_DEVICE_OVERLAY_LIGHT := $(SITE_OUTPUT_DIR)assets/fr955-light.png
-SITE_DEVICE_OVERLAY_DARK  := $(SITE_OUTPUT_DIR)assets/fr955-dark.png
-SITE_DEVICE_OVERLAYS := $(SITE_DEVICE_OVERLAY_LIGHT) $(SITE_DEVICE_OVERLAY_DARK)
 
 RESOURCES := $(ICON_STAMP) $(FONTS_STAMP) $(SETTINGS_STAMP)
 
@@ -342,45 +335,6 @@ $(SITE_ICON): $(ICON_STAMP) $(SITE_COPY_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
 	mkdir -p $(@D)
 	cp $(RESOURCES_GENERATED_DIR)icon.svg $@
-
-$(SITE_DEVICE_OVERLAY_LIGHT): $(SITE_COPY_STAMP)
-	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	mkdir -p $(@D)
-	convert $(SITE_DEVICE_OVERLAY_SRC) -alpha extract $@.orig-beta.png
-	convert $(SITE_DEVICE_OVERLAY_SRC) \
-		-alpha on \
-		-bordercolor white \
-		-border 1 \
-		-fill none \
-		-fuzz 10% \
-		-draw 'color 0,0 floodfill' \
-		-shave 1x1 \
-		-alpha extract \
-		$@.bg-beta.png
-	convert $@.orig-beta.png $@.bg-beta.png -compose Darken -composite -threshold 99% $@.beta.png
-	convert $(SITE_DEVICE_OVERLAY_SRC) $@.beta.png -alpha off -compose CopyOpacity -composite $@
-	$(RM) $@.orig-beta.png $@.bg-beta.png $@.beta.png
-
-$(SITE_DEVICE_OVERLAY_DARK): $(SITE_COPY_STAMP)
-	$(Q)echo " [ $(call LOG_TAG,$(@F)) ]"
-	mkdir -p $(@D)
-	convert $(SITE_DEVICE_OVERLAY_SRC) -alpha extract $@.orig-beta.png
-	convert $(SITE_DEVICE_OVERLAY_SRC) \
-		-alpha off \
-		-bordercolor white \
-		-border 1 \
-		-fill none \
-		-fuzz 36% \
-		-draw 'color 0,0 floodfill' \
-		-shave 1x1 \
-		-alpha extract \
-		$@.external-beta.png
-	convert $@.orig-beta.png $@.external-beta.png -compose Darken -composite -threshold 99% $@.beta.png
-	convert $@.external-beta.png -negate -morphology Dilate Disk:1 $@.external-dilate.png
-	convert $@.external-dilate.png $@.beta.png -compose Multiply -composite $@.edge-mask.png
-	convert $(SITE_DEVICE_OVERLAY_SRC) \( +clone -fill '#1d2020' -colorize 100 \) $@.edge-mask.png -compose Over -composite $@.edge-rgb.png
-	convert $@.edge-rgb.png $@.beta.png -alpha off -compose CopyOpacity -composite $@
-	$(RM) $@.orig-beta.png $@.external-beta.png $@.beta.png $@.external-dilate.png $@.edge-mask.png $@.edge-rgb.png
 
 # ---- aliases ----
 
@@ -523,7 +477,7 @@ $(SITE_COPY_STAMP): $(SITE_FILES) $(SITE_UI_STAMP)
 	rm -rf -- "$(SITE_OUTPUT_DIR)tests"
 	touch "$@"
 
-$(SITE_EXPORT_STAMP): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_ICON) $(SITE_DEVICE_OVERLAYS) $(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_SCREENSHOTS)
+$(SITE_EXPORT_STAMP): $(VENV_STAMP) $(SITE_COPY_STAMP) $(SITE_ICON) $(SITE_SETTINGS) $(SITE_DEVICES) $(SITE_SCREENSHOTS)
 	$(Q)echo " [ $(call LOG_TAG,site) ]"
 	touch "$@"
 

@@ -40,14 +40,14 @@ def test_render_manifest_rejects_missing_placeholder(tmp_path: Path) -> None:
     template = tmp_path / "manifest.xml.tmpl"
     template.write_text("<manifest id='{ID}' />", encoding="utf-8")
     with pytest.raises(ValueError, match="each placeholder exactly once"):
-        render_manifest(template, "alpha")
+        render_manifest(template, "developer")
 
 
 def test_render_manifest_requires_application(tmp_path: Path) -> None:
     template = tmp_path / "manifest.xml.tmpl"
     template.write_text("<manifest id='{ID}' name='{APP_NAME}' />", encoding="utf-8")
     with pytest.raises(ValueError, match="no matching application ID"):
-        render_manifest(template, "alpha")
+        render_manifest(template, "developer")
 
 
 def test_render_manifest_requires_version_four_uuid(

@@ -284,6 +284,7 @@ h1 {
 	top: 27.50%;
 	width: 66.35%;
 	height: 47.95%;
+	border-radius: 50%;
 	object-fit: cover;
 	user-select: none;
 	opacity: 1;
@@ -307,18 +308,6 @@ h1 {
 	object-fit: contain;
 	filter: drop-shadow(0 24px 46px var(--watch-shadow));
 	user-select: none;
-}
-
-.watch-overlay--dark {
-	display: none;
-}
-
-:root[data-theme="dark"] .watch-overlay--light {
-	display: none;
-}
-
-:root[data-theme="dark"] .watch-overlay--dark {
-	display: block;
 }
 
 .face-ring {

@@ -80,3 +80,7 @@ separate IDs.
 
 `make store` generates one shared artwork set in `build/store/` for beta and
 release, without channel labels.
+
+The website's [watch frame](site/assets/watch-frame.svg) is an original,
+generic illustration licensed under this repository's MIT license. It contains
+no Garmin SDK artwork.

@@ -168,10 +168,7 @@ def test_site_page_watch_images_have_stable_ids_sources_and_alt_text() -> None:
         if tag == "img" and "watch-overlay" in (attrs.get("class") or "")
     }
 
-    assert overlay_sources == {
-        "assets/fr955-light.png",
-        "assets/fr955-dark.png",
-    }
+    assert overlay_sources == {"assets/watch-frame.svg"}
 
 
 def test_site_page_uses_generated_store_screenshot_metadata() -> None:

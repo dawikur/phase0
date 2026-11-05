@@ -86,7 +86,7 @@ const watchViews = {
 };
 
 const hotspotGeometry = {
-	// Face is absolute, in percentages relative to the Garmin device overlay.
+	// Face is absolute, in percentages relative to the original watch illustration.
 	// Other regions are percentages relative to the face box.
 	// Top, bottom, status and gauges can be tuned independently when regions need
 	// different hit areas than the visual bounds suggest.
