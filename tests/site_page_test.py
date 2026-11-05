@@ -80,13 +80,13 @@ def test_site_page_loads_assets_in_expected_order() -> None:
 def test_site_page_links_to_mip64_palette() -> None:
     parser = parse_site_page()
 
-    assert attrs_for(parser, "a", "href", "mip64-palette/")["class"] == ("ui-action")
+    assert "data-state-transfer" in attrs_for(parser, "a", "href", "mip64-palette/")
 
 
 def test_site_page_links_to_device_reference() -> None:
     parser = parse_site_page()
 
-    assert attrs_for(parser, "a", "href", "devices/")["class"] == "ui-action"
+    assert "data-state-transfer" in attrs_for(parser, "a", "href", "devices/")
 
 
 def test_site_page_orders_device_reference_before_mip64_palette() -> None:
