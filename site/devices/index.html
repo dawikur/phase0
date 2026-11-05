@@ -28,7 +28,7 @@
       <h1>Device Reference</h1>
       <p class="lede">Display shape and technology, resolution, API versions, and documented watch face memory limits for devices in the Connect IQ device catalog.</p>
       <div class="devices-table-toolbar">
-        <p class="devices-summary ui-tag" id="devicesSummary"></p>
+        <ul class="devices-summary ui-feature-list" id="devicesSummary"></ul>
         <div class="ui-segmented ui-segmented--two devices-scope-control" role="group" aria-label="Device scope">
           <button class="ui-segmented-option" type="button" data-device-scope="supported" aria-pressed="true">Supported</button>
           <button class="ui-segmented-option" type="button" data-device-scope="all" aria-pressed="false">All</button>
@@ -61,18 +61,40 @@
       </div>
     </main>
 
-	<footer class="donation-footer" aria-labelledby="donation-title">
-		<nav class="footer-nav" aria-label="Project links">
-			<a href="../devices/" data-state-transfer aria-current="page">Device reference</a>
-			<a href="../mip64-palette/" data-state-transfer>MIP64 palette</a>
-			<span aria-label="GitHub repository coming soon">GitHub · soon</span>
+	<footer class="ui-footer" aria-labelledby="donation-title">
+		<nav class="ui-footer-nav" aria-label="Project links">
+			<a href="https://apps.garmin.com/apps/d8b5725d-4d57-49f8-8839-abbd0cc040e2">
+				<svg class="ui-footer-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+					<path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5" />
+				</svg>
+				Connect IQ
+			</a>
+			<a href="../devices/" data-state-transfer aria-current="page">
+				<svg class="ui-footer-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+					<rect x="6" y="6" width="12" height="12" rx="4" /><path d="m8 6 1-4h6l1 4m-8 12 1 4h6l1-4M12 9v3l2 1" />
+				</svg>
+				Device reference
+			</a>
+			<a href="../mip64-palette/" data-state-transfer>
+				<svg class="ui-footer-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+					<rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+				</svg>
+				MIP64 palette
+			</a>
+			<a href="https://github.com/dawikur/phase0"><svg class="ui-footer-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+						<path d="M12 .75a11.25 11.25 0 0 0-3.558 21.923c.563.104.77-.244.77-.542 0-.267-.01-.975-.015-1.915-3.13.68-3.791-1.508-3.791-1.508-.512-1.3-1.25-1.646-1.25-1.646-1.022-.699.077-.685.077-.685 1.13.08 1.725 1.16 1.725 1.16 1.005 1.722 2.637 1.225 3.278.937.102-.728.393-1.225.715-1.507-2.499-.284-5.126-1.25-5.126-5.562 0-1.229.44-2.232 1.16-3.02-.116-.284-.503-1.428.11-2.978 0 0 .945-.302 3.095 1.154a10.79 10.79 0 0 1 5.634 0c2.15-1.456 3.094-1.154 3.094-1.154.614 1.55.227 2.694.112 2.978.722.788 1.158 1.791 1.158 3.02 0 4.323-2.631 5.275-5.138 5.553.404.35.766 1.04.766 2.097 0 1.514-.014 2.736-.014 3.107 0 .3.203.65.774.54A11.25 11.25 0 0 0 12 .75Z" />
+					</svg>GitHub</a>
 		</nav>
-		<svg class="donation-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-			<path d="M6 11h18v13a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5V11Z M24 12h2a4 4 0 0 1 0 8h-2 M10 3v3 M15 3v3 M20 3v3" />
-		</svg>
-		<h2 id="donation-title">Enjoying phase0?</h2>
-		<p>phase0 is free and open source. If you enjoy using it, consider supporting its development.</p>
-		<a class="donation-link" href="https://ko-fi.com/dawikur">Support on Ko-fi</a>
+		<div class="ui-footer-message">
+			<h2 id="donation-title">Enjoying phase0?</h2>
+			<p>Free and open source.</p>
+		</div>
+		<a class="ui-action ui-footer-support" href="https://ko-fi.com/dawikur">
+					<svg class="ui-footer-icon" width="20" height="20" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+						<path d="M6 11h18v13a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5V11Z M24 12h2a4 4 0 0 1 0 8h-2 M10 3v3 M15 3v3 M20 3v3" />
+					</svg>
+					Support my work
+				</a>
 	</footer>
 
 

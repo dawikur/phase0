@@ -101,7 +101,14 @@ function render() {
 		);
 		return row;
 	}));
-	summary.textContent = `${visibleDevices.length} of ${scopedDevices.length} devices · ${scopedDevices.filter((device) => device.memory.watchFace >= 0).length} documented`;
+	summary.replaceChildren(...[
+		`${visibleDevices.length} of ${scopedDevices.length} devices`,
+		`${scopedDevices.filter((device) => device.memory.watchFace >= 0).length} documented`,
+	].map((text) => {
+		const item = document.createElement("li");
+		item.textContent = text;
+		return item;
+	}));
 	sortButtons.forEach((button) => {
 		const active = button.dataset.sortColumn === sortColumn;
 		button.closest("th").setAttribute("aria-sort", active ? sortDirection : "none");

@@ -29,13 +29,15 @@ function harness() {
 test("scope and filters change visible rows and summary", () => {
 	const page = harness();
 	assert.deepEqual(page.names(), ["Alpha", "Zulu"]);
-	assert.equal(page.summary.textContent, "2 of 2 devices · 1 documented");
+	assert.deepEqual(Array.from(page.summary.children, (item) => item.textContent), ["2 of 2 devices", "1 documented"]);
 	page.scopes[1].listeners.click();
 	assert.deepEqual(page.names(), ["Alpha", "Beta", "Zulu"]);
+	assert.deepEqual(Array.from(page.summary.children, (item) => item.textContent), ["3 of 3 devices", "2 documented"]);
 	assert.equal(page.scopes[1].attributes["aria-pressed"], "true");
 	page.filters[0].value = "  BeTA  ";
 	page.filters[0].listeners.input();
 	assert.deepEqual(page.names(), ["Beta"]);
+	assert.deepEqual(Array.from(page.summary.children, (item) => item.textContent), ["1 of 3 devices", "2 documented"]);
 	page.filters[0].value = "";
 	page.filters[5].value = "unknown";
 	page.filters[5].listeners.change();

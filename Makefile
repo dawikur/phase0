@@ -467,6 +467,10 @@ x screenshots: $(SCREENSHOTS_STAMP) # generate Connect IQ Store assets and scree
 	$(Q)$(MAKE) $(STORE_HERO)
 .PHONY: x screenshots
 
+r resources: $(RESOURCES) # generate resources
+	$(Q)echo " [ $(call LOG_TAG,resources) ]"
+.PHONY: r resources
+
 $(SITE_COPY_STAMP): $(SITE_FILES) $(SITE_UI_STAMP)
 	$(Q)echo " [ $(call LOG_TAG,site-copy) ]"
 	rm -rf -- "$(SITE_OUTPUT_DIR)"
