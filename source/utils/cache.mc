@@ -127,12 +127,13 @@ module Cache {
 		Application.Storage.setValue(key + "_timestamp", 1);
 		Test.assert(refreshValue(key));
 
-		Test.assertEqual(
-			Application.Storage.getValue(key) as Lang.Number,
-			123
-		);
+		Test.assertEqual(Application.Storage.getValue(key) as Lang.Number, 123);
 		Test.assert(
-			1 < (Application.Storage.getValue(key + "_timestamp") as Lang.Number)
+			1 <
+				(
+					Application.Storage.getValue(key + "_timestamp") as
+						Lang.Number
+				)
 		);
 
 		clearTestValue_(key);

@@ -181,12 +181,18 @@ module Data {
 	}
 
 	(:memory_low)
-	function windIcon(_bearing as Lang.Number?, _speed as Lang.Number?) as Lang.String? {
+	function windIcon(
+		_bearing as Lang.Number?,
+		_speed as Lang.Number?
+	) as Lang.String? {
 		return null;
 	}
 
 	(:memory_not_low)
-	function windIcon(_bearing as Lang.Number?, _speed as Lang.Number?) as Lang.String? {
+	function windIcon(
+		_bearing as Lang.Number?,
+		_speed as Lang.Number?
+	) as Lang.String? {
 		// Missing direction has no glyph to adjust for wind speed.
 		if (_bearing == null) {
 			return Fonts.ICON_NONE;

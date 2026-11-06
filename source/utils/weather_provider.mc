@@ -89,7 +89,11 @@ module WeatherProvider {
 
 		var now_hour = (now_seconds - (now_seconds % 3600)) / 3600;
 		var weather = Weather.getCurrentConditions();
-		var has_missing_current_fields = refreshFields_(fields, weather, now_hour);
+		var has_missing_current_fields = refreshFields_(
+			fields,
+			weather,
+			now_hour
+		);
 
 		next_refresh_seconds_ = nextRefreshSeconds_(
 			now_seconds,
@@ -130,7 +134,8 @@ module WeatherProvider {
 		_now_hour as Lang.Number
 	) as Lang.Boolean {
 		// Check after widgets/layout exist, before loading forecast snapshots.
-		var use_forecast = FORECAST_MIN_FREE_MEMORY < System.getSystemStats().freeMemory;
+		var use_forecast =
+			FORECAST_MIN_FREE_MEMORY < System.getSystemStats().freeMemory;
 		var had_valid_forecast = use_forecast and hasValidForecast_();
 		var stored_forecast = false;
 		if (use_forecast and last_forecast_refresh_hour_ != _now_hour) {
@@ -143,8 +148,7 @@ module WeatherProvider {
 			has_missing_current_fields = refreshCurrentConditions_(
 				_fields,
 				_weather,
-				!use_forecast or
-					(!stored_forecast and !had_valid_forecast)
+				!use_forecast or (!stored_forecast and !had_valid_forecast)
 			);
 		} else if (use_forecast and stored_forecast) {
 			refreshForecastFallback_(_fields, _now_hour);
@@ -613,7 +617,6 @@ module WeatherProvider {
 		register(field);
 		Test.assertEqual(next_refresh_seconds_, 0);
 
-
 		Test.assert(refreshCurrentValue_(field, null, false) == null);
 
 		Cache.setValue(field, 12);
@@ -734,17 +737,10 @@ module WeatherProvider {
 		storeForecastSnapshotValue_(snapshot, temperature, now_hour + 2, 21);
 		storeForecastSnapshot_(snapshot);
 
+		Test.assert(nextForecastValue_(snapshot, condition, now_hour) == 7);
+		Test.assert(nextForecastValue_(snapshot, temperature, now_hour) == 21);
 		Test.assert(
-			nextForecastValue_(snapshot, condition, now_hour) ==
-			7
-		);
-		Test.assert(
-			nextForecastValue_(snapshot, temperature, now_hour) ==
-			21
-		);
-		Test.assert(
-			nextForecastValue_(snapshot, temperature, now_hour + 2) ==
-			null
+			nextForecastValue_(snapshot, temperature, now_hour + 2) == null
 		);
 
 		refreshForecastFallback_([condition, temperature], now_hour);

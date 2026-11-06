@@ -169,16 +169,18 @@ module Phase0 {
 
 		(:display_amoled)
 		hidden function isMinimalMode_() as Lang.Boolean {
-			return
+			return (
 				self.display_mode_ == DISPLAY_MODE_MINIMAL or
-				self.is_night_mode_;
+				self.is_night_mode_
+			);
 		}
 
 		(:display_amoled)
 		hidden function isVisibleMode_() as Lang.Boolean {
-			return
+			return (
 				self.display_mode_ != DISPLAY_MODE_HIDDEN and
-				self.display_mode_ != DISPLAY_MODE_OFF;
+				self.display_mode_ != DISPLAY_MODE_OFF
+			);
 		}
 
 		(:display_mip)
@@ -445,7 +447,10 @@ module Phase0 {
 			var batteries_size = self.batteries_.size();
 			for (var i = 0; i < batteries_size; ++i) {
 				self.renderMinimalShifted_(
-					_dc, self.batteries_[i], offset_x, offset_y
+					_dc,
+					self.batteries_[i],
+					offset_x,
+					offset_y
 				);
 			}
 		}

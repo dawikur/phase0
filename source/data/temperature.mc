@@ -28,9 +28,10 @@ module Data {
 				);
 			}
 			self.icon = temperatureIcon(temperature_c);
-			self.value = temperature_c == null
-				? null
-				: Units.convertTemperature(temperature_c);
+			self.value =
+				temperature_c == null
+					? null
+					: Units.convertTemperature(temperature_c);
 		}
 	}
 } // module Data

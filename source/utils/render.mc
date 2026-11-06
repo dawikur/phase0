@@ -11,7 +11,8 @@ module Render {
 	const FONT_REGULAR =
 		Application.loadResource(Rez.Fonts.DOT_REGULAR) as WatchUi.FontResource;
 	const FONT_REGULAR_THIN =
-		Application.loadResource(Rez.Fonts.DOT_REGULAR_THIN) as WatchUi.FontResource;
+		Application.loadResource(Rez.Fonts.DOT_REGULAR_THIN) as
+		WatchUi.FontResource;
 	const FONT_SMALL =
 		Application.loadResource(Rez.Fonts.DOT_SMALL) as WatchUi.FontResource;
 	const FONT_TINY =

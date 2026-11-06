@@ -33,9 +33,10 @@ module Data {
 			self.last_zones_minute_ = minute;
 			var current_sport = UserProfile.getCurrentSport();
 			var zones = UserProfile.getHeartRateZones(current_sport);
-			self.value_max = zones != null and 5 < zones.size()
-				? zones[5] as Lang.Number
-				: null;
+			self.value_max =
+				zones != null and 5 < zones.size()
+					? zones[5] as Lang.Number
+					: null;
 		}
 
 		function refresh() as Void {

@@ -64,8 +64,10 @@ module Widgets {
 
 		(:memory_not_low)
 		hidden function showIcon_() as Lang.Boolean {
-			return self.impl_.icon != null and (
-				self.style_ == Properties.ICON or self.style_ == Properties.AUTO
+			return (
+				self.impl_.icon != null and
+				(self.style_ == Properties.ICON or
+					self.style_ == Properties.AUTO)
 			);
 		}
 
@@ -76,10 +78,11 @@ module Widgets {
 
 		(:memory_not_low)
 		hidden function showGauge_(_show_icon as Lang.Boolean) as Lang.Boolean {
-			return !_show_icon and (
-				self.style_ == Properties.GAUGE or (
-					self.style_ == Properties.AUTO and self.impl_.value_max != null
-				)
+			return (
+				!_show_icon and
+				(self.style_ == Properties.GAUGE or
+					(self.style_ == Properties.AUTO and
+						self.impl_.value_max != null))
 			);
 		}
 
@@ -241,7 +244,8 @@ module Widgets {
 			}
 
 			if (
-				((self.width_ != Properties.NONE or self.show_gauge_) and is_value_changed) or
+				self.width_ != Properties.NONE or
+				(self.show_gauge_ and is_value_changed) or
 				(self.show_gauge_ and is_value_max_changed) or
 				is_icon_changed
 			) {
@@ -297,7 +301,8 @@ module Widgets {
 			if (self.show_gauge_) {
 				var value = Render.Ratio(self.value_, self.value_max_);
 				if (value != null and 0 < self.gauge_height_) {
-					pos_x += self.width_ == Properties.NONE ? 0 : Render.SPACING / 2;
+					pos_x +=
+						self.width_ == Properties.NONE ? 0 : Render.SPACING / 2;
 
 					Render.Gauge(
 						_dc,
@@ -308,7 +313,8 @@ module Widgets {
 						value
 					);
 
-					pos_x += self.width_ == Properties.NONE ? 0 : Render.SPACING / 2;
+					pos_x +=
+						self.width_ == Properties.NONE ? 0 : Render.SPACING / 2;
 				}
 			}
 
@@ -335,9 +341,10 @@ module Widgets {
 			_available_x as Lang.Number,
 			_available_y as Lang.Number
 		) as Lang.Boolean {
-			var number_width = self.width_ == Properties.NONE
-				? 0
-				: Render.NumberWidth(_dc, self.width_, _is_small);
+			var number_width =
+				self.width_ == Properties.NONE
+					? 0
+					: Render.NumberWidth(_dc, self.width_, _is_small);
 			var number_height = Render.NumberHeight(_dc, _is_small);
 			var icon_height = _show_icon ? Render.IconsHeight(_dc) : 0;
 			var icon_width = _show_icon
@@ -349,7 +356,8 @@ module Widgets {
 			var body_width = number_width + icon_width;
 			if (_show_gauge) {
 				body_width +=
-					(self.width_ == Properties.NONE ? 0 : Render.SPACING / 2) + Render.SPACING;
+					(self.width_ == Properties.NONE ? 0 : Render.SPACING / 2) +
+					Render.SPACING;
 			}
 
 			var has_label = _show_label and self.impl_.name.length() != 0;
@@ -364,9 +372,10 @@ module Widgets {
 				_show_icon and _is_small
 					? AlignCenter(0, Render.IconsHeight(_dc), number_height)
 					: 0;
-			var body_height = self.width_ == Properties.NONE and !_show_gauge
-				? 0
-				: number_height + value_offset_y;
+			var body_height =
+				self.width_ == Properties.NONE and !_show_gauge
+					? 0
+					: number_height + value_offset_y;
 			if (body_height < icon_height) {
 				body_height = icon_height;
 			}

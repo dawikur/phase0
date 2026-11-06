@@ -5,8 +5,9 @@ see the [phase0 website](https://dawikur.dev/phase0).
 
 ## Getting started
 
-You need Python 3.10 or newer, Node.js 22, and the Garmin Connect IQ SDK. The Makefile reads
-the active SDK from `~/.Garmin/ConnectIQ/current-sdk.cfg` and creates `.venv`
+You need Python 3.10 or newer, Node.js 22, and the Garmin Connect IQ SDK.
+The Makefile reads the active SDK from `~/.Garmin/ConnectIQ/current-sdk.cfg`
+and creates `.venv`
 for Python targets. Release builds also need `CONNECTIQ_DEVELOPER_KEY` and the
 pinned Node dependencies (`npm ci`).
 

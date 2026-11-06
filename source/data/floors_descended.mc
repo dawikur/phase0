@@ -18,7 +18,8 @@ module Data {
 
 		function refresh() as Void {
 			var info = ActivityMonitor.getInfo();
-			self.value = info has :floorsDescended ? info.floorsDescended : null;
+			self.value =
+				info has :floorsDescended ? info.floorsDescended : null;
 		}
 	}
 } // module Data

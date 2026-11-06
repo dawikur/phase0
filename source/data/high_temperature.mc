@@ -23,9 +23,10 @@ module Data {
 		function refresh() as Void {
 			var temperature_c = WeatherProvider.get("high_temperature");
 			self.icon = temperatureIcon(temperature_c);
-			self.value = temperature_c == null
-				? null
-				: Units.convertTemperature(temperature_c);
+			self.value =
+				temperature_c == null
+					? null
+					: Units.convertTemperature(temperature_c);
 		}
 
 		function refreshRevision() as Lang.Number? {

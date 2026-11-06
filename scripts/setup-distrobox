@@ -17,7 +17,7 @@ if [[ "${1:-}" == --project ]]; then
 	make .venv/.installed.stamp PATH="/usr/bin:/usr/local/bin:/bin"
 	lock_hash=$(sha256sum package-lock.json)
 	if [[ ! -f node_modules/.phase0-lock-hash ]] ||
-		[[ "$(cat node_modules/.phase0-lock-hash)" != "$lock_hash" ]]; then
+	[[ "$(cat node_modules/.phase0-lock-hash)" != "$lock_hash" ]]; then
 		npm ci
 		printf '%s\n' "$lock_hash" > node_modules/.phase0-lock-hash
 	fi
@@ -38,7 +38,7 @@ node_version=22.22.1
 export PATH="/usr/local/bin:$PATH"
 
 if [[ ! -x /usr/local/bin/node ]] ||
-	[[ "$(/usr/local/bin/node --version)" != "v$node_version" ]]; then
+[[ "$(/usr/local/bin/node --version)" != "v$node_version" ]]; then
 	download_dir=$(mktemp -d)
 	trap 'rm -rf "$download_dir"' EXIT
 	archive="node-v${node_version}-linux-x64.tar.xz"

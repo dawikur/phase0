@@ -51,9 +51,11 @@ performance for abstraction.
   retain guards. Non-touch `open()` returns false and keeps no complication state.
 - `display_mip` alone owns partial callbacks/budget/update state; AMOLED awake
   seconds bypass budgets. Share Seconds and visible sleep/wake requests.
-- `display_amoled` alone owns mode callbacks/state/readers. App forwards changes to
-  view; read system mode only there/onShow with API guards. Keep mode/HIDDEN in
-  `display_mode_`; derive minimal from it/cached night mode, without duplicate state.
+- `display_amoled` alone owns mode callbacks/state/readers.
+  App forwards changes to view; read system mode only there/onShow with API guards.
+  Keep mode/HIDDEN in
+  `display_mode_`; derive minimal from it/cached night mode, without duplicate
+  state.
   HIDDEN ignores notifications until onShow; HIDDEN/OFF skip callbacks/updates/touch.
   OFF return/normal-minimal transitions invalidate; repeated notifications do not.
 - Night/LOW/AoD means minimal (AMOLED black, otherwise configured background).
@@ -64,18 +66,21 @@ performance for abstraction.
 
 ## Settings and metrics
 
-- Persistent IDs: `Options` = CRC32(exact enum name), `Datum.value` = CRC32(`DATA_` +
-  exact metric name), range `0x40000000`–`0x7fffffff`. Preserve names/algorithm,
+- Persistent IDs: `Options` = CRC32(exact enum name),
+  `Datum.value` = CRC32(`DATA_` + exact metric name), range
+  `0x40000000`–`0x7fffffff`. Preserve names/algorithm,
   including AUTO/NONE/GLOBAL; reject collisions. Filtered/combined enums copy IDs;
   smoke tests use real IDs. No beta legacy migration.
 - Use `Properties.AUTO/NONE/GLOBAL`; widths 1–10 are literal. Resolve Auto widths/
   Global colors at construction. Width 0 removes numeric formatting/space only.
   Empty reserves three digits without drawing/refresh regardless of Width/Style;
-  disabled slots disappear. Status Empty reserves a transparent icon; None omits it.
+  disabled slots disappear. Status Empty reserves a transparent icon;
+  None omits it.
 - Goals use one `ActivityMonitor.getInfo()` snapshot; limits precede Auto layout.
   HR zones refresh at most once/epoch minute independently of readings; missing
   goals/zones clear limits. Status uses one device-settings snapshot/refresh and
-  cached bitmask, no metric sources; keep `data_status` parsing independent of options.
+  cached bitmask, no metric sources; keep `data_status` parsing independent of
+  options.
   Declare `data_icon`/`data_gauge` on classes, never inspect constructors.
 
 ## Code and validation

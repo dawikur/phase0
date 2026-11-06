@@ -75,9 +75,9 @@ module Widgets {
 			switch (self.data_) {
 				case Properties.DATA_BATTERY_DAYS_REMAINING:
 					var days =
-						system_stats has :batteryInDays ?
-						system_stats.batteryInDays :
-						null;
+						system_stats has :batteryInDays
+							? system_stats.batteryInDays
+							: null;
 
 					if (days == null) {
 						break;

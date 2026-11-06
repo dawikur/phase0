@@ -28,7 +28,10 @@ module Data {
 		function refresh() as Void {
 			var wind_speed = WeatherProvider.get("wind_speed");
 			self.value = wind_speed != null ? wind_speed.toNumber() : null;
-			self.icon = windIcon(WeatherProvider.get("wind_bearing"), self.value);
+			self.icon = windIcon(
+				WeatherProvider.get("wind_bearing"),
+				self.value
+			);
 		}
 
 		function refreshRevision() as Lang.Number? {
